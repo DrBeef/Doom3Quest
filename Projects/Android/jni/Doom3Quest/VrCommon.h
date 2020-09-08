@@ -60,31 +60,31 @@ void interactWithTouchScreen(bool reset, ovrInputStateTrackedRemote *newState,
 
 
 //Called from engine code
-bool D3Quest_useScreenLayer();
+bool Doom3Quest_useScreenLayer();
 
-void D3Quest_GetScreenRes(int *width, int *height);
+void Doom3Quest_GetScreenRes(int *width, int *height);
 
-void D3Quest_Vibrate(int duration, int channel, float intensity);
+void Doom3Quest_Vibrate(int duration, int channel, float intensity);
 
-bool D3Quest_processMessageQueue();
+bool Doom3Quest_processMessageQueue();
 
-void D3Quest_FrameSetup();
+void Doom3Quest_FrameSetup();
 
-void D3Quest_setUseScreenLayer(bool use);
+void Doom3Quest_setUseScreenLayer(bool use);
 
-void D3Quest_processHaptics();
+void Doom3Quest_processHaptics();
 
-void D3Quest_getHMDOrientation();
+void Doom3Quest_getHMDOrientation();
 
-void D3Quest_getTrackedRemotesOrientation(int vr_control_scheme);
+void Doom3Quest_getTrackedRemotesOrientation(int vr_control_scheme);
 
-void D3Quest_ResyncClientYawWithGameYaw();
+void Doom3Quest_ResyncClientYawWithGameYaw();
 
-void D3Quest_prepareEyeBuffer(int eye);
+void Doom3Quest_prepareEyeBuffer(int eye);
 
-void D3Quest_finishEyeBuffer(int eye);
+void Doom3Quest_finishEyeBuffer(int eye);
 
-void D3Quest_submitFrame();
+void Doom3Quest_submitFrame();
 
 void GPUDropSync();
 

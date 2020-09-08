@@ -46,7 +46,7 @@ Copyright	:	Copyright 2015 Oculus VR, LLC. All Rights reserved.
 
 
 //Define all variables here that were externs in the VrCommon.h
-bool D3Quest_initialised;
+bool Doom3Quest_initialised;
 long long global_time;
 float playerYaw;
 bool resetDoomYaw;
@@ -162,12 +162,12 @@ double GetTimeInMilliSeconds()
 //This is controlled by the engine
 static bool useVirtualScreen = true;
 
-void D3Quest_setUseScreenLayer(bool use)
+void Doom3Quest_setUseScreenLayer(bool use)
 {
 	useVirtualScreen = use;
 }
 
-bool D3Quest_useScreenLayer()
+bool Doom3Quest_useScreenLayer()
 {
 	return useVirtualScreen;
 }
@@ -857,7 +857,7 @@ void setHMDPosition( float x, float y, float z, float yaw )
 {
 	VectorSet(hmdPosition, x, y, z);
 
-	if (!D3Quest_useScreenLayer())
+	if (!Doom3Quest_useScreenLayer())
     {
     	playerYaw = yaw;
 	}
@@ -866,7 +866,7 @@ void setHMDPosition( float x, float y, float z, float yaw )
 
 /*
 ========================
-D3Quest_Vibrate
+Doom3Quest_Vibrate
 ========================
 */
 
@@ -874,7 +874,7 @@ D3Quest_Vibrate
 float vibration_channel_duration[2] = {0.0f, 0.0f};
 float vibration_channel_intensity[2] = {0.0f, 0.0f};
 
-void D3Quest_Vibrate(int duration, int channel, float intensity )
+void Doom3Quest_Vibrate(int duration, int channel, float intensity )
 {
 	if (vibration_channel_duration[channel] > 0.0f)
 		return;
@@ -1267,7 +1267,7 @@ long shutdownCountdown;
 int m_width;
 int m_height;
 
-void D3Quest_GetScreenRes(int *width, int *height)
+void Doom3Quest_GetScreenRes(int *width, int *height)
 {
     *width = m_width;
     *height = m_height;
@@ -1304,9 +1304,9 @@ void VR_Init()
     trigger_teleport = false;
 }
 
-void D3Quest_prepareEyeBuffer(int eye )
+void Doom3Quest_prepareEyeBuffer(int eye )
 {
-	ovrRenderer *renderer = D3Quest_useScreenLayer() ? &gAppState.Scene.CylinderRenderer : &gAppState.Renderer;
+	ovrRenderer *renderer = Doom3Quest_useScreenLayer() ? &gAppState.Scene.CylinderRenderer : &gAppState.Renderer;
 
 	ovrFramebuffer *frameBuffer = &(renderer->FrameBuffer[eye]);
 	ovrFramebuffer_SetCurrent(frameBuffer);
@@ -1325,11 +1325,11 @@ void D3Quest_prepareEyeBuffer(int eye )
 	GL(glDisable(GL_SCISSOR_TEST));
 }
 
-void D3Quest_finishEyeBuffer(int eye )
+void Doom3Quest_finishEyeBuffer(int eye )
 {
     GLCheckErrors( __LINE__ );
 
-	ovrRenderer *renderer = D3Quest_useScreenLayer() ? &gAppState.Scene.CylinderRenderer : &gAppState.Renderer;
+	ovrRenderer *renderer = Doom3Quest_useScreenLayer() ? &gAppState.Scene.CylinderRenderer : &gAppState.Renderer;
 
 	ovrFramebuffer *frameBuffer = &(renderer->FrameBuffer[eye]);
 
@@ -1343,7 +1343,7 @@ void D3Quest_finishEyeBuffer(int eye )
 
 static ovrAppThread * gAppThread = NULL;
 
-bool D3Quest_processMessageQueue() {
+bool Doom3Quest_processMessageQueue() {
 	for ( ; ; )
 	{
 		ovrMessage message;
@@ -1361,7 +1361,7 @@ bool D3Quest_processMessageQueue() {
 			}
 			case MESSAGE_ON_START:
 			{
-				if (!D3Quest_initialised)
+				if (!Doom3Quest_initialised)
 				{
 					ALOGV( "    Initialising qzdoom Engine" );
 
@@ -1376,7 +1376,7 @@ bool D3Quest_processMessageQueue() {
 
 					}
 
-					D3Quest_initialised = true;
+					Doom3Quest_initialised = true;
 				}
 				break;
 			}
@@ -1468,7 +1468,7 @@ void * AppThreadFunction(void * parm ) {
 	// Note that AttachCurrentThread will reset the thread name.
 	prctl(PR_SET_NAME, (long) "OVR::Main", 0, 0, 0);
 
-	D3Quest_initialised = false;
+	Doom3Quest_initialised = false;
 
 	const ovrInitParms initParms = vrapi_DefaultInitParms(&java);
 	int32_t initResult = vrapi_Initialize(&initParms);
@@ -1497,11 +1497,11 @@ void * AppThreadFunction(void * parm ) {
 
 	EglInitExtensions();
 
-    chdir("/sdcard/D3Quest");
+    chdir("/sdcard/Doom3Quest");
 
     //First handle any messages in the queue
     while ( gAppState.Ovr == NULL ) {
-        D3Quest_processMessageQueue();
+        Doom3Quest_processMessageQueue();
     }
 
     ovrRenderer_Create(m_width, m_height, &gAppState.Renderer, &java);
@@ -1518,8 +1518,8 @@ void * AppThreadFunction(void * parm ) {
     vrapi_SetDisplayRefreshRate(gAppState.Ovr, DISPLAY_REFRESH);
 
     //Run loading loop until we are ready to start QzDoom
-    while (!destroyed && !D3Quest_initialised) {
-        D3Quest_processMessageQueue();
+    while (!destroyed && !Doom3Quest_initialised) {
+        Doom3Quest_processMessageQueue();
         incrementFrameIndex();
         showLoadingIcon();
     }
@@ -1540,13 +1540,13 @@ void * AppThreadFunction(void * parm ) {
 }
 
 //All the stuff we want to do each frame
-void D3Quest_FrameSetup()
+void Doom3Quest_FrameSetup()
 {
 	//Use floor based tracking space
 	vrapi_SetTrackingSpace(gAppState.Ovr, VRAPI_TRACKING_SPACE_LOCAL_FLOOR);
 }
 
-void D3Quest_processHaptics() {//Handle haptics
+void Doom3Quest_processHaptics() {//Handle haptics
 	static float lastFrameTime = 0.0f;
 	float timestamp = (float)(GetTimeInMilliSeconds());
 	float frametime = timestamp - lastFrameTime;
@@ -1602,7 +1602,7 @@ void showLoadingIcon()
 
 ovrTracking2 gOvrTracking;
 
-void D3Quest_getHMDOrientation() {//Get orientation
+void Doom3Quest_getHMDOrientation() {//Get orientation
 
 	// Get the HMD pose, predicted for the middle of the time period during which
 	// the new eye images will be displayed. The number of frames predicted ahead
@@ -1625,7 +1625,7 @@ void D3Quest_getHMDOrientation() {//Get orientation
 	ALOGV("        HMD-Position: %f, %f, %f", positionHmd.x, positionHmd.y, positionHmd.z);
 }
 
-void D3Quest_getTrackedRemotesOrientation(int vr_control_scheme) {//Get info for tracked remotes
+void Doom3Quest_getTrackedRemotesOrientation(int vr_control_scheme) {//Get info for tracked remotes
     acquireTrackedRemotesData(gAppState.Ovr, gAppState.DisplayTime);
 
     //Call additional control schemes here
@@ -1644,11 +1644,11 @@ void D3Quest_getTrackedRemotesOrientation(int vr_control_scheme) {//Get info for
     }
 }
 
-void D3Quest_submitFrame()
+void Doom3Quest_submitFrame()
 {
     ovrSubmitFrameDescription2 frameDesc = {0};
     
-    if (!D3Quest_useScreenLayer()) {
+    if (!Doom3Quest_useScreenLayer()) {
 
         ovrLayerProjection2 layer = vrapi_DefaultLayerProjection2();
         layer.HeadPose = gOvrTracking.HeadPose;
@@ -1785,7 +1785,7 @@ int JNI_OnLoad(JavaVM* vm, void* reserved)
 	return SDL_JNI_OnLoad(vm, reserved);
 }
 
-JNIEXPORT jlong JNICALL Java_com_drbeef_d3quest_GLES3JNILib_onCreate( JNIEnv * env, jclass activityClass, jobject activity,
+JNIEXPORT jlong JNICALL Java_com_drbeef_doom3quest_GLES3JNILib_onCreate( JNIEnv * env, jclass activityClass, jobject activity,
 																	   jstring commandLineParams)
 {
 	ALOGV( "    GLES3JNILib::onCreate()" );
@@ -1865,7 +1865,7 @@ JNIEXPORT jlong JNICALL Java_com_drbeef_d3quest_GLES3JNILib_onCreate( JNIEnv * e
 }
 
 
-JNIEXPORT void JNICALL Java_com_drbeef_d3quest_GLES3JNILib_onStart( JNIEnv * env, jobject obj, jlong handle, jobject obj1)
+JNIEXPORT void JNICALL Java_com_drbeef_doom3quest_GLES3JNILib_onStart( JNIEnv * env, jobject obj, jlong handle, jobject obj1)
 {
 	ALOGV( "    GLES3JNILib::onStart()" );
 
@@ -1880,7 +1880,7 @@ JNIEXPORT void JNICALL Java_com_drbeef_d3quest_GLES3JNILib_onStart( JNIEnv * env
 	ovrMessageQueue_PostMessage( &appThread->MessageQueue, &message );
 }
 
-JNIEXPORT void JNICALL Java_com_drbeef_d3quest_GLES3JNILib_onResume( JNIEnv * env, jobject obj, jlong handle )
+JNIEXPORT void JNICALL Java_com_drbeef_doom3quest_GLES3JNILib_onResume( JNIEnv * env, jobject obj, jlong handle )
 {
 	ALOGV( "    GLES3JNILib::onResume()" );
 	ovrAppThread * appThread = (ovrAppThread *)((size_t)handle);
@@ -1889,7 +1889,7 @@ JNIEXPORT void JNICALL Java_com_drbeef_d3quest_GLES3JNILib_onResume( JNIEnv * en
 	ovrMessageQueue_PostMessage( &appThread->MessageQueue, &message );
 }
 
-JNIEXPORT void JNICALL Java_com_drbeef_d3quest_GLES3JNILib_onPause( JNIEnv * env, jobject obj, jlong handle )
+JNIEXPORT void JNICALL Java_com_drbeef_doom3quest_GLES3JNILib_onPause( JNIEnv * env, jobject obj, jlong handle )
 {
 	ALOGV( "    GLES3JNILib::onPause()" );
 	ovrAppThread * appThread = (ovrAppThread *)((size_t)handle);
@@ -1898,7 +1898,7 @@ JNIEXPORT void JNICALL Java_com_drbeef_d3quest_GLES3JNILib_onPause( JNIEnv * env
 	ovrMessageQueue_PostMessage( &appThread->MessageQueue, &message );
 }
 
-JNIEXPORT void JNICALL Java_com_drbeef_d3quest_GLES3JNILib_onStop( JNIEnv * env, jobject obj, jlong handle )
+JNIEXPORT void JNICALL Java_com_drbeef_doom3quest_GLES3JNILib_onStop( JNIEnv * env, jobject obj, jlong handle )
 {
 	ALOGV( "    GLES3JNILib::onStop()" );
 	ovrAppThread * appThread = (ovrAppThread *)((size_t)handle);
@@ -1907,7 +1907,7 @@ JNIEXPORT void JNICALL Java_com_drbeef_d3quest_GLES3JNILib_onStop( JNIEnv * env,
 	ovrMessageQueue_PostMessage( &appThread->MessageQueue, &message );
 }
 
-JNIEXPORT void JNICALL Java_com_drbeef_d3quest_GLES3JNILib_onDestroy( JNIEnv * env, jobject obj, jlong handle )
+JNIEXPORT void JNICALL Java_com_drbeef_doom3quest_GLES3JNILib_onDestroy( JNIEnv * env, jobject obj, jlong handle )
 {
 	ALOGV( "    GLES3JNILib::onDestroy()" );
 	ovrAppThread * appThread = (ovrAppThread *)((size_t)handle);
@@ -1928,7 +1928,7 @@ Surface lifecycle
 ================================================================================
 */
 
-JNIEXPORT void JNICALL Java_com_drbeef_d3quest_GLES3JNILib_onSurfaceCreated( JNIEnv * env, jobject obj, jlong handle, jobject surface )
+JNIEXPORT void JNICALL Java_com_drbeef_doom3quest_GLES3JNILib_onSurfaceCreated( JNIEnv * env, jobject obj, jlong handle, jobject surface )
 {
 	ALOGV( "    GLES3JNILib::onSurfaceCreated()" );
 	ovrAppThread * appThread = (ovrAppThread *)((size_t)handle);
@@ -1951,7 +1951,7 @@ JNIEXPORT void JNICALL Java_com_drbeef_d3quest_GLES3JNILib_onSurfaceCreated( JNI
 	ovrMessageQueue_PostMessage( &appThread->MessageQueue, &message );
 }
 
-JNIEXPORT void JNICALL Java_com_drbeef_d3quest_GLES3JNILib_onSurfaceChanged( JNIEnv * env, jobject obj, jlong handle, jobject surface )
+JNIEXPORT void JNICALL Java_com_drbeef_doom3quest_GLES3JNILib_onSurfaceChanged( JNIEnv * env, jobject obj, jlong handle, jobject surface )
 {
 	ALOGV( "    GLES3JNILib::onSurfaceChanged()" );
 	ovrAppThread * appThread = (ovrAppThread *)((size_t)handle);
@@ -1993,7 +1993,7 @@ JNIEXPORT void JNICALL Java_com_drbeef_d3quest_GLES3JNILib_onSurfaceChanged( JNI
 	}
 }
 
-JNIEXPORT void JNICALL Java_com_drbeef_d3quest_GLES3JNILib_onSurfaceDestroyed( JNIEnv * env, jobject obj, jlong handle )
+JNIEXPORT void JNICALL Java_com_drbeef_doom3quest_GLES3JNILib_onSurfaceDestroyed( JNIEnv * env, jobject obj, jlong handle )
 {
 	ALOGV( "    GLES3JNILib::onSurfaceDestroyed()" );
 	ovrAppThread * appThread = (ovrAppThread *)((size_t)handle);

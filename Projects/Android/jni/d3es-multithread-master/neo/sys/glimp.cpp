@@ -45,7 +45,7 @@ If you have questions concerning this license or the applicable additional terms
 GLimp_Init
 ===================
 */
-extern "C" void D3Quest_GetScreenRes(int *width, int *height);
+extern "C" void Doom3Quest_GetScreenRes(int *width, int *height);
 
 bool GLimp_Init(glimpParms_t parms) {
 	common->Printf("Initializing OpenGL subsystem\n");
@@ -54,7 +54,7 @@ bool GLimp_Init(glimpParms_t parms) {
 	int depthbits = 24;
 	int stencilbits = 8;
 
-	D3Quest_GetScreenRes(&glConfig.vidWidth, &glConfig.vidHeight);
+	Doom3Quest_GetScreenRes(&glConfig.vidWidth, &glConfig.vidHeight);
 	glConfig.isFullscreen = true;
 
 #if defined(_WIN32) && defined(ID_ALLOW_TOOLS)
@@ -143,18 +143,18 @@ int stereoSide = 0;
 
 void GLimp_SetupFrame() {
 	if (stereoSide == 0) {
-        D3Quest_FrameSetup();
+        Doom3Quest_FrameSetup();
 
-        D3Quest_processMessageQueue();
+        Doom3Quest_processMessageQueue();
 	}
 }
 
 void   GLimp_SetupEyeBuffer( void )
 {
     if (stereoSide == 0) {
-        D3Quest_prepareEyeBuffer(0);
+        Doom3Quest_prepareEyeBuffer(0);
     } else {
-        D3Quest_prepareEyeBuffer(1);
+        Doom3Quest_prepareEyeBuffer(1);
     }
 }
 
@@ -168,15 +168,15 @@ void GLimp_SwapBuffers() {
 
 	if (stereoSide == 0)
 	{
-		D3Quest_finishEyeBuffer(0);
+		Doom3Quest_finishEyeBuffer(0);
 		stereoSide = 1;
 	}
 	else
 	{
-		D3Quest_finishEyeBuffer(1);
+		Doom3Quest_finishEyeBuffer(1);
 
 		//We can now submit the stereo frame
-		D3Quest_submitFrame();
+		Doom3Quest_submitFrame();
 
 		//Reset for next time
 		stereoSide = 0;

@@ -525,10 +525,10 @@ const char * Android_GetCommand()
 	return cmd;
 }
 
-extern "C" void D3Quest_setUseScreenLayer(bool use);
-extern "C" void D3Quest_processHaptics();
-extern "C" void D3Quest_getHMDOrientation();
-extern "C" void D3Quest_getTrackedRemotesOrientation(int);
+extern "C" void Doom3Quest_setUseScreenLayer(bool use);
+extern "C" void Doom3Quest_processHaptics();
+extern "C" void Doom3Quest_getHMDOrientation();
+extern "C" void Doom3Quest_getTrackedRemotesOrientation(int);
 
 void Android_PumpEvents(int screen)
 {
@@ -536,13 +536,13 @@ void Android_PumpEvents(int screen)
 	inGameGuiActive = !!(screen & 0x2);
 	objectiveSystemActive = !!(screen & 0x4);
 
-	D3Quest_setUseScreenLayer(inMenu || objectiveSystemActive);
+	Doom3Quest_setUseScreenLayer(inMenu || objectiveSystemActive);
 
-	D3Quest_processHaptics();
+	Doom3Quest_processHaptics();
 
 	//Just do all this here for now
-	D3Quest_getHMDOrientation();
-	D3Quest_getTrackedRemotesOrientation(0); // Only right handed for now
+	Doom3Quest_getHMDOrientation();
+	Doom3Quest_getTrackedRemotesOrientation(0); // Only right handed for now
 }
 
 extern "C" int blockGamepad( void );

@@ -145,7 +145,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
 	handleTrackedControllerButton(&leftTrackedRemoteState_new, &leftTrackedRemoteState_old, false, ovrButton_Enter, K_ESCAPE);
 
     static bool resetCursor = true;
-    if ( D3Quest_useScreenLayer() )
+    if ( Doom3Quest_useScreenLayer() )
     {
         interactWithTouchScreen(resetCursor, pDominantTrackedRemoteNew, pDominantTrackedRemoteOld);
 
@@ -164,7 +164,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
         }
         else if (!canUseQuickSave) {
             int channel = (vr_control_scheme >= 10) ? 1 : 0;
-            D3Quest_Vibrate(40, channel, 0.5); // vibrate to let user know they can switch
+            Doom3Quest_Vibrate(40, channel, 0.5); // vibrate to let user know they can switch
             canUseQuickSave = true;
         }
 
@@ -337,7 +337,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
             }
             else if (!canUseBackpack && pVRClientInfo->backpackitemactive == 0) {
                 int channel = (vr_control_scheme >= 10) ? 0 : 1;
-                    D3Quest_Vibrate(40, channel, 0.5); // vibrate to let user know they can switch
+                    Doom3Quest_Vibrate(40, channel, 0.5); // vibrate to let user know they can switch
 
                 canUseBackpack = true;
             }
@@ -392,7 +392,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                         //Initiate grenade from backpack mode
                         sendButtonActionSimple("weaponbank 6");
                         int channel = (vr_control_scheme >= 10) ? 0 : 1;
-                        D3Quest_Vibrate(80, channel, 0.8); // vibrate to let user know they switched
+                        Doom3Quest_Vibrate(80, channel, 0.8); // vibrate to let user know they switched
                         pVRClientInfo->backpackitemactive = 1;
                     }
                     else if (dominantButton1Pushed)
@@ -401,13 +401,13 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                         //Initiate knife from backpack mode
                         sendButtonActionSimple("weapon 1");
                         int channel = (vr_control_scheme >= 10) ? 0 : 1;
-                        D3Quest_Vibrate(80, channel, 0.8); // vibrate to let user know they switched
+                        Doom3Quest_Vibrate(80, channel, 0.8); // vibrate to let user know they switched
                         pVRClientInfo->backpackitemactive = 2;
                     }
                     else if (dominantButton2Pushed && pVRClientInfo->hasbinoculars)
                     {
                         int channel = (vr_control_scheme >= 10) ? 0 : 1;
-                        D3Quest_Vibrate(80, channel, 0.8); // vibrate to let user know they switched
+                        Doom3Quest_Vibrate(80, channel, 0.8); // vibrate to let user know they switched
                         pVRClientInfo->backpackitemactive = 3;
                     }
                 }
@@ -454,7 +454,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                 {
                     static bool use = false;
                     use = !use;
-                    D3Quest_setUseScreenLayer(use);
+                    Doom3Quest_setUseScreenLayer(use);
 //                    Sys_QueEvent( 0, SE_KEY, K_SPACE, (primaryButtonsNew & primaryButton2) != 0, 0, NULL );
                 }
             }
