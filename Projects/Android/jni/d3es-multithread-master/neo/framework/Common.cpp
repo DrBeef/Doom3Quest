@@ -89,7 +89,7 @@ idCVar com_forceGenericSIMD( "com_forceGenericSIMD", "0", CVAR_BOOL | CVAR_SYSTE
 idCVar com_developer( "developer", "1", CVAR_BOOL|CVAR_SYSTEM|CVAR_NOCHEAT, "developer mode" );
 idCVar com_allowConsole( "com_allowConsole", "0", CVAR_BOOL | CVAR_SYSTEM | CVAR_NOCHEAT, "allow toggling console with the tilde key" );
 idCVar com_speeds( "com_speeds", "0", CVAR_BOOL|CVAR_SYSTEM|CVAR_NOCHEAT, "show engine timings" );
-idCVar com_showFPS( "com_showFPS", "1", CVAR_BOOL|CVAR_SYSTEM|CVAR_ARCHIVE|CVAR_NOCHEAT, "show frames rendered per second" );
+idCVar com_showFPS( "com_showFPS", "0", CVAR_BOOL|CVAR_SYSTEM|CVAR_ARCHIVE|CVAR_NOCHEAT, "show frames rendered per second" );
 idCVar com_showMemoryUsage( "com_showMemoryUsage", "0", CVAR_BOOL|CVAR_SYSTEM|CVAR_NOCHEAT, "show total and per frame memory usage" );
 idCVar com_showAsyncStats( "com_showAsyncStats", "0", CVAR_BOOL|CVAR_SYSTEM|CVAR_NOCHEAT, "show async network stats" );
 idCVar com_showSoundDecoders( "com_showSoundDecoders", "0", CVAR_BOOL|CVAR_SYSTEM|CVAR_NOCHEAT, "show sound decoders" );
@@ -2396,8 +2396,13 @@ void idCommonLocal::Frame( void ) {
 		int inMenu = (((idSessionLocal*)session)->guiActive != 0);
 		int inGameGui = ( game && game->InGameGuiActive());
 		int objectiveActive = ( game && game->ObjectiveSystemActive());
+		int cinematic = ( game && game->InCinematic());
 
-		Android_PumpEvents(inMenu?1:0 + inGameGui?2:0 + objectiveActive?4:0);
+		Android_PumpEvents(inMenu?1:0 + inGameGui?2:0 + objectiveActive?4:0 + cinematic?8:0);
+
+		if (game) {
+			game->SetVRClientInfo(pVRClientInfo);
+		}
 
 		// write config file if anything changed
 		WriteConfiguration();

@@ -50,6 +50,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "framework/Licensee.h" // DG: for ID__DATE__
 
 #include "Game_local.h"
+#include "../../../Doom3Quest/VrClientInfo.h"
 
 const int NUM_RENDER_PORTAL_BITS	= idMath::BitsForInteger( PS_BLOCK_ALL );
 
@@ -268,6 +269,10 @@ bool IsDoom3DemoVersion()
 	return ret;
 }
 
+bool idGameLocal::InCinematic()
+{
+	return inCinematic;
+}
 
 
 /*
@@ -758,6 +763,12 @@ idGameLocal::SetLocalClient
 void idGameLocal::SetLocalClient( int clientNum ) {
 	localClientNum = clientNum;
 }
+
+void idGameLocal::SetVRClientInfo(vr_client_info_t *pVR)
+{
+	pVRClientInfo = pVR;
+}
+
 
 /*
 ===========
@@ -2190,6 +2201,8 @@ gameReturn_t idGameLocal::RunFrame( const usercmd_t *clientCmds ) {
 #endif
 
 	player = GetLocalPlayer();
+
+    player->SetVRClientInfo(pVRClientInfo);
 
 	if ( !isMultiplayer && g_stopTime.GetBool() ) {
 		// clear any debug lines from a previous frame

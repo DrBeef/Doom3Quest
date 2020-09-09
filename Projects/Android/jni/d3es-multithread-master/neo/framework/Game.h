@@ -35,6 +35,8 @@ If you have questions concerning this license or the applicable additional terms
 #include "renderer/RenderWorld.h"
 #include "sound/sound.h"
 
+#include "../../../Doom3Quest/VrClientInfo.h"
+
 class idAASFileManager;
 class idCollisionModelManager;
 class idRenderSystem;
@@ -87,6 +89,10 @@ public:
 
 	// Set the local client number. Distinguishes listen ( == 0 ) / dedicated ( == -1 )
 	virtual void				SetLocalClient( int clientNum ) = 0;
+
+	virtual void 				SetVRClientInfo(vr_client_info_t *pVRClientInfo) = 0;
+
+	virtual bool 				InCinematic() = 0;
 
 	// Sets the user info for a client.
 	// if canModify is true, the game can modify the user info in the returned dictionary pointer, server will forward the change back

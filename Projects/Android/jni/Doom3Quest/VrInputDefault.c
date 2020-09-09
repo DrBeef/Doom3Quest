@@ -17,8 +17,10 @@ Authors		:	Simon Brown
 
 #include "VrInput.h"
 
-float	vr_turn_mode;
-float	vr_turn_angle;
+#include "doomkeys.h"
+
+float	vr_turn_mode = 0.0f;
+float	vr_turn_angle = 45.0f;
 float	vr_reloadtimeoutms;
 float	vr_positional_factor;
 float	vr_walkdirection;
@@ -28,7 +30,7 @@ float	vr_lasersight;
 float	vr_control_scheme;
 float	vr_teleport;
 float	vr_virtual_stock;
-float	vr_switch_sticks;
+float	vr_switch_sticks = 0;
 float	vr_cinematic_stereo;
 float	vr_screen_dist;
 
@@ -141,7 +143,6 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
     }
 
     //Menu button
-    int K_ESCAPE = 27;
 	handleTrackedControllerButton(&leftTrackedRemoteState_new, &leftTrackedRemoteState_old, false, ovrButton_Enter, K_ESCAPE);
 
     static bool resetCursor = true;
@@ -149,10 +150,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
     {
         interactWithTouchScreen(resetCursor, pDominantTrackedRemoteNew, pDominantTrackedRemoteOld);
 
-
         handleTrackedControllerButton(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld, true, ovrButton_Trigger, 1);
-//        handleTrackedControllerButton(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld, ovrButton_Trigger, K_MOUSE1);
-//        handleTrackedControllerButton(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld, domButton2, K_ESCAPE);
     }
     else
     {
@@ -438,6 +436,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
             //This section corrects for the fact that the controller actually controls direction of movement, but we want to move relative to the direction the
             //player is facing for positional tracking
             vec2_t v;
+            vr_positional_factor = 1000;
             rotateAboutOrigin(-pVRClientInfo->hmdposition_delta[0] * vr_positional_factor,
                               pVRClientInfo->hmdposition_delta[2] * vr_positional_factor, - pVRClientInfo->hmdorientation[YAW], v);
             positional_movementSideways = v[0];
@@ -452,10 +451,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
 
                 if ((primaryButtonsNew & primaryButton2) != (primaryButtonsOld & primaryButton2))
                 {
-                    static bool use = false;
-                    use = !use;
-                    Doom3Quest_setUseScreenLayer(use);
-//                    Sys_QueEvent( 0, SE_KEY, K_SPACE, (primaryButtonsNew & primaryButton2) != 0, 0, NULL );
+                    handleTrackedControllerButton(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld, false, primaryButton2, K_SPACE);
                 }
             }
 
@@ -508,7 +504,8 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
 
                     ALOGV("**WEAPON EVENT**  Not Grip Pushed %sattack", (pDominantTrackedRemoteNew->Buttons & ovrButton_Trigger) ? "+" : "-");
                     firing = (pDominantTrackedRemoteNew->Buttons & ovrButton_Trigger);
-                    sendButtonAction("+attack", firing);
+
+                    handleTrackedControllerButton(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld, false, ovrButton_Trigger, K_CTRL);
                 }
                 else if (binocularsactive) // trigger can zoom-in binoculars, remove from face to reset
                 {
@@ -528,7 +525,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                 (primaryButtonsNew & primaryButton1) !=
                 (primaryButtonsOld & primaryButton1)) {
 
-                sendButtonAction("+movedown", (primaryButtonsNew & primaryButton1));
+                handleTrackedControllerButton(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld, false, primaryButton1, 'c');
             }
 
 			//Weapon Chooser
@@ -630,7 +627,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
             if (!pVRClientInfo->teleportenabled)
             {
                 //Run
-                //handleTrackedControllerButton(pOffTrackedRemoteNew,                                              pOffTrackedRemoteOld,                                              ovrButton_Trigger, K_SHIFT);
+                handleTrackedControllerButton(pOffTrackedRemoteNew, pOffTrackedRemoteOld, false, ovrButton_Trigger, K_SHIFT);
             } else {
                 if (pOffTrackedRemoteNew->Buttons & ovrButton_Trigger)
                 {

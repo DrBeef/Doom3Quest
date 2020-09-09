@@ -200,34 +200,49 @@ float SCR_DrawFPS( float y ) {
 	static int	previousTimes[FPS_FRAMES];
 	static int	index;
 	int		i, total;
-	int		fps;
+	static int		fps = 0;
 	static	int	previous;
 	int		t, frameTime;
+	static int stereoSide = 0;
 
-	// don't use serverTime, because that will be drifting to
-	// correct for internet lag changes, timescales, timedemos, etc
-	t = Sys_Milliseconds();
-	frameTime = t - previous;
-	previous = t;
+	int new_y = idMath::FtoiFast(y) + 300;
 
-	previousTimes[index % FPS_FRAMES] = frameTime;
-	index++;
-	if ( index > FPS_FRAMES ) {
-		// average multiple frames together to smooth changes out a bit
-		total = 0;
-		for ( i = 0 ; i < FPS_FRAMES ; i++ ) {
-			total += previousTimes[i];
+	if (stereoSide == 0) {
+		// don't use serverTime, because that will be drifting to
+		// correct for internet lag changes, timescales, timedemos, etc
+		t = Sys_Milliseconds();
+		frameTime = t - previous;
+		previous = t;
+
+		previousTimes[index % FPS_FRAMES] = frameTime;
+		index++;
+		if (index > FPS_FRAMES) {
+			// average multiple frames together to smooth changes out a bit
+			total = 0;
+			for (i = 0; i < FPS_FRAMES; i++) {
+				total += previousTimes[i];
+			}
+			if (!total) {
+				total = 1;
+			}
+			fps = 10000 * FPS_FRAMES / total;
+			fps = (fps + 5) / 10;
+
+			s = va("%ifps", fps);
+			w = strlen(s) * SMALLCHAR_WIDTH;
+
+			renderSystem->DrawSmallStringExt((634 / 2) - w, new_y, s, colorWhite, true,
+										   localConsole.charSetShader);
 		}
-		if ( !total ) {
-			total = 1;
-		}
-		fps = 10000 * FPS_FRAMES / total;
-		fps = (fps + 5)/10;
-
-		s = va( "%ifps", fps );
-		w = strlen( s ) * BIGCHAR_WIDTH;
-
-		renderSystem->DrawBigStringExt( 635 - w, idMath::FtoiFast( y ) + 2, s, colorWhite, true, localConsole.charSetShader);
+		stereoSide = 1;
+	}
+	else {
+		//For right eye just use same value
+		s = va("%ifps", fps);
+		w = strlen(s) * SMALLCHAR_WIDTH;
+		renderSystem->DrawSmallStringExt((634 / 2) - w, new_y, s, colorWhite, true,
+									   localConsole.charSetShader);
+		stereoSide = 0;
 	}
 
 	return y + BIGCHAR_HEIGHT + 4;

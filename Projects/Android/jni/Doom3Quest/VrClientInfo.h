@@ -8,6 +8,8 @@
 extern "C" {
 #endif
 
+typedef float vec3_t[3];
+
 typedef struct {
     bool screen;
     float fov;

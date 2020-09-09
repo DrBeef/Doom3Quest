@@ -265,6 +265,8 @@ public:
 	idUserInterface *		objectiveSystem;
 	bool					objectiveSystemOpen;
 
+	vr_client_info_t *pVRClientInfo;
+
 	int						weapon_soulcube;
 	int						weapon_pda;
 	int						weapon_fists;
@@ -360,6 +362,9 @@ public:
 	bool					UserInfoChanged( bool canModify );
 	idDict *				GetUserInfo( void );
 	bool					BalanceTDM( void );
+
+	void 					SetVRClientInfo(vr_client_info_t *pVRClientInfo);
+
 
 	void					CacheWeapons( void );
 

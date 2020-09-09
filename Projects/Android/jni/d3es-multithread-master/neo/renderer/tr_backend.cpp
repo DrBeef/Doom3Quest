@@ -306,8 +306,6 @@ static void	RB_SetBuffer( const void *data ) {
 
     GLimp_SetupFrame();
 
-	GLimp_SetupEyeBuffer();
-
 
     // clear screen for debugging
 	// automatically enable this with several other debug tools
@@ -388,8 +386,6 @@ void RB_ExecuteBackEndCommands( const emptyCommand_t *cmds ) {
 		return;
 	}
 
-	//Do this all twice.. once for each eye
-	for (int i = 0; i < 2; ++i)
 	{
 		const emptyCommand_t *cmd = cmds;
 

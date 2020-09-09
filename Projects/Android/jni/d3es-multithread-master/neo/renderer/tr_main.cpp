@@ -861,7 +861,6 @@ void R_SetViewMatrix( viewDef_t *viewDef ) {
 		0, 0, 0, 1
 	};
 
-	//for (int eye = 0; eye < 2; ++eye)
 	{
 		world = &(viewDef->worldSpace);
 
@@ -875,16 +874,6 @@ void R_SetViewMatrix( viewDef_t *viewDef ) {
 		// transform by the camera placement
 		origin = viewDef->renderView.vieworg;
 
-		//
-/*		if (eye == 0) // left eye
-        {
-			origin -= viewDef->renderView.viewaxis[1] * 0.065f * 38.0f;
-        }
-		else if (eye == 1) // right eye
-        {
-			origin += viewDef->renderView.viewaxis[1] * 0.065f * 38.0f;
-        }
-*/
 		viewerMatrix[0] = viewDef->renderView.viewaxis[0][0];
 		viewerMatrix[4] = viewDef->renderView.viewaxis[0][1];
 		viewerMatrix[8] = viewDef->renderView.viewaxis[0][2];

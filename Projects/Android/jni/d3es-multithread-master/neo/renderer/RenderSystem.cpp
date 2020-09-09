@@ -584,6 +584,7 @@ void idRenderSystemLocal::BeginFrame( int windowWidth, int windowHeight ) {
 	cmd->commandId = RC_SET_BUFFER;
 	cmd->frameCount = frameCount;
 	cmd->buffer = (int)GL_BACK;
+
 }
 
 void idRenderSystemLocal::WriteDemoPics() {
@@ -843,6 +844,7 @@ void idRenderSystemLocal::RenderCommands(renderCrop_t *pc, byte *pix)
 
 	R_ClearCommandChain();
 }
+
 /*
 =============
 EndFrame

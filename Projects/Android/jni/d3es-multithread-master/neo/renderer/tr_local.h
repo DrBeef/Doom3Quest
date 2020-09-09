@@ -1078,7 +1078,6 @@ void		GLimp_Shutdown( void );
 // and resets the gamma ramps.
 
 void        GLimp_SetupFrame( void );
-void        GLimp_SetupEyeBuffer( void );
 
 void		GLimp_SwapBuffers( void );
 // Calls the system specific swapbuffers routine, and may also perform

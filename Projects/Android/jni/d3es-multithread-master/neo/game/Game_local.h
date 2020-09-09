@@ -45,6 +45,8 @@ If you have questions concerning this license or the applicable additional terms
 #include "Pvs.h"
 #include "MultiplayerGame.h"
 
+#include "../../../Doom3Quest/VrClientInfo.h"
+
 #ifdef ID_DEBUG_UNINITIALIZED_MEMORY
 // This is real evil but allows the code to inspect arbitrary class variables.
 #define private		public
@@ -301,10 +303,12 @@ public:
 	virtual void			Init( void );
 	virtual void			Shutdown( void );
 	virtual void			SetLocalClient( int clientNum );
+	virtual void 			SetVRClientInfo(vr_client_info_t *pVRClientInfo);
 	virtual void			ThrottleUserInfo( void );
 	virtual const idDict *	SetUserInfo( int clientNum, const idDict &userInfo, bool isClient, bool canModify );
 	virtual const idDict *	GetUserInfo( int clientNum );
 	virtual void			SetServerInfo( const idDict &serverInfo );
+	virtual bool 			InCinematic();
 
 	virtual const idDict &	GetPersistentPlayerInfo( int clientNum );
 	virtual void			SetPersistentPlayerInfo( int clientNum, const idDict &playerInfo );
@@ -451,6 +455,8 @@ public:
 
 private:
 	const static int		INITIAL_SPAWN_COUNT = 1;
+
+	vr_client_info_t 		*pVRClientInfo;
 
 	idStr					mapFileName;			// name of the map, empty string if no map loaded
 	idMapFile *				mapFile;				// will be NULL during the game unless in-game editing is used

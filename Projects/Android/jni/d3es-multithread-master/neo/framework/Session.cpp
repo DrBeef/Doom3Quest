@@ -2509,16 +2509,18 @@ void idSessionLocal::UpdateScreen( bool outOfSequence ) {
 		Sys_GrabMouseCursor( false );
 	}
 
-	renderSystem->BeginFrame( renderSystem->GetScreenWidth(), renderSystem->GetScreenHeight() );
+	for (int eye = 0; eye < 2; ++eye) {
+        renderSystem->BeginFrame(renderSystem->GetScreenWidth(), renderSystem->GetScreenHeight());
 
-	// draw everything
-	Draw();
+        // draw everything
+        Draw();
 
-	if ( com_speeds.GetBool() ) {
-		renderSystem->EndFrame( &time_frontend, &time_backend );
-	} else {
-		renderSystem->EndFrame( NULL, NULL );
-	}
+        if (com_speeds.GetBool()) {
+            renderSystem->EndFrame(&time_frontend, &time_backend);
+        } else {
+            renderSystem->EndFrame(NULL, NULL);
+        }
+    }
 
 	insideUpdateScreen = false;
 }

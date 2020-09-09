@@ -34,46 +34,28 @@ Copyright	:	Copyright 2015 Oculus VR, LLC. All Rights reserved.
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_main.h>
 
-#include "VrApi.h"
 #include "VrApi_Helpers.h"
 #include "VrApi_SystemUtils.h"
 #include "VrApi_Input.h"
-#include "VrApi_Types.h"
 #include "VrCompositor.h"
 #include "VrInput.h"
+
 #include "../../../../../../VrApi/Include/VrApi_Types.h"
 #include "../../../../../../VrApi/Include/VrApi.h"
 
 
 //Define all variables here that were externs in the VrCommon.h
 bool Doom3Quest_initialised;
-long long global_time;
 float playerYaw;
-bool resetDoomYaw;
-bool resetPreviousPitch;
-float doomYaw;
-float previousPitch;
 float vrFOV;
 vec3_t worldPosition;
-vec3_t hmdPosition;
-vec3_t hmdorientation;
-vec3_t positionDeltaThisFrame;
-vec3_t weaponangles;
-vec3_t weaponoffset;
-bool weaponStabilised;
 float vr_weapon_pitchadjust;
 bool vr_moveuseoffhand;
 float vr_snapturn_angle;
 bool vr_switchsticks;
 bool vr_secondarybuttonmappings;
 bool vr_twohandedweapons;
-float vr_use_teleport;
-vec3_t offhandangles;
-vec3_t offhandoffset;
-bool player_moving;
 bool shutdown;
-bool ready_teleport;
-bool trigger_teleport;
 
 #if !defined( EGL_OPENGL_ES3_BIT_KHR )
 #define EGL_OPENGL_ES3_BIT_KHR		0x0040
@@ -106,7 +88,7 @@ int CPU_LEVEL			= 4;
 int GPU_LEVEL			= 4;
 int NUM_MULTI_SAMPLES	= 1;
 int FFR					= 0;
-float SS_MULTIPLIER    = 1.0f;
+float SS_MULTIPLIER    = 1.25f;
 int DISPLAY_REFRESH		= 72;
 
 vr_client_info_t vr;
@@ -842,20 +824,24 @@ void QuatToYawPitchRoll(ovrQuatf q, vec3_t rotation, vec3_t out) {
 	return;
 }
 
-void setWorldPosition( float x, float y, float z )
+void updateHMDOrientation()
 {
-    positionDeltaThisFrame[0] = (worldPosition[0] - x);
-    positionDeltaThisFrame[1] = (worldPosition[1] - y);
-    positionDeltaThisFrame[2] = (worldPosition[2] - z);
+    //Position
+    VectorSubtract(vr.hmdposition_last, vr.hmdposition, vr.hmdposition_delta);
 
-    worldPosition[0] = x;
-    worldPosition[1] = y;
-    worldPosition[2] = z;
+    //Keep this for our records
+    VectorCopy(vr.hmdposition, vr.hmdposition_last);
+
+    //Orientation
+    VectorSubtract(vr.hmdorientation_last, vr.hmdorientation, vr.hmdorientation_delta);
+
+    //Keep this for our records
+    VectorCopy(vr.hmdorientation, vr.hmdorientation_last);
 }
 
 void setHMDPosition( float x, float y, float z, float yaw )
 {
-	VectorSet(hmdPosition, x, y, z);
+	VectorSet(vr.hmdposition, x, y, z);
 
 	if (!Doom3Quest_useScreenLayer())
     {
@@ -895,9 +881,9 @@ void VR_GetMove( float *joy_forward, float *joy_side, float *hmd_forward, float 
     *up = remote_movementUp;
     *joy_side = remote_movementSideways;
     *hmd_side = positional_movementSideways;
-	*yaw = hmdorientation[YAW] + snapTurn;
-	*pitch = hmdorientation[PITCH];
-	*roll = hmdorientation[ROLL];
+	*yaw = vr.hmdorientation[YAW] + snapTurn;
+	*pitch = vr.hmdorientation[PITCH];
+	*roll = vr.hmdorientation[ROLL];
 }
 
 
@@ -926,8 +912,9 @@ typedef struct
 	bool				Resumed;
 	ovrMobile *			Ovr;
     ovrScene			Scene;
-	long long			FrameIndex;
-	double 				DisplayTime;
+	long long			RenderThreadFrameIndex;
+	double 				RenderThreadDisplayTime;
+	double 				NextFrameDisplayTime;
 	int					SwapInterval;
 	int					CpuLevel;
 	int					GpuLevel;
@@ -944,8 +931,8 @@ static void ovrApp_Clear( ovrApp * app )
 	app->Java.Env = NULL;
 	app->Java.ActivityObject = NULL;
 	app->Ovr = NULL;
-	app->FrameIndex = 1;
-	app->DisplayTime = 0;
+    app->RenderThreadFrameIndex = 1;
+    app->RenderThreadDisplayTime = 0;
 	app->SwapInterval = 1;
 	app->CpuLevel = 4;
 	app->GpuLevel = 4;
@@ -956,30 +943,6 @@ static void ovrApp_Clear( ovrApp * app )
 
 	ovrScene_Clear( &app->Scene );
 	ovrRenderer_Clear( &app->Renderer );
-}
-
-static void ovrApp_PushBlackFinal( ovrApp * app )
-{
-	int frameFlags = 0;
-	frameFlags |= VRAPI_FRAME_FLAG_FLUSH | VRAPI_FRAME_FLAG_FINAL;
-
-	ovrLayerProjection2 layer = vrapi_DefaultLayerBlackProjection2();
-	layer.Header.Flags |= VRAPI_FRAME_LAYER_FLAG_INHIBIT_SRGB_FRAMEBUFFER;
-
-	const ovrLayerHeader2 * layers[] =
-	{
-		&layer.Header
-	};
-
-	ovrSubmitFrameDescription2 frameDesc = {};
-	frameDesc.Flags = frameFlags;
-	frameDesc.SwapInterval = 1;
-	frameDesc.FrameIndex = app->FrameIndex;
-	frameDesc.DisplayTime = app->DisplayTime;
-	frameDesc.LayerCount = 1;
-	frameDesc.Layers = layers;
-
-	vrapi_SubmitFrame2( app->Ovr, &frameDesc );
 }
 
 static ovrApp gAppState;
@@ -1284,8 +1247,6 @@ void VR_Init()
 {
 	//Initialise all our variables
 	playerYaw = 0.0f;
-    resetDoomYaw = true;
-	resetPreviousPitch = true;
 	remote_movementSideways = 0.0f;
 	remote_movementForward = 0.0f;
 	remote_movementUp = 0.0f;
@@ -1300,8 +1261,6 @@ void VR_Init()
 	vr_weapon_pitchadjust = -30.0;
 
 	shutdown = false;
-    ready_teleport = false;
-    trigger_teleport = false;
 }
 
 void Doom3Quest_prepareEyeBuffer(int eye )
@@ -1420,13 +1379,13 @@ void shutdownVR() {
 	vrapi_Shutdown();
 }
 
-void incrementFrameIndex()
+void incrementRenderThreadFrameIndex()
 {
-	// This is the only place the frame index is incremented, right before
-	// calling vrapi_GetPredictedDisplayTime().
-	gAppState.FrameIndex++;
-	gAppState.DisplayTime = vrapi_GetPredictedDisplayTime(gAppState.Ovr,
-														  gAppState.FrameIndex);
+	gAppState.RenderThreadFrameIndex++;
+	gAppState.RenderThreadDisplayTime = vrapi_GetPredictedDisplayTime(gAppState.Ovr,
+														  gAppState.RenderThreadFrameIndex);
+
+	ALOGV("gAppState.RenderThreadFrameIndex = %i, gAppState.RenderThreadDisplayTime = %g", gAppState.RenderThreadFrameIndex, gAppState.RenderThreadDisplayTime);
 }
 
 void showLoadingIcon();
@@ -1520,7 +1479,6 @@ void * AppThreadFunction(void * parm ) {
     //Run loading loop until we are ready to start QzDoom
     while (!destroyed && !Doom3Quest_initialised) {
         Doom3Quest_processMessageQueue();
-        incrementFrameIndex();
         showLoadingIcon();
     }
 
@@ -1544,6 +1502,10 @@ void Doom3Quest_FrameSetup()
 {
 	//Use floor based tracking space
 	vrapi_SetTrackingSpace(gAppState.Ovr, VRAPI_TRACKING_SPACE_LOCAL_FLOOR);
+
+    Doom3Quest_processHaptics();
+    Doom3Quest_getHMDOrientation();
+    Doom3Quest_getTrackedRemotesOrientation(0);
 }
 
 void Doom3Quest_processHaptics() {//Handle haptics
@@ -1592,41 +1554,45 @@ void showLoadingIcon()
 	ovrSubmitFrameDescription2 frameDesc = {};
 	frameDesc.Flags = frameFlags;
 	frameDesc.SwapInterval = 1;
-	frameDesc.FrameIndex = gAppState.FrameIndex;
-	frameDesc.DisplayTime = gAppState.DisplayTime;
+	frameDesc.FrameIndex = gAppState.RenderThreadFrameIndex;
+	frameDesc.DisplayTime = gAppState.RenderThreadDisplayTime;
 	frameDesc.LayerCount = 2;
 	frameDesc.Layers = layers;
 
 	vrapi_SubmitFrame2( gAppState.Ovr, &frameDesc );
+
+	incrementRenderThreadFrameIndex();
 }
 
-ovrTracking2 gOvrTracking;
-
-void Doom3Quest_getHMDOrientation() {//Get orientation
+void Doom3Quest_getHMDOrientation() {
 
 	// Get the HMD pose, predicted for the middle of the time period during which
 	// the new eye images will be displayed. The number of frames predicted ahead
 	// depends on the pipeline depth of the engine and the synthesis rate.
 	// The better the prediction, the less black will be pulled in at the edges.
-    gOvrTracking = vrapi_GetPredictedTracking2(gAppState.Ovr, gAppState.DisplayTime);
-
+    gAppState.NextFrameDisplayTime = vrapi_GetPredictedDisplayTime(gAppState.Ovr,
+                                                                      gAppState.RenderThreadFrameIndex+1);
+	ovrTracking2 tracking = vrapi_GetPredictedTracking2(gAppState.Ovr, gAppState.NextFrameDisplayTime);
+    ALOGV("nextFrameDisplayTime = %g", gAppState.NextFrameDisplayTime);
 
 	// We extract Yaw, Pitch, Roll instead of directly using the orientation
 	// to allow "additional" yaw manipulation with mouse/controller.
-	const ovrQuatf quatHmd = gOvrTracking.HeadPose.Pose.Orientation;
-	const ovrVector3f positionHmd = gOvrTracking.HeadPose.Pose.Position;
+	const ovrQuatf quatHmd = tracking.HeadPose.Pose.Orientation;
+	const ovrVector3f positionHmd = tracking.HeadPose.Pose.Position;
 	vec3_t rotation = {0};
-	QuatToYawPitchRoll(quatHmd, rotation, hmdorientation);
-	setHMDPosition(positionHmd.x, positionHmd.y, positionHmd.z, hmdorientation[YAW]);
+	QuatToYawPitchRoll(quatHmd, rotation, vr.hmdorientation);
+	setHMDPosition(positionHmd.x, positionHmd.y, positionHmd.z, vr.hmdorientation[YAW]);
 
 	//TODO: fix - set to use HMD position for world position
-	setWorldPosition(positionHmd.x, positionHmd.y, positionHmd.z);
+    updateHMDOrientation();
 
 	ALOGV("        HMD-Position: %f, %f, %f", positionHmd.x, positionHmd.y, positionHmd.z);
 }
 
-void Doom3Quest_getTrackedRemotesOrientation(int vr_control_scheme) {//Get info for tracked remotes
-    acquireTrackedRemotesData(gAppState.Ovr, gAppState.DisplayTime);
+void Doom3Quest_getTrackedRemotesOrientation(int vr_control_scheme) {
+
+    //Get info for tracked remotes
+    acquireTrackedRemotesData(gAppState.Ovr, gAppState.NextFrameDisplayTime);
 
     //Call additional control schemes here
     switch ((int)vr_control_scheme)
@@ -1647,11 +1613,14 @@ void Doom3Quest_getTrackedRemotesOrientation(int vr_control_scheme) {//Get info 
 void Doom3Quest_submitFrame()
 {
     ovrSubmitFrameDescription2 frameDesc = {0};
-    
-    if (!Doom3Quest_useScreenLayer()) {
+
+    //Get the tracking info for the render thread frame id
+	ovrTracking2 tracking = vrapi_GetPredictedTracking2(gAppState.Ovr, gAppState.RenderThreadDisplayTime);
+
+	if (!Doom3Quest_useScreenLayer()) {
 
         ovrLayerProjection2 layer = vrapi_DefaultLayerProjection2();
-        layer.HeadPose = gOvrTracking.HeadPose;
+        layer.HeadPose = tracking.HeadPose;
         for ( int eye = 0; eye < VRAPI_FRAME_LAYER_EYE_MAX; eye++ )
         {
             ovrFramebuffer * frameBuffer = &gAppState.Renderer.FrameBuffer[gAppState.Renderer.NumBuffers == 1 ? 0 : eye];
@@ -1679,8 +1648,8 @@ void Doom3Quest_submitFrame()
 
         frameDesc.Flags = 0;
         frameDesc.SwapInterval = gAppState.SwapInterval;
-        frameDesc.FrameIndex = gAppState.FrameIndex;
-        frameDesc.DisplayTime = gAppState.DisplayTime;
+        frameDesc.FrameIndex = gAppState.RenderThreadFrameIndex;
+        frameDesc.DisplayTime = gAppState.RenderThreadDisplayTime;
         frameDesc.LayerCount = 1;
         frameDesc.Layers = layers;
 
@@ -1697,7 +1666,7 @@ void Doom3Quest_submitFrame()
         // Add a simple cylindrical layer
         gAppState.Layers[gAppState.LayerCount++].Cylinder =
                 BuildCylinderLayer(&gAppState.Scene.CylinderRenderer,
-                                   gAppState.Scene.CylinderWidth, gAppState.Scene.CylinderHeight, &gOvrTracking, radians(playerYaw) );
+                                   gAppState.Scene.CylinderWidth, gAppState.Scene.CylinderHeight, &tracking, radians(playerYaw) );
 
         // Compose the layers for this frame.
         const ovrLayerHeader2 * layerHeaders[ovrMaxLayerCount] = { 0 };
@@ -1709,8 +1678,8 @@ void Doom3Quest_submitFrame()
         // Set up the description for this frame.
         frameDesc.Flags = 0;
         frameDesc.SwapInterval = gAppState.SwapInterval;
-        frameDesc.FrameIndex = gAppState.FrameIndex;
-        frameDesc.DisplayTime = gAppState.DisplayTime;
+        frameDesc.FrameIndex = gAppState.RenderThreadFrameIndex;
+        frameDesc.DisplayTime = gAppState.RenderThreadDisplayTime;
         frameDesc.LayerCount = gAppState.LayerCount;
         frameDesc.Layers = layerHeaders;
 
@@ -1718,7 +1687,7 @@ void Doom3Quest_submitFrame()
         vrapi_SubmitFrame2(gAppState.Ovr, &frameDesc);
     }
 
-    incrementFrameIndex();
+    incrementRenderThreadFrameIndex();
 }
 
 

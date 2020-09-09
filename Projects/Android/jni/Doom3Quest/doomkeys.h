@@ -2,200 +2,161 @@
 // Created by simon on 04/03/2020.
 //
 
-#ifndef QZDOOM_DOOMKEYS_H
-#define QZDOOM_DOOMKEYS_H
+#ifndef DOOMKEYS_H
+#define DOOMKEYS_H
 
-//
-// DOOM keyboard definition. Everything below 0x100 matches
-// a mode 1 keyboard scan code.
-//
+typedef enum {
 
-#define KEY_PAUSE				0xc5	// DIK_PAUSE
-#define KEY_RIGHTARROW			0xcd	// DIK_RIGHT
-#define KEY_LEFTARROW			0xcb	// DIK_LEFT
-#define KEY_UPARROW 			0xc8	// DIK_UP
-#define KEY_DOWNARROW			0xd0	// DIK_DOWN
-#define KEY_ESCAPE				0x01	// DIK_ESCAPE
-#define KEY_ENTER				0x1c	// DIK_RETURN
-#define KEY_SPACE				0x39	// DIK_SPACE
-#define KEY_TAB 				0x0f	// DIK_TAB
-#define KEY_F1					0x3b	// DIK_F1
-#define KEY_F2					0x3c	// DIK_F2
-#define KEY_F3					0x3d	// DIK_F3
-#define KEY_F4					0x3e	// DIK_F4
-#define KEY_F5					0x3f	// DIK_F5
-#define KEY_F6					0x40	// DIK_F6
-#define KEY_F7					0x41	// DIK_F7
-#define KEY_F8					0x42	// DIK_F8
-#define KEY_F9					0x43	// DIK_F9
-#define KEY_F10 				0x44	// DIK_F10
-#define KEY_F11 				0x57	// DIK_F11
-#define KEY_F12 				0x58	// DIK_F12
-#define KEY_GRAVE				0x29	// DIK_GRAVE
+    // DG: please don't change any existing constants for keyboard keys below (or recreate the tables in win_input.cpp)!
 
-#define KEY_BACKSPACE			0x0e	// DIK_BACK
+    K_TAB = 9,
+    K_ENTER = 13,
+    K_ESCAPE = 27,
+    K_SPACE = 32,
 
-#define KEY_EQUALS				0x0d	// DIK_EQUALS
-#define KEY_MINUS				0x0c	// DIK_MINUS
+    K_BACKSPACE = 127,
 
-#define KEY_LSHIFT				0x2A	// DIK_LSHIFT
-#define KEY_LCTRL				0x1d	// DIK_LCONTROL
-#define KEY_LALT				0x38	// DIK_LMENU
+    K_COMMAND = 128,
+    K_CAPSLOCK,
+    K_SCROLL,
+    K_POWER,
+    K_PAUSE,
 
-#define	KEY_RSHIFT				KEY_LSHIFT
-#define KEY_RCTRL				KEY_LCTRL
-#define KEY_RALT				KEY_LALT
+    K_UPARROW = 133,
+    K_DOWNARROW,
+    K_LEFTARROW,
+    K_RIGHTARROW,
 
-#define KEY_INS 				0xd2	// DIK_INSERT
-#define KEY_DEL 				0xd3	// DIK_DELETE
-#define KEY_END 				0xcf	// DIK_END
-#define KEY_HOME				0xc7	// DIK_HOME
-#define KEY_PGUP				0xc9	// DIK_PRIOR
-#define KEY_PGDN				0xd1	// DIK_NEXT
+    // The 3 windows keys
+            K_LWIN = 137,
+    K_RWIN,
+    K_MENU,
 
-#define KEY_MOUSE1				0x100
-#define KEY_MOUSE2				0x101
-#define KEY_MOUSE3				0x102
-#define KEY_MOUSE4				0x103
-#define KEY_MOUSE5				0x104
-#define KEY_MOUSE6				0x105
-#define KEY_MOUSE7				0x106
-#define KEY_MOUSE8				0x107
+    K_ALT = 140,
+    K_CTRL,
+    K_SHIFT,
+    K_INS,
+    K_DEL,
+    K_PGDN,
+    K_PGUP,
+    K_HOME,
+    K_END,
 
-#define KEY_FIRSTJOYBUTTON		0x108
-#define KEY_FIRSTJOY2BUTTON		0x128
-#define KEY_FIRSTJOY3BUTTON		0x148
-#define KEY_FIRSTJOY4BUTTON		0x168
-#define KEY_JOY1				(KEY_FIRSTJOYBUTTON+0)
-#define KEY_JOY2				(KEY_FIRSTJOYBUTTON+1)
-#define KEY_JOY3				(KEY_FIRSTJOYBUTTON+2)
-#define KEY_JOY4				(KEY_FIRSTJOYBUTTON+3)
-#define KEY_JOY5				(KEY_FIRSTJOYBUTTON+4)
-#define KEY_JOY6				(KEY_FIRSTJOYBUTTON+5)
-#define KEY_JOY7				(KEY_FIRSTJOYBUTTON+6)
-#define KEY_JOY8				(KEY_FIRSTJOYBUTTON+7)
-#define KEY_LASTJOYBUTTON		0x187
-#define KEY_JOYPOV1_UP			0x188
-#define KEY_JOYPOV1_RIGHT		0x189
-#define KEY_JOYPOV1_DOWN		0x18a
-#define KEY_JOYPOV1_LEFT		0x18b
-#define KEY_JOYPOV2_UP			0x18c
-#define KEY_JOYPOV3_UP			0x190
-#define KEY_JOYPOV4_UP			0x194
+    K_F1 = 149,
+    K_F2,
+    K_F3,
+    K_F4,
+    K_F5,
+    K_F6,
+    K_F7,
+    K_F8,
+    K_F9,
+    K_F10,
+    K_F11,
+    K_F12,
+    K_INVERTED_EXCLAMATION = 161,	// upside down !
+    K_F13,
+    K_F14,
+    K_F15,
 
-#define KEY_MWHEELUP			0x198
-#define KEY_MWHEELDOWN			0x199
-#define KEY_MWHEELRIGHT			0x19A
-#define KEY_MWHEELLEFT			0x19B
+    K_KP_HOME = 165,
+    K_KP_UPARROW,
+    K_KP_PGUP,
+    K_KP_LEFTARROW,
+    K_KP_5,
+    K_KP_RIGHTARROW,
+    K_KP_END,
+    K_KP_DOWNARROW,
+    K_KP_PGDN,
+    K_KP_ENTER,
+    K_KP_INS,
+    K_KP_DEL,
+    K_KP_SLASH,
+    K_SUPERSCRIPT_TWO = 178,		// superscript 2
+    K_KP_MINUS,
+    K_ACUTE_ACCENT = 180,			// accute accent
+    K_KP_PLUS,
+    K_KP_NUMLOCK,
+    K_KP_STAR,
+    K_KP_EQUALS,
 
-#define KEY_JOYAXIS1PLUS		0x19C
-#define KEY_JOYAXIS1MINUS		0x19D
-#define KEY_JOYAXIS2PLUS		0x19E
-#define KEY_JOYAXIS2MINUS		0x19F
-#define KEY_JOYAXIS3PLUS		0x1A0
-#define KEY_JOYAXIS3MINUS		0x1A1
-#define KEY_JOYAXIS4PLUS		0x1A2
-#define KEY_JOYAXIS4MINUS		0x1A3
-#define KEY_JOYAXIS5PLUS		0x1A4
-#define KEY_JOYAXIS5MINUS		0x1A5
-#define KEY_JOYAXIS6PLUS		0x1A6
-#define KEY_JOYAXIS6MINUS		0x1A7
-#define KEY_JOYAXIS7PLUS		0x1A8
-#define KEY_JOYAXIS7MINUS		0x1A9
-#define KEY_JOYAXIS8PLUS		0x1AA
-#define KEY_JOYAXIS8MINUS		0x1AB
-#define NUM_JOYAXISBUTTONS		8
+    // DG: please don't change any existing constants above this one (or recreate the tables in win_input.cpp)!
 
-#define KEY_PAD_LTHUMB_RIGHT	0x1AC
-#define KEY_PAD_LTHUMB_LEFT		0x1AD
-#define KEY_PAD_LTHUMB_DOWN		0x1AE
-#define KEY_PAD_LTHUMB_UP		0x1AF
+    K_MASCULINE_ORDINATOR = 186,
+    // K_MOUSE enums must be contiguous (no char codes in the middle)
+            K_MOUSE1 = 187,
+    K_MOUSE2,
+    K_MOUSE3,
+    K_MOUSE4,
+    K_MOUSE5,
+    K_MOUSE6,
+    K_MOUSE7,
+    K_MOUSE8,
 
-#define KEY_PAD_RTHUMB_RIGHT	0x1B0
-#define KEY_PAD_RTHUMB_LEFT		0x1B1
-#define KEY_PAD_RTHUMB_DOWN		0x1B2
-#define KEY_PAD_RTHUMB_UP		0x1B3
+    K_MWHEELDOWN = 195,
+    K_MWHEELUP,
 
-#define KEY_PAD_DPAD_UP			0x1B4
-#define KEY_PAD_DPAD_DOWN		0x1B5
-#define KEY_PAD_DPAD_LEFT		0x1B6
-#define KEY_PAD_DPAD_RIGHT		0x1B7
-#define KEY_PAD_START			0x1B8
-#define KEY_PAD_BACK			0x1B9
-#define KEY_PAD_LTHUMB			0x1BA
-#define KEY_PAD_RTHUMB			0x1BB
-#define KEY_PAD_LSHOULDER		0x1BC
-#define KEY_PAD_RSHOULDER		0x1BD
-#define KEY_PAD_LTRIGGER		0x1BE
-#define KEY_PAD_RTRIGGER		0x1BF
-#define KEY_PAD_A				0x1C0
-#define KEY_PAD_B				0x1C1
-#define KEY_PAD_X				0x1C2
-#define KEY_PAD_Y				0x1C3
+    K_JOY1 = 197,
+    K_JOY2,
+    K_JOY3,
+    K_JOY4,
+    K_JOY5,
+    K_JOY6,
+    K_JOY7,
+    K_JOY8,
+    K_JOY9,
+    K_JOY10,
+    K_JOY11,
+    K_JOY12,
+    K_JOY13,
+    K_JOY14,
+    K_JOY15,
+    K_JOY16,
+    K_JOY17,
+    K_JOY18,
+    K_JOY19,
+    K_JOY20,
+    K_JOY21,
+    K_JOY22,
+    K_JOY23,
+    K_JOY24,
+    K_JOY25,
+    K_JOY26,
+    K_JOY27,
+    K_GRAVE_A = 224,	// lowercase a with grave accent
+    K_JOY28,
+    K_JOY29,
+    K_JOY30,
+    K_JOY31,
+    K_JOY32,
 
-#define KEY_JOY2POV1_UP			0x1C4
-#define KEY_JOY2POV2_UP			0x1C8
-#define KEY_JOY2POV3_UP			0x1CC
-#define KEY_JOY2POV4_UP			0x1D0
-#define KEY_JOY3POV1_UP			0x1D4
-#define KEY_JOY3POV2_UP			0x1D8
-#define KEY_JOY3POV3_UP			0x1DC
-#define KEY_JOY3POV4_UP			0x1E0
-#define KEY_JOY4POV1_UP			0x1E4
-#define KEY_JOY4POV2_UP			0x1E8
-#define KEY_JOY4POV3_UP			0x1EC
-#define KEY_JOY4POV4_UP			0x1F0
+    K_AUX1 = 230,
+    K_CEDILLA_C = 231,	// lowercase c with Cedilla
+    K_GRAVE_E = 232,	// lowercase e with grave accent
+    K_AUX2,
+    K_AUX3,
+    K_AUX4,
+    K_GRAVE_I = 236,	// lowercase i with grave accent
+    K_AUX5,
+    K_AUX6,
+    K_AUX7,
+    K_AUX8,
+    K_TILDE_N = 241,	// lowercase n with tilde
+    K_GRAVE_O = 242,	// lowercase o with grave accent
+    K_AUX9,
+    K_AUX10,
+    K_AUX11,
+    K_AUX12,
+    K_AUX13,
+    K_AUX14,
+    K_GRAVE_U = 249,	// lowercase u with grave accent
+    K_AUX15,
+    K_AUX16,
 
-#define KEY_JOY2AXIS1PLUS		0x1F4
-#define KEY_JOY2AXIS1MINUS		0x1F5
-#define KEY_JOY2AXIS2PLUS		0x1F6
-#define KEY_JOY2AXIS2MINUS		0x1F7
-#define KEY_JOY2AXIS3PLUS		0x1F8
-#define KEY_JOY2AXIS3MINUS		0x1F9
-#define KEY_JOY2AXIS4PLUS		0x1FA
-#define KEY_JOY2AXIS4MINUS		0x1FB
-#define KEY_JOY2AXIS5PLUS		0x1FC
-#define KEY_JOY2AXIS5MINUS		0x1FD
-#define KEY_JOY2AXIS6PLUS		0x1FE
-#define KEY_JOY2AXIS6MINUS		0x1FF
-#define KEY_JOY2AXIS7PLUS		0x200
-#define KEY_JOY2AXIS7MINUS		0x201
-#define KEY_JOY2AXIS8PLUS		0x202
-#define KEY_JOY2AXIS8MINUS		0x203
-#define KEY_JOY3AXIS1PLUS		0x204
-#define KEY_JOY3AXIS1MINUS		0x205
-#define KEY_JOY3AXIS2PLUS		0x206
-#define KEY_JOY3AXIS2MINUS		0x207
-#define KEY_JOY3AXIS3PLUS		0x208
-#define KEY_JOY3AXIS3MINUS		0x209
-#define KEY_JOY3AXIS4PLUS		0x20A
-#define KEY_JOY3AXIS4MINUS		0x20B
-#define KEY_JOY3AXIS5PLUS		0x20C
-#define KEY_JOY3AXIS5MINUS		0x20D
-#define KEY_JOY3AXIS6PLUS		0x20E
-#define KEY_JOY3AXIS6MINUS		0x20F
-#define KEY_JOY3AXIS7PLUS		0x210
-#define KEY_JOY3AXIS7MINUS		0x211
-#define KEY_JOY3AXIS8PLUS		0x212
-#define KEY_JOY3AXIS8MINUS		0x213
-#define KEY_JOY4AXIS1PLUS		0x214
-#define KEY_JOY4AXIS1MINUS		0x215
-#define KEY_JOY4AXIS2PLUS		0x216
-#define KEY_JOY4AXIS2MINUS		0x217
-#define KEY_JOY4AXIS3PLUS		0x218
-#define KEY_JOY4AXIS3MINUS		0x219
-#define KEY_JOY4AXIS4PLUS		0x21A
-#define KEY_JOY4AXIS4MINUS		0x21B
-#define KEY_JOY4AXIS5PLUS		0x21C
-#define KEY_JOY4AXIS5MINUS		0x21D
-#define KEY_JOY4AXIS6PLUS		0x21E
-#define KEY_JOY4AXIS6MINUS		0x21F
-#define KEY_JOY4AXIS7PLUS		0x220
-#define KEY_JOY4AXIS7MINUS		0x221
-#define KEY_JOY4AXIS8PLUS		0x222
-#define KEY_JOY4AXIS8MINUS		0x223
-
-#define NUM_KEYS				0x224
+    K_PRINT_SCR	= 252,	// SysRq / PrintScr
+    K_RIGHT_ALT = 253,	// used by some languages as "Alt-Gr"
+    K_LAST_KEY  = 254	// this better be < 256!
+} keyNum_t;
 
 
-#endif //QZDOOM_DOOMKEYS_H
+#endif //DOOMKEYS_H

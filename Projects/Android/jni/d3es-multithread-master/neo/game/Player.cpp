@@ -1247,6 +1247,8 @@ void idPlayer::Init( void ) {
 	talkCursor				= 0;
 	focusVehicle			= NULL;
 
+	pVRClientInfo			= NULL;
+
 	// remove any damage effects
 	playerView.ClearEffects();
 
@@ -2649,7 +2651,7 @@ void idPlayer::DrawHUD( idUserInterface *_hud ) {
 	// weapon targeting crosshair
 	if ( !GuiActive() ) {
 		if ( cursor && weapon.GetEntity()->ShowCrosshair() ) {
-			cursor->Redraw( gameLocal.realClientTime );
+			//cursor->Redraw( gameLocal.realClientTime );
 		}
 	}
 }
@@ -7246,6 +7248,12 @@ idVec3 idPlayer::GetEyePosition( void ) const {
 	return org + ( GetPhysics()->GetGravityNormal() * -eyeOffset.z );
 }
 
+void idPlayer::SetVRClientInfo(vr_client_info_t *pVR)
+{
+	pVRClientInfo = pVR;
+}
+
+
 /*
 ===============
 idPlayer::GetViewPos
@@ -7263,7 +7271,13 @@ void idPlayer::GetViewPos( idVec3 &origin, idMat3 &axis ) const {
 		origin = GetEyePosition();
 	} else {
 		origin = GetEyePosition() + viewBob;
-		angles = viewAngles + viewBobAngles + playerView.AngleOffset();
+		if (pVRClientInfo)
+		{
+			//Use pitch and roll from HMD
+			angles.Set(pVRClientInfo->hmdorientation[PITCH], viewAngles.yaw, pVRClientInfo->hmdorientation[ROLL]);
+		} else{
+			angles = viewAngles + viewBobAngles + playerView.AngleOffset();
+		}
 
 		axis = angles.ToMat3() * physicsObj.GetGravityAxis();
 

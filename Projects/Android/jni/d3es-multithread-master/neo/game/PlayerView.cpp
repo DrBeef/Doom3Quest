@@ -702,22 +702,41 @@ void idPlayerView::InfluenceVision( idUserInterface *hud, const renderView_t *vi
 idPlayerView::RenderPlayerView
 ===================
 */
+static int eye = 0;
 void idPlayerView::RenderPlayerView( idUserInterface *hud ) {
 	const renderView_t *view = player->GetRenderView();
 
-	if ( g_skipViewEffects.GetBool() ) {
-		SingleView( hud, view );
-	} else {
-		if ( player->GetInfluenceMaterial() || player->GetInfluenceEntity() ) {
-			InfluenceVision( hud, view );
-		} else if ( gameLocal.time < dvFinishTime ) {
-			DoubleVision( hud, view, dvFinishTime - gameLocal.time );
-		} else if ( player->PowerUpActive( BERSERK ) ) {
-			BerserkVision( hud, view );
+	{
+        renderView_t *eyeView = view ? new renderView_t(*view) : NULL;
+
+	    if (eyeView) {
+            if (eye == 0) // left eye
+            {
+                eyeView->vieworg += eyeView->viewaxis[1] * 0.065f * 20.0f;
+            } else if (eye == 1) // right eye
+            {
+                eyeView->vieworg -= eyeView->viewaxis[1] * 0.065f * 20.0f;
+            }
+        }
+
+	    eye = 1-eye;
+
+		if (g_skipViewEffects.GetBool()) {
+			SingleView(hud, eyeView);
 		} else {
-			SingleView( hud, view );
+			if (player->GetInfluenceMaterial() || player->GetInfluenceEntity()) {
+				InfluenceVision(hud, eyeView);
+			} else if (gameLocal.time < dvFinishTime) {
+				DoubleVision(hud, eyeView, dvFinishTime - gameLocal.time);
+			} else if (player->PowerUpActive(BERSERK)) {
+				BerserkVision(hud, eyeView);
+			} else {
+				SingleView(hud, eyeView);
+			}
+			ScreenFade();
 		}
-		ScreenFade();
+
+        delete eyeView;
 	}
 
 	if ( net_clientLagOMeter.GetBool() && lagoMaterial && gameLocal.isClient ) {

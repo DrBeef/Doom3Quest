@@ -488,40 +488,7 @@ void RB_ComputeMVP( const drawSurf_t * const surf, float mvp[16] ) {
 		localProjectionMatrix[14] = backEnd.viewDef->projectionMatrix[14] - surf->space->modelDepthHack;
 	}
 
-/*	if (backEnd.viewDef->viewEntitys != NULL) {
-        // transform by the camera placement
-        idVec3 origin;
-        origin.Zero();
-        //
-        if (stereoSide == 0) // left eye
-        {
-            origin -= backEnd.viewDef->renderView.viewaxis[0] * 0.065f * 25.0f;
-        } else  // right eye
-        {
-            origin += backEnd.viewDef->renderView.viewaxis[0] * 0.065f * 25.0f;
-        }
-
-        float viewerMatrix[16];
-        memset(viewerMatrix, 0, sizeof(float) * 16);
-        viewerMatrix[0] = 1;
-        viewerMatrix[5] = 1;
-        viewerMatrix[10] = 1;
-        viewerMatrix[12] = origin[0];
-        viewerMatrix[13] = origin[1];
-        viewerMatrix[14] = origin[2];
-        viewerMatrix[15] = 1;
-
-        float temp[16];
-        myGlMultMatrix(viewerMatrix, surf->space->modelViewMatrix, temp);
-
-        // precompute the MVP
-        myGlMultMatrix(temp, localProjectionMatrix, mvp);
-    }
-	else 
-*/    {
-        myGlMultMatrix(surf->space->modelViewMatrix, localProjectionMatrix, mvp);
-	}
-
+    myGlMultMatrix(surf->space->modelViewMatrix, localProjectionMatrix, mvp);
 }
 
 /*
