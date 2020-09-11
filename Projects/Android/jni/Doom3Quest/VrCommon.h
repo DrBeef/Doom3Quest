@@ -31,8 +31,6 @@ float playerYaw;
 
 bool showingScreenLayer;
 
-ovrTracking2 tracking;
-
 float radians(float deg);
 
 float degrees(float rad);
@@ -51,9 +49,21 @@ void rotateAboutOrigin(float v1, float v2, float rotation, vec2_t out);
 
 void QuatToYawPitchRoll(ovrQuatf q, vec3_t rotation, vec3_t out);
 
-void handleTrackedControllerButton(ovrInputStateTrackedRemote *trackedRemoteState,
+void handleTrackedControllerButton_AsButton(ovrInputStateTrackedRemote *trackedRemoteState,
                                    ovrInputStateTrackedRemote *prevTrackedRemoteState,
                                    bool mouse, uint32_t button, int key);
+
+void handleTrackedControllerButton_AsKey(ovrInputStateTrackedRemote *trackedRemoteState,
+                                   ovrInputStateTrackedRemote *prevTrackedRemoteState,
+                                   uint32_t button, int key);
+
+void handleTrackedControllerButton_AsToggleButton(ovrInputStateTrackedRemote *trackedRemoteState,
+                                   ovrInputStateTrackedRemote *prevTrackedRemoteState,
+                                   uint32_t button, int key);
+
+void handleTrackedControllerButton_AsImpulse(ovrInputStateTrackedRemote * trackedRemoteState,
+        ovrInputStateTrackedRemote * prevTrackedRemoteState, uint32_t button, int key);
+
 
 void interactWithTouchScreen(bool reset, ovrInputStateTrackedRemote *newState,
                              ovrInputStateTrackedRemote *oldState);

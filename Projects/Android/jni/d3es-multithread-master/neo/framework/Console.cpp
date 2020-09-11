@@ -203,11 +203,11 @@ float SCR_DrawFPS( float y ) {
 	static int		fps = 0;
 	static	int	previous;
 	int		t, frameTime;
-	static int stereoSide = 0;
 
 	int new_y = idMath::FtoiFast(y) + 300;
 
-	if (stereoSide == 0) {
+	int eye = cvarSystem->GetCVarInteger("vr_eye");
+	if (eye == 0) {
 		// don't use serverTime, because that will be drifting to
 		// correct for internet lag changes, timescales, timedemos, etc
 		t = Sys_Milliseconds();
@@ -234,7 +234,6 @@ float SCR_DrawFPS( float y ) {
 			renderSystem->DrawSmallStringExt((634 / 2) - w, new_y, s, colorWhite, true,
 										   localConsole.charSetShader);
 		}
-		stereoSide = 1;
 	}
 	else {
 		//For right eye just use same value
@@ -242,7 +241,6 @@ float SCR_DrawFPS( float y ) {
 		w = strlen(s) * SMALLCHAR_WIDTH;
 		renderSystem->DrawSmallStringExt((634 / 2) - w, new_y, s, colorWhite, true,
 									   localConsole.charSetShader);
-		stereoSide = 0;
 	}
 
 	return y + BIGCHAR_HEIGHT + 4;

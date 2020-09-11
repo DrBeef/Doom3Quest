@@ -41,7 +41,7 @@ const float PM_SWIMSCALE		= 0.5f;
 const float PM_LADDERSPEED		= 100.0f;
 const float PM_STEPSCALE		= 1.0f;
 
-const float PM_ACCELERATE		= 10.0f;
+const float PM_ACCELERATE		= 10000.0f;
 const float PM_AIRACCELERATE	= 1.0f;
 const float PM_WATERACCELERATE	= 4.0f;
 const float PM_FLYACCELERATE	= 8.0f;

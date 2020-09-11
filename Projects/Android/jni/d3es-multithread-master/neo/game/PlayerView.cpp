@@ -702,24 +702,26 @@ void idPlayerView::InfluenceVision( idUserInterface *hud, const renderView_t *vi
 idPlayerView::RenderPlayerView
 ===================
 */
-static int eye = 0;
 void idPlayerView::RenderPlayerView( idUserInterface *hud ) {
 	const renderView_t *view = player->GetRenderView();
 
 	{
         renderView_t *eyeView = view ? new renderView_t(*view) : NULL;
 
-	    if (eyeView) {
+	    if (eyeView &&
+	        !game->InCinematic())
+	    {
+	    	int eye = cvarSystem->GetCVarInteger("vr_eye");
             if (eye == 0) // left eye
             {
-                eyeView->vieworg += eyeView->viewaxis[1] * 0.065f * 20.0f;
+                eyeView->vieworg += eyeView->viewaxis[1] *
+                		(cvarSystem->GetCVarFloat( "vr_ipd" ) / 2.0f) * cvarSystem->GetCVarFloat( "vr_worldscale" );
             } else if (eye == 1) // right eye
             {
-                eyeView->vieworg -= eyeView->viewaxis[1] * 0.065f * 20.0f;
+                eyeView->vieworg -= eyeView->viewaxis[1] *
+                		(cvarSystem->GetCVarFloat( "vr_ipd" ) / 2.0f) * cvarSystem->GetCVarFloat( "vr_worldscale" );
             }
         }
-
-	    eye = 1-eye;
 
 		if (g_skipViewEffects.GetBool()) {
 			SingleView(hud, eyeView);

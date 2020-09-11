@@ -31,12 +31,10 @@ typedef struct {
     vec3_t hmdorientation_last; // Don't use this, it is just for calculating delta!
     vec3_t hmdorientation_delta;
 
-    vec3_t weaponangles_knife;
+    vec3_t weaponangles_flashlight;
     vec3_t weaponangles;
     vec3_t weaponangles_last; // Don't use this, it is just for calculating delta!
     vec3_t weaponangles_delta;
-
-    float weapon_recoil;            // recoil effect to improve the default
 
     vec3_t current_weaponoffset;
     vec3_t calculated_weaponoffset;
@@ -51,8 +49,6 @@ typedef struct {
     bool scopedweapon;          // Weapon scope is available
     bool scopedetached;         // Scope has been detached from weapon
     bool detachablescope;       // Scope can be detached from weapon
-
-    bool hasbinoculars;
 
     bool velocitytriggered; // Weapon attack triggered by velocity (knife)
 

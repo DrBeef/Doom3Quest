@@ -22,7 +22,6 @@ Authors		:	Simon Brown
 float	vr_turn_mode = 0.0f;
 float	vr_turn_angle = 45.0f;
 float	vr_reloadtimeoutms;
-float	vr_positional_factor;
 float	vr_walkdirection;
 float	vr_movement_multiplier;
 float	vr_weapon_pitchadjust;
@@ -58,7 +57,8 @@ int Sys_Milliseconds( void ) {
     return curtime;
 }
 
-
+void Android_SetImpuse(int impulse);
+void Android_SetCommand(const char * cmd);
 
 void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew, ovrInputStateTrackedRemote *pDominantTrackedRemoteOld, ovrTracking* pDominantTracking,
                           ovrInputStateTrackedRemote *pOffTrackedRemoteNew, ovrInputStateTrackedRemote *pOffTrackedRemoteOld, ovrTracking* pOffTracking,
@@ -128,29 +128,24 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
         //Set gun angles - We need to calculate all those we might need (including adjustments) for the client to then take its pick
         vec3_t rotation = {0};
         rotation[PITCH] = 30;
-        QuatToYawPitchRoll(pWeapon->HeadPose.Pose.Orientation, rotation, pVRClientInfo->weaponangles_knife);
-        rotation[PITCH] = vr_weapon_pitchadjust +
-                (pVRClientInfo->pistol ? pVRClientInfo->weapon_recoil : 0.0f); // Our hacked recoil effect
-        pVRClientInfo->weapon_recoil *= 0.8f; // quick reduction on synthetic recoil
+        QuatToYawPitchRoll(pWeapon->HeadPose.Pose.Orientation, rotation, pVRClientInfo->weaponangles_flashlight);
+
+        rotation[PITCH] = vr_weapon_pitchadjust;
         QuatToYawPitchRoll(pWeapon->HeadPose.Pose.Orientation, rotation, pVRClientInfo->weaponangles);
 
         VectorSubtract(pVRClientInfo->weaponangles_last, pVRClientInfo->weaponangles, pVRClientInfo->weaponangles_delta);
         VectorCopy(pVRClientInfo->weaponangles, pVRClientInfo->weaponangles_last);
-
-        ALOGV("        weaponangles_last: %f, %f, %f",
-              pVRClientInfo->weaponangles_last[0], pVRClientInfo->weaponangles_last[1], pVRClientInfo->weaponangles_last[2]);
-
     }
 
     //Menu button
-	handleTrackedControllerButton(&leftTrackedRemoteState_new, &leftTrackedRemoteState_old, false, ovrButton_Enter, K_ESCAPE);
+    handleTrackedControllerButton_AsKey(&leftTrackedRemoteState_new, &leftTrackedRemoteState_old, ovrButton_Enter, K_ESCAPE);
 
     static bool resetCursor = true;
     if ( Doom3Quest_useScreenLayer() )
     {
         interactWithTouchScreen(resetCursor, pDominantTrackedRemoteNew, pDominantTrackedRemoteOld);
 
-        handleTrackedControllerButton(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld, true, ovrButton_Trigger, 1);
+        handleTrackedControllerButton_AsButton(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld, true, ovrButton_Trigger, 1);
     }
     else
     {
@@ -171,13 +166,18 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
             if (((pOffTrackedRemoteNew->Buttons & offButton1) !=
                  (pOffTrackedRemoteOld->Buttons & offButton1)) &&
                 (pOffTrackedRemoteNew->Buttons & offButton1)) {
-                sendButtonActionSimple("savegame quicksave");
+                Android_SetCommand("savegame quick");
             }
 
             if (((pOffTrackedRemoteNew->Buttons & offButton2) !=
                  (pOffTrackedRemoteOld->Buttons & offButton2)) &&
                 (pOffTrackedRemoteNew->Buttons & offButton2)) {
-                sendButtonActionSimple("loadgame quicksave");
+                Android_SetCommand("loadgame quick");
+            }
+        } else {
+            if (((pOffTrackedRemoteNew->Buttons & offButton1) !=
+                 (pOffTrackedRemoteOld->Buttons & offButton1))) {
+                handleTrackedControllerButton_AsButton(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld, false, offButton1, UB_IMPULSE19);
             }
         }
 
@@ -225,18 +225,6 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
             scopeEngaged = pVRClientInfo->scopeengaged;
         }
 
-
-        static bool binocularstate = false;
-        bool binocularsactive = (pVRClientInfo->hasbinoculars && pVRClientInfo->backpackitemactive == 3 &&
-                (distanceToHMD < BINOCULAR_ENGAGE_DISTANCE) &&
-                (pDominantTracking->Status & (VRAPI_TRACKING_STATUS_POSITION_TRACKED | VRAPI_TRACKING_STATUS_POSITION_VALID)));
-        if (binocularstate != binocularsactive)
-        {
-            //Engage scope if conditions are right
-            binocularstate = binocularsactive;
-            sendButtonAction("+zoom", binocularstate);
-        }
-
         //dominant hand stuff first
         {
             //Record recent weapon position for trajectory based stuff
@@ -282,10 +270,9 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                 sendButtonAction("+attack", velocityTriggeredAttack);
             }
 
-            if (pVRClientInfo->weapon_stabilised || pVRClientInfo->dualwield)
+            if (pVRClientInfo->weapon_stabilised)
             {
-                if (pVRClientInfo->scopeengaged || (vr_virtual_stock == 1 &&  // Classic Virtual Stock
-                                        !pVRClientInfo->dualwield))
+                if (pVRClientInfo->scopeengaged)
                 {
                     //offset to the appropriate eye a little bit
                     vec2_t xy;
@@ -308,26 +295,12 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                     float zxDist = length(x, z);
 
                     if (zxDist != 0.0f && z != 0.0f) {
-                        if (pVRClientInfo->dualwield) {
-                            //SUPER FUDGE
-                            VectorSet(pVRClientInfo->weaponangles, pVRClientInfo->weaponangles[PITCH],
-                                      -90.0f-degrees(atan2f(x, -z)), degrees(atanf(y / zxDist)));
-                        }
-                        else
                         {
                             VectorSet(pVRClientInfo->weaponangles, -degrees(atanf(y / zxDist)),
                                       -degrees(atan2f(x, -z)), pVRClientInfo->weaponangles[ROLL] / 2.0f); //Dampen roll on stabilised weapon
                         }
                     }
                 }
-            }
-
-            static bool finishReloadNextFrame = false;
-            if (finishReloadNextFrame)
-            {
-                ALOGV("**WEAPON EVENT**  -reload");
-                sendButtonActionSimple("-reload");
-                finishReloadNextFrame = false;
             }
 
             if (pDominantTracking->Status & (VRAPI_TRACKING_STATUS_POSITION_TRACKED | VRAPI_TRACKING_STATUS_POSITION_VALID)) {
@@ -363,10 +336,9 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                         sendButtonActionSimple(buffer);
                         pVRClientInfo->backpackitemactive = 0;
                     }
-                    else if ((GetTimeInMilliSeconds() - dominantGripPushTime) <
-                        vr_reloadtimeoutms) {
-                        sendButtonActionSimple("+reload");
-                        finishReloadNextFrame = true;
+                    else if ((GetTimeInMilliSeconds() - dominantGripPushTime) < vr_reloadtimeoutms) {
+
+                        Android_SetImpuse(UB_IMPULSE13);
                     }
                     dominantGripPushTime = 0;
                 }
@@ -396,18 +368,19 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                     else if (dominantButton1Pushed)
                     {
                         pVRClientInfo->lastweaponid = pVRClientInfo->weaponid;
+
                         //Initiate knife from backpack mode
                         sendButtonActionSimple("weapon 1");
                         int channel = (vr_control_scheme >= 10) ? 0 : 1;
                         Doom3Quest_Vibrate(80, channel, 0.8); // vibrate to let user know they switched
                         pVRClientInfo->backpackitemactive = 2;
                     }
-                    else if (dominantButton2Pushed && pVRClientInfo->hasbinoculars)
+                    /*else if (dominantButton2Pushed && pVRClientInfo->hasbinoculars)
                     {
                         int channel = (vr_control_scheme >= 10) ? 0 : 1;
                         Doom3Quest_Vibrate(80, channel, 0.8); // vibrate to let user know they switched
                         pVRClientInfo->backpackitemactive = 3;
-                    }
+                    }*/
                 }
             }
         }
@@ -436,87 +409,31 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
             //This section corrects for the fact that the controller actually controls direction of movement, but we want to move relative to the direction the
             //player is facing for positional tracking
             vec2_t v;
-            vr_positional_factor = 1000;
+            float vr_positional_factor = 2500;
             rotateAboutOrigin(-pVRClientInfo->hmdposition_delta[0] * vr_positional_factor,
                               pVRClientInfo->hmdposition_delta[2] * vr_positional_factor, - pVRClientInfo->hmdorientation[YAW], v);
             positional_movementSideways = v[0];
             positional_movementForward = v[1];
-
-            ALOGV("        positional_movementSideways: %f, positional_movementForward: %f",
-                  positional_movementSideways,
-                  positional_movementForward);
 
             //Jump (B Button)
             if (pVRClientInfo->backpackitemactive != 2 && !canUseBackpack) {
 
                 if ((primaryButtonsNew & primaryButton2) != (primaryButtonsOld & primaryButton2))
                 {
-                    handleTrackedControllerButton(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld, false, primaryButton2, K_SPACE);
+                    handleTrackedControllerButton_AsButton(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld, false, primaryButton2, UB_UP);
                 }
             }
 
 
-            //We need to record if we have started firing primary so that releasing trigger will stop firing, if user has pushed grip
-            //in meantime, then it wouldn't stop the gun firing and it would get stuck
-            static bool firing = false;
-            if (dominantGripPushed && pVRClientInfo->backpackitemactive == 0)
-            {
-                if ((pDominantTrackedRemoteNew->Buttons & ovrButton_Trigger) !=
-                    (pDominantTrackedRemoteOld->Buttons & ovrButton_Trigger))
-                {
-                    if (!pVRClientInfo->scopedweapon) {
-                        if (pDominantTrackedRemoteNew->Buttons & ovrButton_Trigger) {
-                            ALOGV("**WEAPON EVENT**  weapalt");
-                            sendButtonActionSimple("weapalt");
-                        }
-                        else if (firing)
-                        {
-                            //no longer firing
-                            firing = false;
-                            ALOGV("**WEAPON EVENT**  Grip Pushed %sattack", (pDominantTrackedRemoteNew->Buttons & ovrButton_Trigger) ? "+" : "-");
-                            sendButtonAction("+attack", firing);
-                        }
-                    }
-                    else if (pVRClientInfo->detachablescope)
-                    {
-                        if (pDominantTrackedRemoteNew->Buttons & ovrButton_Trigger) {
-                            //See if we are able to detach the scope
-                            ALOGV("**WEAPON EVENT**  weapdetachscope");
-                            sendButtonActionSimple("weapdetachscope");
-                        }
-                    }
-                    else
-                    {
-                        //Just ignore grip and fire
-                        firing = (pDominantTrackedRemoteNew->Buttons & ovrButton_Trigger);
-                        ALOGV("**WEAPON EVENT**  Grip Pushed %sattack", (pDominantTrackedRemoteNew->Buttons & ovrButton_Trigger) ? "+" : "-");
-                        sendButtonAction("+attack", firing);
-                    }
-                }
-            }
-            else
-            {
-                //Fire Primary
-                if (pVRClientInfo->backpackitemactive != 3 && // Can't fire while holding binoculars
-                    !pVRClientInfo->velocitytriggered && // Don't fire velocity triggered weapons
-                    (pDominantTrackedRemoteNew->Buttons & ovrButton_Trigger) !=
-                    (pDominantTrackedRemoteOld->Buttons & ovrButton_Trigger)) {
+            //Fire Primary
+            if (pVRClientInfo->backpackitemactive != 3 && // Can't fire while holding binoculars
+                !pVRClientInfo->velocitytriggered && // Don't fire velocity triggered weapons
+                (pDominantTrackedRemoteNew->Buttons & ovrButton_Trigger) !=
+                (pDominantTrackedRemoteOld->Buttons & ovrButton_Trigger)) {
 
-                    ALOGV("**WEAPON EVENT**  Not Grip Pushed %sattack", (pDominantTrackedRemoteNew->Buttons & ovrButton_Trigger) ? "+" : "-");
-                    firing = (pDominantTrackedRemoteNew->Buttons & ovrButton_Trigger);
+                ALOGV("**WEAPON EVENT**  Not Grip Pushed %sattack", (pDominantTrackedRemoteNew->Buttons & ovrButton_Trigger) ? "+" : "-");
 
-                    handleTrackedControllerButton(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld, false, ovrButton_Trigger, K_CTRL);
-                }
-                else if (binocularsactive) // trigger can zoom-in binoculars, remove from face to reset
-                {
-                    static bool zoomin = true;
-                    if (pDominantTrackedRemoteNew->Buttons & ovrButton_Trigger) {
-                        sendButtonActionSimple(zoomin ? "weapnext" : "weapprev");
-                    } else if (pDominantTrackedRemoteOld->Buttons & ovrButton_Trigger)
-                    {
-                        zoomin = !zoomin;
-                    }
-                }
+                handleTrackedControllerButton_AsButton(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld, false, ovrButton_Trigger, UB_ATTACK);
             }
 
             //Duck
@@ -525,7 +442,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                 (primaryButtonsNew & primaryButton1) !=
                 (primaryButtonsOld & primaryButton1)) {
 
-                handleTrackedControllerButton(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld, false, primaryButton1, 'c');
+                handleTrackedControllerButton_AsToggleButton(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld, primaryButton1, UB_DOWN);
             }
 
 			//Weapon Chooser
@@ -537,11 +454,13 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
 				if (!itemSwitched) {
 					if (between(0.8f, pPrimaryJoystick->y, 1.0f))
 					{
-                        sendButtonActionSimple("weapprev");
+					    //Previous Weapon
+                        Android_SetImpuse(UB_IMPULSE15);
 					}
 					else
 					{
-                        sendButtonActionSimple("weapnext");
+					    //Next Weapon
+                        Android_SetImpuse(UB_IMPULSE14);
 					}
 					itemSwitched = true;
 				}
@@ -551,12 +470,12 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
         }
 
         {
-            //"Use" (open doors etc)
+            //"Use"
             if ((pDominantTrackedRemoteNew->Buttons & ovrButton_Joystick) !=
                 (pDominantTrackedRemoteOld->Buttons & ovrButton_Joystick)) {
 
-                sendButtonAction("+activate",
-                                 (pDominantTrackedRemoteNew->Buttons & ovrButton_Joystick) ? 1 : 0);
+                //Use Vehicle
+                Android_SetImpuse(UB_IMPULSE40);
             }
 
             //Apply a filter and quadratic scaler so small movements are easier to make
@@ -572,20 +491,9 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
             rotateAboutOrigin(x, y, controllerYawHeading, v);
 
             //Move a lot slower if scope is engaged
-            vr_movement_multiplier = 100;
+            vr_movement_multiplier = 127;
             remote_movementSideways = v[0] * (pVRClientInfo->scopeengaged ? 0.3f : 1.0f) * vr_movement_multiplier;
             remote_movementForward = v[1] * (pVRClientInfo->scopeengaged ? 0.3f : 1.0f) * vr_movement_multiplier;
-            ALOGV("        remote_movementSideways: %f, remote_movementForward: %f",
-                  remote_movementSideways,
-                  remote_movementForward);
-
-
-            static bool stopUseItemNextFrame = false;
-            if (stopUseItemNextFrame)
-            {
-//                Cbuf_AddText("-useitem\n");
-                stopUseItemNextFrame = false;
-            }
 
             if (!canUseQuickSave) {
                 if (((secondaryButtonsNew & secondaryButton1) !=
@@ -593,33 +501,18 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                     (secondaryButtonsNew & secondaryButton1)) {
 
                     if (dominantGripPushed) {
-//                        Cbuf_AddText("+useitem\n");
-                        stopUseItemNextFrame = true;
+                        Android_SetCommand("give all");
                     } else {
                         pVRClientInfo->visible_hud = !pVRClientInfo->visible_hud;
                     }
                 }
             }
 
-            //notebook or select "item"
-            if (!canUseQuickSave) {
-                if (((secondaryButtonsNew & secondaryButton2) !=
-                     (secondaryButtonsOld & secondaryButton2)) &&
-                    (secondaryButtonsNew & secondaryButton2)) {
-
-                    if (dominantGripPushed) {
-                        sendButtonActionSimple("itemprev");
-                    } else {
-                        sendButtonActionSimple("notebook");
-                    }
-                }
-            }
-
-
-            //Kick!
             if ((pOffTrackedRemoteNew->Buttons & ovrButton_Joystick) !=
                 (pOffTrackedRemoteOld->Buttons & ovrButton_Joystick)) {
-                sendButtonAction("+kick", (pOffTrackedRemoteNew->Buttons & ovrButton_Joystick));
+
+                //UNUSED
+
             }
 
             //We need to record if we have started firing primary so that releasing trigger will stop definitely firing, if user has pushed grip
@@ -627,7 +520,8 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
             if (!pVRClientInfo->teleportenabled)
             {
                 //Run
-                handleTrackedControllerButton(pOffTrackedRemoteNew, pOffTrackedRemoteOld, false, ovrButton_Trigger, K_SHIFT);
+                handleTrackedControllerButton_AsButton(pOffTrackedRemoteNew, pOffTrackedRemoteOld, false, ovrButton_Trigger, UB_SPEED);
+
             } else {
                 if (pOffTrackedRemoteNew->Buttons & ovrButton_Trigger)
                 {
@@ -641,17 +535,9 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                 }
             }
 
-
-            //Resync Yaw on mounted gun transition
-            static int usingMountedGun = false;
-            if (pVRClientInfo->mountedgun != usingMountedGun)
-            {
-                usingMountedGun = pVRClientInfo->mountedgun;
-            }
-
             //No snap turn when using mounted gun
             static int increaseSnap = true;
-            if (!pVRClientInfo->mountedgun && !pVRClientInfo->scopeengaged) {
+            if (!pVRClientInfo->scopeengaged) {
                 if (pPrimaryJoystick->x > 0.7f) {
                     if (increaseSnap) {
                         float turnAngle = vr_turn_mode ? (vr_turn_angle / 9.0f) : vr_turn_angle;

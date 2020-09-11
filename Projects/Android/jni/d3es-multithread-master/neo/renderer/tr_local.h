@@ -56,8 +56,6 @@ const float FOG_ENTER = (FOG_ENTER_SIZE+1.0f)/(FOG_ENTER_SIZE*2);
 
 struct shaderProgram_s;
 
-extern int stereoSide;
-
 // idScreenRect gets carried around with each drawSurf, so it makes sense
 // to keep it compact, instead of just using the idBounds class
 class idScreenRect {
@@ -497,7 +495,7 @@ typedef struct {
 
 typedef struct {
 	renderCommand_t		commandId, *next;
-	GLenum	buffer;
+	int		buffer;
 	int		frameCount;
 } setBufferCommand_t;
 
@@ -1077,7 +1075,7 @@ void		GLimp_Shutdown( void );
 // Destroys the rendering context, closes the window, resets the resolution,
 // and resets the gamma ramps.
 
-void        GLimp_SetupFrame( void );
+void        GLimp_SetupFrame( int );
 
 void		GLimp_SwapBuffers( void );
 // Calls the system specific swapbuffers routine, and may also perform

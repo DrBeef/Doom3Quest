@@ -19,19 +19,37 @@ void Sys_AddMouseMoveEvent(int dx, int dy);
 void Sys_AddMouseButtonEvent(int button, bool pressed);
 void Sys_AddKeyEvent(int key, bool pressed);
 
-//keys.h
-//void Sys_QueEvent( int time, sysEventType_t type, int value, int value2, int ptrLength, void *ptr );
-void handleTrackedControllerButton(ovrInputStateTrackedRemote * trackedRemoteState, ovrInputStateTrackedRemote * prevTrackedRemoteState, bool mouse, uint32_t button, int key)
+void Android_ButtonChange(int key, int state);
+int Android_GetButton(int key);
+
+void handleTrackedControllerButton_AsButton(ovrInputStateTrackedRemote * trackedRemoteState, ovrInputStateTrackedRemote * prevTrackedRemoteState, bool mouse, uint32_t button, int key)
 {
     if ((trackedRemoteState->Buttons & button) != (prevTrackedRemoteState->Buttons & button))
     {
-        if (mouse) {
+        if (mouse)
+        {
             Sys_AddMouseButtonEvent(key, (trackedRemoteState->Buttons & button) != 0);
         }
         else
         {
-            Sys_AddKeyEvent(key, (trackedRemoteState->Buttons & button) != 0);
+            Android_ButtonChange(key, ((trackedRemoteState->Buttons & button) != 0) ? 1 : 0);
         }
+    }
+}
+
+void handleTrackedControllerButton_AsKey(ovrInputStateTrackedRemote * trackedRemoteState, ovrInputStateTrackedRemote * prevTrackedRemoteState, uint32_t button, int key)
+{
+    if ((trackedRemoteState->Buttons & button) != (prevTrackedRemoteState->Buttons & button))
+    {
+        Sys_AddKeyEvent(key, (trackedRemoteState->Buttons & button) != 0);
+    }
+}
+
+void handleTrackedControllerButton_AsToggleButton(ovrInputStateTrackedRemote * trackedRemoteState, ovrInputStateTrackedRemote * prevTrackedRemoteState, uint32_t button, int key)
+{
+    if ((trackedRemoteState->Buttons & button) != (prevTrackedRemoteState->Buttons & button))
+    {
+        Android_ButtonChange(key, Android_GetButton(key) ? 0 : 1);
     }
 }
 

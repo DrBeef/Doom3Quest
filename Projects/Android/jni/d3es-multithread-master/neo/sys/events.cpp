@@ -748,6 +748,8 @@ void Sys_ClearEvents() {
 	event_list.SetNum(0, false);
 }
 
+extern "C" 	const char * Android_GetCommand();
+
 /*
 ================
 Sys_GenerateEvents
@@ -759,13 +761,13 @@ void Sys_GenerateEvents() {
 	if (s)
 		PushConsoleEvent(s);
 
-/*	const char * cmd = Android_GetCommand();
+	const char * cmd = Android_GetCommand();
 	if(cmd)
 	{
 		cmdSystem->BufferCommandText( CMD_EXEC_NOW, cmd );
 		//cmdSystem->BufferCommandText( CMD_EXEC_NOW, "\n" );
 	}
-*/
+
 
 	//SDL_PumpEvents();
 }

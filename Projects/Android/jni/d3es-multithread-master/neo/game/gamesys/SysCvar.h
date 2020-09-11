@@ -251,6 +251,11 @@ extern idCVar	si_spectators;
 extern idCVar	net_clientSelfSmoothing;
 extern idCVar	net_clientLagOMeter;
 
+//VR CVARS
+extern idCVar vr_ipd;
+extern idCVar vr_worldscale;
+extern idCVar vr_eye;
+
 extern const char *si_gameTypeArgs[];
 
 extern const char *ui_skinArgs[];

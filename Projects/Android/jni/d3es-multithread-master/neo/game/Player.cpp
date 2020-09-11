@@ -7102,6 +7102,13 @@ idPlayer::CalculateViewWeaponPos
 Calculate the bobbing position of the view weapon
 ==============
 */
+
+void rotateAboutOrigin(float x, float y, float rotation, float out[2])
+{
+    out[0] = cosf(DEG2RAD(-rotation)) * x  +  sinf(DEG2RAD(-rotation)) * y;
+    out[1] = cosf(DEG2RAD(-rotation)) * y  -  sinf(DEG2RAD(-rotation)) * x;
+}
+
 void idPlayer::CalculateViewWeaponPos( idVec3 &origin, idMat3 &axis ) {
 	float		scale;
 	float		fracsin;
@@ -7111,6 +7118,32 @@ void idPlayer::CalculateViewWeaponPos( idVec3 &origin, idMat3 &axis ) {
 	// CalculateRenderView must have been called first
 	const idVec3 &viewOrigin = firstPersonViewOrigin;
 	const idMat3 &viewAxis = firstPersonViewAxis;
+
+	if (pVRClientInfo)
+    {
+		angles.pitch = pVRClientInfo->weaponangles[PITCH];
+		angles.yaw = viewAngles.yaw + (pVRClientInfo->weaponangles[YAW] - pVRClientInfo->hmdorientation[YAW]);
+		angles.roll = pVRClientInfo->weaponangles[ROLL];
+
+		axis = angles.ToMat3();
+
+
+        idVec3	gunpos( pVRClientInfo->calculated_weaponoffset[2],
+                          pVRClientInfo->calculated_weaponoffset[0],
+                          pVRClientInfo->calculated_weaponoffset[1]);
+
+        float r[2];
+        rotateAboutOrigin(gunpos.x, gunpos.y, viewAngles.yaw - pVRClientInfo->hmdorientation[YAW], r);
+        gunpos.x = -r[0];
+        gunpos.y = -r[1];
+
+        gunpos *= cvarSystem->GetCVarFloat( "vr_worldscale" );
+
+		idVec3	gunOfs( g_gun_x.GetFloat(), g_gun_y.GetFloat(), g_gun_z.GetFloat() );
+        origin = viewOrigin + gunpos + (gunOfs * axis);
+
+        return;
+    }
 
 	// these cvars are just for hand tweaking before moving a value to the weapon def
 	idVec3	gunpos( g_gun_x.GetFloat(), g_gun_y.GetFloat(), g_gun_z.GetFloat() );
@@ -7245,7 +7278,12 @@ idVec3 idPlayer::GetEyePosition( void ) const {
 	} else {
 		org = GetPhysics()->GetOrigin();
 	}
-	return org + ( GetPhysics()->GetGravityNormal() * -eyeOffset.z );
+	if (pVRClientInfo)
+    {
+        return org + ( GetPhysics()->GetGravityNormal() * (-pVRClientInfo->hmdposition[1] * cvarSystem->GetCVarFloat( "vr_worldscale" )));
+    } else{
+        return org + ( GetPhysics()->GetGravityNormal() * -eyeOffset.z );
+	}
 }
 
 void idPlayer::SetVRClientInfo(vr_client_info_t *pVR)

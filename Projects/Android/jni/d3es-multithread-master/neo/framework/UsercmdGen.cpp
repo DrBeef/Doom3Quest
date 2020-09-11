@@ -456,7 +456,8 @@ void idUsercmdGenLocal::InhibitUsercmd( inhibit_t subsystem, bool inhibit ) {
 	}
 }
 
-//extern "C" int Android_GetButton( int key );
+extern "C" int Android_GetButton( int key );
+
 /*
 ===============
 idUsercmdGenLocal::ButtonState
@@ -465,12 +466,11 @@ Returns (the fraction of the frame) that the key was down
 ===============
 */
 int	idUsercmdGenLocal::ButtonState( int key ) {
-	return 0;
 	if ( key<0 || key>=UB_MAX_BUTTONS ) {
 		return -1;
 	}
 
-	//return ( (buttonState[key] > 0) || Android_GetButton(key) ) ? 1 : 0;
+	return ( (buttonState[key] > 0) || Android_GetButton(key) ) ? 1 : 0;
 }
 
 /*
@@ -787,6 +787,7 @@ void idUsercmdGenLocal::MakeCurrent( void ) {
 		// set button bits
 		CmdButtons();
 
+#if 0
 		// get basic movement from keyboard
 		KeyMove();
 
@@ -795,6 +796,7 @@ void idUsercmdGenLocal::MakeCurrent( void ) {
 
 		// get basic movement from joystick
 		JoystickMove();
+#endif
 
 		float forward,strafe;
 		float hmd_forward,hmd_strafe;
@@ -1118,7 +1120,7 @@ void idUsercmdGenLocal::MouseState( int *x, int *y, int *button, bool *down ) {
 	*down = mouseDown;
 }
 
-//extern "C" int Android_GetNextImpulse();
+extern "C" int Android_GetNextImpulse();
 
 /*
 ================
@@ -1139,7 +1141,7 @@ usercmd_t idUsercmdGenLocal::GetDirectUsercmd( void ) {
 	// process the system joystick events
 	//Joystick();
 
-/*	int imp = Android_GetNextImpulse();
+	int imp = Android_GetNextImpulse();
 	if( imp )
 	{
 		if ( !Inhibited()  ) {
@@ -1149,7 +1151,7 @@ usercmd_t idUsercmdGenLocal::GetDirectUsercmd( void ) {
 			}
 		}
 	}
-*/
+
 	// create the usercmd
 	MakeCurrent();
 

@@ -336,3 +336,10 @@ idCVar mod_validSkins(				"mod_validSkins",			"skins/characters/player/marine_mp
 idCVar net_serverDownload(			"net_serverDownload",		"0",			CVAR_GAME | CVAR_INTEGER | CVAR_ARCHIVE, "enable server download redirects. 0: off 1: redirect to si_serverURL 2: use builtin download. see net_serverDl cvars for configuration" );
 idCVar net_serverDlBaseURL(			"net_serverDlBaseURL",		"",				CVAR_GAME | CVAR_ARCHIVE, "base URL for the download redirection" );
 idCVar net_serverDlTable(			"net_serverDlTable",		"",				CVAR_GAME | CVAR_ARCHIVE, "pak names for which download is provided, separated by ;" );
+
+
+idCVar vr_ipd(						"vr_ipd",					"0.065",		CVAR_GAME | CVAR_FLOAT | CVAR_ARCHIVE, "VR IPD" );
+idCVar vr_worldscale(				"vr_worldscale",			"40.0",			CVAR_GAME | CVAR_FLOAT | CVAR_ARCHIVE, "VR World Scale" );
+idCVar vr_eye(						"vr_eye",					"0",			CVAR_GAME | CVAR_INTEGER, "VR Eye currently being drawn" );
+
+

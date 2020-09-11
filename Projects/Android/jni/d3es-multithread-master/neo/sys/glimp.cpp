@@ -140,11 +140,11 @@ void GLimp_Shutdown() {
 }
 
 int stereoSide = 0;
-
-void GLimp_SetupFrame() {
+void GLimp_SetupFrame(int eye) {
 
     //Only do this if we have drawn both buffers and are back to the first buffer
-    if (stereoSide == 0) {
+	stereoSide = eye;
+    if (eye == 0) {
         Doom3Quest_processMessageQueue();
 
         Doom3Quest_prepareEyeBuffer(0);
@@ -163,7 +163,6 @@ void GLimp_SwapBuffers() {
 	{
 		Doom3Quest_finishEyeBuffer(0);
         Doom3Quest_prepareEyeBuffer(1);
-		stereoSide = 1;
 	}
 	else
 	{
@@ -171,9 +170,6 @@ void GLimp_SwapBuffers() {
 
 		//We can now submit the stereo frame
 		Doom3Quest_submitFrame();
-
-		//Reset for next time
-		stereoSide = 0;
 	}
 }
 
