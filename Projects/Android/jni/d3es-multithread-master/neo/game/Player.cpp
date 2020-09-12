@@ -7280,7 +7280,19 @@ idVec3 idPlayer::GetEyePosition( void ) const {
 	}
 	if (pVRClientInfo)
     {
-        return org + ( GetPhysics()->GetGravityNormal() * (-pVRClientInfo->hmdposition[1] * cvarSystem->GetCVarFloat( "vr_worldscale" )));
+		float eyeHeight = 0;
+		float vrEyeHeight = (-pVRClientInfo->hmdposition[1] * cvarSystem->GetCVarFloat( "vr_worldscale" ));
+
+		//Add special handling for physical crouching at some point
+/*		if (physicsObj.IsCrouching() && PHYSICAL_CROUCH) {
+			eyeHeight = vrEyeHeight;
+		}
+		else
+*/		{
+			eyeHeight = vrEyeHeight - (eyeOffset.z - pm_normalviewheight.GetFloat());
+		}
+
+        return org + ( GetPhysics()->GetGravityNormal() * eyeHeight);
     } else{
         return org + ( GetPhysics()->GetGravityNormal() * -eyeOffset.z );
 	}

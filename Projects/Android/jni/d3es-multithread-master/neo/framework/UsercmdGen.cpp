@@ -409,7 +409,7 @@ idCVar idUsercmdGenLocal::in_angleSpeedKey( "in_anglespeedkey", "1.5", CVAR_SYST
 idCVar idUsercmdGenLocal::in_freeLook( "in_freeLook", "1", CVAR_SYSTEM | CVAR_ARCHIVE | CVAR_BOOL, "look around with mouse (reverse _mlook button)" );
 idCVar idUsercmdGenLocal::in_alwaysRun( "in_alwaysRun", "0", CVAR_SYSTEM | CVAR_ARCHIVE | CVAR_BOOL, "always run (reverse _speed button) - only in MP" );
 idCVar idUsercmdGenLocal::in_toggleRun( "in_toggleRun", "0", CVAR_SYSTEM | CVAR_ARCHIVE | CVAR_BOOL, "pressing _speed button toggles run on/off - only in MP" );
-idCVar idUsercmdGenLocal::in_toggleCrouch( "in_toggleCrouch", "0", CVAR_SYSTEM | CVAR_ARCHIVE | CVAR_BOOL, "pressing _movedown button toggles player crouching/standing" );
+idCVar idUsercmdGenLocal::in_toggleCrouch( "in_toggleCrouch", "1", CVAR_SYSTEM | CVAR_ARCHIVE | CVAR_BOOL, "pressing _movedown button toggles player crouching/standing" );
 idCVar idUsercmdGenLocal::in_toggleZoom( "in_toggleZoom", "0", CVAR_SYSTEM | CVAR_ARCHIVE | CVAR_BOOL, "pressing _zoom button toggles zoom on/off" );
 idCVar idUsercmdGenLocal::sensitivity( "sensitivity", "5", CVAR_SYSTEM | CVAR_ARCHIVE | CVAR_FLOAT, "mouse view sensitivity" );
 idCVar idUsercmdGenLocal::m_pitch( "m_pitch", "0.022", CVAR_SYSTEM | CVAR_ARCHIVE | CVAR_FLOAT, "mouse pitch scale" );
@@ -562,22 +562,23 @@ void idUsercmdGenLocal::KeyMove( void ) {
 	forward = 0;
 	side = 0;
 	up = 0;
-	if ( ButtonState( UB_STRAFE ) ) {
+/*	if ( ButtonState( UB_STRAFE ) ) {
 		side += KEY_MOVESPEED * ButtonState( UB_RIGHT );
 		side -= KEY_MOVESPEED * ButtonState( UB_LEFT );
 	}
 
 	side += KEY_MOVESPEED * ButtonState( UB_MOVERIGHT );
 	side -= KEY_MOVESPEED * ButtonState( UB_MOVELEFT );
-
+*/
 	up -= KEY_MOVESPEED * toggled_crouch.on;
 	up += KEY_MOVESPEED * ButtonState( UB_UP );
 
-	forward += KEY_MOVESPEED * ButtonState( UB_FORWARD );
+/*	forward += KEY_MOVESPEED * ButtonState( UB_FORWARD );
 	forward -= KEY_MOVESPEED * ButtonState( UB_BACK );
 
 	cmd.forwardmove = idMath::ClampChar( forward );
 	cmd.rightmove = idMath::ClampChar( side );
+ */
 	cmd.upmove = idMath::ClampChar( up );
 }
 
@@ -787,10 +788,10 @@ void idUsercmdGenLocal::MakeCurrent( void ) {
 		// set button bits
 		CmdButtons();
 
-#if 0
 		// get basic movement from keyboard
 		KeyMove();
 
+#if 0
 		// get basic movement from mouse
 		MouseMove();
 
