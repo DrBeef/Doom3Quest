@@ -26,6 +26,8 @@ extern "C" {
 #define ALOGV(...)
 #endif
 
+#define TIC_RATE 60
+
 float playerHeight;
 float playerYaw;
 
