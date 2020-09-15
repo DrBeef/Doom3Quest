@@ -1134,7 +1134,7 @@ usercmd_t idUsercmdGenLocal::GetDirectUsercmd( void ) {
 	InitCurrent();
 
 	// process the system mouse events
-	//Mouse();
+	Mouse();
 
 	// process the system keyboard events
 	Keyboard();

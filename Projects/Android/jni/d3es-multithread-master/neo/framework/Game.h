@@ -90,7 +90,7 @@ public:
 	// Set the local client number. Distinguishes listen ( == 0 ) / dedicated ( == -1 )
 	virtual void				SetLocalClient( int clientNum ) = 0;
 
-	virtual void 				SetVRClientInfo(vr_client_info_t *pVRClientInfo) = 0;
+	virtual void 				SetVRClientInfo(vrClientInfo *pVRClientInfo) = 0;
 
 	virtual bool 				InCinematic() = 0;
 

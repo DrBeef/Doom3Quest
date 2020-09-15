@@ -265,7 +265,7 @@ public:
 	idUserInterface *		objectiveSystem;
 	bool					objectiveSystemOpen;
 
-	vr_client_info_t *pVRClientInfo;
+	vrClientInfo *pVRClientInfo;
 
 	int						weapon_soulcube;
 	int						weapon_pda;
@@ -363,7 +363,7 @@ public:
 	idDict *				GetUserInfo( void );
 	bool					BalanceTDM( void );
 
-	void 					SetVRClientInfo(vr_client_info_t *pVRClientInfo);
+	void 					SetVRClientInfo(vrClientInfo *pVRClientInfo);
 
 
 	void					CacheWeapons( void );
@@ -405,7 +405,7 @@ public:
 
 	float					DefaultFov( void ) const;
 	float					CalcFov( bool honorZoom );
-	void					CalculateViewWeaponPos( idVec3 &origin, idMat3 &axis );
+	void					CalculateViewWeaponPos( bool adjusted, idVec3 &origin, idMat3 &axis, idAngles &angles );
 	idVec3					GetEyePosition( void ) const;
 	void					GetViewPos( idVec3 &origin, idMat3 &axis ) const;
 	void					OffsetThirdPersonView( float angle, float range, float height, bool clip );

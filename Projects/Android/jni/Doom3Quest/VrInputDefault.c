@@ -21,10 +21,10 @@ Authors		:	Simon Brown
 
 float	vr_turn_mode = 0.0f;
 float	vr_turn_angle = 45.0f;
-float	vr_reloadtimeoutms;
-float	vr_walkdirection;
+float	vr_reloadtimeoutms = 200.0f;
+float	vr_walkdirection = 0;
 float	vr_movement_multiplier;
-float	vr_weapon_pitchadjust;
+float	vr_weapon_pitchadjust = -30.0f;
 float	vr_lasersight;
 float	vr_control_scheme;
 float	vr_teleport;
@@ -128,7 +128,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
         //Set gun angles - We need to calculate all those we might need (including adjustments) for the client to then take its pick
         vec3_t rotation = {0};
         rotation[PITCH] = 30;
-        QuatToYawPitchRoll(pWeapon->HeadPose.Pose.Orientation, rotation, pVRClientInfo->weaponangles_flashlight);
+        QuatToYawPitchRoll(pWeapon->HeadPose.Pose.Orientation, rotation, pVRClientInfo->weaponangles_unadjusted);
 
         rotation[PITCH] = vr_weapon_pitchadjust;
         QuatToYawPitchRoll(pWeapon->HeadPose.Pose.Orientation, rotation, pVRClientInfo->weaponangles);
@@ -174,14 +174,15 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                 (pOffTrackedRemoteNew->Buttons & offButton2)) {
                 Android_SetCommand("loadgame quick");
             }
-        } else {
+        } else
+        {
+            //PDA
             if (((pOffTrackedRemoteNew->Buttons & offButton1) !=
-                 (pOffTrackedRemoteOld->Buttons & offButton1))) {
-                handleTrackedControllerButton_AsButton(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld, false, offButton1, UB_IMPULSE19);
+                 (pOffTrackedRemoteOld->Buttons & offButton1)) &&
+                (pOffTrackedRemoteNew->Buttons & offButton1)) {
+                Android_SetImpuse(UB_IMPULSE19);
             }
         }
-
-
 
         float distance = sqrtf(powf(pOff->HeadPose.Pose.Position.x - pWeapon->HeadPose.Pose.Position.x, 2) +
                                powf(pOff->HeadPose.Pose.Position.y - pWeapon->HeadPose.Pose.Position.y, 2) +
@@ -359,13 +360,13 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                 if (pVRClientInfo->backpackitemactive == 0) {
                     if (dominantGripPushed) {
                         pVRClientInfo->lastweaponid = pVRClientInfo->weaponid;
-                        //Initiate grenade from backpack mode
-                        sendButtonActionSimple("weaponbank 6");
+                        //Initiate flashlight from backpack mode
+                        Android_SetImpuse(UB_IMPULSE11);
                         int channel = (vr_control_scheme >= 10) ? 0 : 1;
                         Doom3Quest_Vibrate(80, channel, 0.8); // vibrate to let user know they switched
                         pVRClientInfo->backpackitemactive = 1;
                     }
-                    else if (dominantButton1Pushed)
+                    /*else if (dominantButton1Pushed)
                     {
                         pVRClientInfo->lastweaponid = pVRClientInfo->weaponid;
 
@@ -375,7 +376,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                         Doom3Quest_Vibrate(80, channel, 0.8); // vibrate to let user know they switched
                         pVRClientInfo->backpackitemactive = 2;
                     }
-                    /*else if (dominantButton2Pushed && pVRClientInfo->hasbinoculars)
+                    else if (dominantButton2Pushed && pVRClientInfo->hasbinoculars)
                     {
                         int channel = (vr_control_scheme >= 10) ? 0 : 1;
                         Doom3Quest_Vibrate(80, channel, 0.8); // vibrate to let user know they switched

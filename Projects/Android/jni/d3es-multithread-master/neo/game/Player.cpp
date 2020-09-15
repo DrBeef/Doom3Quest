@@ -4396,12 +4396,20 @@ void idPlayer::UpdateFocus( void ) {
 		return;
 	}
 
+	/*
 	start = GetEyePosition();
 	end = start + viewAngles.ToForward() * 80.0f;
+	*/
+
+	//Use unadjusted weapon angles to control GUIs
+	idMat3 weaponViewAxis;
+	idAngles weaponViewAngles;
+    CalculateViewWeaponPos(false, start, weaponViewAxis, weaponViewAngles);
+	end = start + (weaponViewAngles.ToForward() * 80.0f);
 
 	// player identification -> names to the hud
 	if ( gameLocal.isMultiplayer && entityNumber == gameLocal.localClientNum ) {
-		idVec3 end = start + viewAngles.ToForward() * 768.0f;
+		idVec3 end = start + weaponViewAngles.ToForward() * 768.0f;
 		gameLocal.clip.TracePoint( trace, start, end, MASK_SHOT_BOUNDINGBOX, this );
 		int iclient = -1;
 		if ( ( trace.fraction < 1.0f ) && ( trace.c.entityNum < MAX_CLIENTS ) ) {
@@ -4906,7 +4914,7 @@ void idPlayer::UpdateViewAngles( void ) {
 	}
 
 	// circularly clamp the angles with deltas
-	for ( i = 0; i < 3; i++ ) {
+	for ( i = 1; i < 3; i++ ) {
 		cmdAngles[i] = SHORT2ANGLE( usercmd.angles[i] );
 		if ( influenceActive == INFLUENCE_LEVEL3 ) {
 			viewAngles[i] += idMath::ClampFloat( -1.0f, 1.0f, idMath::AngleDelta( idMath::AngleNormalize180( SHORT2ANGLE( usercmd.angles[i]) + deltaViewAngles[i] ) , viewAngles[i] ) );
@@ -4914,6 +4922,11 @@ void idPlayer::UpdateViewAngles( void ) {
 			viewAngles[i] = idMath::AngleNormalize180( SHORT2ANGLE( usercmd.angles[i]) + deltaViewAngles[i] );
 		}
 	}
+
+	if (pVRClientInfo != nullptr) {
+		viewAngles.pitch = pVRClientInfo->hmdorientation[PITCH];
+	}
+
 	if ( !centerView.IsDone( gameLocal.time ) ) {
 		viewAngles.pitch = centerView.GetCurrentValue(gameLocal.time);
 	}
@@ -7109,10 +7122,9 @@ void rotateAboutOrigin(float x, float y, float rotation, float out[2])
     out[1] = cosf(DEG2RAD(-rotation)) * y  -  sinf(DEG2RAD(-rotation)) * x;
 }
 
-void idPlayer::CalculateViewWeaponPos( idVec3 &origin, idMat3 &axis ) {
+void idPlayer::CalculateViewWeaponPos( bool adjusted, idVec3 &origin, idMat3 &axis, idAngles &angles ) {
 	float		scale;
 	float		fracsin;
-	idAngles	angles;
 	int			delta;
 
 	// CalculateRenderView must have been called first
@@ -7121,9 +7133,17 @@ void idPlayer::CalculateViewWeaponPos( idVec3 &origin, idMat3 &axis ) {
 
 	if (pVRClientInfo)
     {
-		angles.pitch = pVRClientInfo->weaponangles[PITCH];
-		angles.yaw = viewAngles.yaw + (pVRClientInfo->weaponangles[YAW] - pVRClientInfo->hmdorientation[YAW]);
-		angles.roll = pVRClientInfo->weaponangles[ROLL];
+		if (adjusted) {
+			angles.pitch = pVRClientInfo->weaponangles[PITCH];
+			angles.yaw = viewAngles.yaw +
+						 (pVRClientInfo->weaponangles[YAW] - pVRClientInfo->hmdorientation[YAW]);
+			angles.roll = pVRClientInfo->weaponangles[ROLL];
+		} else {
+			angles.pitch = pVRClientInfo->weaponangles_unadjusted[PITCH];
+			angles.yaw = viewAngles.yaw +
+						 (pVRClientInfo->weaponangles_unadjusted[YAW] - pVRClientInfo->hmdorientation[YAW]);
+			angles.roll = pVRClientInfo->weaponangles_unadjusted[ROLL];
+		}
 
 		axis = angles.ToMat3();
 
@@ -7298,7 +7318,7 @@ idVec3 idPlayer::GetEyePosition( void ) const {
 	}
 }
 
-void idPlayer::SetVRClientInfo(vr_client_info_t *pVR)
+void idPlayer::SetVRClientInfo(vrClientInfo *pVR)
 {
 	pVRClientInfo = pVR;
 }

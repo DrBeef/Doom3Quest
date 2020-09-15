@@ -764,7 +764,7 @@ void idGameLocal::SetLocalClient( int clientNum ) {
 	localClientNum = clientNum;
 }
 
-void idGameLocal::SetVRClientInfo(vr_client_info_t *pVR)
+void idGameLocal::SetVRClientInfo(vrClientInfo *pVR)
 {
 	pVRClientInfo = pVR;
 }

@@ -291,6 +291,21 @@ void idDeviceContext::SetMenuScaleFix(bool enable) {
 	}
 }
 
+// DG: this is used for the "make sure menus are rendered as 4:3" hack
+void idDeviceContext::SetMenuScaleForVR( bool enable ) {
+	int eye = cvarSystem->GetCVarInteger("vr_eye");
+	if(enable) {
+		float scale = 0.45;
+		float offsetX = (1.0f - scale) * (VIRTUAL_WIDTH * 0.5f);
+		float offsetY = (1.0f - scale) * (VIRTUAL_HEIGHT * 0.5f);
+		fixScaleForMenu.Set(scale, scale);
+		fixOffsetForMenu.Set(offsetX + (eye==0 ? 14 : -14), offsetY);
+	} else {
+		fixScaleForMenu.Set(1, 1);
+		fixOffsetForMenu.Set(0, 0);
+	}
+}
+
 void idDeviceContext::AdjustCoords(float *x, float *y, float *w, float *h) {
 
 	if (x) {

@@ -303,7 +303,7 @@ public:
 	virtual void			Init( void );
 	virtual void			Shutdown( void );
 	virtual void			SetLocalClient( int clientNum );
-	virtual void 			SetVRClientInfo(vr_client_info_t *pVRClientInfo);
+	virtual void 			SetVRClientInfo(vrClientInfo *pVRClientInfo);
 	virtual void			ThrottleUserInfo( void );
 	virtual const idDict *	SetUserInfo( int clientNum, const idDict &userInfo, bool isClient, bool canModify );
 	virtual const idDict *	GetUserInfo( int clientNum );
@@ -456,7 +456,7 @@ public:
 private:
 	const static int		INITIAL_SPAWN_COUNT = 1;
 
-	vr_client_info_t 		*pVRClientInfo;
+	vrClientInfo 		*pVRClientInfo;
 
 	idStr					mapFileName;			// name of the map, empty string if no map loaded
 	idMapFile *				mapFile;				// will be NULL during the game unless in-game editing is used

@@ -200,6 +200,7 @@ private:
 
 	// the view weapon render entity parms
 	idVec3					viewWeaponOrigin;
+	idAngles				viewWeaponAngles;
 	idMat3					viewWeaponAxis;
 
 	// the muzzle bone's position, used for launching projectiles and trailing smoke

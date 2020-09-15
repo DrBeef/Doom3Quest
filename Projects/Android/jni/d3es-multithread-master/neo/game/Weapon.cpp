@@ -1879,7 +1879,7 @@ void idWeapon::PresentWeapon( bool showViewModel ) {
 	playerViewAxis = owner->firstPersonViewAxis;
 
 	// calculate weapon position based on player movement bobbing
-	owner->CalculateViewWeaponPos( viewWeaponOrigin, viewWeaponAxis );
+	owner->CalculateViewWeaponPos( true, viewWeaponOrigin, viewWeaponAxis, viewWeaponAngles );
 
 	// hide offset is for dropping the gun when approaching a GUI or NPC
 	// This is simpler to manage than doing the weapon put-away animation

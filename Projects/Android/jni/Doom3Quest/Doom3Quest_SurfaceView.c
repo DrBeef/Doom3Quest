@@ -49,7 +49,6 @@ Copyright	:	Copyright 2015 Oculus VR, LLC. All Rights reserved.
 bool Doom3Quest_initialised;
 float playerYaw;
 float vrFOV;
-float vr_weapon_pitchadjust = -30.0f;
 bool vr_moveuseoffhand;
 float vr_snapturn_angle;
 bool vr_switchsticks;
@@ -88,11 +87,11 @@ int CPU_LEVEL			= 4;
 int GPU_LEVEL			= 4;
 int NUM_MULTI_SAMPLES	= 1;
 int FFR					= 0;
-float SS_MULTIPLIER    = 1.25f;
-int DISPLAY_REFRESH		= 72;
+float SS_MULTIPLIER    = 1.0f;
+int DISPLAY_REFRESH		= 60;
 
-vr_client_info_t vr;
-vr_client_info_t *pVRClientInfo;
+vrClientInfo vr;
+vrClientInfo *pVRClientInfo;
 
 jclass clazz;
 
@@ -1262,9 +1261,6 @@ void VR_Init()
 
 	//init randomiser
 	srand(time(NULL));
-
-	//Initialise our cvar holders
-	vr_weapon_pitchadjust = -30.0f;
 
 	shutdown = false;
 }

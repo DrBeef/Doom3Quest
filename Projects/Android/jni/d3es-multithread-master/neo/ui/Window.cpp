@@ -1222,9 +1222,16 @@ void idWindow::Redraw(float x, float y) {
 			((flags & WIN_MENUGUI) && r_scaleMenusTo43.GetBool()) )
 		{
 			fixupFor43 = true;
-			dc->SetMenuScaleFix(true);
+			//dc->SetMenuScaleFix(true);
 		}
 	}
+
+    bool scaledHUDForVR = cvarSystem->GetCVarBool("vr_hud");
+    if ( scaledHUDForVR ) {
+        dc->SetMenuScaleForVR(true);
+    } else {
+        dc->SetMenuScaleForVR(false);
+    }
 
 	if ( flags & WIN_SHOWTIME ) {
 		dc->DrawText(va(" %0.1f seconds\n%s", (float)(time - timeLine) / 1000, gui->State().GetString("name")), 0.35f, 0, dc->colorWhite, idRectangle(100, 0, 80, 80), false);
@@ -1241,7 +1248,7 @@ void idWindow::Redraw(float x, float y) {
 		if (fixupFor43) { // DG: gotta reset that before returning this function
 			dc->SetMenuScaleFix(false);
 		}
-		return;
+        return;
 	}
 
 	CalcClientRect(0, 0);
@@ -1310,7 +1317,7 @@ void idWindow::Redraw(float x, float y) {
 	}
 
 	if (fixupFor43) { // DG: gotta reset that before returning this function
-		dc->SetMenuScaleFix(false);
+		//dc->SetMenuScaleFix(false);
 	}
 
 	drawRect.Offset(-x, -y);
