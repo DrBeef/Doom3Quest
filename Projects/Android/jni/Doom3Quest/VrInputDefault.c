@@ -332,9 +332,9 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                 {
                     if (pVRClientInfo->backpackitemactive == 1) {
                         //Restores last used weapon if possible
-                        char buffer[32];
-                        sprintf(buffer, "weapon %i", pVRClientInfo->lastweaponid);
-                        sendButtonActionSimple(buffer);
+                        if (pVRClientInfo->weaponid != -1) {
+                            Android_SetImpuse(UB_IMPULSE0 + pVRClientInfo->weaponid);
+                        }
                         pVRClientInfo->backpackitemactive = 0;
                     }
                     else if ((GetTimeInMilliSeconds() - dominantGripPushTime) < vr_reloadtimeoutms) {
@@ -346,9 +346,10 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
 
                 if (!dominantButton1Pushed && pVRClientInfo->backpackitemactive == 2)
                 {
-                    char buffer[32];
-                    sprintf(buffer, "weapon %i", pVRClientInfo->lastweaponid);
-                    sendButtonActionSimple(buffer);
+                    //Restores last used weapon if possible
+                    if (pVRClientInfo->weaponid != -1) {
+                        Android_SetImpuse(UB_IMPULSE0 + pVRClientInfo->weaponid);
+                    }
                     pVRClientInfo->backpackitemactive = 0;
                 }
 
@@ -356,6 +357,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                 {
                     pVRClientInfo->backpackitemactive = 0;
                 }
+
             } else {
                 if (pVRClientInfo->backpackitemactive == 0) {
                     if (dominantGripPushed) {

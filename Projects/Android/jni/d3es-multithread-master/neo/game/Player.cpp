@@ -6418,6 +6418,11 @@ void idPlayer::Think( void ) {
 		playerView.CalculateShake();
 	}
 
+	if (pVRClientInfo != nullptr)
+    {
+        pVRClientInfo->weaponid = currentWeapon;
+    }
+
 	if ( !( thinkFlags & TH_THINK ) ) {
 		gameLocal.Printf( "player %d not thinking?\n", entityNumber );
 	}
