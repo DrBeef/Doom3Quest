@@ -295,10 +295,11 @@ void idDeviceContext::SetMenuScaleFix(bool enable) {
 void idDeviceContext::SetMenuScaleForVR( bool enable ) {
 	int eye = cvarSystem->GetCVarInteger("vr_eye");
 	if(enable) {
-		float scale = 0.45;
-		float offsetX = (1.0f - scale) * (VIRTUAL_WIDTH * 0.5f);
-		float offsetY = (1.0f - scale) * (VIRTUAL_HEIGHT * 0.5f);
-		fixScaleForMenu.Set(scale, scale);
+		float scaleX = 0.38;
+		float scaleY = 0.45;
+		float offsetX = (1.0f - scaleX) * (VIRTUAL_WIDTH * 0.5f);
+		float offsetY = (1.0f - scaleY) * (VIRTUAL_HEIGHT * 0.5f);
+		fixScaleForMenu.Set(scaleX, scaleY);
 		fixOffsetForMenu.Set(offsetX + (eye==0 ? 14 : -14), offsetY);
 	} else {
 		fixScaleForMenu.Set(1, 1);

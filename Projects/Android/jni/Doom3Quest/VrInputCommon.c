@@ -173,12 +173,12 @@ float clamp(float _min, float _val, float _max)
 }
 
 
-void interactWithTouchScreen(bool reset, ovrInputStateTrackedRemote *newState, ovrInputStateTrackedRemote *oldState) {
+void controlMouse(ovrInputStateTrackedRemote *newState, ovrInputStateTrackedRemote *oldState) {
     static int cursorX = 0;
     static int cursorY = 0;
 
-    cursorX = (float)(pVRClientInfo->weaponangles_delta[YAW] * 15.0f);
-    cursorY = (float)(-pVRClientInfo->weaponangles_delta[PITCH] * 15.0f);
+    cursorX = (float)(pVRClientInfo->weaponangles_delta[YAW] * 20.0f);
+    cursorY = (float)(-pVRClientInfo->weaponangles_delta[PITCH] * 20.0f);
 
     Sys_AddMouseMoveEvent(cursorX, cursorY);
 }

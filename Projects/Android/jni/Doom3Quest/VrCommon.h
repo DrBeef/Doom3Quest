@@ -67,8 +67,7 @@ void handleTrackedControllerButton_AsImpulse(ovrInputStateTrackedRemote * tracke
         ovrInputStateTrackedRemote * prevTrackedRemoteState, uint32_t button, int key);
 
 
-void interactWithTouchScreen(bool reset, ovrInputStateTrackedRemote *newState,
-                             ovrInputStateTrackedRemote *oldState);
+void controlMouse(ovrInputStateTrackedRemote *newState, ovrInputStateTrackedRemote *oldState);
 
 
 //Called from engine code
@@ -82,7 +81,7 @@ bool Doom3Quest_processMessageQueue();
 
 void Doom3Quest_FrameSetup();
 
-void Doom3Quest_setUseScreenLayer(bool use);
+void Doom3Quest_setUseScreenLayer(int screen);
 
 void Doom3Quest_processHaptics();
 

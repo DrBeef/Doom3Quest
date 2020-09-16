@@ -141,16 +141,23 @@ double GetTimeInMilliSeconds()
 
 
 //This is controlled by the engine
-static bool useVirtualScreen = true;
+bool forceVirtualScreen = false;
+bool inMenu = false;
+bool inGameGuiActive = false;
+bool objectiveSystemActive = false;
+bool inCinematic = false;
 
-void Doom3Quest_setUseScreenLayer(bool use)
+void Doom3Quest_setUseScreenLayer(int screen)
 {
-	useVirtualScreen = use;
+	inMenu = screen & 0x1;
+	inGameGuiActive = !!(screen & 0x2);
+	objectiveSystemActive = !!(screen & 0x4);
+	inCinematic = !!(screen & 0x8);
 }
 
 bool Doom3Quest_useScreenLayer()
 {
-	return useVirtualScreen;
+	return inMenu || objectiveSystemActive || inCinematic || forceVirtualScreen;
 }
 
 static void UnEscapeQuotes( char *arg )
@@ -840,11 +847,6 @@ void updateHMDOrientation()
 void setHMDPosition( float x, float y, float z, float yaw )
 {
 	VectorSet(vr.hmdposition, x, y, z);
-
-	if (!Doom3Quest_useScreenLayer())
-    {
-    	playerYaw = yaw;
-	}
 }
 
 
@@ -1258,6 +1260,7 @@ void VR_Init()
 	positional_movementSideways = 0.0f;
 	positional_movementForward = 0.0f;
 	snapTurn = 0.0f;
+	vr.visible_hud = true;
 
 	//init randomiser
 	srand(time(NULL));
@@ -1427,6 +1430,8 @@ void * AppThreadFunction(void * parm ) {
 		// If intialization failed, vrapi_* function calls will not be available.
 		exit(0);
 	}
+
+    VR_Init();
 
 	ovrApp_Clear(&gAppState);
 	gAppState.Java = java;

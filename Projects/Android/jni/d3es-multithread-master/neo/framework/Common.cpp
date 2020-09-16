@@ -2380,7 +2380,8 @@ void idCommonLocal::InitSIMD( void ) {
 }
 
 
-extern "C" void Android_PumpEvents(int screen);
+extern "C" void Doom3Quest_setUseScreenLayer(int use);
+extern "C" void Doom3Quest_FrameSetup();
 
 /*
 =================
@@ -2398,7 +2399,8 @@ void idCommonLocal::Frame( void ) {
 		int objectiveActive = ( game && game->ObjectiveSystemActive());
 		int cinematic = ( game && game->InCinematic());
 
-		Android_PumpEvents(inMenu?1:0 + inGameGui?2:0 + objectiveActive?4:0 + cinematic?8:0);
+		Doom3Quest_setUseScreenLayer(inMenu?1:0 + inGameGui?2:0 + objectiveActive?4:0 + cinematic?8:0);
+		Doom3Quest_FrameSetup();
 
 		if (game) {
 			game->SetVRClientInfo(pVRClientInfo);

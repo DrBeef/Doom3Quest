@@ -33,6 +33,7 @@ float	vr_switch_sticks = 0;
 float	vr_cinematic_stereo;
 float	vr_screen_dist;
 
+extern bool forceVirtualScreen;
 
 /*
 ================
@@ -59,6 +60,11 @@ int Sys_Milliseconds( void ) {
 
 void Android_SetImpuse(int impulse);
 void Android_SetCommand(const char * cmd);
+
+extern bool inMenu;
+extern bool inGameGuiActive;
+extern bool objectiveSystemActive;
+extern bool inCinematic;
 
 void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew, ovrInputStateTrackedRemote *pDominantTrackedRemoteOld, ovrTracking* pDominantTracking,
                           ovrInputStateTrackedRemote *pOffTrackedRemoteNew, ovrInputStateTrackedRemote *pOffTrackedRemoteOld, ovrTracking* pOffTracking,
@@ -137,20 +143,27 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
         VectorCopy(pVRClientInfo->weaponangles, pVRClientInfo->weaponangles_last);
     }
 
-    //Menu button
+    //Menu button - can be used in all modes
     handleTrackedControllerButton_AsKey(&leftTrackedRemoteState_new, &leftTrackedRemoteState_old, ovrButton_Enter, K_ESCAPE);
 
-    static bool resetCursor = true;
-    if ( Doom3Quest_useScreenLayer() )
+    if ( inMenu || inGameGuiActive || inCinematic ) // Specific cases where we need to interact using mouse etc
     {
-        interactWithTouchScreen(resetCursor, pDominantTrackedRemoteNew, pDominantTrackedRemoteOld);
-
+        controlMouse(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld);
         handleTrackedControllerButton_AsButton(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld, true, ovrButton_Trigger, 1);
     }
-    else
-    {
-        resetCursor = true;
 
+    if ( objectiveSystemActive )
+    {
+        controlMouse(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld);
+        handleTrackedControllerButton_AsButton(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld, true, ovrButton_Trigger, 1);
+        if (((pOffTrackedRemoteNew->Buttons & offButton1) != (pOffTrackedRemoteOld->Buttons & offButton1)) && (pOffTrackedRemoteNew->Buttons & offButton1))
+        {
+            Android_SetImpuse(UB_IMPULSE19);
+        }
+    }
+
+    if ( !inCinematic && !inMenu )
+    {
         static bool canUseQuickSave = false;
         if (pOffTracking->Status & (VRAPI_TRACKING_STATUS_POSITION_TRACKED | VRAPI_TRACKING_STATUS_POSITION_VALID)) {
             canUseQuickSave = false;
@@ -202,30 +215,6 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
 
         pVRClientInfo->weapon_stabilised = stabilised;
 
-        //Engage scope / virtual stock if conditions are right
-        bool scopeready = pVRClientInfo->weapon_stabilised && (distanceToHMD < SCOPE_ENGAGE_DISTANCE);
-        static bool lastScopeReady = false;
-        if (scopeready != lastScopeReady) {
-            if (pVRClientInfo->scopedweapon && !pVRClientInfo->scopedetached) {
-                if (!pVRClientInfo->scopeengaged && scopeready) {
-                    ALOGV("**WEAPON EVENT**  trigger scope mode");
-                    sendButtonActionSimple("weapalt");
-                }
-                else if (pVRClientInfo->scopeengaged && !scopeready) {
-                    ALOGV("**WEAPON EVENT**  disable scope mode");
-                    sendButtonActionSimple("weapalt");
-                }
-                lastScopeReady = scopeready;
-            }
-        }
-
-        //Engage scope / virtual stock (iron sight lock) if conditions are right
-        static bool scopeEngaged = false;
-        if (scopeEngaged != pVRClientInfo->scopeengaged)
-        {
-            scopeEngaged = pVRClientInfo->scopeengaged;
-        }
-
         //dominant hand stuff first
         {
             //Record recent weapon position for trajectory based stuff
@@ -273,22 +262,6 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
 
             if (pVRClientInfo->weapon_stabilised)
             {
-                if (pVRClientInfo->scopeengaged)
-                {
-                    //offset to the appropriate eye a little bit
-                    vec2_t xy;
-                    rotateAboutOrigin(0.065f / 2.0f, 0.0f, -pVRClientInfo->hmdorientation[YAW], xy);
-                    float x = pOff->HeadPose.Pose.Position.x - (pVRClientInfo->hmdposition[0] + xy[0]);
-                    float y = pOff->HeadPose.Pose.Position.y - (pVRClientInfo->hmdposition[1] - 0.1f); // Use a point lower
-                    float z = pOff->HeadPose.Pose.Position.z - (pVRClientInfo->hmdposition[2] + xy[1]);
-                    float zxDist = length(x, z);
-
-                    if (zxDist != 0.0f && z != 0.0f) {
-                        VectorSet(pVRClientInfo->weaponangles, -degrees(atanf(y / zxDist)),
-                                  -degrees(atan2f(x, -z)), 0);
-                    }
-                }
-                else
                 {
                     float x = pOff->HeadPose.Pose.Position.x - pWeapon->HeadPose.Pose.Position.x;
                     float y = pOff->HeadPose.Pose.Position.y - pWeapon->HeadPose.Pose.Position.y;
@@ -481,11 +454,11 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
 
         {
             //"Use"
-            if ((pDominantTrackedRemoteNew->Buttons & ovrButton_Joystick) !=
-                (pDominantTrackedRemoteOld->Buttons & ovrButton_Joystick)) {
+            if (((pDominantTrackedRemoteNew->Buttons & ovrButton_Joystick) !=
+                (pDominantTrackedRemoteOld->Buttons & ovrButton_Joystick)) &&
+                    (pDominantTrackedRemoteOld->Buttons & ovrButton_Joystick)){
 
-                //Use Vehicle
-                Android_SetImpuse(UB_IMPULSE40);
+                forceVirtualScreen = !forceVirtualScreen;
             }
 
             //Apply a filter and quadratic scaler so small movements are easier to make
@@ -502,8 +475,8 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
 
             //Move a lot slower if scope is engaged
             vr_movement_multiplier = 127;
-            remote_movementSideways = v[0] * (pVRClientInfo->scopeengaged ? 0.3f : 1.0f) * vr_movement_multiplier;
-            remote_movementForward = v[1] * (pVRClientInfo->scopeengaged ? 0.3f : 1.0f) * vr_movement_multiplier;
+            remote_movementSideways = v[0] *  vr_movement_multiplier;
+            remote_movementForward = v[1] *  vr_movement_multiplier;
 
             if (!canUseQuickSave) {
                 if (((secondaryButtonsNew & secondaryButton1) !=
@@ -512,16 +485,15 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
 
                     if (dominantGripPushed) {
                         Android_SetCommand("give all");
-                    } else {
-                        pVRClientInfo->visible_hud = !pVRClientInfo->visible_hud;
                     }
                 }
             }
 
-            if ((pOffTrackedRemoteNew->Buttons & ovrButton_Joystick) !=
-                (pOffTrackedRemoteOld->Buttons & ovrButton_Joystick)) {
+            if (((pOffTrackedRemoteNew->Buttons & ovrButton_Joystick) !=
+                (pOffTrackedRemoteOld->Buttons & ovrButton_Joystick)) &&
+                    (pOffTrackedRemoteOld->Buttons & ovrButton_Joystick)) {
 
-                //UNUSED
+                pVRClientInfo->visible_hud = !pVRClientInfo->visible_hud;
 
             }
 
@@ -547,7 +519,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
 
             //No snap turn when using mounted gun
             static int increaseSnap = true;
-            if (!pVRClientInfo->scopeengaged) {
+            {
                 if (pPrimaryJoystick->x > 0.7f) {
                     if (increaseSnap) {
                         float turnAngle = vr_turn_mode ? (vr_turn_angle / 9.0f) : vr_turn_angle;
@@ -586,18 +558,9 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                     decreaseSnap = true;
                 }
             }
-            else {
-                if (fabs(pPrimaryJoystick->x) > 0.5f) {
-                    increaseSnap = false;
-                }
-                else
-                {
-                    increaseSnap = true;
-                }
-            }
         }
 
-        updateScopeAngles();
+        //updateScopeAngles();
     }
 
     //Save state

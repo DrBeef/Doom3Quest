@@ -479,11 +479,15 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
 			}
 		}
 
-        cvarSystem->SetCVarBool("vr_hud", true);
+		vrClientInfo *pVRClientInfo = player->GetVRClientInfo();
+		if (pVRClientInfo != nullptr &&
+			pVRClientInfo->visible_hud) {
+			cvarSystem->SetCVarBool("vr_hud", true);
 
-        player->DrawHUD( hud );
+			player->DrawHUD(hud);
 
-        cvarSystem->SetCVarBool("vr_hud", false);
+			cvarSystem->SetCVarBool("vr_hud", false);
+		}
 
 		// armor impulse feedback
 		float	armorPulse = ( gameLocal.time - player->lastArmorPulse ) / 250.0f;

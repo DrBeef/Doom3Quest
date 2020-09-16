@@ -44,12 +44,6 @@ typedef struct {
 
     bool pistol;                // True if the weapon is a pistol
 
-    //Lots of scope weapon stuff
-    bool scopeengaged;          // Scope has been engaged on a scoped weapon
-    bool scopedweapon;          // Weapon scope is available
-    bool scopedetached;         // Scope has been detached from weapon
-    bool detachablescope;       // Scope can be detached from weapon
-
     bool velocitytriggered; // Weapon attack triggered by velocity (knife)
 
     vec3_t offhandangles;

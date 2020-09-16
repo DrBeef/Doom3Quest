@@ -156,6 +156,13 @@ import static android.system.Os.setenv;
 		//Create all required folders
 		new File("/sdcard/Doom3Quest/base").mkdirs();
 
+		//Default config
+		copy_asset("/sdcard/Doom3Quest/base", "default.cfg", false);
+
+		//Weapons
+		copy_asset("/sdcard/Doom3Quest/base", "pak099.pk4", false);
+
+
 		//Read these from a file and pass through
 		commandLineParams = new String("doom3quest");
 

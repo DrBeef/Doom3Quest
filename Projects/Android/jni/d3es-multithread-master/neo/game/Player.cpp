@@ -7328,6 +7328,10 @@ void idPlayer::SetVRClientInfo(vrClientInfo *pVR)
 	pVRClientInfo = pVR;
 }
 
+vrClientInfo*	idPlayer::GetVRClientInfo()
+{
+    return pVRClientInfo;
+}
 
 /*
 ===============

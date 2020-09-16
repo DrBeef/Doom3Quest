@@ -364,7 +364,7 @@ public:
 	bool					BalanceTDM( void );
 
 	void 					SetVRClientInfo(vrClientInfo *pVRClientInfo);
-
+	vrClientInfo*			GetVRClientInfo();
 
 	void					CacheWeapons( void );
 
