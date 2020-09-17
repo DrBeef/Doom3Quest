@@ -36,6 +36,9 @@ typedef struct {
     vec3_t weaponangles_last; // Don't use this, it is just for calculating delta!
     vec3_t weaponangles_delta;
 
+    vec3_t flashlightHolsterOrigin; // Where the flashlight can be picked up from
+
+
     vec3_t current_weaponoffset;
     vec3_t calculated_weaponoffset;
     float current_weaponoffset_timestamp;

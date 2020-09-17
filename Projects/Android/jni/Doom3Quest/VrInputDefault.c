@@ -80,7 +80,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
 
     static bool dominantGripPushed = false;
 	static float dominantGripPushTime = 0.0f;
-    static bool canUseBackpack = false;
+    static bool canGrabFlashlight = false;
 
 
     //Need this for the touch screen
@@ -202,10 +202,6 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                                powf(pOff->HeadPose.Pose.Position.y - pWeapon->HeadPose.Pose.Position.y, 2) +
                                powf(pOff->HeadPose.Pose.Position.z - pWeapon->HeadPose.Pose.Position.z, 2));
 
-        float distanceToHMD = sqrtf(powf(pVRClientInfo->hmdposition[0] - pWeapon->HeadPose.Pose.Position.x, 2) +
-                                    powf(pVRClientInfo->hmdposition[1] - pWeapon->HeadPose.Pose.Position.y, 2) +
-                                    powf(pVRClientInfo->hmdposition[2] - pWeapon->HeadPose.Pose.Position.z, 2));
-
         //Turn on weapon stabilisation?
         bool stabilised = false;
         if (!pVRClientInfo->pistol && // Don't stabilise pistols
@@ -278,46 +274,42 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                 }
             }
 
-            if (pDominantTracking->Status & (VRAPI_TRACKING_STATUS_POSITION_TRACKED | VRAPI_TRACKING_STATUS_POSITION_VALID)) {
-                canUseBackpack = false;
-            }
-            else if (!canUseBackpack && pVRClientInfo->holsteritemactive == 0) {
-                int channel = (vr_control_scheme >= 10) ? 0 : 1;
-                    Doom3Quest_Vibrate(40, channel, 0.5); // vibrate to let user know they can switch
+            {
+                vec2_t v;
+                rotateAboutOrigin(pVRClientInfo->right_handed ? 0.25f : -0.25f, 0.0f,
+                                  -pVRClientInfo->hmdorientation[YAW], v);
+                pVRClientInfo->flashlightHolsterOrigin[0] = pVRClientInfo->hmdposition[0] + v[0];
+                pVRClientInfo->flashlightHolsterOrigin[1] = pVRClientInfo->hmdposition[1] / 2.0f; // half way down body "waist"
+                pVRClientInfo->flashlightHolsterOrigin[2] = (pVRClientInfo->hmdposition[2] + v[1]);
 
-                canUseBackpack = true;
+                float distance = sqrtf(
+                        powf(pVRClientInfo->flashlightHolsterOrigin[0] - pWeapon->HeadPose.Pose.Position.x, 2) +
+                        powf(pVRClientInfo->flashlightHolsterOrigin[1] - pWeapon->HeadPose.Pose.Position.y, 2) +
+                        powf(pVRClientInfo->flashlightHolsterOrigin[2] - pWeapon->HeadPose.Pose.Position.z, 2));
+
+                if (distance > FLASHLIGHT_HOLSTER_DISTANCE) {
+                    canGrabFlashlight = false;
+                }
+                else if (!canGrabFlashlight && pVRClientInfo->holsteritemactive == 0) {
+                    int channel = (vr_control_scheme >= 10) ? 0 : 1;
+                    Doom3Quest_Vibrate(40, channel, 0.4); // vibrate to let user know they can switch
+
+                    canGrabFlashlight = true;
+                }
             }
 
             dominantGripPushed = (pDominantTrackedRemoteNew->Buttons &
                                   ovrButton_GripTrigger) != 0;
 
-            if (!canUseBackpack)
-            {
-                if (dominantGripPushed) {
+            if (dominantGripPushed) {
+                if (!canGrabFlashlight) {
                     if (dominantGripPushTime == 0) {
                         dominantGripPushTime = GetTimeInMilliSeconds();
                     }
                 }
                 else
                 {
-                    if (pVRClientInfo->holsteritemactive == 1) {
-                        //Restores last used weapon if possible
-                        if (pVRClientInfo->weaponid != -1) {
-                            Android_SetImpuse(UB_IMPULSE0 + pVRClientInfo->weaponid);
-                        }
-                        pVRClientInfo->holsteritemactive = 0;
-                    }
-                    else if ((GetTimeInMilliSeconds() - dominantGripPushTime) < vr_reloadtimeoutms) {
-
-                        //Reload
-                        Android_SetImpuse(UB_IMPULSE13);
-                    }
-
-                    dominantGripPushTime = 0;
-                }
-            } else {
-                if (pVRClientInfo->holsteritemactive == 0) {
-                    if (dominantGripPushed) {
+                    if (pVRClientInfo->holsteritemactive == 0) {
                         pVRClientInfo->lastweaponid = pVRClientInfo->weaponid;
 
                         //Initiate flashlight from backpack mode
@@ -328,6 +320,22 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                         pVRClientInfo->holsteritemactive = 1;
                     }
                 }
+            }
+            else
+            {
+                if (pVRClientInfo->holsteritemactive == 1) {
+                    //Restores last used weapon if possible
+                    if (pVRClientInfo->weaponid != -1) {
+                        Android_SetImpuse(UB_IMPULSE0 + pVRClientInfo->weaponid);
+                    }
+                    pVRClientInfo->holsteritemactive = 0;
+                }
+                else if ((GetTimeInMilliSeconds() - dominantGripPushTime) < vr_reloadtimeoutms) {
+                    //Reload
+                    Android_SetImpuse(UB_IMPULSE13);
+                }
+
+                dominantGripPushTime = 0;
             }
         }
 
@@ -369,7 +377,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
             positional_movementForward = v[1];
 
             //Jump (B Button)
-            if (pVRClientInfo->holsteritemactive != 2 && !canUseBackpack) {
+            if (pVRClientInfo->holsteritemactive != 2 && !canGrabFlashlight) {
 
                 if ((primaryButtonsNew & primaryButton2) != (primaryButtonsOld & primaryButton2))
                 {
@@ -391,7 +399,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
 
             //Duck
             if (pVRClientInfo->holsteritemactive != 2 &&
-                !canUseBackpack &&
+                !canGrabFlashlight &&
                 (primaryButtonsNew & primaryButton1) !=
                 (primaryButtonsOld & primaryButton1)) {
 

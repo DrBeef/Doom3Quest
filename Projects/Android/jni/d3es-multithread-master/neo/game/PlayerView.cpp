@@ -372,7 +372,8 @@ void idPlayerView::WeaponFireFeedback( const idDict *weaponDef ) {
 	//Defined for the VR weapons - defaults in case they are missing
 	float controllerShakeHighMag = weaponDef->GetFloat( "controllerShakeHighMag", "1.0" );
 	int controllerShakeHighTime = weaponDef->GetInt( "controllerShakeHighTime", "0" );
-	bool rightHanded = cvarSystem->GetCVarInteger("vr_control_scheme") == 0;
+	vrClientInfo *pVRClientInfo = player->GetVRClientInfo();
+	bool rightHanded = pVRClientInfo != nullptr ? pVRClientInfo->right_handed : true;
 	if (controllerShakeHighTime == 0)
     {
         controllerShakeHighTime = recoilTime / 2;
