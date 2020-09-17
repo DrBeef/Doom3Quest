@@ -212,6 +212,9 @@ public:
 								// Directly sample a keystate.
 	virtual int					KeyState( int key ) = 0;
 
+								//Haptic Feedback
+	virtual void 				Vibrate(int duration, int channel, float intensity ) = 0;
+
 	/* Some Mods (like Ruiner and DarkMod when it still was a mod) used "SourceHook"
 	 * to override Doom3 Methods to call their own code before the original method
 	 * was executed.. this is super ugly and probably not super portable either.

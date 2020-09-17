@@ -369,6 +369,20 @@ void idPlayerView::WeaponFireFeedback( const idDict *weaponDef ) {
 		kickFinishTime = finish;
 	}
 
+	//Defined for the VR weapons - defaults in case they are missing
+	float controllerShakeHighMag = weaponDef->GetFloat( "controllerShakeHighMag", "1.0" );
+	int controllerShakeHighTime = weaponDef->GetInt( "controllerShakeHighTime", "0" );
+	bool rightHanded = cvarSystem->GetCVarInteger("vr_control_scheme") == 0;
+	if (controllerShakeHighTime == 0)
+    {
+        controllerShakeHighTime = recoilTime / 2;
+    }
+
+	common->Vibrate(controllerShakeHighTime, rightHanded ? 1 : 0, controllerShakeHighMag);
+	if (cvarSystem->GetCVarBool("vr_weapon_stabilised"))
+	{
+		common->Vibrate(controllerShakeHighTime, rightHanded ? 0 : 1, controllerShakeHighMag);
+	}
 }
 
 /*
@@ -389,6 +403,12 @@ void idPlayerView::CalculateShake() {
 	shakeAng[0] = gameLocal.random.CRandomFloat() * shakeVolume;
 	shakeAng[1] = gameLocal.random.CRandomFloat() * shakeVolume;
 	shakeAng[2] = gameLocal.random.CRandomFloat() * shakeVolume;
+
+	if (shakeVolume > 0.05) {
+        //Shake controllers!
+        common->Vibrate(50, 0, idMath::ClampFloat(0.3, 1.0, (shakeVolume*2.0f + 0.1f)));
+        common->Vibrate(50, 1, idMath::ClampFloat(0.3, 1.0, (shakeVolume*2.0f + 0.1f)));
+    }
 }
 
 /*

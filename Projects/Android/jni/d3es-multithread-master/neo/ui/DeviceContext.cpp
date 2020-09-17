@@ -300,7 +300,7 @@ void idDeviceContext::SetMenuScaleForVR( bool enable ) {
 		float offsetX = (1.0f - scaleX) * (VIRTUAL_WIDTH * 0.5f);
 		float offsetY = (1.0f - scaleY) * (VIRTUAL_HEIGHT * 0.5f);
 		fixScaleForMenu.Set(scaleX, scaleY);
-		fixOffsetForMenu.Set(offsetX + (eye==0 ? 14 : -14), offsetY);
+		fixOffsetForMenu.Set(offsetX + (eye==0 ? 20 : -20), offsetY);
 	} else {
 		fixScaleForMenu.Set(1, 1);
 		fixOffsetForMenu.Set(0, 0);

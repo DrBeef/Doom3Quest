@@ -131,6 +131,8 @@ public:
 	virtual void			LinkCombat( void );
 	virtual void			UnlinkCombat( void );
 
+	virtual bool			GetPhysicsToVisualTransform( idVec3& origin, idMat3& axis );
+
 protected:
 	idEntity *				body;
 	idClipModel *			combatModel;	// render model for hit detection of head

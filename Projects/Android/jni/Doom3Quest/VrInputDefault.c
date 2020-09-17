@@ -60,6 +60,7 @@ int Sys_Milliseconds( void ) {
 
 void Android_SetImpuse(int impulse);
 void Android_SetCommand(const char * cmd);
+void Android_ButtonChange(int key, int state);
 
 extern bool inMenu;
 extern bool inGameGuiActive;
@@ -248,7 +249,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
 
                 if (fired != velocityTriggeredAttack) {
                     ALOGV("**WEAPON EVENT**  veocity triggered %s", velocityTriggeredAttack ? "+attack" : "-attack");
-                    sendButtonAction("+attack", velocityTriggeredAttack);
+                    Android_ButtonChange(UB_ATTACK, velocityTriggeredAttack ? 1 : 0);
                     fired = velocityTriggeredAttack;
                 }
             }
@@ -257,7 +258,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                 //send a stop attack as we have an unfinished velocity attack
                 velocityTriggeredAttack = false;
                 ALOGV("**WEAPON EVENT**  veocity triggered -attack");
-                sendButtonAction("+attack", velocityTriggeredAttack);
+                Android_ButtonChange(UB_ATTACK, velocityTriggeredAttack ? 1 : 0);
             }
 
             if (pVRClientInfo->weapon_stabilised)
@@ -280,7 +281,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
             if (pDominantTracking->Status & (VRAPI_TRACKING_STATUS_POSITION_TRACKED | VRAPI_TRACKING_STATUS_POSITION_VALID)) {
                 canUseBackpack = false;
             }
-            else if (!canUseBackpack && pVRClientInfo->backpackitemactive == 0) {
+            else if (!canUseBackpack && pVRClientInfo->holsteritemactive == 0) {
                 int channel = (vr_control_scheme >= 10) ? 0 : 1;
                     Doom3Quest_Vibrate(40, channel, 0.5); // vibrate to let user know they can switch
 
@@ -289,10 +290,6 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
 
             dominantGripPushed = (pDominantTrackedRemoteNew->Buttons &
                                   ovrButton_GripTrigger) != 0;
-            bool dominantButton1Pushed = (pDominantTrackedRemoteNew->Buttons &
-                                     domButton1) != 0;
-            bool dominantButton2Pushed = (pDominantTrackedRemoteNew->Buttons &
-                                          domButton2) != 0;
 
             if (!canUseBackpack)
             {
@@ -303,60 +300,33 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                 }
                 else
                 {
-                    if (pVRClientInfo->backpackitemactive == 1) {
+                    if (pVRClientInfo->holsteritemactive == 1) {
                         //Restores last used weapon if possible
                         if (pVRClientInfo->weaponid != -1) {
                             Android_SetImpuse(UB_IMPULSE0 + pVRClientInfo->weaponid);
                         }
-                        pVRClientInfo->backpackitemactive = 0;
+                        pVRClientInfo->holsteritemactive = 0;
                     }
                     else if ((GetTimeInMilliSeconds() - dominantGripPushTime) < vr_reloadtimeoutms) {
 
+                        //Reload
                         Android_SetImpuse(UB_IMPULSE13);
                     }
+
                     dominantGripPushTime = 0;
                 }
-
-                if (!dominantButton1Pushed && pVRClientInfo->backpackitemactive == 2)
-                {
-                    //Restores last used weapon if possible
-                    if (pVRClientInfo->weaponid != -1) {
-                        Android_SetImpuse(UB_IMPULSE0 + pVRClientInfo->weaponid);
-                    }
-                    pVRClientInfo->backpackitemactive = 0;
-                }
-
-                if (!dominantButton2Pushed && pVRClientInfo->backpackitemactive == 3)
-                {
-                    pVRClientInfo->backpackitemactive = 0;
-                }
-
             } else {
-                if (pVRClientInfo->backpackitemactive == 0) {
+                if (pVRClientInfo->holsteritemactive == 0) {
                     if (dominantGripPushed) {
                         pVRClientInfo->lastweaponid = pVRClientInfo->weaponid;
+
                         //Initiate flashlight from backpack mode
                         Android_SetImpuse(UB_IMPULSE11);
                         int channel = (vr_control_scheme >= 10) ? 0 : 1;
                         Doom3Quest_Vibrate(80, channel, 0.8); // vibrate to let user know they switched
-                        pVRClientInfo->backpackitemactive = 1;
-                    }
-                    /*else if (dominantButton1Pushed)
-                    {
-                        pVRClientInfo->lastweaponid = pVRClientInfo->weaponid;
 
-                        //Initiate knife from backpack mode
-                        sendButtonActionSimple("weapon 1");
-                        int channel = (vr_control_scheme >= 10) ? 0 : 1;
-                        Doom3Quest_Vibrate(80, channel, 0.8); // vibrate to let user know they switched
-                        pVRClientInfo->backpackitemactive = 2;
+                        pVRClientInfo->holsteritemactive = 1;
                     }
-                    else if (dominantButton2Pushed && pVRClientInfo->hasbinoculars)
-                    {
-                        int channel = (vr_control_scheme >= 10) ? 0 : 1;
-                        Doom3Quest_Vibrate(80, channel, 0.8); // vibrate to let user know they switched
-                        pVRClientInfo->backpackitemactive = 3;
-                    }*/
                 }
             }
         }
@@ -399,7 +369,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
             positional_movementForward = v[1];
 
             //Jump (B Button)
-            if (pVRClientInfo->backpackitemactive != 2 && !canUseBackpack) {
+            if (pVRClientInfo->holsteritemactive != 2 && !canUseBackpack) {
 
                 if ((primaryButtonsNew & primaryButton2) != (primaryButtonsOld & primaryButton2))
                 {
@@ -409,7 +379,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
 
 
             //Fire Primary
-            if (pVRClientInfo->backpackitemactive != 3 && // Can't fire while holding binoculars
+            if (pVRClientInfo->holsteritemactive != 3 && // Can't fire while holding binoculars
                 !pVRClientInfo->velocitytriggered && // Don't fire velocity triggered weapons
                 (pDominantTrackedRemoteNew->Buttons & ovrButton_Trigger) !=
                 (pDominantTrackedRemoteOld->Buttons & ovrButton_Trigger)) {
@@ -420,7 +390,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
             }
 
             //Duck
-            if (pVRClientInfo->backpackitemactive != 2 &&
+            if (pVRClientInfo->holsteritemactive != 2 &&
                 !canUseBackpack &&
                 (primaryButtonsNew & primaryButton1) !=
                 (primaryButtonsOld & primaryButton1)) {

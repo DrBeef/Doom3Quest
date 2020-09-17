@@ -255,6 +255,8 @@ extern idCVar	net_clientLagOMeter;
 extern idCVar vr_ipd;
 extern idCVar vr_worldscale;
 extern idCVar vr_eye;
+extern idCVar vr_heightoffset;
+extern idCVar vr_control_scheme;
 
 extern const char *si_gameTypeArgs[];
 

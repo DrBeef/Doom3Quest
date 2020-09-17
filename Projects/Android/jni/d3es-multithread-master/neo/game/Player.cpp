@@ -6236,7 +6236,15 @@ void idPlayer::Think( void ) {
 		return;
 	}
 
-	// clear the ik before we do anything else so the skeleton doesn't get updated twice
+    if (pVRClientInfo != nullptr)
+    {
+        pVRClientInfo->weaponid = currentWeapon;
+        cvarSystem->SetCVarBool("vr_weapon_stabilised", pVRClientInfo->weapon_stabilised);
+        pVRClientInfo->velocitytriggered = (currentWeapon == 11 || // 11 is flashlight
+				currentWeapon == 10); // 10 is chainsaw
+    }
+
+    // clear the ik before we do anything else so the skeleton doesn't get updated twice
 	walkIK.ClearJointMods();
 
 	// if this is the very first frame of the map, set the delta view angles
@@ -6417,11 +6425,6 @@ void idPlayer::Think( void ) {
 
 		playerView.CalculateShake();
 	}
-
-	if (pVRClientInfo != nullptr)
-    {
-        pVRClientInfo->weaponid = currentWeapon;
-    }
 
 	if ( !( thinkFlags & TH_THINK ) ) {
 		gameLocal.Printf( "player %d not thinking?\n", entityNumber );
@@ -6619,6 +6622,12 @@ void idPlayer::DamageFeedback( idEntity *victim, idEntity *inflictor, int &damag
 	damage *= PowerUpModifier( BERSERK );
 	if ( damage && ( victim != this ) && victim->IsType( idActor::Type ) ) {
 		SetLastHitTime( gameLocal.time );
+	}
+
+	if (victim == this)
+	{
+		common->Vibrate(250, 0, damage / 50);
+		common->Vibrate(250, 1, damage / 50);
 	}
 }
 
@@ -7306,7 +7315,7 @@ idVec3 idPlayer::GetEyePosition( void ) const {
 	if (pVRClientInfo)
     {
 		float eyeHeight = 0;
-		float vrEyeHeight = (-pVRClientInfo->hmdposition[1] * cvarSystem->GetCVarFloat( "vr_worldscale" ));
+		float vrEyeHeight = (-(pVRClientInfo->hmdposition[1] +  cvarSystem->GetCVarFloat( "vr_heightoffset" )) * cvarSystem->GetCVarFloat( "vr_worldscale" ));
 
 		//Add special handling for physical crouching at some point
 /*		if (physicsObj.IsCrouching() && PHYSICAL_CROUCH) {
@@ -8215,6 +8224,11 @@ void idPlayer::ReadFromSnapshot( const idBitMsgDelta &msg ) {
 		if ( weapon.GetEntity() ) {
 			weapon.GetEntity()->OwnerDied();
 		}
+
+		{
+			common->Vibrate(250, 0, 1.0);
+			common->Vibrate(250, 1, 1.0);
+		}
 	} else if ( oldHealth <= 0 && health > 0 ) {
 		// respawn
 		Init();
@@ -8234,6 +8248,11 @@ void idPlayer::ReadFromSnapshot( const idBitMsgDelta &msg ) {
 				lastDmgTime = gameLocal.time;
 			} else {
 				common->Warning( "NET: no damage def for damage feedback '%d'\n", lastDamageDef );
+			}
+
+			{
+				common->Vibrate(250, 0, 0.6);
+				common->Vibrate(250, 1, 0.6);
 			}
 		}
 	} else if ( health > oldHealth && PowerUpActive( MEGAHEALTH ) && !stateHitch ) {

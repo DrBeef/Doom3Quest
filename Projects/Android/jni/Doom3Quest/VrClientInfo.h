@@ -20,7 +20,7 @@ typedef struct {
     bool dualwield;
     int weaponid;
     int lastweaponid;
-    int backpackitemactive; //0 - nothing, 1 - grenades, 2 - knife, 3 - Binoculars
+    int holsteritemactive; //0 - nothing, 1 - flashlight
     bool mountedgun;
 
     vec3_t hmdposition;

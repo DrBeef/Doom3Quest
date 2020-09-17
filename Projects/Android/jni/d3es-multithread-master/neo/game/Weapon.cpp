@@ -1102,12 +1102,15 @@ void idWeapon::UpdateFlashPosition( void ) {
 	GetGlobalJointTransform( true, flashJointView, muzzleFlash.origin, muzzleFlash.axis );
 
 	// if the desired point is inside or very close to a wall, back it up until it is clear
-	idVec3	start = muzzleFlash.origin - playerViewAxis[0] * 16;
-	idVec3	end = muzzleFlash.origin + playerViewAxis[0] * 8;
+	//idVec3	start = muzzleFlash.origin - playerViewAxis[0] * 16;
+	idVec3	start = muzzleFlash.origin - viewWeaponAxis[0] * 16;
+	//idVec3	end = muzzleFlash.origin + playerViewAxis[0] * 8;
+	idVec3	end = muzzleFlash.origin + viewWeaponAxis[0] * 8;
 	trace_t	tr;
 	gameLocal.clip.TracePoint( tr, start, end, MASK_SHOT_RENDERMODEL, owner );
 	// be at least 8 units away from a solid
-	muzzleFlash.origin = tr.endpos - playerViewAxis[0] * 8;
+	//muzzleFlash.origin = tr.endpos - playerViewAxis[0] * 8;
+	muzzleFlash.origin = tr.endpos - viewWeaponAxis[0] * 8;
 
 	// put the world muzzle flash on the end of the joint, no matter what
 	GetGlobalJointTransform( false, flashJointWorld, worldMuzzleFlash.origin, worldMuzzleFlash.axis );
@@ -2876,9 +2879,8 @@ void idWeapon::Event_LaunchProjectiles( int num_projectiles, float spread, float
 		// there is an explicit joint for the muzzle
 		GetGlobalJointTransform( true, barrelJointView, muzzleOrigin, muzzleAxis );
 	} else {
-		// go straight out of the view
-		muzzleOrigin = playerViewOrigin;
-		muzzleAxis = playerViewAxis;
+		muzzleOrigin = viewWeaponOrigin;
+		muzzleAxis = viewWeaponAxis;
 	}
 
 	// add some to the kick time, incrementally moving repeat firing weapons back
@@ -2895,11 +2897,13 @@ void idWeapon::Event_LaunchProjectiles( int num_projectiles, float spread, float
 		// predict instant hit projectiles
 		if ( projectileDict.GetBool( "net_instanthit" ) ) {
 			float spreadRad = DEG2RAD( spread );
-			muzzle_pos = muzzleOrigin + playerViewAxis[ 0 ] * 2.0f;
+			//muzzle_pos = muzzleOrigin + playerViewAxis[ 0 ] * 2.0f;
+			muzzle_pos = muzzleOrigin + viewWeaponAxis[ 0 ] * 2.0f;
 			for( i = 0; i < num_projectiles; i++ ) {
 				ang = idMath::Sin( spreadRad * gameLocal.random.RandomFloat() );
 				spin = (float)DEG2RAD( 360.0f ) * gameLocal.random.RandomFloat();
-				dir = playerViewAxis[ 0 ] + playerViewAxis[ 2 ] * ( ang * idMath::Sin( spin ) ) - playerViewAxis[ 1 ] * ( ang * idMath::Cos( spin ) );
+				//dir = playerViewAxis[ 0 ] + playerViewAxis[ 2 ] * ( ang * idMath::Sin( spin ) ) - playerViewAxis[ 1 ] * ( ang * idMath::Cos( spin ) );
+				dir = viewWeaponAxis[ 0 ] + viewWeaponAxis[ 2 ] * ( ang * idMath::Sin( spin ) ) - viewWeaponAxis[ 1 ] * ( ang * idMath::Cos( spin ) );
 				dir.Normalize();
 				gameLocal.clip.Translation( tr, muzzle_pos, muzzle_pos + dir * 4096.0f, NULL, mat3_identity, MASK_SHOT_RENDERMODEL, owner );
 				if ( tr.fraction < 1.0f ) {
@@ -3000,8 +3004,9 @@ void idWeapon::Event_Melee( void ) {
 	}
 
 	if ( !gameLocal.isClient ) {
-		idVec3 start = playerViewOrigin;
-		idVec3 end = start + playerViewAxis[0] * ( meleeDistance * owner->PowerUpModifier( MELEE_DISTANCE ) );
+		idVec3 start = viewWeaponOrigin;
+		//idVec3 end = start + playerViewAxis[0] * ( meleeDistance * owner->PowerUpModifier( MELEE_DISTANCE ) );
+		idVec3 end = start + viewWeaponAxis[0] * ( meleeDistance * owner->PowerUpModifier( MELEE_DISTANCE ) );
 		gameLocal.clip.TracePoint( tr, start, end, MASK_SHOT_RENDERMODEL, owner );
 		if ( tr.fraction < 1.0f ) {
 			ent = gameLocal.GetTraceEntity( tr );
@@ -3163,7 +3168,8 @@ void idWeapon::Event_EjectBrass( void ) {
 	debris->Create( owner, origin, axis );
 	debris->Launch();
 
-	linear_velocity = 40 * ( playerViewAxis[0] + playerViewAxis[1] + playerViewAxis[2] );
+	//linear_velocity = 40 * ( playerViewAxis[0] + playerViewAxis[1] + playerViewAxis[2] );
+	linear_velocity = 40 * ( viewWeaponAxis[0] + viewWeaponAxis[1] + viewWeaponAxis[2] );
 	angular_velocity.Set( 10 * gameLocal.random.CRandomFloat(), 10 * gameLocal.random.CRandomFloat(), 10 * gameLocal.random.CRandomFloat() );
 
 	debris->GetPhysics()->SetLinearVelocity( linear_velocity );

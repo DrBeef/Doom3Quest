@@ -162,7 +162,9 @@ public:
 	virtual int					ButtonState( int key );
 	virtual int					KeyState( int key );
 
-	// DG: hack to allow adding callbacks and exporting additional functions without breaking the game ABI
+    virtual void 				Vibrate(int duration, int channel, float intensity );
+
+    // DG: hack to allow adding callbacks and exporting additional functions without breaking the game ABI
 	//     see Common.h for longer explanation...
 
 	// returns true if setting the callback was successful, else false
@@ -2382,6 +2384,13 @@ void idCommonLocal::InitSIMD( void ) {
 
 extern "C" void Doom3Quest_setUseScreenLayer(int use);
 extern "C" void Doom3Quest_FrameSetup();
+extern "C" void Doom3Quest_Vibrate(int duration, int channel, float intensity );
+
+void idCommonLocal::Vibrate(int duration, int channel, float intensity )
+{
+    Doom3Quest_Vibrate(duration, channel, intensity );
+}
+
 
 /*
 =================
