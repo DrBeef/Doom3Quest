@@ -257,6 +257,8 @@ extern idCVar vr_worldscale;
 extern idCVar vr_eye;
 extern idCVar vr_heightoffset;
 extern idCVar vr_control_scheme;
+extern idCVar	vr_shakeAmplitude;
+extern idCVar	vr_knockBack;
 
 extern const char *si_gameTypeArgs[];
 

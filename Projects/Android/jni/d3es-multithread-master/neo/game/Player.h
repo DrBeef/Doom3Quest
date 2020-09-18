@@ -221,6 +221,9 @@ public:
 
 	class idPlayerView		playerView;			// handles damage kicks and effects
 
+	renderEntity_t			flashlightRenderEntity;					// used to present a model to the renderer
+	qhandle_t				flashlightModelDefHandle;					// handle to static renderer model
+
 	bool					noclip;
 	bool					godmode;
 
@@ -270,6 +273,7 @@ public:
 	int						weapon_soulcube;
 	int						weapon_pda;
 	int						weapon_fists;
+	int						weapon_flashlight;
 
 	int						heartRate;
 	idInterpolate<float>	heartInfo;
@@ -391,7 +395,11 @@ public:
 							// use exitEntityNum to specify a teleport with private camera view and delayed exit
 	virtual void			Teleport( const idVec3 &origin, const idAngles &angles, idEntity *destination );
 
-	void					Kill( bool delayRespawn, bool nodamage );
+    virtual void            SetupFlashlightHolster();
+    virtual void            UpdateFlashlightHolster();
+
+
+    void					Kill( bool delayRespawn, bool nodamage );
 	virtual void			Killed( idEntity *inflictor, idEntity *attacker, int damage, const idVec3 &dir, int location );
 	void					StartFxOnBone(const char *fx, const char *bone);
 

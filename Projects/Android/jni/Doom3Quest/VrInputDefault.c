@@ -274,18 +274,20 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                 }
             }
 
+            if (pVRClientInfo->weaponid != -1 &&
+                    pVRClientInfo->weaponid != 11)
             {
                 vec2_t v;
-                rotateAboutOrigin(pVRClientInfo->right_handed ? 0.25f : -0.25f, 0.0f,
+                rotateAboutOrigin(pVRClientInfo->right_handed ? -0.2f : 0.2f, 0.0f,
                                   -pVRClientInfo->hmdorientation[YAW], v);
-                pVRClientInfo->flashlightHolsterOrigin[0] = pVRClientInfo->hmdposition[0] + v[0];
-                pVRClientInfo->flashlightHolsterOrigin[1] = pVRClientInfo->hmdposition[1] / 2.0f; // half way down body "waist"
-                pVRClientInfo->flashlightHolsterOrigin[2] = (pVRClientInfo->hmdposition[2] + v[1]);
+                pVRClientInfo->flashlightHolsterOffset[0] = -v[0];
+                pVRClientInfo->flashlightHolsterOffset[1] = -pVRClientInfo->hmdposition[1] * 0.45f; // almost half way down body "waist"
+                pVRClientInfo->flashlightHolsterOffset[2] = -v[1];
 
                 float distance = sqrtf(
-                        powf(pVRClientInfo->flashlightHolsterOrigin[0] - pWeapon->HeadPose.Pose.Position.x, 2) +
-                        powf(pVRClientInfo->flashlightHolsterOrigin[1] - pWeapon->HeadPose.Pose.Position.y, 2) +
-                        powf(pVRClientInfo->flashlightHolsterOrigin[2] - pWeapon->HeadPose.Pose.Position.z, 2));
+                        powf((pVRClientInfo->hmdposition[0] + pVRClientInfo->flashlightHolsterOffset[0]) - pWeapon->HeadPose.Pose.Position.x, 2) +
+                        powf((pVRClientInfo->hmdposition[1] + pVRClientInfo->flashlightHolsterOffset[1]) - pWeapon->HeadPose.Pose.Position.y, 2) +
+                        powf((pVRClientInfo->hmdposition[2] + pVRClientInfo->flashlightHolsterOffset[2]) - pWeapon->HeadPose.Pose.Position.z, 2));
 
                 if (distance > FLASHLIGHT_HOLSTER_DISTANCE) {
                     canGrabFlashlight = false;

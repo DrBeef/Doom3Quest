@@ -395,20 +395,21 @@ void idPlayerView::CalculateShake() {
 	idVec3	origin, matrix;
 
 	float shakeVolume = gameSoundWorld->CurrentShakeAmplitudeForPosition( gameLocal.time, player->firstPersonViewOrigin );
+
 	//
 	// shakeVolume should somehow be molded into an angle here
 	// it should be thought of as being in the range 0.0 -> 1.0, although
 	// since CurrentShakeAmplitudeForPosition() returns all the shake sounds
 	// the player can hear, it can go over 1.0 too.
 	//
-	shakeAng[0] = gameLocal.random.CRandomFloat() * shakeVolume;
-	shakeAng[1] = gameLocal.random.CRandomFloat() * shakeVolume;
-	shakeAng[2] = gameLocal.random.CRandomFloat() * shakeVolume;
+	shakeAng[0] = gameLocal.random.CRandomFloat() * shakeVolume * vr_shakeAmplitude.GetFloat();
+	shakeAng[1] = gameLocal.random.CRandomFloat() * shakeVolume * vr_shakeAmplitude.GetFloat();
+	shakeAng[2] = gameLocal.random.CRandomFloat() * shakeVolume * vr_shakeAmplitude.GetFloat();
 
-	if (shakeVolume > 0.05) {
+	if (shakeVolume > 0.1) {
         //Shake controllers!
-        common->Vibrate(50, 0, idMath::ClampFloat(0.3, 1.0, (shakeVolume*2.0f + 0.1f)));
-        common->Vibrate(50, 1, idMath::ClampFloat(0.3, 1.0, (shakeVolume*2.0f + 0.1f)));
+        common->Vibrate(50, 0, idMath::ClampFloat(0.1, 1.0, shakeVolume*2.0f + 0.1f));
+        common->Vibrate(50, 1, idMath::ClampFloat(0.1, 1.0, shakeVolume*2.0f + 0.1f));
     }
 }
 

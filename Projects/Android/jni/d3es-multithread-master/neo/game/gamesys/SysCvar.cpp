@@ -343,5 +343,5 @@ idCVar vr_worldscale(				"vr_worldscale",			"45.0",			CVAR_GAME | CVAR_FLOAT | C
 idCVar vr_heightoffset(				"vr_heightoffset",			"0.0",			CVAR_GAME | CVAR_FLOAT | CVAR_ARCHIVE, "VR Height Offset" );
 idCVar vr_eye(						"vr_eye",					"0",			CVAR_GAME | CVAR_INTEGER, "VR Eye currently being drawn" );
 idCVar vr_control_scheme(			"vr_control_scheme",		"0",			CVAR_GAME | CVAR_INTEGER, "VR Control Scheme: 0 = right handed, 10 = left handed" );
-
-
+idCVar vr_shakeAmplitude(           "vr_shakeAmplitude",        "0.8", CVAR_FLOAT | CVAR_ARCHIVE, "Screen shake amplitude 0.0 = disabled to 1.0 = full\n", 0.0f, 1.0f );
+idCVar vr_knockBack(                "vr_knockBack",         "0", CVAR_BOOL | CVAR_ARCHIVE | CVAR_GAME, "Enable damage knockback in VR. 0 = Disabled, 1 = Enabled" );

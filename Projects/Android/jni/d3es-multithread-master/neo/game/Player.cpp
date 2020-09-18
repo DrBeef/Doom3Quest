@@ -31,6 +31,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "framework/async/NetworkSystem.h"
 #include "framework/DeclEntityDef.h"
 #include "renderer/RenderSystem.h"
+#include "renderer/ModelManager.h"
 
 #include "gamesys/SysCvar.h"
 #include "script/Script_Thread.h"
@@ -43,6 +44,16 @@ If you have questions concerning this license or the applicable additional terms
 
 const int ASYNC_PLAYER_INV_AMMO_BITS = idMath::BitsForInteger( 999 );	// 9 bits to cover the range [0, 999]
 const int ASYNC_PLAYER_INV_CLIP_BITS = -7;								// -7 bits to cover the range [-1, 60]
+
+
+void rotateAboutOrigin(float x, float y, float rotation, float out[2])
+{
+	out[0] = cosf(DEG2RAD(-rotation)) * x  +  sinf(DEG2RAD(-rotation)) * y;
+	out[1] = cosf(DEG2RAD(-rotation)) * y  -  sinf(DEG2RAD(-rotation)) * x;
+}
+
+
+
 
 /*
 ===============================================================================
@@ -1037,9 +1048,12 @@ idPlayer::idPlayer() {
 	weapon_soulcube			= -1;
 	weapon_pda				= -1;
 	weapon_fists			= -1;
+	weapon_flashlight		= -1;
 	showWeaponViewModel		= true;
 
-	skin					= NULL;
+    flashlightModelDefHandle = -1;
+
+    skin					= NULL;
 	powerUpSkin				= NULL;
 	baseSkinName			= "";
 
@@ -1214,6 +1228,7 @@ void idPlayer::Init( void ) {
 	weapon_soulcube			= SlotForWeapon( "weapon_soulcube" );
 	weapon_pda				= SlotForWeapon( "weapon_pda" );
 	weapon_fists			= SlotForWeapon( "weapon_fists" );
+	weapon_flashlight		= SlotForWeapon( "weapon_flashlight" );
 	showWeaponViewModel		= GetUserInfo()->GetBool( "ui_showGun" );
 
 
@@ -1411,6 +1426,8 @@ void idPlayer::Init( void ) {
 	}
 
 	cvarSystem->SetCVarBool( "ui_chat", false );
+
+	SetupFlashlightHolster();
 }
 
 /*
@@ -2086,6 +2103,10 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 	if ( hud ) {
 		hud->SetStateString( "message", "" );
 	}
+
+	//Have to do this for loaded games
+    weapon_flashlight		= SlotForWeapon( "weapon_flashlight" );
+    SetupFlashlightHolster();
 }
 
 /*
@@ -6213,6 +6234,81 @@ void idPlayer::StartFxOnBone( const char *fx, const char *bone ) {
 
 /*
 ==============
+idPlayer::SetupFlashlightSlot
+==============
+*/
+void idPlayer::SetupFlashlightHolster()
+{
+    memset( &flashlightRenderEntity, 0, sizeof( flashlightRenderEntity ) );
+    flashlightRenderEntity.hModel = renderModelManager->FindModel( "models/items/flashlight/flashlight2_world.lwo" );
+    if( flashlightRenderEntity.hModel )
+    {
+        flashlightRenderEntity.hModel->Reset();
+        flashlightRenderEntity.bounds = flashlightRenderEntity.hModel->Bounds( &flashlightRenderEntity );
+    }
+    flashlightRenderEntity.shaderParms[ SHADERPARM_RED ]	= 1.0f;
+    flashlightRenderEntity.shaderParms[ SHADERPARM_GREEN ] = 1.0f;
+    flashlightRenderEntity.shaderParms[ SHADERPARM_BLUE ]	= 1.0f;
+    flashlightRenderEntity.shaderParms[ SHADERPARM_ALPHA ] = 0.75f;
+    flashlightRenderEntity.shaderParms[ SHADERPARM_TIMEOFFSET ] = 0.0f;
+    flashlightRenderEntity.shaderParms[5] = 0.0f;
+    flashlightRenderEntity.shaderParms[6] = 0.0f;
+    flashlightRenderEntity.shaderParms[7] = 0.0f;
+}
+
+/*
+==============
+idPlayer::UpdateFlashlightHolster
+==============
+*/
+void idPlayer::UpdateFlashlightHolster()
+{
+    bool hasFlashlight = !( ( weapon_flashlight < 0 ) || ( inventory.weapons & ( 1 << weapon_flashlight ) ) == 0 );
+	if( hasFlashlight &&
+        currentWeapon != weapon_flashlight &&
+    	flashlightRenderEntity.hModel &&
+    	pVRClientInfo != nullptr)
+    {
+        idVec3	holsterOffset( pVRClientInfo->flashlightHolsterOffset[2],
+                                 pVRClientInfo->flashlightHolsterOffset[0],
+                                 pVRClientInfo->flashlightHolsterOffset[1]);
+
+        float r[2];
+        rotateAboutOrigin(holsterOffset.x, holsterOffset.y, viewAngles.yaw - pVRClientInfo->hmdorientation[YAW], r);
+        holsterOffset.x = -r[0];
+        holsterOffset.y = -r[1];
+        holsterOffset *= cvarSystem->GetCVarFloat( "vr_worldscale" );
+        flashlightRenderEntity.origin = firstPersonViewOrigin + holsterOffset;
+
+        flashlightRenderEntity.entityNum = ENTITYNUM_NONE;
+
+        flashlightRenderEntity.axis = idAngles(-60, 90, 0).ToMat3() * firstPersonViewAxis;
+
+        flashlightRenderEntity.allowSurfaceInViewID = entityNumber + 1;
+        flashlightRenderEntity.weaponDepthHack = true;
+
+        if( flashlightModelDefHandle == -1 )
+        {
+            flashlightModelDefHandle = gameRenderWorld->AddEntityDef( &flashlightRenderEntity );
+        }
+        else
+        {
+            gameRenderWorld->UpdateEntityDef( flashlightModelDefHandle, &flashlightRenderEntity );
+        }
+    }
+    else if (!hasFlashlight || // User hasn't got flashlight yet
+    	currentWeapon == weapon_flashlight)
+	{
+		if( flashlightModelDefHandle != -1 )
+		{
+			gameRenderWorld->FreeEntityDef( flashlightModelDefHandle );
+			flashlightModelDefHandle = -1;
+		}
+	}
+}
+
+/*
+==============
 idPlayer::Think
 
 Called every tic for each player
@@ -6238,7 +6334,12 @@ void idPlayer::Think( void ) {
 
     if (pVRClientInfo != nullptr)
     {
-        pVRClientInfo->weaponid = currentWeapon;
+        if (inventory.weapons > 1) {
+            pVRClientInfo->weaponid = currentWeapon;
+        }
+        else {
+            pVRClientInfo->weaponid = -1;
+        }
         cvarSystem->SetCVarBool("vr_weapon_stabilised", pVRClientInfo->weapon_stabilised);
         pVRClientInfo->velocitytriggered = (currentWeapon == 11 || // 11 is flashlight
 				currentWeapon == 10); // 10 is chainsaw
@@ -6376,6 +6477,8 @@ void idPlayer::Think( void ) {
 	UpdateHud();
 
 	UpdatePowerUps();
+
+	UpdateFlashlightHolster();
 
 	UpdateDeathSkin( false );
 
@@ -6794,24 +6897,28 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 
 	CalcDamagePoints( inflictor, attacker, &damageDef->dict, damageScale, location, &damage, &armorSave );
 
-	// determine knockback
-	damageDef->dict.GetInt( "knockback", "20", knockback );
+    // determine knockback
+    if ( vr_knockBack.GetBool() )
+    {
+        // determine knockback
+        damageDef->dict.GetInt("knockback", "20", knockback);
 
-	if ( knockback != 0 && !fl.noknockback ) {
-		if ( attacker == this ) {
-			damageDef->dict.GetFloat( "attackerPushScale", "0", attackerPushScale );
-		} else {
-			attackerPushScale = 1.0f;
-		}
+        if (knockback != 0 && !fl.noknockback) {
+            if (attacker == this) {
+                damageDef->dict.GetFloat("attackerPushScale", "0", attackerPushScale);
+            } else {
+                attackerPushScale = 1.0f;
+            }
 
-		kick = dir;
-		kick.Normalize();
-		kick *= g_knockback.GetFloat() * knockback * attackerPushScale / 200.0f;
-		physicsObj.SetLinearVelocity( physicsObj.GetLinearVelocity() + kick );
+            kick = dir;
+            kick.Normalize();
+            kick *= g_knockback.GetFloat() * knockback * attackerPushScale / 200.0f;
+            physicsObj.SetLinearVelocity(physicsObj.GetLinearVelocity() + kick);
 
-		// set the timer so that the player can't cancel out the movement immediately
-		physicsObj.SetKnockBack( idMath::ClampInt( 50, 200, knockback * 2 ) );
-	}
+            // set the timer so that the player can't cancel out the movement immediately
+            physicsObj.SetKnockBack(idMath::ClampInt(50, 200, knockback * 2));
+        }
+    }
 
 	// give feedback on the player view and audibly when armor is helping
 	if ( armorSave ) {
@@ -7130,12 +7237,6 @@ Calculate the bobbing position of the view weapon
 ==============
 */
 
-void rotateAboutOrigin(float x, float y, float rotation, float out[2])
-{
-    out[0] = cosf(DEG2RAD(-rotation)) * x  +  sinf(DEG2RAD(-rotation)) * y;
-    out[1] = cosf(DEG2RAD(-rotation)) * y  -  sinf(DEG2RAD(-rotation)) * x;
-}
-
 void idPlayer::CalculateViewWeaponPos( bool adjusted, idVec3 &origin, idMat3 &axis, idAngles &angles ) {
 	float		scale;
 	float		fracsin;
@@ -7173,8 +7274,16 @@ void idPlayer::CalculateViewWeaponPos( bool adjusted, idVec3 &origin, idMat3 &ax
 
         gunpos *= cvarSystem->GetCVarFloat( "vr_worldscale" );
 
-		idVec3	gunOfs( g_gun_x.GetFloat(), g_gun_y.GetFloat(), g_gun_z.GetFloat() );
-        origin = viewOrigin + gunpos + (gunOfs * axis);
+        if (currentWeapon == 11) // Flashlight adjustment
+        {
+            idVec3	gunOfs( -14, 9, 20 );
+            origin = viewOrigin + gunpos + (gunOfs * axis);
+        }
+        else
+        {
+            idVec3	gunOfs( g_gun_x.GetFloat(), g_gun_y.GetFloat(), g_gun_z.GetFloat() );
+            origin = viewOrigin + gunpos + (gunOfs * axis);
+        }
 
         return;
     }
