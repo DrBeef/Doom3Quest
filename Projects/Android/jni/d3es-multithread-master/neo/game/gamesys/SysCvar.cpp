@@ -345,3 +345,5 @@ idCVar vr_eye(						"vr_eye",					"0",			CVAR_GAME | CVAR_INTEGER, "VR Eye curre
 idCVar vr_control_scheme(			"vr_control_scheme",		"0",			CVAR_GAME | CVAR_INTEGER, "VR Control Scheme: 0 = right handed, 10 = left handed" );
 idCVar vr_shakeAmplitude(           "vr_shakeAmplitude",        "0.8", CVAR_FLOAT | CVAR_ARCHIVE, "Screen shake amplitude 0.0 = disabled to 1.0 = full\n", 0.0f, 1.0f );
 idCVar vr_knockBack(                "vr_knockBack",         "0", CVAR_BOOL | CVAR_ARCHIVE | CVAR_GAME, "Enable damage knockback in VR. 0 = Disabled, 1 = Enabled" );
+idCVar vr_weaponSight( 					"vr_weaponSight", "1", CVAR_INTEGER | CVAR_ARCHIVE, "Weapon Sight.\n 0 = Disable\n 1 = Lasersight" );
+

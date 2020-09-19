@@ -177,8 +177,8 @@ void controlMouse(ovrInputStateTrackedRemote *newState, ovrInputStateTrackedRemo
     static int cursorX = 0;
     static int cursorY = 0;
 
-    cursorX = (float)(pVRClientInfo->weaponangles_delta[YAW] * 20.0f);
-    cursorY = (float)(-pVRClientInfo->weaponangles_delta[PITCH] * 20.0f);
+    cursorX = (float)(pVRClientInfo->weaponangles_delta[YAW] * 18.0f);
+    cursorY = (float)(-pVRClientInfo->weaponangles_delta[PITCH] * 18.0f);
 
     Sys_AddMouseMoveEvent(cursorX, cursorY);
 }

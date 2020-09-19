@@ -1147,6 +1147,9 @@ idPlayer::idPlayer() {
 	isChatting				= false;
 
 	selfSmooth				= false;
+
+	laserSightHandle = -1;
+	memset( &laserSightRenderEntity, 0, sizeof( laserSightRenderEntity ) );
 }
 
 /*
@@ -1428,6 +1431,7 @@ void idPlayer::Init( void ) {
 	cvarSystem->SetCVarBool( "ui_chat", false );
 
 	SetupFlashlightHolster();
+	SetupLaserSight();
 }
 
 /*
@@ -1849,208 +1853,208 @@ idPlayer::Restore
 ===========
 */
 void idPlayer::Restore( idRestoreGame *savefile ) {
-	int	  i;
-	int	  num;
+	int i;
+	int num;
 	float set;
 
-	savefile->ReadUsercmd( usercmd );
-	playerView.Restore( savefile );
+	savefile->ReadUsercmd(usercmd);
+	playerView.Restore(savefile);
 
-	savefile->ReadBool( noclip );
-	savefile->ReadBool( godmode );
+	savefile->ReadBool(noclip);
+	savefile->ReadBool(godmode);
 
-	savefile->ReadAngles( spawnAngles );
-	savefile->ReadAngles( viewAngles );
-	savefile->ReadAngles( cmdAngles );
+	savefile->ReadAngles(spawnAngles);
+	savefile->ReadAngles(viewAngles);
+	savefile->ReadAngles(cmdAngles);
 
-	memset( usercmd.angles, 0, sizeof( usercmd.angles ) );
-	SetViewAngles( viewAngles );
+	memset(usercmd.angles, 0, sizeof(usercmd.angles));
+	SetViewAngles(viewAngles);
 	spawnAnglesSet = true;
 
-	savefile->ReadInt( buttonMask );
-	savefile->ReadInt( oldButtons );
-	savefile->ReadInt( oldFlags );
+	savefile->ReadInt(buttonMask);
+	savefile->ReadInt(oldButtons);
+	savefile->ReadInt(oldFlags);
 
 	usercmd.flags = 0;
 	oldFlags = 0;
 
-	savefile->ReadInt( lastHitTime );
-	savefile->ReadInt( lastSndHitTime );
-	savefile->ReadInt( lastSavingThrowTime );
+	savefile->ReadInt(lastHitTime);
+	savefile->ReadInt(lastSndHitTime);
+	savefile->ReadInt(lastSavingThrowTime);
 
 	// Re-link idBoolFields to the scriptObject, values will be restored in scriptObject's restore
 	LinkScriptVariables();
 
-	inventory.Restore( savefile );
-	weapon.Restore( savefile );
+	inventory.Restore(savefile);
+	weapon.Restore(savefile);
 
-	for ( i = 0; i < inventory.emails.Num(); i++ ) {
-		GetPDA()->AddEmail( inventory.emails[i] );
+	for (i = 0; i < inventory.emails.Num(); i++) {
+		GetPDA()->AddEmail(inventory.emails[i]);
 	}
 
-	savefile->ReadUserInterface( hud );
-	savefile->ReadUserInterface( objectiveSystem );
-	savefile->ReadBool( objectiveSystemOpen );
+	savefile->ReadUserInterface(hud);
+	savefile->ReadUserInterface(objectiveSystem);
+	savefile->ReadBool(objectiveSystemOpen);
 
-	savefile->ReadInt( weapon_soulcube );
-	savefile->ReadInt( weapon_pda );
-	savefile->ReadInt( weapon_fists );
+	savefile->ReadInt(weapon_soulcube);
+	savefile->ReadInt(weapon_pda);
+	savefile->ReadInt(weapon_fists);
 
-	savefile->ReadInt( heartRate );
+	savefile->ReadInt(heartRate);
 
-	savefile->ReadFloat( set );
-	heartInfo.SetStartTime( set );
-	savefile->ReadFloat( set );
-	heartInfo.SetDuration( set );
-	savefile->ReadFloat( set );
-	heartInfo.SetStartValue( set );
-	savefile->ReadFloat( set );
-	heartInfo.SetEndValue( set );
+	savefile->ReadFloat(set);
+	heartInfo.SetStartTime(set);
+	savefile->ReadFloat(set);
+	heartInfo.SetDuration(set);
+	savefile->ReadFloat(set);
+	heartInfo.SetStartValue(set);
+	savefile->ReadFloat(set);
+	heartInfo.SetEndValue(set);
 
-	savefile->ReadInt( lastHeartAdjust );
-	savefile->ReadInt( lastHeartBeat );
-	savefile->ReadInt( lastDmgTime );
-	savefile->ReadInt( deathClearContentsTime );
-	savefile->ReadBool( doingDeathSkin );
-	savefile->ReadInt( lastArmorPulse );
-	savefile->ReadFloat( stamina );
-	savefile->ReadFloat( healthPool );
-	savefile->ReadInt( nextHealthPulse );
-	savefile->ReadBool( healthPulse );
-	savefile->ReadInt( nextHealthTake );
-	savefile->ReadBool( healthTake );
+	savefile->ReadInt(lastHeartAdjust);
+	savefile->ReadInt(lastHeartBeat);
+	savefile->ReadInt(lastDmgTime);
+	savefile->ReadInt(deathClearContentsTime);
+	savefile->ReadBool(doingDeathSkin);
+	savefile->ReadInt(lastArmorPulse);
+	savefile->ReadFloat(stamina);
+	savefile->ReadFloat(healthPool);
+	savefile->ReadInt(nextHealthPulse);
+	savefile->ReadBool(healthPulse);
+	savefile->ReadInt(nextHealthTake);
+	savefile->ReadBool(healthTake);
 
-	savefile->ReadBool( hiddenWeapon );
-	soulCubeProjectile.Restore( savefile );
+	savefile->ReadBool(hiddenWeapon);
+	soulCubeProjectile.Restore(savefile);
 
-	savefile->ReadInt( spectator );
-	savefile->ReadVec3( colorBar );
-	savefile->ReadInt( colorBarIndex );
-	savefile->ReadBool( scoreBoardOpen );
-	savefile->ReadBool( forceScoreBoard );
-	savefile->ReadBool( forceRespawn );
-	savefile->ReadBool( spectating );
-	savefile->ReadInt( lastSpectateTeleport );
-	savefile->ReadBool( lastHitToggle );
-	savefile->ReadBool( forcedReady );
-	savefile->ReadBool( wantSpectate );
-	savefile->ReadBool( weaponGone );
-	savefile->ReadBool( useInitialSpawns );
-	savefile->ReadInt( latchedTeam );
-	savefile->ReadInt( tourneyRank );
-	savefile->ReadInt( tourneyLine );
+	savefile->ReadInt(spectator);
+	savefile->ReadVec3(colorBar);
+	savefile->ReadInt(colorBarIndex);
+	savefile->ReadBool(scoreBoardOpen);
+	savefile->ReadBool(forceScoreBoard);
+	savefile->ReadBool(forceRespawn);
+	savefile->ReadBool(spectating);
+	savefile->ReadInt(lastSpectateTeleport);
+	savefile->ReadBool(lastHitToggle);
+	savefile->ReadBool(forcedReady);
+	savefile->ReadBool(wantSpectate);
+	savefile->ReadBool(weaponGone);
+	savefile->ReadBool(useInitialSpawns);
+	savefile->ReadInt(latchedTeam);
+	savefile->ReadInt(tourneyRank);
+	savefile->ReadInt(tourneyLine);
 
-	teleportEntity.Restore( savefile );
-	savefile->ReadInt( teleportKiller );
+	teleportEntity.Restore(savefile);
+	savefile->ReadInt(teleportKiller);
 
-	savefile->ReadInt( minRespawnTime );
-	savefile->ReadInt( maxRespawnTime );
+	savefile->ReadInt(minRespawnTime);
+	savefile->ReadInt(maxRespawnTime);
 
-	savefile->ReadVec3( firstPersonViewOrigin );
-	savefile->ReadMat3( firstPersonViewAxis );
+	savefile->ReadVec3(firstPersonViewOrigin);
+	savefile->ReadMat3(firstPersonViewAxis);
 
 	// don't bother saving dragEntity since it's a dev tool
 	dragEntity.Clear();
 
-	savefile->ReadJoint( hipJoint );
-	savefile->ReadJoint( chestJoint );
-	savefile->ReadJoint( headJoint );
+	savefile->ReadJoint(hipJoint);
+	savefile->ReadJoint(chestJoint);
+	savefile->ReadJoint(headJoint);
 
-	savefile->ReadStaticObject( physicsObj );
-	RestorePhysics( &physicsObj );
+	savefile->ReadStaticObject(physicsObj);
+	RestorePhysics(&physicsObj);
 
-	savefile->ReadInt( num );
-	aasLocation.SetGranularity( 1 );
-	aasLocation.SetNum( num );
-	for( i = 0; i < num; i++ ) {
-		savefile->ReadInt( aasLocation[ i ].areaNum );
-		savefile->ReadVec3( aasLocation[ i ].pos );
+	savefile->ReadInt(num);
+	aasLocation.SetGranularity(1);
+	aasLocation.SetNum(num);
+	for (i = 0; i < num; i++) {
+		savefile->ReadInt(aasLocation[i].areaNum);
+		savefile->ReadVec3(aasLocation[i].pos);
 	}
 
-	savefile->ReadInt( bobFoot );
-	savefile->ReadFloat( bobFrac );
-	savefile->ReadFloat( bobfracsin );
-	savefile->ReadInt( bobCycle );
-	savefile->ReadFloat( xyspeed );
-	savefile->ReadInt( stepUpTime );
-	savefile->ReadFloat( stepUpDelta );
-	savefile->ReadFloat( idealLegsYaw );
-	savefile->ReadFloat( legsYaw );
-	savefile->ReadBool( legsForward );
-	savefile->ReadFloat( oldViewYaw );
-	savefile->ReadAngles( viewBobAngles );
-	savefile->ReadVec3( viewBob );
-	savefile->ReadInt( landChange );
-	savefile->ReadInt( landTime );
+	savefile->ReadInt(bobFoot);
+	savefile->ReadFloat(bobFrac);
+	savefile->ReadFloat(bobfracsin);
+	savefile->ReadInt(bobCycle);
+	savefile->ReadFloat(xyspeed);
+	savefile->ReadInt(stepUpTime);
+	savefile->ReadFloat(stepUpDelta);
+	savefile->ReadFloat(idealLegsYaw);
+	savefile->ReadFloat(legsYaw);
+	savefile->ReadBool(legsForward);
+	savefile->ReadFloat(oldViewYaw);
+	savefile->ReadAngles(viewBobAngles);
+	savefile->ReadVec3(viewBob);
+	savefile->ReadInt(landChange);
+	savefile->ReadInt(landTime);
 
-	savefile->ReadInt( currentWeapon );
-	savefile->ReadInt( idealWeapon );
-	savefile->ReadInt( previousWeapon );
-	savefile->ReadInt( weaponSwitchTime );
-	savefile->ReadBool( weaponEnabled );
-	savefile->ReadBool( showWeaponViewModel );
+	savefile->ReadInt(currentWeapon);
+	savefile->ReadInt(idealWeapon);
+	savefile->ReadInt(previousWeapon);
+	savefile->ReadInt(weaponSwitchTime);
+	savefile->ReadBool(weaponEnabled);
+	savefile->ReadBool(showWeaponViewModel);
 
-	savefile->ReadSkin( skin );
-	savefile->ReadSkin( powerUpSkin );
-	savefile->ReadString( baseSkinName );
+	savefile->ReadSkin(skin);
+	savefile->ReadSkin(powerUpSkin);
+	savefile->ReadString(baseSkinName);
 
-	savefile->ReadInt( numProjectilesFired );
-	savefile->ReadInt( numProjectileHits );
+	savefile->ReadInt(numProjectilesFired);
+	savefile->ReadInt(numProjectileHits);
 
-	savefile->ReadBool( airless );
-	savefile->ReadInt( airTics );
-	savefile->ReadInt( lastAirDamage );
+	savefile->ReadBool(airless);
+	savefile->ReadInt(airTics);
+	savefile->ReadInt(lastAirDamage);
 
-	savefile->ReadBool( gibDeath );
-	savefile->ReadBool( gibsLaunched );
-	savefile->ReadVec3( gibsDir );
+	savefile->ReadBool(gibDeath);
+	savefile->ReadBool(gibsLaunched);
+	savefile->ReadVec3(gibsDir);
 
-	savefile->ReadFloat( set );
-	zoomFov.SetStartTime( set );
-	savefile->ReadFloat( set );
-	zoomFov.SetDuration( set );
-	savefile->ReadFloat( set );
-	zoomFov.SetStartValue( set );
-	savefile->ReadFloat( set );
-	zoomFov.SetEndValue( set );
+	savefile->ReadFloat(set);
+	zoomFov.SetStartTime(set);
+	savefile->ReadFloat(set);
+	zoomFov.SetDuration(set);
+	savefile->ReadFloat(set);
+	zoomFov.SetStartValue(set);
+	savefile->ReadFloat(set);
+	zoomFov.SetEndValue(set);
 
-	savefile->ReadFloat( set );
-	centerView.SetStartTime( set );
-	savefile->ReadFloat( set );
-	centerView.SetDuration( set );
-	savefile->ReadFloat( set );
-	centerView.SetStartValue( set );
-	savefile->ReadFloat( set );
-	centerView.SetEndValue( set );
+	savefile->ReadFloat(set);
+	centerView.SetStartTime(set);
+	savefile->ReadFloat(set);
+	centerView.SetDuration(set);
+	savefile->ReadFloat(set);
+	centerView.SetStartValue(set);
+	savefile->ReadFloat(set);
+	centerView.SetEndValue(set);
 
-	savefile->ReadBool( fxFov );
+	savefile->ReadBool(fxFov);
 
-	savefile->ReadFloat( influenceFov );
-	savefile->ReadInt( influenceActive );
-	savefile->ReadFloat( influenceRadius );
-	savefile->ReadObject( reinterpret_cast<idClass *&>( influenceEntity ) );
-	savefile->ReadMaterial( influenceMaterial );
-	savefile->ReadSkin( influenceSkin );
+	savefile->ReadFloat(influenceFov);
+	savefile->ReadInt(influenceActive);
+	savefile->ReadFloat(influenceRadius);
+	savefile->ReadObject(reinterpret_cast<idClass *&>( influenceEntity ));
+	savefile->ReadMaterial(influenceMaterial);
+	savefile->ReadSkin(influenceSkin);
 
-	savefile->ReadObject( reinterpret_cast<idClass *&>( privateCameraView ) );
+	savefile->ReadObject(reinterpret_cast<idClass *&>( privateCameraView ));
 
-	for( i = 0; i < NUM_LOGGED_VIEW_ANGLES; i++ ) {
-		savefile->ReadAngles( loggedViewAngles[ i ] );
+	for (i = 0; i < NUM_LOGGED_VIEW_ANGLES; i++) {
+		savefile->ReadAngles(loggedViewAngles[i]);
 	}
-	for( i = 0; i < NUM_LOGGED_ACCELS; i++ ) {
-		savefile->ReadInt( loggedAccel[ i ].time );
-		savefile->ReadVec3( loggedAccel[ i ].dir );
+	for (i = 0; i < NUM_LOGGED_ACCELS; i++) {
+		savefile->ReadInt(loggedAccel[i].time);
+		savefile->ReadVec3(loggedAccel[i].dir);
 	}
-	savefile->ReadInt( currentLoggedAccel );
+	savefile->ReadInt(currentLoggedAccel);
 
-	savefile->ReadObject( reinterpret_cast<idClass *&>( focusGUIent ) );
+	savefile->ReadObject(reinterpret_cast<idClass *&>( focusGUIent ));
 	// can't save focusUI
 	focusUI = NULL;
-	savefile->ReadObject( reinterpret_cast<idClass *&>( focusCharacter ) );
-	savefile->ReadInt( talkCursor );
-	savefile->ReadInt( focusTime );
-	savefile->ReadObject( reinterpret_cast<idClass *&>( focusVehicle ) );
-	savefile->ReadUserInterface( cursor );
+	savefile->ReadObject(reinterpret_cast<idClass *&>( focusCharacter ));
+	savefile->ReadInt(talkCursor);
+	savefile->ReadInt(focusTime);
+	savefile->ReadObject(reinterpret_cast<idClass *&>( focusVehicle ));
+	savefile->ReadUserInterface(cursor);
 
 	// DG: make it scale to 4:3 so crosshair looks properly round
 	//     yes, like so many scaling-related things this is a bit hacky
@@ -2059,40 +2063,40 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 	cursor->SetStateBool("scaleto43", true);
 	cursor->StateChanged(gameLocal.time); // DG end
 
-	savefile->ReadInt( oldMouseX );
-	savefile->ReadInt( oldMouseY );
+	savefile->ReadInt(oldMouseX);
+	savefile->ReadInt(oldMouseY);
 
-	savefile->ReadString( pdaAudio );
-	savefile->ReadString( pdaVideo );
-	savefile->ReadString( pdaVideoWave );
+	savefile->ReadString(pdaAudio);
+	savefile->ReadString(pdaVideo);
+	savefile->ReadString(pdaVideoWave);
 
-	savefile->ReadBool( tipUp );
-	savefile->ReadBool( objectiveUp );
+	savefile->ReadBool(tipUp);
+	savefile->ReadBool(objectiveUp);
 
-	savefile->ReadInt( lastDamageDef );
-	savefile->ReadVec3( lastDamageDir );
-	savefile->ReadInt( lastDamageLocation );
-	savefile->ReadInt( smoothedFrame );
-	savefile->ReadBool( smoothedOriginUpdated );
-	savefile->ReadVec3( smoothedOrigin );
-	savefile->ReadAngles( smoothedAngles );
+	savefile->ReadInt(lastDamageDef);
+	savefile->ReadVec3(lastDamageDir);
+	savefile->ReadInt(lastDamageLocation);
+	savefile->ReadInt(smoothedFrame);
+	savefile->ReadBool(smoothedOriginUpdated);
+	savefile->ReadVec3(smoothedOrigin);
+	savefile->ReadAngles(smoothedAngles);
 
-	savefile->ReadBool( ready );
-	savefile->ReadBool( respawning );
-	savefile->ReadBool( leader );
-	savefile->ReadInt( lastSpectateChange );
-	savefile->ReadInt( lastTeleFX );
+	savefile->ReadBool(ready);
+	savefile->ReadBool(respawning);
+	savefile->ReadBool(leader);
+	savefile->ReadInt(lastSpectateChange);
+	savefile->ReadInt(lastTeleFX);
 
 	// set the pm_ cvars
-	const idKeyValue	*kv;
-	kv = spawnArgs.MatchPrefix( "pm_", NULL );
-	while( kv ) {
-		cvarSystem->SetCVarString( kv->GetKey(), kv->GetValue() );
-		kv = spawnArgs.MatchPrefix( "pm_", kv );
+	const idKeyValue *kv;
+	kv = spawnArgs.MatchPrefix("pm_", NULL);
+	while (kv) {
+		cvarSystem->SetCVarString(kv->GetKey(), kv->GetValue());
+		kv = spawnArgs.MatchPrefix("pm_", kv);
 	}
 
-	savefile->ReadFloat( set );
-	pm_stamina.SetFloat( set );
+	savefile->ReadFloat(set);
+	pm_stamina.SetFloat(set);
 
 	// create combat collision hull for exact collision detection
 	SetCombatModel();
@@ -2100,13 +2104,32 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 	// DG: workaround for lingering messages that are shown forever after loading a savegame
 	//     (one way to get them is saving again, while the message from first save is still
 	//      shown, and then load)
-	if ( hud ) {
-		hud->SetStateString( "message", "" );
+	if (hud) {
+		hud->SetStateString("message", "");
 	}
 
 	//Have to do this for loaded games
-    weapon_flashlight		= SlotForWeapon( "weapon_flashlight" );
-    SetupFlashlightHolster();
+	weapon_flashlight = SlotForWeapon("weapon_flashlight");
+	SetupFlashlightHolster();
+
+	SetupLaserSight();
+}
+
+void idPlayer::SetupLaserSight()
+{
+	laserSightHandle = -1;
+	memset( &laserSightRenderEntity, 0, sizeof( laserSightRenderEntity ) );
+	laserSightRenderEntity.hModel = renderModelManager->FindModel( "_BEAM" );
+	laserSightRenderEntity.customShader = declManager->FindMaterial( "_white" );
+	laserSightRenderEntity.shaderParms[ SHADERPARM_RED ]	= 1.0f;
+	laserSightRenderEntity.shaderParms[ SHADERPARM_GREEN ] = 0.0f;
+	laserSightRenderEntity.shaderParms[ SHADERPARM_BLUE ]	= 0.0f;
+	laserSightRenderEntity.shaderParms[ SHADERPARM_ALPHA ] = 0.4f;
+	laserSightRenderEntity.shaderParms[ SHADERPARM_TIMEOFFSET ] = 0.0f;
+	laserSightRenderEntity.shaderParms[5] = 0.0f;
+	laserSightRenderEntity.shaderParms[6] = 0.0f;
+	laserSightRenderEntity.shaderParms[7] = 0.0f;
+
 }
 
 /*
@@ -6345,7 +6368,7 @@ void idPlayer::Think( void ) {
 
     if (pVRClientInfo != nullptr)
     {
-        if (inventory.weapons > WEAPON_FISTS) {
+        if (inventory.weapons > 1) {
             pVRClientInfo->weaponid = currentWeapon;
         }
         else {
@@ -6354,8 +6377,7 @@ void idPlayer::Think( void ) {
         cvarSystem->SetCVarBool("vr_weapon_stabilised", pVRClientInfo->weapon_stabilised);
         pVRClientInfo->velocitytriggered = (
         		currentWeapon == WEAPON_FISTS ||
-        		currentWeapon == WEAPON_FLASHLIGHT ||
-				currentWeapon == WEAPON_CHAINSAW);
+        		currentWeapon == WEAPON_FLASHLIGHT);
     }
 
     // clear the ik before we do anything else so the skeleton doesn't get updated twice
@@ -6492,6 +6514,8 @@ void idPlayer::Think( void ) {
 	UpdatePowerUps();
 
 	UpdateFlashlightHolster();
+
+	UpdateLaserSight();
 
 	UpdateDeathSkin( false );
 
@@ -7242,6 +7266,100 @@ idVec3	idPlayer::GunAcceleratingOffset( void ) {
 	return ofs;
 }
 
+
+/*
+==============
+idPlayer::UpdateLaserSight
+==============
+*/
+void idPlayer::UpdateLaserSight( )
+{
+	if (!pVRClientInfo)
+	{
+		return;
+	}
+
+    idVec3	muzzleOrigin;
+    idMat3	muzzleAxis;
+    idAngles muzzleAngles;
+	CalculateViewWeaponPos(true,  muzzleOrigin, muzzleAxis, muzzleAngles );
+
+	idVec3 end, start;
+    trace_t traceResults;
+
+    float beamLength = 1000.0f; // max length to run trace.
+
+    bool hideSight = false;
+    bool traceHit = false;
+
+    // check if lasersight should be hidden
+    if ( inventory.weapons == 1 ||
+        currentWeapon == weapon_pda ||
+        currentWeapon == weapon_flashlight ||
+        currentWeapon == weapon_fists ||
+        currentWeapon == WEAPON_CHAINSAW ||
+        currentWeapon == WEAPON_GREANDE ||
+        !pVRClientInfo->laserSightActive ||
+         AI_DEAD ||
+         weapon.GetEntity()->IsHidden() ||
+         gameLocal.inCinematic)
+    {
+        hideSight = true;
+    }
+
+    if ( hideSight || vr_weaponSight.GetInteger() != 1 )
+    {
+        laserSightRenderEntity.allowSurfaceInViewID = -1;
+        if( laserSightHandle == -1 )
+        {
+            laserSightHandle = gameRenderWorld->AddEntityDef( &laserSightRenderEntity );
+        }
+        else
+        {
+            gameRenderWorld->UpdateEntityDef( laserSightHandle, &laserSightRenderEntity );
+        }
+    }
+
+    if ( hideSight  ) return;
+
+    // calculate the beam origin and length.
+    start = muzzleOrigin + muzzleAxis[0] * 4.0f;
+    end = start + muzzleAxis[0] * beamLength;
+
+    traceHit = gameLocal.clip.TracePoint( traceResults, start, end, MASK_SHOT_RENDERMODEL, this );
+    if ( traceHit )
+    {
+        beamLength *= traceResults.fraction;
+    }
+
+     {
+        laserSightRenderEntity.allowSurfaceInViewID = 0;// entityNumber + 1;
+        laserSightRenderEntity.axis.Identity();
+        laserSightRenderEntity.origin = start;
+
+        // program the beam model
+        idVec3&	target = *reinterpret_cast<idVec3*>( &laserSightRenderEntity.shaderParms[SHADERPARM_BEAM_END_X] );
+        target = start + muzzleAxis[0] * beamLength;
+
+        laserSightRenderEntity.shaderParms[SHADERPARM_BEAM_WIDTH] = 0.25f;
+
+        if ( laserSightHandle == -1 )
+        {
+            laserSightHandle = gameRenderWorld->AddEntityDef( &laserSightRenderEntity );
+        }
+        else
+        {
+            gameRenderWorld->UpdateEntityDef( laserSightHandle, &laserSightRenderEntity );
+        }
+    }
+}
+
+int idPlayer::GetCurrentWeapon()
+{
+	return currentWeapon;
+}
+
+
 /*
 ==============
 idPlayer::CalculateViewWeaponPos
@@ -7290,7 +7408,7 @@ void idPlayer::CalculateViewWeaponPos( bool adjusted, idVec3 &origin, idMat3 &ax
 
         if (currentWeapon == WEAPON_FLASHLIGHT) // Flashlight adjustment
         {
-            idVec3	gunOfs( -14, 9, 20 );
+            idVec3	gunOfs( -14, 9, 24 );
             origin = viewOrigin + gunpos + (gunOfs * axis);
         }
         else
@@ -7308,6 +7426,13 @@ void idPlayer::CalculateViewWeaponPos( bool adjusted, idVec3 &origin, idMat3 &ax
 	// as the player changes direction, the gun will take a small lag
 	idVec3	gunOfs = GunAcceleratingOffset();
 	origin = viewOrigin + ( gunpos + gunOfs ) * viewAxis;
+
+	///HACK
+	if (currentWeapon == weapon_pda)
+    {
+        idVec3	pdaOffs( 30, -6, -10 );
+	    origin += pdaOffs * viewAxis;
+    }
 
 	// on odd legs, invert some angles
 	if ( bobCycle & 128 ) {

@@ -9,7 +9,7 @@ enum control_scheme;
 
 #define STABILISATION_DISTANCE   0.5
 #define FLASHLIGHT_HOLSTER_DISTANCE   0.15
-#define VELOCITY_TRIGGER        1.4
+#define VELOCITY_TRIGGER        1.6
 
 ovrInputStateTrackedRemote leftTrackedRemoteState_old;
 ovrInputStateTrackedRemote leftTrackedRemoteState_new;

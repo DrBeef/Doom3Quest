@@ -21,7 +21,7 @@ typedef struct {
     int weaponid;
     int lastweaponid;
     int holsteritemactive; //0 - nothing, 1 - flashlight
-    bool mountedgun;
+    bool laserSightActive;
 
     vec3_t hmdposition;
     vec3_t hmdposition_last; // Don't use this, it is just for calculating delta!

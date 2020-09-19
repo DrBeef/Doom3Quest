@@ -66,7 +66,9 @@ const int	FOCUS_GUI_TIME = 500;
 
 const int MAX_WEAPONS = 16;
 
-const int WEAPON_FISTS = 1;
+const int WEAPON_FISTS = 0;
+const int WEAPON_CHAINGUN = 4;
+const int WEAPON_GREANDE = 5;
 const int WEAPON_CHAINSAW = 10;
 const int WEAPON_FLASHLIGHT = 11;
 
@@ -330,7 +332,11 @@ public:
 	int						minRespawnTime;		// can respawn when time > this, force after g_forcerespawn
 	int						maxRespawnTime;		// force respawn after this time
 
-	// the first person view values are always calculated, even
+    renderEntity_t			laserSightRenderEntity;
+    qhandle_t				laserSightHandle;
+
+
+    // the first person view values are always calculated, even
 	// if a third person view is used
 	idVec3					firstPersonViewOrigin;
 	idMat3					firstPersonViewAxis;
@@ -401,6 +407,8 @@ public:
 
     virtual void            SetupFlashlightHolster();
     virtual void            UpdateFlashlightHolster();
+    virtual void            SetupLaserSight();
+    virtual void            UpdateLaserSight( );
 
 
     void					Kill( bool delayRespawn, bool nodamage );
@@ -540,6 +548,7 @@ public:
 
 	bool					SelfSmooth( void );
 	void					SetSelfSmooth( bool b );
+    int                     GetCurrentWeapon();
 
 private:
 	jointHandle_t			hipJoint;
@@ -667,6 +676,7 @@ private:
 	void					SpectateCycle( void );
 	idAngles				GunTurningOffset( void );
 	idVec3					GunAcceleratingOffset( void );
+
 
 	void					UseObjects( void );
 	void					CrashLand( const idVec3 &oldOrigin, const idVec3 &oldVelocity );

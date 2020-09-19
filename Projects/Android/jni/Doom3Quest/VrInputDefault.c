@@ -25,7 +25,6 @@ float	vr_reloadtimeoutms = 200.0f;
 float	vr_walkdirection = 0;
 float	vr_movement_multiplier;
 float	vr_weapon_pitchadjust = -30.0f;
-float	vr_lasersight;
 float	vr_control_scheme;
 float	vr_teleport;
 float	vr_virtual_stock;
@@ -438,7 +437,8 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                 (pDominantTrackedRemoteOld->Buttons & ovrButton_Joystick)) &&
                     (pDominantTrackedRemoteOld->Buttons & ovrButton_Joystick)){
 
-                forceVirtualScreen = !forceVirtualScreen;
+                //forceVirtualScreen = !forceVirtualScreen;
+                pVRClientInfo->laserSightActive = !pVRClientInfo->laserSightActive;
             }
 
             //Apply a filter and quadratic scaler so small movements are easier to make

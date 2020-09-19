@@ -1261,6 +1261,7 @@ void VR_Init()
 	positional_movementForward = 0.0f;
 	snapTurn = 0.0f;
 	vr.visible_hud = true;
+	vr.laserSightActive = false; // replace with a cvar?
 
 	//init randomiser
 	srand(time(NULL));
