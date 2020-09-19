@@ -66,6 +66,10 @@ const int	FOCUS_GUI_TIME = 500;
 
 const int MAX_WEAPONS = 16;
 
+const int WEAPON_FISTS = 1;
+const int WEAPON_CHAINSAW = 10;
+const int WEAPON_FLASHLIGHT = 11;
+
 const int DEAD_HEARTRATE = 0;			// fall to as you die
 const int LOWHEALTH_HEARTRATE_ADJ = 20; //
 const int DYING_HEARTRATE = 30;			// used for volumen calc when dying/dead

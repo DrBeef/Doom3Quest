@@ -3553,6 +3553,9 @@ void idPlayer::NextBestWeapon( void ) {
 		if ( !spawnArgs.GetBool( va( "weapon%d_best", w ) ) ) {
 			continue;
 		}
+        if (w == WEAPON_FLASHLIGHT) {
+            continue;
+        }
 		break;
 	}
 	idealWeapon = w;
@@ -3598,7 +3601,11 @@ void idPlayer::NextWeapon( void ) {
 		if ( ( inventory.weapons & ( 1 << w ) ) == 0 ) {
 			continue;
 		}
-		if ( inventory.HasAmmo( weap ) ) {
+		if (w == WEAPON_FLASHLIGHT) {
+            // Don't let user cycle through flashlight, they have to get it from the holster
+            continue;
+        }
+        if ( inventory.HasAmmo( weap ) ) {
 			break;
 		}
 	}
@@ -3648,6 +3655,10 @@ void idPlayer::PrevWeapon( void ) {
 		if ( ( inventory.weapons & ( 1 << w ) ) == 0 ) {
 			continue;
 		}
+        if (w == WEAPON_FLASHLIGHT) {
+            // Don't let user cycle through flashlight, they have to get it from the holster
+            continue;
+        }
 		if ( inventory.HasAmmo( weap ) ) {
 			break;
 		}
@@ -6334,15 +6345,17 @@ void idPlayer::Think( void ) {
 
     if (pVRClientInfo != nullptr)
     {
-        if (inventory.weapons > 1) {
+        if (inventory.weapons > WEAPON_FISTS) {
             pVRClientInfo->weaponid = currentWeapon;
         }
         else {
             pVRClientInfo->weaponid = -1;
         }
         cvarSystem->SetCVarBool("vr_weapon_stabilised", pVRClientInfo->weapon_stabilised);
-        pVRClientInfo->velocitytriggered = (currentWeapon == 11 || // 11 is flashlight
-				currentWeapon == 10); // 10 is chainsaw
+        pVRClientInfo->velocitytriggered = (
+        		currentWeapon == WEAPON_FISTS ||
+        		currentWeapon == WEAPON_FLASHLIGHT ||
+				currentWeapon == WEAPON_CHAINSAW);
     }
 
     // clear the ik before we do anything else so the skeleton doesn't get updated twice
@@ -7246,7 +7259,8 @@ void idPlayer::CalculateViewWeaponPos( bool adjusted, idVec3 &origin, idMat3 &ax
 	const idVec3 &viewOrigin = firstPersonViewOrigin;
 	const idMat3 &viewAxis = firstPersonViewAxis;
 
-	if (pVRClientInfo)
+	if (pVRClientInfo &&
+			currentWeapon != weapon_pda)
     {
 		if (adjusted) {
 			angles.pitch = pVRClientInfo->weaponangles[PITCH];
@@ -7274,7 +7288,7 @@ void idPlayer::CalculateViewWeaponPos( bool adjusted, idVec3 &origin, idMat3 &ax
 
         gunpos *= cvarSystem->GetCVarFloat( "vr_worldscale" );
 
-        if (currentWeapon == 11) // Flashlight adjustment
+        if (currentWeapon == WEAPON_FLASHLIGHT) // Flashlight adjustment
         {
             idVec3	gunOfs( -14, 9, 20 );
             origin = viewOrigin + gunpos + (gunOfs * axis);
