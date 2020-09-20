@@ -45,16 +45,6 @@ If you have questions concerning this license or the applicable additional terms
 const int ASYNC_PLAYER_INV_AMMO_BITS = idMath::BitsForInteger( 999 );	// 9 bits to cover the range [0, 999]
 const int ASYNC_PLAYER_INV_CLIP_BITS = -7;								// -7 bits to cover the range [-1, 60]
 
-
-void rotateAboutOrigin(float x, float y, float rotation, float out[2])
-{
-	out[0] = cosf(DEG2RAD(-rotation)) * x  +  sinf(DEG2RAD(-rotation)) * y;
-	out[1] = cosf(DEG2RAD(-rotation)) * y  -  sinf(DEG2RAD(-rotation)) * x;
-}
-
-
-
-
 /*
 ===============================================================================
 
@@ -6307,14 +6297,12 @@ void idPlayer::UpdateFlashlightHolster()
     	flashlightRenderEntity.hModel &&
     	pVRClientInfo != nullptr)
     {
-        idVec3	holsterOffset( pVRClientInfo->flashlightHolsterOffset[2],
-                                 pVRClientInfo->flashlightHolsterOffset[0],
+        idVec3	holsterOffset( -pVRClientInfo->flashlightHolsterOffset[2],
+                                 -pVRClientInfo->flashlightHolsterOffset[0],
                                  pVRClientInfo->flashlightHolsterOffset[1]);
 
-        float r[2];
-        rotateAboutOrigin(holsterOffset.x, holsterOffset.y, viewAngles.yaw - pVRClientInfo->hmdorientation[YAW], r);
-        holsterOffset.x = -r[0];
-        holsterOffset.y = -r[1];
+		idAngles a(0, viewAngles.yaw - pVRClientInfo->hmdorientation[YAW], 0);
+		holsterOffset *= a.ToMat3();
         holsterOffset *= cvarSystem->GetCVarFloat( "vr_worldscale" );
         flashlightRenderEntity.origin = firstPersonViewOrigin + holsterOffset;
 
@@ -6382,6 +6370,8 @@ void idPlayer::Think( void ) {
         pVRClientInfo->velocitytriggered = (
         		currentWeapon == WEAPON_FISTS ||
         		currentWeapon == WEAPON_FLASHLIGHT);
+
+        pVRClientInfo->pistol = currentWeapon == WEAPON_PISTOL;
     }
 
     // clear the ik before we do anything else so the skeleton doesn't get updated twice
@@ -6939,7 +6929,7 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 	CalcDamagePoints( inflictor, attacker, &damageDef->dict, damageScale, location, &damage, &armorSave );
 
     // determine knockback
-    if ( vr_knockBack.GetBool() )
+    if ( vr_knockback.GetBool() )
     {
         // determine knockback
         damageDef->dict.GetInt("knockback", "20", knockback);
@@ -7297,7 +7287,7 @@ void idPlayer::UpdateLaserSight( )
     bool traceHit = false;
 
     // check if lasersight should be hidden
-    if ( vr_weaponSight.GetInteger() != 1 ||
+    if ( vr_weaponsight.GetInteger() != 1 ||
     	inventory.weapons == 1 ||
     		//Only allow laser sight on the following weapons:
             !(currentWeapon == WEAPON_PISTOL || currentWeapon == WEAPON_SHOTGUN ||
@@ -7398,15 +7388,12 @@ void idPlayer::CalculateViewWeaponPos( bool adjusted, idVec3 &origin, idMat3 &ax
 
         axis = angles.ToMat3();
 
-        idVec3	gunpos( pVRClientInfo->calculated_weaponoffset[2],
-                          pVRClientInfo->calculated_weaponoffset[0],
+        idVec3	gunpos( -pVRClientInfo->calculated_weaponoffset[2],
+                          -pVRClientInfo->calculated_weaponoffset[0],
                           pVRClientInfo->calculated_weaponoffset[1]);
 
-        float r[2];
-        rotateAboutOrigin(gunpos.x, gunpos.y, viewAngles.yaw - pVRClientInfo->hmdorientation[YAW], r);
-        gunpos.x = -r[0];
-        gunpos.y = -r[1];
-
+        idAngles a(0, viewAngles.yaw - pVRClientInfo->hmdorientation[YAW], 0);
+        gunpos *= a.ToMat3();
         gunpos *= cvarSystem->GetCVarFloat( "vr_worldscale" );
 
         if (currentWeapon == WEAPON_FLASHLIGHT) // Flashlight adjustment

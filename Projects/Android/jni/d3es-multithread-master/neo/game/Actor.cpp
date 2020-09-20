@@ -2410,7 +2410,7 @@ void idActor::PlayFootStepSound( void ) {
 
 	//Don't play footsteps if play is hardly moving (this prevents positional tracking
 	//from triggering annoying repeated footstep sounds)
-	if (GetPhysics()->GetLinearVelocity(0).Length() < 25.0f)
+	if (GetPhysics()->GetLinearVelocity(0).Length() < 40.0f)
 	{
 		return;
 	}

@@ -1,8 +1,9 @@
 #if !defined(vr_client_info_h)
 #define vr_client_info_h
 
-#define NUM_WEAPON_SAMPLES      10
-#define WEAPON_RECOIL           15.0f;
+#define NUM_WEAPON_SAMPLES      18
+#define OLDER_READING		    (NUM_WEAPON_SAMPLES-1)
+#define NEWER_READING		    (NUM_WEAPON_SAMPLES-5)
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,6 +45,10 @@ typedef struct {
     float current_weaponoffset_timestamp;
     vec3_t weaponoffset_history[NUM_WEAPON_SAMPLES];
     float weaponoffset_history_timestamp[NUM_WEAPON_SAMPLES];
+
+    vec3_t throw_origin;
+    vec3_t throw_trajectory;
+    float throw_power;
 
     bool pistol;                // True if the weapon is a pistol
 

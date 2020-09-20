@@ -1598,13 +1598,13 @@ void Doom3Quest_getHMDOrientation() {
     updateHMDOrientation();
 }
 
-void Doom3Quest_getTrackedRemotesOrientation(int vr_control_scheme) {
+void Doom3Quest_getTrackedRemotesOrientation(int vr_controlscheme) {
 
     //Get info for tracked remotes
     acquireTrackedRemotesData(gAppState.Ovr, gAppState.DisplayTime[gAppState.MainThreadFrameIndex % MAX_TRACKING_SAMPLES]);
 
     //Call additional control schemes here
-    switch ((int)vr_control_scheme)
+    switch ((int)vr_controlscheme)
     {
             case RIGHT_HANDED_DEFAULT:
             HandleInput_Default(&rightTrackedRemoteState_new, &rightTrackedRemoteState_old, &rightRemoteTracking_new,

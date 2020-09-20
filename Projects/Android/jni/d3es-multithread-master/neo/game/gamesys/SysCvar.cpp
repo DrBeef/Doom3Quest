@@ -342,8 +342,9 @@ idCVar vr_ipd(						"vr_ipd",					"0.065",		CVAR_GAME | CVAR_FLOAT | CVAR_ARCHIV
 idCVar vr_worldscale(				"vr_worldscale",			"45.0",			CVAR_GAME | CVAR_FLOAT | CVAR_ARCHIVE, "VR World Scale" );
 idCVar vr_heightoffset(				"vr_heightoffset",			"0.0",			CVAR_GAME | CVAR_FLOAT | CVAR_ARCHIVE, "VR Height Offset" );
 idCVar vr_eye(						"vr_eye",					"0",			CVAR_GAME | CVAR_INTEGER, "VR Eye currently being drawn" );
-idCVar vr_control_scheme(			"vr_control_scheme",		"0",			CVAR_GAME | CVAR_INTEGER, "VR Control Scheme: 0 = right handed, 10 = left handed" );
-idCVar vr_shakeAmplitude(           "vr_shakeAmplitude",        "0.8", CVAR_FLOAT | CVAR_ARCHIVE, "Screen shake amplitude 0.0 = disabled to 1.0 = full\n", 0.0f, 1.0f );
-idCVar vr_knockBack(                "vr_knockBack",         "0", CVAR_BOOL | CVAR_ARCHIVE | CVAR_GAME, "Enable damage knockback in VR. 0 = Disabled, 1 = Enabled" );
-idCVar vr_weaponSight( 					"vr_weaponSight", "1", CVAR_INTEGER | CVAR_ARCHIVE, "Weapon Sight.\n 0 = Disable\n 1 = Lasersight" );
+idCVar vr_controlscheme(			"vr_controlscheme",		"0",			CVAR_GAME | CVAR_INTEGER, "VR Control Scheme: 0 = right handed, 10 = left handed" );
+idCVar vr_shakeamplitude(           "vr_shakeamplitude",        "0.8", CVAR_FLOAT | CVAR_ARCHIVE, "Screen shake amplitude 0.0 = disabled to 1.0 = full\n", 0.0f, 1.0f );
+idCVar vr_knockback(                "vr_knockback",         "0", CVAR_BOOL | CVAR_ARCHIVE | CVAR_GAME, "Enable damage knockback in VR. 0 = Disabled, 1 = Enabled" );
+idCVar vr_weaponsight( 					"vr_weaponsight", "1", CVAR_INTEGER | CVAR_ARCHIVE, "Weapon Sight.\n 0 = Disable\n 1 = Lasersight" );
+idCVar vr_throwables( 					"vr_throwables", "1", CVAR_INTEGER | CVAR_ARCHIVE, "Throwable Grenades.\n 0 = Disable\n 1 = Throw and release with trigger" );
 

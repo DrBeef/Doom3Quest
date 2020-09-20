@@ -402,9 +402,9 @@ void idPlayerView::CalculateShake() {
 	// since CurrentShakeAmplitudeForPosition() returns all the shake sounds
 	// the player can hear, it can go over 1.0 too.
 	//
-	shakeAng[0] = gameLocal.random.CRandomFloat() * shakeVolume * vr_shakeAmplitude.GetFloat();
-	shakeAng[1] = gameLocal.random.CRandomFloat() * shakeVolume * vr_shakeAmplitude.GetFloat();
-	shakeAng[2] = gameLocal.random.CRandomFloat() * shakeVolume * vr_shakeAmplitude.GetFloat();
+	shakeAng[0] = gameLocal.random.CRandomFloat() * shakeVolume * vr_shakeamplitude.GetFloat();
+	shakeAng[1] = gameLocal.random.CRandomFloat() * shakeVolume * vr_shakeamplitude.GetFloat();
+	shakeAng[2] = gameLocal.random.CRandomFloat() * shakeVolume * vr_shakeamplitude.GetFloat();
 
 	if (shakeVolume > 0.1) {
         //Shake controllers!

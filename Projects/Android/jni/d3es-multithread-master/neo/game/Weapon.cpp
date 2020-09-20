@@ -2926,7 +2926,7 @@ void idWeapon::Event_LaunchProjectiles( int num_projectiles, float spread, float
 			for( i = 0; i < num_projectiles; i++ ) {
 				ang = idMath::Sin( spreadRad * gameLocal.random.RandomFloat() );
 				spin = (float)DEG2RAD( 360.0f ) * gameLocal.random.RandomFloat();
-				//dir = playerViewAxis[ 0 ] + playerViewAxis[ 2 ] * ( ang * idMath::Sin( spin ) ) - playerViewAxis[ 1 ] * ( ang * idMath::Cos( spin ) );
+
 				dir = viewWeaponAxis[ 0 ] + viewWeaponAxis[ 2 ] * ( ang * idMath::Sin( spin ) ) - viewWeaponAxis[ 1 ] * ( ang * idMath::Cos( spin ) );
 				dir.Normalize();
 				gameLocal.clip.Translation( tr, muzzle_pos, muzzle_pos + dir * 4096.0f, NULL, mat3_identity, MASK_SHOT_RENDERMODEL, owner );
@@ -2947,10 +2947,33 @@ void idWeapon::Event_LaunchProjectiles( int num_projectiles, float spread, float
 			ang = idMath::Sin( spreadRad * gameLocal.random.RandomFloat() );
 			spin = (float)DEG2RAD( 360.0f ) * gameLocal.random.RandomFloat();
 
-			//dir = playerViewAxis[ 0 ] + playerViewAxis[ 2 ] * ( ang * idMath::Sin( spin ) ) - playerViewAxis[ 1 ] * ( ang * idMath::Cos( spin ) );
-			dir = viewWeaponAxis[ 0 ] + viewWeaponAxis[ 2 ] * ( ang * idMath::Sin( spin ) ) - viewWeaponAxis[ 1 ] * ( ang * idMath::Cos( spin ) );
+			vrClientInfo *pVRClientInfo = owner->GetVRClientInfo();
+			if (owner->GetCurrentWeapon() == WEAPON_GREANDE &&
+				pVRClientInfo != nullptr &&
+				cvarSystem->GetCVarBool("vr_throwables"))
+			{
+				idVec3	releaseOffset( -pVRClientInfo->throw_origin[2],
+										 -pVRClientInfo->throw_origin[0],
+										 pVRClientInfo->throw_origin[1]);
+				idAngles a(0, owner->viewAngles.yaw - pVRClientInfo->hmdorientation[YAW], 0);
+				releaseOffset *= a.ToMat3();
+				releaseOffset *= cvarSystem->GetCVarFloat( "vr_worldscale" );
+				muzzle_pos = owner->firstPersonViewOrigin + releaseOffset;
 
-			dir.Normalize();
+				idVec3	throw_direction( -pVRClientInfo->throw_trajectory[2],
+										   -pVRClientInfo->throw_trajectory[0],
+										   pVRClientInfo->throw_trajectory[1]);
+				throw_direction *= a.ToMat3();
+				throw_direction.Normalize();
+				dir = throw_direction;
+
+				launchPower = pVRClientInfo->throw_power * 0.8f;
+			} else {
+				dir = viewWeaponAxis[0] + viewWeaponAxis[2] * (ang * idMath::Sin(spin)) -
+					  viewWeaponAxis[1] * (ang * idMath::Cos(spin));
+
+				dir.Normalize();
+			}
 
 			if ( projectileEnt ) {
 				ent = projectileEnt;
@@ -2976,27 +2999,36 @@ void idWeapon::Event_LaunchProjectiles( int num_projectiles, float spread, float
 
 			projBounds = proj->GetPhysics()->GetBounds().Rotate( proj->GetPhysics()->GetAxis() );
 
-			// make sure the projectile starts inside the bounding box of the owner
-			if ( i == 0 ) {
-				//muzzle_pos = muzzleOrigin + playerViewAxis[ 0 ] * 2.0f;
-				muzzle_pos = muzzleOrigin + viewWeaponAxis[ 0 ] * 2.0f;
-				// DG: sometimes the assertion in idBounds::operator-(const idBounds&) triggers
-				//     (would get bounding box with negative volume)
-				//     => check that before doing ownerBounds - projBounds (equivalent to the check in the assertion)
-				idVec3 obDiff = ownerBounds[1] - ownerBounds[0];
-				idVec3 pbDiff = projBounds[1] - projBounds[0];
-				bool boundsSubLegal =  obDiff.x > pbDiff.x && obDiff.y > pbDiff.y && obDiff.z > pbDiff.z;
-				if ( boundsSubLegal && ( ownerBounds - projBounds ).RayIntersection( muzzle_pos, viewWeaponAxis[0], distance ) ) {
-					//start = muzzle_pos + distance * playerViewAxis[0];
-					start = muzzle_pos + distance * viewWeaponAxis[0];
-				} else {
-					start = ownerBounds.GetCenter();
+			if (owner->GetCurrentWeapon() != WEAPON_GREANDE ||
+				!cvarSystem->GetCVarBool("vr_throwables")) {
+				// make sure the projectile starts inside the bounding box of the owner
+				if (i == 0) {
+					//muzzle_pos = muzzleOrigin + playerViewAxis[ 0 ] * 2.0f;
+					muzzle_pos = muzzleOrigin + viewWeaponAxis[0] * 2.0f;
+					// DG: sometimes the assertion in idBounds::operator-(const idBounds&) triggers
+					//     (would get bounding box with negative volume)
+					//     => check that before doing ownerBounds - projBounds (equivalent to the check in the assertion)
+					idVec3 obDiff = ownerBounds[1] - ownerBounds[0];
+					idVec3 pbDiff = projBounds[1] - projBounds[0];
+					bool boundsSubLegal =
+							obDiff.x > pbDiff.x && obDiff.y > pbDiff.y && obDiff.z > pbDiff.z;
+					if (boundsSubLegal &&
+						(ownerBounds - projBounds).RayIntersection(muzzle_pos, viewWeaponAxis[0],
+																   distance)) {
+						//start = muzzle_pos + distance * playerViewAxis[0];
+						start = muzzle_pos + distance * viewWeaponAxis[0];
+					} else {
+						start = ownerBounds.GetCenter();
+					}
+					gameLocal.clip.Translation(tr, start, muzzle_pos,
+											   proj->GetPhysics()->GetClipModel(),
+											   proj->GetPhysics()->GetClipModel()->GetAxis(),
+											   MASK_SHOT_RENDERMODEL, owner);
+					muzzle_pos = tr.endpos;
 				}
-				gameLocal.clip.Translation( tr, start, muzzle_pos, proj->GetPhysics()->GetClipModel(), proj->GetPhysics()->GetClipModel()->GetAxis(), MASK_SHOT_RENDERMODEL, owner );
-				muzzle_pos = tr.endpos;
 			}
 
-			proj->Launch( muzzle_pos, dir, pushVelocity, fuseOffset, launchPower, dmgPower );
+            proj->Launch(muzzle_pos, dir, pushVelocity, fuseOffset, launchPower, dmgPower);
 		}
 
 		// toss the brass

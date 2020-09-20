@@ -87,7 +87,7 @@ void Doom3Quest_processHaptics();
 
 void Doom3Quest_getHMDOrientation();
 
-void Doom3Quest_getTrackedRemotesOrientation(int vr_control_scheme);
+void Doom3Quest_getTrackedRemotesOrientation(int vr_controlscheme);
 
 void Doom3Quest_ResyncClientYawWithGameYaw();
 

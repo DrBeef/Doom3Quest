@@ -25,7 +25,7 @@ float	vr_reloadtimeoutms = 200.0f;
 float	vr_walkdirection = 0;
 float	vr_movement_multiplier;
 float	vr_weapon_pitchadjust = -30.0f;
-float	vr_control_scheme;
+float	vr_controlscheme;
 float	vr_teleport;
 float	vr_virtual_stock;
 float	vr_switch_sticks = 0;
@@ -72,8 +72,8 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
 
 {
 	//Ensure handedness is set correctly
-	pVRClientInfo->right_handed = vr_control_scheme < 10 ||
-            vr_control_scheme == 99; // Always right-handed for weapon calibration
+	pVRClientInfo->right_handed = vr_controlscheme < 10 ||
+            vr_controlscheme == 99; // Always right-handed for weapon calibration
 
 	pVRClientInfo->teleportenabled = vr_teleport != 0;
 
@@ -169,7 +169,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
             canUseQuickSave = false;
         }
         else if (!canUseQuickSave) {
-            int channel = (vr_control_scheme >= 10) ? 1 : 0;
+            int channel = (vr_controlscheme >= 10) ? 1 : 0;
             Doom3Quest_Vibrate(40, channel, 0.5); // vibrate to let user know they can switch
             canUseQuickSave = true;
         }
@@ -194,6 +194,12 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                  (pOffTrackedRemoteOld->Buttons & offButton1)) &&
                 (pOffTrackedRemoteNew->Buttons & offButton1)) {
                 Android_SetImpuse(UB_IMPULSE19);
+            }
+
+            if (((pOffTrackedRemoteNew->Buttons & offButton2) !=
+                 (pOffTrackedRemoteOld->Buttons & offButton2)) &&
+                (pOffTrackedRemoteNew->Buttons & offButton2)) {
+                forceVirtualScreen = !forceVirtualScreen;
             }
         }
 
@@ -227,6 +233,20 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
             pVRClientInfo->current_weaponoffset[1] = pWeapon->HeadPose.Pose.Position.y - pVRClientInfo->hmdposition[1];
             pVRClientInfo->current_weaponoffset[2] = pWeapon->HeadPose.Pose.Position.z - pVRClientInfo->hmdposition[2];
             pVRClientInfo->current_weaponoffset_timestamp = Sys_Milliseconds( );
+
+            {
+                //Caclulate speed between two historic controller position readings
+                float distance = VectorDistance(pVRClientInfo->weaponoffset_history[NEWER_READING], pVRClientInfo->weaponoffset_history[OLDER_READING]);
+                float t = pVRClientInfo->weaponoffset_history_timestamp[NEWER_READING] - pVRClientInfo->weaponoffset_history_timestamp[OLDER_READING];
+                pVRClientInfo->throw_power = distance / (t/(float)1000.0);
+
+                //Calculate trajectory
+                VectorSubtract(pVRClientInfo->weaponoffset_history[NEWER_READING], pVRClientInfo->weaponoffset_history[OLDER_READING], pVRClientInfo->throw_trajectory);
+                VectorNormalize( pVRClientInfo->throw_trajectory );
+
+                //Set origin to the newer reading offset
+                VectorCopy(pVRClientInfo->weaponoffset_history[NEWER_READING], pVRClientInfo->throw_origin);
+            }
 
             //Just copy to calculated offset, used to use this in case we wanted to apply any modifiers, but don't any more
             VectorCopy(pVRClientInfo->current_weaponoffset, pVRClientInfo->calculated_weaponoffset);
@@ -292,7 +312,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                     canGrabFlashlight = false;
                 }
                 else if (!canGrabFlashlight && pVRClientInfo->holsteritemactive == 0) {
-                    int channel = (vr_control_scheme >= 10) ? 0 : 1;
+                    int channel = (vr_controlscheme >= 10) ? 0 : 1;
                     Doom3Quest_Vibrate(40, channel, 0.4); // vibrate to let user know they can switch
 
                     canGrabFlashlight = true;
@@ -315,7 +335,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
 
                         //Initiate flashlight from backpack mode
                         Android_SetImpuse(UB_IMPULSE11);
-                        int channel = (vr_control_scheme >= 10) ? 0 : 1;
+                        int channel = (vr_controlscheme >= 10) ? 0 : 1;
                         Doom3Quest_Vibrate(80, channel, 0.8); // vibrate to let user know they switched
 
                         pVRClientInfo->holsteritemactive = 1;
@@ -437,7 +457,6 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                 (pDominantTrackedRemoteOld->Buttons & ovrButton_Joystick)) &&
                     (pDominantTrackedRemoteOld->Buttons & ovrButton_Joystick)){
 
-                //forceVirtualScreen = !forceVirtualScreen;
                 pVRClientInfo->laserSightActive = !pVRClientInfo->laserSightActive;
             }
 

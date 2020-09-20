@@ -256,10 +256,11 @@ extern idCVar vr_ipd;
 extern idCVar vr_worldscale;
 extern idCVar vr_eye;
 extern idCVar vr_heightoffset;
-extern idCVar vr_control_scheme;
-extern idCVar	vr_shakeAmplitude;
-extern idCVar	vr_knockBack;
-extern idCVar vr_weaponSight;
+extern idCVar vr_controlscheme;
+extern idCVar	vr_shakeamplitude;
+extern idCVar	vr_knockback;
+extern idCVar vr_weaponsight;
+extern idCVar vr_throwables;
 
 
 extern const char *si_gameTypeArgs[];
