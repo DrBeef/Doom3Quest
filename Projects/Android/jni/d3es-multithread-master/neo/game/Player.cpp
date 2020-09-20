@@ -4813,7 +4813,7 @@ void idPlayer::BobCycle( const idVec3 &pushVelocity ) {
 		return;
 	}
 
-	if ( !physicsObj.HasGroundContacts() || influenceActive == INFLUENCE_LEVEL2 || ( gameLocal.isMultiplayer && spectating ) ) {
+/*	if ( !physicsObj.HasGroundContacts() || influenceActive == INFLUENCE_LEVEL2 || ( gameLocal.isMultiplayer && spectating ) ) {
 		// airborne
 		bobCycle = 0;
 		bobFoot = 0;
@@ -4837,14 +4837,19 @@ void idPlayer::BobCycle( const idVec3 &pushVelocity ) {
 		bobCycle = (int)( old + bobmove * gameLocal.msec ) & 255;
 		bobFoot = ( bobCycle & 128 ) >> 7;
 		bobfracsin = idMath::Fabs( sin( ( bobCycle & 127 ) / 127.0 * idMath::PI ) );
-	}
+	}*/
+
+	//Disable bobbing in VR
+	bobCycle = 0;
+	bobFoot = 0;
+	bobfracsin = 0;
 
 	// calculate angles for view bobbing
 	viewBobAngles.Zero();
 
 	viewaxis = viewAngles.ToMat3() * physicsObj.GetGravityAxis();
 
-/*	// add angles based on velocity
+	// add angles based on velocity
 	delta = velocity * viewaxis[0];
 	viewBobAngles.pitch += delta * pm_runpitch.GetFloat();
 
@@ -4868,7 +4873,7 @@ void idPlayer::BobCycle( const idVec3 &pushVelocity ) {
 		delta = -delta;
 	}
 	viewBobAngles.roll += delta;
-*/
+
 	// calculate position for view bobbing
 	viewBob.Zero();
 
@@ -4887,7 +4892,7 @@ void idPlayer::BobCycle( const idVec3 &pushVelocity ) {
 		stepUpTime = gameLocal.time;
 	}
 
-/*
+
 	idVec3 gravity = physicsObj.GetGravityNormal();
 
 	// if the player stepped up recently
@@ -4913,7 +4918,6 @@ void idPlayer::BobCycle( const idVec3 &pushVelocity ) {
 		f = 1.0 - ( delta / LAND_RETURN_TIME );
 		viewBob -= gravity * ( landChange * f );
 	}
- */
 }
 
 /*
@@ -7293,12 +7297,12 @@ void idPlayer::UpdateLaserSight( )
     bool traceHit = false;
 
     // check if lasersight should be hidden
-    if ( inventory.weapons == 1 ||
-        currentWeapon == weapon_pda ||
-        currentWeapon == weapon_flashlight ||
-        currentWeapon == weapon_fists ||
-        currentWeapon == WEAPON_CHAINSAW ||
-        currentWeapon == WEAPON_GREANDE ||
+    if ( vr_weaponSight.GetInteger() != 1 ||
+    	inventory.weapons == 1 ||
+    		//Only allow laser sight on the following weapons:
+            !(currentWeapon == WEAPON_PISTOL || currentWeapon == WEAPON_SHOTGUN ||
+            currentWeapon == WEAPON_MACHINEGUN || currentWeapon == WEAPON_PLASMARIFLE ||
+            currentWeapon == WEAPON_ROCKETLAUNCHER) ||
         !pVRClientInfo->laserSightActive ||
          AI_DEAD ||
          weapon.GetEntity()->IsHidden() ||
@@ -7307,7 +7311,7 @@ void idPlayer::UpdateLaserSight( )
         hideSight = true;
     }
 
-    if ( hideSight || vr_weaponSight.GetInteger() != 1 )
+    if ( hideSight )
     {
         laserSightRenderEntity.allowSurfaceInViewID = -1;
         if( laserSightHandle == -1 )
@@ -7392,8 +7396,7 @@ void idPlayer::CalculateViewWeaponPos( bool adjusted, idVec3 &origin, idMat3 &ax
 			angles.roll = pVRClientInfo->weaponangles_unadjusted[ROLL];
 		}
 
-		axis = angles.ToMat3();
-
+        axis = angles.ToMat3();
 
         idVec3	gunpos( pVRClientInfo->calculated_weaponoffset[2],
                           pVRClientInfo->calculated_weaponoffset[0],

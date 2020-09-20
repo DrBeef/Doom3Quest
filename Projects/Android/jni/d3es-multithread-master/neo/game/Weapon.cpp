@@ -1881,12 +1881,24 @@ void idWeapon::PresentWeapon( bool showViewModel ) {
 	playerViewOrigin = owner->firstPersonViewOrigin;
 	playerViewAxis = owner->firstPersonViewAxis;
 
-	// calculate weapon position based on player movement bobbing
-	owner->CalculateViewWeaponPos( true, viewWeaponOrigin, viewWeaponAxis, viewWeaponAngles );
+	int currentWeaponId = owner->GetCurrentWeapon();
 
-	if (owner->GetCurrentWeapon() != WEAPON_CHAINGUN) {
-		//Just shift the model down a little bit
-		viewWeaponOrigin -= 4.0f * viewWeaponAxis[2];
+	// calculate weapon position based on player movement bobbing
+	owner->CalculateViewWeaponPos( currentWeaponId != WEAPON_CHAINSAW, viewWeaponOrigin, viewWeaponAxis, viewWeaponAngles );
+
+	//This isn't really the right place to do this, but works for now
+	if (currentWeaponId == WEAPON_CHAINGUN) {
+		//Just shift the model up a little bit
+		viewWeaponOrigin += 4.0f * viewWeaponAxis[2];
+	} else if (currentWeaponId == WEAPON_PISTOL ||
+			currentWeaponId == WEAPON_SHOTGUN ||
+			currentWeaponId == WEAPON_MACHINEGUN ||
+			currentWeaponId == WEAPON_PLASMARIFLE ||
+			currentWeaponId == WEAPON_BFG ||
+			currentWeaponId == WEAPON_ROCKETLAUNCHER)
+	{
+        //Just shift the model down a little bit
+        viewWeaponOrigin -= 4.0f * viewWeaponAxis[2];
 	}
 
 	// hide offset is for dropping the gun when approaching a GUI or NPC
@@ -1911,9 +1923,16 @@ void idWeapon::PresentWeapon( bool showViewModel ) {
 	// kick up based on repeat firing
 	MuzzleRise( viewWeaponOrigin, viewWeaponAxis );
 
+	//HACKADOODLE-DOOO!
+	idMat3 axis = viewWeaponAxis;
+    if (currentWeaponId == WEAPON_CHAINSAW)
+    {
+        axis = idAngles(45, 0, 0).ToMat3() * viewWeaponAxis;
+    }
+
 	// set the physics position and orientation
 	GetPhysics()->SetOrigin( viewWeaponOrigin );
-	GetPhysics()->SetAxis( viewWeaponAxis );
+	GetPhysics()->SetAxis( axis );
 	UpdateVisuals();
 
 	// update the weapon script

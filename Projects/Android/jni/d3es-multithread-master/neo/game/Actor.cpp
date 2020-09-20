@@ -2397,7 +2397,7 @@ const char *idActor::GetDamageGroup( int location ) {
 
 /*
 =====================
-idActor::Event_EnableEyeFocus
+idActor::PlayFootStepSound
 =====================
 */
 void idActor::PlayFootStepSound( void ) {
@@ -2405,6 +2405,13 @@ void idActor::PlayFootStepSound( void ) {
 	const idMaterial *material;
 
 	if ( !GetPhysics()->HasGroundContacts() ) {
+		return;
+	}
+
+	//Don't play footsteps if play is hardly moving (this prevents positional tracking
+	//from triggering annoying repeated footstep sounds)
+	if (GetPhysics()->GetLinearVelocity(0).Length() < 25.0f)
+	{
 		return;
 	}
 

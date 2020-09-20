@@ -67,8 +67,15 @@ const int	FOCUS_GUI_TIME = 500;
 const int MAX_WEAPONS = 16;
 
 const int WEAPON_FISTS = 0;
+const int WEAPON_PISTOL = 1;
+const int WEAPON_SHOTGUN = 2;
+const int WEAPON_MACHINEGUN = 3;
 const int WEAPON_CHAINGUN = 4;
 const int WEAPON_GREANDE = 5;
+const int WEAPON_PLASMARIFLE = 6;
+const int WEAPON_ROCKETLAUNCHER = 7;
+const int WEAPON_BFG = 8;
+const int WEAPON_SOULCUBE = 9;
 const int WEAPON_CHAINSAW = 10;
 const int WEAPON_FLASHLIGHT = 11;
 
