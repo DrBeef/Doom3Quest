@@ -1,7 +1,7 @@
 #if !defined(vr_client_info_h)
 #define vr_client_info_h
 
-#define NUM_WEAPON_SAMPLES      18
+#define NUM_WEAPON_SAMPLES      7
 #define OLDER_READING		    (NUM_WEAPON_SAMPLES-1)
 #define NEWER_READING		    (NUM_WEAPON_SAMPLES-5)
 

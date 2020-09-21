@@ -2967,7 +2967,7 @@ void idWeapon::Event_LaunchProjectiles( int num_projectiles, float spread, float
 				throw_direction.Normalize();
 				dir = throw_direction;
 
-				launchPower = pVRClientInfo->throw_power * 0.8f;
+				launchPower = pVRClientInfo->throw_power * 0.5f;
 			} else {
 				dir = viewWeaponAxis[0] + viewWeaponAxis[2] * (ang * idMath::Sin(spin)) -
 					  viewWeaponAxis[1] * (ang * idMath::Cos(spin));

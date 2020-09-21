@@ -159,8 +159,8 @@ import static android.system.Os.setenv;
 		//Default config
 		copy_asset("/sdcard/Doom3Quest/base", "default.cfg", false);
 
-		//Weapons
-		copy_asset("/sdcard/Doom3Quest/base", "pak099.pk4", false);
+		//Weapons - force overwrite
+		copy_asset("/sdcard/Doom3Quest/base", "pak099.pk4", true);
 
 
 		//Read these from a file and pass through
