@@ -28,8 +28,7 @@ extern "C" {
 
 #define TIC_RATE 60
 
-float playerHeight;
-float playerYaw;
+float screenYaw;
 
 bool showingScreenLayer;
 

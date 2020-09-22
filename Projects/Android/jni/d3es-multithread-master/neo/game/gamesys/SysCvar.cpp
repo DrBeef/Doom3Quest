@@ -339,7 +339,7 @@ idCVar net_serverDlTable(			"net_serverDlTable",		"",				CVAR_GAME | CVAR_ARCHIV
 
 
 idCVar vr_ipd(						"vr_ipd",					"0.065",		CVAR_GAME | CVAR_FLOAT | CVAR_ARCHIVE, "VR IPD" );
-idCVar vr_worldscale(				"vr_worldscale",			"45.0",			CVAR_GAME | CVAR_FLOAT | CVAR_ARCHIVE, "VR World Scale" );
+idCVar vr_worldscale(				"vr_worldscale",			"42.0",			CVAR_GAME | CVAR_FLOAT | CVAR_ARCHIVE, "VR World Scale" );
 idCVar vr_heightoffset(				"vr_heightoffset",			"0.0",			CVAR_GAME | CVAR_FLOAT | CVAR_ARCHIVE, "VR Height Offset" );
 idCVar vr_eye(						"vr_eye",					"0",			CVAR_GAME | CVAR_INTEGER, "VR Eye currently being drawn" );
 idCVar vr_controlscheme(			"vr_controlscheme",		"0",			CVAR_GAME | CVAR_INTEGER, "VR Control Scheme: 0 = right handed, 10 = left handed" );

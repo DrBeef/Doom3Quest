@@ -140,7 +140,6 @@ double GetTimeInMilliSeconds()
 }
 
 
-//This is controlled by the engine
 bool forceVirtualScreen = false;
 bool inMenu = false;
 bool inGameGuiActive = false;
@@ -1253,7 +1252,7 @@ void Android_MessageBox(const char *title, const char *text)
 void VR_Init()
 {
 	//Initialise all our variables
-	playerYaw = 0.0f;
+	screenYaw = 0.0f;
 	remote_movementSideways = 0.0f;
 	remote_movementForward = 0.0f;
 	remote_movementUp = 0.0f;
@@ -1501,6 +1500,11 @@ void Doom3Quest_FrameSetup()
 {
 	//Use floor based tracking space
 	vrapi_SetTrackingSpace(gAppState.Ovr, VRAPI_TRACKING_SPACE_LOCAL_FLOOR);
+
+	if (!Doom3Quest_useScreenLayer())
+	{
+		screenYaw = vr.hmdorientation[YAW];
+	}
 
     Doom3Quest_processHaptics();
     Doom3Quest_getHMDOrientation();

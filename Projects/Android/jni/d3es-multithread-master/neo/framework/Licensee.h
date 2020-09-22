@@ -59,7 +59,7 @@ If you have questions concerning this license or the applicable additional terms
 
 // filenames
 #ifndef CONFIG_FILE
-#define CONFIG_FILE						"dhewm.cfg"
+#define CONFIG_FILE						"doom3quest.cfg"
 #endif
 
 // base folder where the source code lives

@@ -2714,9 +2714,9 @@ void idFileSystemLocal::Restart( void ) {
 	// if we can't find default.cfg, assume that the paths are
 	// busted and error out now, rather than getting an unreadable
 	// graphics screen when the font fails to load
-	if ( ReadFile( "default.cfg", NULL, NULL ) <= 0 ) {
-		common->FatalError( "Couldn't load default.cfg" );
-	}
+//	if ( ReadFile( "default.cfg", NULL, NULL ) <= 0 ) {
+//		common->FatalError( "Couldn't load default.cfg" );
+//	}
 }
 
 /*

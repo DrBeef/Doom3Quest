@@ -7420,7 +7420,7 @@ void idPlayer::CalculateViewWeaponPos( bool adjusted, idVec3 &origin, idMat3 &ax
 	///HACK
 	if (currentWeapon == weapon_pda)
     {
-        idVec3	pdaOffs( 30, -6, -10 );
+        idVec3	pdaOffs( 30, -7, -14 );
 	    origin += pdaOffs * viewAxis;
     }
 

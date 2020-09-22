@@ -3021,7 +3021,7 @@ void idCommonLocal::Init( int argc, char **argv ) {
 		if ( !AddStartupCommands() ) {
 #endif
 			// if the user didn't give any commands, run default action
-			session->StartMenu( true );
+			session->StartMenu( false );//true );
 		}
 
 		// print all warnings queued during initialization

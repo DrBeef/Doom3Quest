@@ -85,6 +85,7 @@ static ovrMatrix4f CylinderModelMatrix( const int texWidth, const int texHeight,
 
 	return m2;
 }
+extern float SS_MULTIPLIER;
 
 ovrLayerCylinder2 BuildCylinderLayer( ovrRenderer * cylinderRenderer,
 	const int textureWidth, const int textureHeight,
@@ -107,13 +108,12 @@ ovrLayerCylinder2 BuildCylinderLayer( ovrRenderer * cylinderRenderer,
 	layer.HeadPose = tracking->HeadPose;
 
 	const float density = 4500.0f;
-	const float rotateYaw = 0.0f;
 	const float radius = 6.0f;
-	const ovrVector3f translation = { 0.0f, 0.0f, -6.0f };
+	const ovrVector3f translation = { 0.0f, 0.0f, -4.0f / SS_MULTIPLIER };
 
 	ovrMatrix4f cylinderTransform = 
 		CylinderModelMatrix( textureWidth, textureHeight, translation,
-			rotateYaw, rotatePitch, radius, density );
+							 rotatePitch, radians(screenYaw), radius, density );
 
 	const float circScale = density * 0.5f / textureWidth;
 	const float circBias = -circScale * ( 0.5f * ( 1.0f - 1.0f / circScale ) );

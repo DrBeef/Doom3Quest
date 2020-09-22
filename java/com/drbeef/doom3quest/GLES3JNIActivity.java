@@ -156,9 +156,6 @@ import static android.system.Os.setenv;
 		//Create all required folders
 		new File("/sdcard/Doom3Quest/base").mkdirs();
 
-		//Default config
-		copy_asset("/sdcard/Doom3Quest/base", "default.cfg", false);
-
 		//Weapons - force overwrite
 		copy_asset("/sdcard/Doom3Quest/base", "pak099.pk4", true);
 
@@ -189,7 +186,7 @@ import static android.system.Os.setenv;
 		}
 
 		try {
-			setenv("USER_FILES", "base", true);
+			setenv("USER_FILES", "/sdcard/Doom3Quest", true);
 			setenv("GAMELIBDIR", getApplicationInfo().nativeLibraryDir, true);
 			setenv("GAMETYPE", "16", true); // hard coded for now
 		}
