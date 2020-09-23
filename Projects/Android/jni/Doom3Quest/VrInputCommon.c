@@ -133,34 +133,6 @@ void acquireTrackedRemotesData(ovrMobile *Ovr, double displayTime) {//The amount
 }
 
 
-//YAW:  Left increase, Right decrease
-void updateScopeAngles()
-{
-    //Bit of a hack, but use weapon orientation / position for view when scope is engaged
-    static vec3_t currentScopeAngles;
-    static vec3_t lastScopeAngles;
-    if (false)//pVRClientInfo->scopeengaged)
-    {
-        //Clear weapon offset
-        VectorSet(pVRClientInfo->calculated_weaponoffset, 0, 0, 0);
-
-        VectorSet(currentScopeAngles, pVRClientInfo->weaponangles[PITCH], pVRClientInfo->weaponangles[YAW], pVRClientInfo->hmdorientation[ROLL]);
-
-        //Set "view" Angles
-        VectorCopy(currentScopeAngles, pVRClientInfo->hmdorientation);
-
-        //Orientation
-        VectorSubtract(lastScopeAngles, currentScopeAngles, pVRClientInfo->hmdorientation_delta);
-
-        //Keep this for our records
-        VectorCopy(currentScopeAngles, lastScopeAngles);
-    } else {
-        VectorSet(currentScopeAngles, pVRClientInfo->weaponangles[PITCH], pVRClientInfo->weaponangles[YAW], pVRClientInfo->hmdorientation[ROLL]);
-        VectorCopy(currentScopeAngles, lastScopeAngles);
-    }
-}
-
-
 #ifndef max
 #define max( x, y ) ( ( ( x ) > ( y ) ) ? ( x ) : ( y ) )
 #define min( x, y ) ( ( ( x ) < ( y ) ) ? ( x ) : ( y ) )

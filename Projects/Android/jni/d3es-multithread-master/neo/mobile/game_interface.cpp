@@ -5,6 +5,15 @@
 extern "C"
 {
 
+int Android_GetCVarInteger(const char* cvar)
+{
+	if (cvarSystem != nullptr) {
+		return cvarSystem->GetCVarInteger(cvar);
+	}
+
+	return 0;
+}
+
 static const char *cmd_to_run = NULL;
 void Android_SetCommand(const char * cmd)
 {

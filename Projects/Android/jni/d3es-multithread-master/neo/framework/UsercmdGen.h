@@ -37,7 +37,7 @@ If you have questions concerning this license or the applicable additional terms
 ===============================================================================
 */
 
-const int USERCMD_HZ			= 60;			// 60 frames per second
+const int USERCMD_HZ			= 60;
 const int USERCMD_MSEC			= 1000 / USERCMD_HZ;
 
 // usercmd_t->button bits

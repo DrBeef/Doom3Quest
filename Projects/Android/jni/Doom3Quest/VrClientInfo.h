@@ -22,7 +22,6 @@ typedef struct {
     int weaponid;
     int lastweaponid;
     int holsteritemactive; //0 - nothing, 1 - flashlight
-    bool laserSightActive;
 
     vec3_t hmdposition;
     vec3_t hmdposition_last; // Don't use this, it is just for calculating delta!
@@ -32,7 +31,6 @@ typedef struct {
     vec3_t hmdorientation_last; // Don't use this, it is just for calculating delta!
     vec3_t hmdorientation_delta;
 
-    vec3_t weaponangles_unadjusted;
     vec3_t weaponangles;
     vec3_t weaponangles_last; // Don't use this, it is just for calculating delta!
     vec3_t weaponangles_delta;
@@ -41,7 +39,6 @@ typedef struct {
 
 
     vec3_t current_weaponoffset;
-    vec3_t calculated_weaponoffset;
     float current_weaponoffset_timestamp;
     vec3_t weaponoffset_history[NUM_WEAPON_SAMPLES];
     float weaponoffset_history_timestamp[NUM_WEAPON_SAMPLES];

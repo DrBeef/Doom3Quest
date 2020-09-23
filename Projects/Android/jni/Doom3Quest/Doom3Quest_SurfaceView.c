@@ -115,13 +115,9 @@ struct arg_end *end;
 char **argv;
 int argc=0;
 
-//extern cvar_t	*r_lefthand;
-//extern cvar_t   *cl_paused;
-
 enum control_scheme {
 	RIGHT_HANDED_DEFAULT = 0,
-	LEFT_HANDED_DEFAULT = 10,
-	GAMEPAD = 20 //Not implemented, someone else can do this!
+	LEFT_HANDED_DEFAULT = 10
 };
 
 /*
@@ -1260,7 +1256,6 @@ void VR_Init()
 	positional_movementForward = 0.0f;
 	snapTurn = 0.0f;
 	vr.visible_hud = true;
-	vr.laserSightActive = false; // replace with a cvar?
 
 	//init randomiser
 	srand(time(NULL));
@@ -1496,7 +1491,7 @@ void * AppThreadFunction(void * parm ) {
 }
 
 //All the stuff we want to do each frame
-void Doom3Quest_FrameSetup()
+void Doom3Quest_FrameSetup(int controlscheme)
 {
 	//Use floor based tracking space
 	vrapi_SetTrackingSpace(gAppState.Ovr, VRAPI_TRACKING_SPACE_LOCAL_FLOOR);
@@ -1508,7 +1503,7 @@ void Doom3Quest_FrameSetup()
 
     Doom3Quest_processHaptics();
     Doom3Quest_getHMDOrientation();
-    Doom3Quest_getTrackedRemotesOrientation(0);
+    Doom3Quest_getTrackedRemotesOrientation(controlscheme);
 }
 
 void Doom3Quest_processHaptics() {//Handle haptics
@@ -1590,33 +1585,34 @@ void Doom3Quest_getHMDOrientation() {
     ovrTracking2 *tracking = &gAppState.Tracking[gAppState.MainThreadFrameIndex % MAX_TRACKING_SAMPLES];
 	*tracking = vrapi_GetPredictedTracking2(gAppState.Ovr, gAppState.DisplayTime[gAppState.MainThreadFrameIndex % MAX_TRACKING_SAMPLES]);
 
-	// We extract Yaw, Pitch, Roll instead of directly using the orientation
-	// to allow "additional" yaw manipulation with mouse/controller.
-	const ovrQuatf quatHmd = tracking->HeadPose.Pose.Orientation;
-	const ovrVector3f positionHmd = tracking->HeadPose.Pose.Position;
-	vec3_t rotation = {0};
-	QuatToYawPitchRoll(quatHmd, rotation, vr.hmdorientation);
-	setHMDPosition(positionHmd.x, positionHmd.y, positionHmd.z, vr.hmdorientation[YAW]);
+	//Don't update game with tracking if we are in big screen mode
+	if (!Doom3Quest_useScreenLayer()) {
 
-	//TODO: fix - set to use HMD position for world position
-    updateHMDOrientation();
+		const ovrQuatf quatHmd = tracking->HeadPose.Pose.Orientation;
+		const ovrVector3f positionHmd = tracking->HeadPose.Pose.Position;
+
+		vec3_t rotation = {0};
+		QuatToYawPitchRoll(quatHmd, rotation, vr.hmdorientation);
+		setHMDPosition(positionHmd.x, positionHmd.y, positionHmd.z, vr.hmdorientation[YAW]);
+		updateHMDOrientation();
+	}
 }
 
-void Doom3Quest_getTrackedRemotesOrientation(int vr_controlscheme) {
+void Doom3Quest_getTrackedRemotesOrientation(int controlscheme) {
 
     //Get info for tracked remotes
     acquireTrackedRemotesData(gAppState.Ovr, gAppState.DisplayTime[gAppState.MainThreadFrameIndex % MAX_TRACKING_SAMPLES]);
 
     //Call additional control schemes here
-    switch ((int)vr_controlscheme)
+    switch (controlscheme)
     {
             case RIGHT_HANDED_DEFAULT:
-            HandleInput_Default(&rightTrackedRemoteState_new, &rightTrackedRemoteState_old, &rightRemoteTracking_new,
+            HandleInput_Default(controlscheme, &rightTrackedRemoteState_new, &rightTrackedRemoteState_old, &rightRemoteTracking_new,
                                 &leftTrackedRemoteState_new, &leftTrackedRemoteState_old, &leftRemoteTracking_new,
                                 ovrButton_A, ovrButton_B, ovrButton_X, ovrButton_Y);
                     break;
             case LEFT_HANDED_DEFAULT:
-            HandleInput_Default(&leftTrackedRemoteState_new, &leftTrackedRemoteState_old, &leftRemoteTracking_new,
+            HandleInput_Default(controlscheme, &leftTrackedRemoteState_new, &leftTrackedRemoteState_old, &leftRemoteTracking_new,
                                         &rightTrackedRemoteState_new, &rightTrackedRemoteState_old, &rightRemoteTracking_new,
                                         ovrButton_X, ovrButton_Y, ovrButton_A, ovrButton_B);
                     break;

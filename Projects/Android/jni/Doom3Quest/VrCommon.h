@@ -30,8 +30,6 @@ extern "C" {
 
 float screenYaw;
 
-bool showingScreenLayer;
-
 float radians(float deg);
 
 float degrees(float rad);
@@ -86,19 +84,13 @@ void Doom3Quest_processHaptics();
 
 void Doom3Quest_getHMDOrientation();
 
-void Doom3Quest_getTrackedRemotesOrientation(int vr_controlscheme);
-
-void Doom3Quest_ResyncClientYawWithGameYaw();
+void Doom3Quest_getTrackedRemotesOrientation(int controlscheme);
 
 void Doom3Quest_prepareEyeBuffer(int eye);
 
 void Doom3Quest_finishEyeBuffer(int eye);
 
 void Doom3Quest_submitFrame();
-
-void GPUDropSync();
-
-void GPUWaitSync();
 
 #ifdef __cplusplus
 }

@@ -2383,7 +2383,7 @@ void idCommonLocal::InitSIMD( void ) {
 
 
 extern "C" void Doom3Quest_setUseScreenLayer(int use);
-extern "C" void Doom3Quest_FrameSetup();
+extern "C" void Doom3Quest_FrameSetup(int controlscheme);
 extern "C" void Doom3Quest_Vibrate(int duration, int channel, float intensity );
 
 void idCommonLocal::Vibrate(int duration, int channel, float intensity )
@@ -2409,7 +2409,7 @@ void idCommonLocal::Frame( void ) {
 		int cinematic = ( game && game->InCinematic());
 
 		Doom3Quest_setUseScreenLayer(inMenu?1:0 + inGameGui?2:0 + objectiveActive?4:0 + cinematic?8:0);
-		Doom3Quest_FrameSetup();
+		Doom3Quest_FrameSetup(cvarSystem->GetCVarInteger("vr_controlscheme"));
 
 		if (game) {
 			game->SetVRClientInfo(pVRClientInfo);

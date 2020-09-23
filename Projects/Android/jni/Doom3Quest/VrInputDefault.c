@@ -19,18 +19,11 @@ Authors		:	Simon Brown
 
 #include "doomkeys.h"
 
-float	vr_turn_mode = 0.0f;
-float	vr_turn_angle = 45.0f;
 float	vr_reloadtimeoutms = 200.0f;
 float	vr_walkdirection = 0;
-float	vr_movement_multiplier;
 float	vr_weapon_pitchadjust = -30.0f;
-float	vr_controlscheme;
 float	vr_teleport;
-float	vr_virtual_stock;
 float	vr_switch_sticks = 0;
-float	vr_cinematic_stereo;
-float	vr_screen_dist;
 
 extern bool forceVirtualScreen;
 
@@ -60,20 +53,21 @@ int Sys_Milliseconds( void ) {
 void Android_SetImpuse(int impulse);
 void Android_SetCommand(const char * cmd);
 void Android_ButtonChange(int key, int state);
+int Android_GetCVarInteger(const char* cvar);
 
 extern bool inMenu;
 extern bool inGameGuiActive;
 extern bool objectiveSystemActive;
 extern bool inCinematic;
 
-void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew, ovrInputStateTrackedRemote *pDominantTrackedRemoteOld, ovrTracking* pDominantTracking,
+void HandleInput_Default( int controlscheme, ovrInputStateTrackedRemote *pDominantTrackedRemoteNew, ovrInputStateTrackedRemote *pDominantTrackedRemoteOld, ovrTracking* pDominantTracking,
                           ovrInputStateTrackedRemote *pOffTrackedRemoteNew, ovrInputStateTrackedRemote *pOffTrackedRemoteOld, ovrTracking* pOffTracking,
                           int domButton1, int domButton2, int offButton1, int offButton2 )
 
 {
 	//Ensure handedness is set correctly
-	pVRClientInfo->right_handed = vr_controlscheme < 10 ||
-            vr_controlscheme == 99; // Always right-handed for weapon calibration
+	pVRClientInfo->right_handed = controlscheme < 10 ||
+            controlscheme == 99; // Always right-handed for weapon calibration
 
 	pVRClientInfo->teleportenabled = vr_teleport != 0;
 
@@ -133,9 +127,6 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
     {
         //Set gun angles - We need to calculate all those we might need (including adjustments) for the client to then take its pick
         vec3_t rotation = {0};
-        rotation[PITCH] = 30;
-        QuatToYawPitchRoll(pWeapon->HeadPose.Pose.Orientation, rotation, pVRClientInfo->weaponangles_unadjusted);
-
         rotation[PITCH] = vr_weapon_pitchadjust;
         QuatToYawPitchRoll(pWeapon->HeadPose.Pose.Orientation, rotation, pVRClientInfo->weaponangles);
 
@@ -169,7 +160,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
             canUseQuickSave = false;
         }
         else if (!canUseQuickSave) {
-            int channel = (vr_controlscheme >= 10) ? 1 : 0;
+            int channel = (controlscheme >= 10) ? 1 : 0;
             Doom3Quest_Vibrate(40, channel, 0.5); // vibrate to let user know they can switch
             canUseQuickSave = true;
         }
@@ -248,9 +239,6 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                 VectorCopy(pVRClientInfo->weaponoffset_history[NEWER_READING], pVRClientInfo->throw_origin);
             }
 
-            //Just copy to calculated offset, used to use this in case we wanted to apply any modifiers, but don't any more
-            VectorCopy(pVRClientInfo->current_weaponoffset, pVRClientInfo->calculated_weaponoffset);
-
             //Does weapon velocity trigger attack (knife) and is it fast enough
             static bool velocityTriggeredAttack = false;
             if (pVRClientInfo->velocitytriggered)
@@ -312,7 +300,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                     canGrabFlashlight = false;
                 }
                 else if (!canGrabFlashlight && pVRClientInfo->holsteritemactive == 0) {
-                    int channel = (vr_controlscheme >= 10) ? 0 : 1;
+                    int channel = (controlscheme >= 10) ? 0 : 1;
                     Doom3Quest_Vibrate(40, channel, 0.4); // vibrate to let user know they can switch
 
                     canGrabFlashlight = true;
@@ -335,7 +323,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
 
                         //Initiate flashlight from backpack mode
                         Android_SetImpuse(UB_IMPULSE11);
-                        int channel = (vr_controlscheme >= 10) ? 0 : 1;
+                        int channel = (controlscheme >= 10) ? 0 : 1;
                         Doom3Quest_Vibrate(80, channel, 0.8); // vibrate to let user know they switched
 
                         pVRClientInfo->holsteritemactive = 1;
@@ -452,14 +440,6 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
         }
 
         {
-            //"Use"
-            if (((pDominantTrackedRemoteNew->Buttons & ovrButton_Joystick) !=
-                (pDominantTrackedRemoteOld->Buttons & ovrButton_Joystick)) &&
-                    (pDominantTrackedRemoteOld->Buttons & ovrButton_Joystick)){
-
-                pVRClientInfo->laserSightActive = !pVRClientInfo->laserSightActive;
-            }
-
             //Apply a filter and quadratic scaler so small movements are easier to make
             float dist = length(pSecondaryJoystick->x, pSecondaryJoystick->y);
             float nlf = nonLinearFilter(dist);
@@ -473,7 +453,7 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
             rotateAboutOrigin(x, y, controllerYawHeading, v);
 
             //Move a lot slower if scope is engaged
-            vr_movement_multiplier = 127;
+            float vr_movement_multiplier = 127;
             remote_movementSideways = v[0] *  vr_movement_multiplier;
             remote_movementForward = v[1] *  vr_movement_multiplier;
 
@@ -515,6 +495,9 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                     pVRClientInfo->teleportready = false;
                 }
             }
+
+            int vr_turn_mode = Android_GetCVarInteger("vr_turnmode");
+            float vr_turn_angle = Android_GetCVarInteger("vr_turnangle");
 
             //No snap turn when using mounted gun
             static int increaseSnap = true;
@@ -558,8 +541,6 @@ void HandleInput_Default( ovrInputStateTrackedRemote *pDominantTrackedRemoteNew,
                 }
             }
         }
-
-        //updateScopeAngles();
     }
 
     //Save state

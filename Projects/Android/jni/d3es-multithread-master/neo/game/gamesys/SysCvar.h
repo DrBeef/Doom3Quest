@@ -261,6 +261,8 @@ extern idCVar	vr_shakeamplitude;
 extern idCVar	vr_knockback;
 extern idCVar vr_weaponsight;
 extern idCVar vr_throwables;
+extern idCVar vr_turnmode;
+extern idCVar vr_turnangle;
 
 
 extern const char *si_gameTypeArgs[];
