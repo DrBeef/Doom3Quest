@@ -432,7 +432,7 @@ public:
 
 	float					DefaultFov( void ) const;
 	float					CalcFov( bool honorZoom );
-	void					CalculateViewWeaponPos( idVec3 &origin, idMat3 &axis, idAngles &angles );
+	void					CalculateViewWeaponPos( bool pointer, idVec3 &origin, idMat3 &axis, idAngles &angles );
 	idVec3					GetEyePosition( void ) const;
 	void					GetViewPos( idVec3 &origin, idMat3 &axis ) const;
 	void					OffsetThirdPersonView( float angle, float range, float height, bool clip );

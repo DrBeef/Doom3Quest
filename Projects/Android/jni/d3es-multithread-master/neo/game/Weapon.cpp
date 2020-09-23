@@ -1884,7 +1884,7 @@ void idWeapon::PresentWeapon( bool showViewModel ) {
 	int currentWeaponId = owner->GetCurrentWeapon();
 
 	// calculate weapon position based on player movement bobbing
-	owner->CalculateViewWeaponPos( viewWeaponOrigin, viewWeaponAxis, viewWeaponAngles );
+	owner->CalculateViewWeaponPos( false, viewWeaponOrigin, viewWeaponAxis, viewWeaponAngles );
 
 	//This isn't really the right place to do this, but works for now
 	if (currentWeaponId == WEAPON_CHAINGUN) {

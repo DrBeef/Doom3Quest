@@ -1604,19 +1604,20 @@ void Doom3Quest_getTrackedRemotesOrientation(int controlscheme) {
     acquireTrackedRemotesData(gAppState.Ovr, gAppState.DisplayTime[gAppState.MainThreadFrameIndex % MAX_TRACKING_SAMPLES]);
 
     //Call additional control schemes here
-    switch (controlscheme)
-    {
-            case RIGHT_HANDED_DEFAULT:
-            HandleInput_Default(controlscheme, &rightTrackedRemoteState_new, &rightTrackedRemoteState_old, &rightRemoteTracking_new,
-                                &leftTrackedRemoteState_new, &leftTrackedRemoteState_old, &leftRemoteTracking_new,
-                                ovrButton_A, ovrButton_B, ovrButton_X, ovrButton_Y);
-                    break;
-            case LEFT_HANDED_DEFAULT:
-            HandleInput_Default(controlscheme, &leftTrackedRemoteState_new, &leftTrackedRemoteState_old, &leftRemoteTracking_new,
-                                        &rightTrackedRemoteState_new, &rightTrackedRemoteState_old, &rightRemoteTracking_new,
-                                        ovrButton_X, ovrButton_Y, ovrButton_A, ovrButton_B);
-                    break;
-    }
+    if (controlscheme == RIGHT_HANDED_DEFAULT) {
+		HandleInput_Default(controlscheme, &rightTrackedRemoteState_new,
+							&rightTrackedRemoteState_old, &rightRemoteTracking_new,
+							&leftTrackedRemoteState_new, &leftTrackedRemoteState_old,
+							&leftRemoteTracking_new,
+							ovrButton_A, ovrButton_B, ovrButton_X, ovrButton_Y);
+	} else {
+		//Left handed
+		HandleInput_Default(controlscheme, &leftTrackedRemoteState_new, &leftTrackedRemoteState_old,
+							&leftRemoteTracking_new,
+							&rightTrackedRemoteState_new, &rightTrackedRemoteState_old,
+							&rightRemoteTracking_new,
+							ovrButton_X, ovrButton_Y, ovrButton_A, ovrButton_B);
+	}
 }
 
 void Doom3Quest_submitFrame()

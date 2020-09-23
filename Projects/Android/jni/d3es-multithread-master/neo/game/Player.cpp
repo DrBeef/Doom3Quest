@@ -4449,7 +4449,7 @@ void idPlayer::UpdateFocus( void ) {
 	//Use unadjusted weapon angles to control GUIs
 	idMat3 weaponViewAxis;
 	idAngles weaponViewAngles;
-    CalculateViewWeaponPos(start, weaponViewAxis, weaponViewAngles);
+    CalculateViewWeaponPos(true, start, weaponViewAxis, weaponViewAngles);
 	end = start + (weaponViewAngles.ToForward() * 80.0f);
 
 	// player identification -> names to the hud
@@ -7276,7 +7276,7 @@ void idPlayer::UpdateLaserSight( )
     idVec3	muzzleOrigin;
     idMat3	muzzleAxis;
     idAngles muzzleAngles;
-	CalculateViewWeaponPos( muzzleOrigin, muzzleAxis, muzzleAngles );
+	CalculateViewWeaponPos( false, muzzleOrigin, muzzleAxis, muzzleAngles );
 
 	idVec3 end, start;
     trace_t traceResults;
@@ -7361,7 +7361,7 @@ Calculate the bobbing position of the view weapon
 ==============
 */
 
-void idPlayer::CalculateViewWeaponPos( idVec3 &origin, idMat3 &axis, idAngles &angles ) {
+void idPlayer::CalculateViewWeaponPos( bool pointer, idVec3 &origin, idMat3 &axis, idAngles &angles ) {
 	float		scale;
 	float		fracsin;
 	int			delta;
@@ -7373,12 +7373,13 @@ void idPlayer::CalculateViewWeaponPos( idVec3 &origin, idMat3 &axis, idAngles &a
 	if (pVRClientInfo &&
 			currentWeapon != weapon_pda)
     {
-		angles.pitch = pVRClientInfo->weaponangles[PITCH];
+		float *pAngles = pointer ? pVRClientInfo->weaponangles_unadjusted : pVRClientInfo->weaponangles;
+		angles.pitch = pAngles[PITCH];
 		angles.yaw = viewAngles.yaw +
-					 (pVRClientInfo->weaponangles[YAW] - pVRClientInfo->hmdorientation[YAW]);
-		angles.roll = pVRClientInfo->weaponangles[ROLL];
+					 (pAngles[YAW] - pVRClientInfo->hmdorientation[YAW]);
+		angles.roll = pAngles[ROLL];
 
-        axis = angles.ToMat3();
+		axis = angles.ToMat3();
 
         idVec3	gunpos( -pVRClientInfo->current_weaponoffset[2],
                           -pVRClientInfo->current_weaponoffset[0],
