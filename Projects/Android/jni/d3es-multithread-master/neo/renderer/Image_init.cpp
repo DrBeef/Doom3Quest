@@ -369,6 +369,18 @@ static void R_RGBA8Image( idImage *image ) {
 	                      TF_DEFAULT, false, TR_REPEAT, TD_HIGH_QUALITY );
 }
 
+// Koz begin
+// used for Hud and PDA surfaces in VR
+static void R_VRSurfaceImage( idImage* image )
+{
+	byte	*data = (byte*)malloc(1024 * 1024 * 4);
+
+	memset( data, 0, sizeof( data ) );
+
+	image->GenerateImage( (byte *)data, 1024, 1024,
+						  TF_DEFAULT, false, TR_CLAMP, TD_HIGH_QUALITY );
+}
+
 #if 0
 static void R_RGB8Image( idImage *image ) {
 	byte	data[DEFAULT_SIZE][DEFAULT_SIZE][4];
@@ -1781,6 +1793,9 @@ void idImageManager::Init() {
 	accumImage = ImageFromFunction("_accum", R_RGBA8Image );
 	scratchCubeMapImage = ImageFromFunction("_scratchCubeMap", makeNormalizeVectorCubeMap );
 	currentRenderImage = ImageFromFunction("_currentRender", R_RGBA8Image );
+
+	hudImage = ImageFromFunction( "_hudImage", R_VRSurfaceImage ); // R_RGBA8Image );
+
 
 	cmdSystem->AddCommand( "reloadImages", R_ReloadImages_f, CMD_FL_RENDERER, "reloads images" );
 	cmdSystem->AddCommand( "listImages", R_ListImages_f, CMD_FL_RENDERER, "lists images" );

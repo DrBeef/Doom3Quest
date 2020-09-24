@@ -26,8 +26,6 @@ extern "C" {
 #define ALOGV(...)
 #endif
 
-#define TIC_RATE 60
-
 float screenYaw;
 
 float radians(float deg);

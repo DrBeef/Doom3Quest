@@ -1043,6 +1043,9 @@ idPlayer::idPlayer() {
 
     flashlightModelDefHandle = -1;
 
+    hudHandle = -1;
+    memset( &hudEntity, 0, sizeof( hudEntity ) );
+
     skin					= NULL;
 	powerUpSkin				= NULL;
 	baseSkinName			= "";
@@ -1422,6 +1425,12 @@ void idPlayer::Init( void ) {
 
 	SetupFlashlightHolster();
 	SetupLaserSight();
+
+    // re-init hud model
+    memset( &hudEntity, 0, sizeof( hudEntity ) );
+    hudEntity.hModel = renderModelManager->FindModel( "/models/mapobjects/hud.lwo" );
+    hudEntity.customShader = declManager->FindMaterial( "vr/hud" );
+    hudEntity.weaponDepthHack = true;
 }
 
 /*
@@ -2103,6 +2112,12 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 	SetupFlashlightHolster();
 
 	SetupLaserSight();
+
+    // re-init hud model
+    memset( &hudEntity, 0, sizeof( hudEntity ) );
+    hudEntity.hModel = renderModelManager->FindModel( "/models/mapobjects/hud.lwo" );
+    hudEntity.customShader = declManager->FindMaterial( "vr/hud" );
+    hudEntity.weaponDepthHack = true;
 }
 
 void idPlayer::SetupLaserSight()
@@ -2688,6 +2703,94 @@ void idPlayer::DrawHUD( idUserInterface *_hud ) {
 			//cursor->Redraw( gameLocal.realClientTime );
 		}
 	}
+
+    renderSystem->CaptureRenderToImage( "_hudImage" );
+}
+
+
+/*
+==============
+Koz
+idPlayer::UpdateVrHud
+==============
+*/
+void idPlayer::UpdateVrHud()
+{
+    static idVec3 hudOrigin;
+    static idMat3 hudAxis;
+    float hudPitch;
+
+    if (pVRClientInfo != nullptr)
+
+    // update the hud model
+    if ( (pVRClientInfo == nullptr) || !pVRClientInfo->visible_hud || gameLocal.inCinematic)
+    {
+        // hide it
+        hudEntity.allowSurfaceInViewID = -1;
+    }
+    else
+    {
+        hudEntity.allowSurfaceInViewID = entityNumber + 1;
+
+        {
+            hudPitch = 10.0f;
+
+            float yaw;
+            {
+				// CalculateRenderView must have been called first
+				const idVec3 &viewOrigin = firstPersonViewOrigin;
+				const idMat3 &viewAxis = firstPersonViewAxis;
+
+				if (pVRClientInfo)
+				{
+					idAngles angles;
+					float *pAngles = pVRClientInfo->offhandangles;
+					angles.pitch = pVRClientInfo->offhandangles[PITCH];
+					angles.yaw = viewAngles.yaw +
+								 (pVRClientInfo->offhandangles[YAW] - pVRClientInfo->hmdorientation[YAW]);
+					angles.roll = pVRClientInfo->offhandangles[ROLL];
+
+					hudAxis = angles.ToMat3();
+
+					idVec3	offpos( -pVRClientInfo->offhandoffset[2],
+									  -pVRClientInfo->offhandoffset[0],
+									  pVRClientInfo->offhandoffset[1]);
+
+					idAngles a(0, viewAngles.yaw - pVRClientInfo->hmdorientation[YAW], 0);
+					offpos *= a.ToMat3();
+					offpos *= cvarSystem->GetCVarFloat( "vr_worldscale" );
+
+					{
+						hudOrigin = viewOrigin + offpos;
+					}
+				}
+
+//                GetViewPos( hudOrigin, hudAxis );
+//                yaw = viewAngles.yaw;
+            }
+            //hudAxis = idAngles( hudPitch, yaw, 0.0f ).ToMat3();
+
+            //hudOrigin += hudAxis[0] * 24.0f;//vr_hudPosDis.GetFloat();
+            hudOrigin += hudAxis[1] * -8.0f;
+            hudOrigin += hudAxis[2] * 16.0f;
+        }
+
+        hudAxis *= 0.7;
+
+        hudEntity.axis = hudAxis;
+        hudEntity.origin = hudOrigin;
+        hudEntity.weaponDepthHack = true;
+
+    }
+
+    if ( hudHandle == -1 )
+    {
+        hudHandle = gameRenderWorld->AddEntityDef( &hudEntity );
+    }
+    else
+    {
+        gameRenderWorld->UpdateEntityDef( hudHandle, &hudEntity );
+    }
 }
 
 /*
@@ -6367,10 +6470,7 @@ void idPlayer::Think( void ) {
             pVRClientInfo->weaponid = -1;
         }
         cvarSystem->SetCVarBool("vr_weapon_stabilised", pVRClientInfo->weapon_stabilised);
-        pVRClientInfo->velocitytriggered = (
-        		currentWeapon == WEAPON_FISTS ||
-        		currentWeapon == WEAPON_FLASHLIGHT);
-
+        pVRClientInfo->velocitytriggered = currentWeapon == WEAPON_FLASHLIGHT;
         pVRClientInfo->pistol = currentWeapon == WEAPON_PISTOL;
     }
 
@@ -6510,6 +6610,8 @@ void idPlayer::Think( void ) {
 	UpdateFlashlightHolster();
 
 	UpdateLaserSight();
+
+    UpdateVrHud();
 
 	UpdateDeathSkin( false );
 

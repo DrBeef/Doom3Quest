@@ -1,0 +1,14 @@
+
+
+vr/hud
+
+{
+	qer_editorimage	textures/zaphod/shotgun_laser.TGA
+	translucent
+	noShadows
+	{
+		blend add
+		map _hudImage
+	}
+}
+

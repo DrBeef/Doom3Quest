@@ -1197,17 +1197,8 @@ idWindow::Redraw
 ================
 */
 
-enum eScalingType {
-    NONE,
-    SCALETO43,
-    VRHUD
-};
-
 void idWindow::Redraw(float x, float y) {
 	idStr str;
-
-	static int recursiveCount = 0;
-	recursiveCount++;
 
 	if (r_skipGuiShaders.GetInteger() == 1 || dc == NULL ) {
 		return;
@@ -1223,31 +1214,18 @@ void idWindow::Redraw(float x, float y) {
 		return;
 	}
 
-    eScalingType scalingType = NONE;
-
 	// DG: allow scaling menus to 4:3
+	bool fixupFor43 = false;
 	if ( flags & WIN_DESKTOP ) {
 		// only scale desktop windows (will automatically scale its sub-windows)
 		// that EITHER have the scaleto43 flag set OR are fullscreen menus and r_scaleMenusTo43 is 1
 		if( (flags & WIN_SCALETO43) ||
 			((flags & WIN_MENUGUI) && r_scaleMenusTo43.GetBool()) )
 		{
-            scalingType = SCALETO43;
+			fixupFor43 = true;
 			dc->SetMenuScaleFix(true);
 		}
 	}
-
-    if (scalingType == NONE) {
-        bool scaledHUDForVR = cvarSystem->GetCVarBool("vr_hud");
-        if (scaledHUDForVR) {
-            scalingType = VRHUD;
-
-            //Only set this on the first call
-            if (recursiveCount == 1) {
-				dc->SetMenuScaleForVR(true);
-			}
-        }
-    }
 
 	if ( flags & WIN_SHOWTIME ) {
 		dc->DrawText(va(" %0.1f seconds\n%s", (float)(time - timeLine) / 1000, gui->State().GetString("name")), 0.35f, 0, dc->colorWhite, idRectangle(100, 0, 80, 80), false);
@@ -1261,14 +1239,7 @@ void idWindow::Redraw(float x, float y) {
 	}
 
 	if (!visible) {
-		if (scalingType == SCALETO43) { // DG: gotta reset that before returning this function
-			dc->SetMenuScaleFix(false);
-		}
-
-		recursiveCount--;
-		if (scalingType == VRHUD &&
-				recursiveCount == 0)
-		{
+		if (fixupFor43) { // DG: gotta reset that before returning this function
 			dc->SetMenuScaleFix(false);
 		}
 		return;
@@ -1278,8 +1249,8 @@ void idWindow::Redraw(float x, float y) {
 
 	SetFont();
 	//if (flags & WIN_DESKTOP) {
-		// see if this window forces a new aspect ratio
-		dc->SetSize(forceAspectWidth, forceAspectHeight);
+	// see if this window forces a new aspect ratio
+	dc->SetSize(forceAspectWidth, forceAspectHeight);
 	//}
 
 	//FIXME: go to screen coord tracking
@@ -1339,14 +1310,7 @@ void idWindow::Redraw(float x, float y) {
 		dc->EnableClipping(true);
 	}
 
-	if (scalingType == SCALETO43) { // DG: gotta reset that before returning this function
-		dc->SetMenuScaleFix(false);
-	}
-
-	recursiveCount--;
-	if (scalingType == VRHUD &&
-		recursiveCount == 0)
-	{
+	if (fixupFor43) { // DG: gotta reset that before returning this function
 		dc->SetMenuScaleFix(false);
 	}
 

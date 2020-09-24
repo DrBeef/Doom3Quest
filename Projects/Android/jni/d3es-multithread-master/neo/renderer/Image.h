@@ -406,6 +406,8 @@ public:
 	idImage *			specular2DTableImage;		// 2D intensity texture with our specular function with variable specularity
 	idImage *			borderClampImage;			// white inside, black outside
 
+	idImage*			hudImage;
+
 	//--------------------------------------------------------
 
 	idImage *			AllocImage( const char *name );

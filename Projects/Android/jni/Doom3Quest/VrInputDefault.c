@@ -59,6 +59,7 @@ extern bool inMenu;
 extern bool inGameGuiActive;
 extern bool objectiveSystemActive;
 extern bool inCinematic;
+const int USERCMD_HZ = 60;
 
 
 void HandleInput_Default( int controlscheme, ovrInputStateTrackedRemote *pDominantTrackedRemoteNew, ovrInputStateTrackedRemote *pDominantTrackedRemoteOld, ovrTracking* pDominantTracking,
@@ -360,6 +361,7 @@ void HandleInput_Default( int controlscheme, ovrInputStateTrackedRemote *pDomina
             pVRClientInfo->offhandoffset[2] = pOff->HeadPose.Pose.Position.z - pVRClientInfo->hmdposition[2];
 
             vec3_t rotation = {0};
+            rotation[PITCH] = -45;
             QuatToYawPitchRoll(pOff->HeadPose.Pose.Orientation, rotation, pVRClientInfo->offhandangles);
 
 			if (vr_walkdirection == 0) {
@@ -375,10 +377,9 @@ void HandleInput_Default( int controlscheme, ovrInputStateTrackedRemote *pDomina
         {
             //Adjust positional factor for this sample based on how long the last frame took, it should
             //approximately even out the positional movement on a per frame basis (especially when fps is much lower than 60)
-            //NOTE: it'll never be above ~60fps since we use com_fixedTic of "-1"
             static float lastSampleTime = 0;
             float sampleTime = Sys_Milliseconds();
-            float vr_positional_factor = 2400.0f * ((1000.0f / TIC_RATE) / (sampleTime-lastSampleTime));
+            float vr_positional_factor = 2400.0f * ((1000.0f / USERCMD_HZ) / (sampleTime-lastSampleTime));
             lastSampleTime = sampleTime;
 
             //This section corrects for the fact that the controller actually controls direction of movement, but we want to move relative to the direction the

@@ -462,6 +462,8 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
 		return;
 	}
 
+	player->DrawHUD(hud);
+
 	// place the sound origin for the player
 	gameSoundWorld->PlaceListener( view->vieworg, view->viewaxis, player->entityNumber + 1, gameLocal.time, hud ? hud->State().GetString( "location" ) : "Undefined" );
 
@@ -499,16 +501,6 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
 				renderSystem->SetColor4( 1,1,1,fade );
 				renderSystem->DrawStretchPic( blob->x, blob->y, blob->w, blob->h,blob->s1, blob->t1, blob->s2, blob->t2, blob->material );
 			}
-		}
-
-		vrClientInfo *pVRClientInfo = player->GetVRClientInfo();
-		if (pVRClientInfo != nullptr &&
-			pVRClientInfo->visible_hud) {
-			cvarSystem->SetCVarBool("vr_hud", true);
-
-			player->DrawHUD(hud);
-
-			cvarSystem->SetCVarBool("vr_hud", false);
 		}
 
 		// armor impulse feedback

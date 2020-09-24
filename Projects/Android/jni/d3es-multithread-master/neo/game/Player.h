@@ -237,6 +237,9 @@ public:
 	renderEntity_t			flashlightRenderEntity;					// used to present a model to the renderer
 	qhandle_t				flashlightModelDefHandle;					// handle to static renderer model
 
+	renderEntity_t			hudEntity;
+	qhandle_t				hudHandle;
+
 	bool					noclip;
 	bool					godmode;
 
@@ -416,9 +419,9 @@ public:
     virtual void            UpdateFlashlightHolster();
     virtual void            SetupLaserSight();
     virtual void            UpdateLaserSight( );
+	virtual void			UpdateVrHud();
 
-
-    void					Kill( bool delayRespawn, bool nodamage );
+	void					Kill( bool delayRespawn, bool nodamage );
 	virtual void			Killed( idEntity *inflictor, idEntity *attacker, int damage, const idVec3 &dir, int location );
 	void					StartFxOnBone(const char *fx, const char *bone);
 
