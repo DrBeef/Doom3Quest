@@ -152,7 +152,7 @@ void Doom3Quest_setUseScreenLayer(int screen)
 
 bool Doom3Quest_useScreenLayer()
 {
-	return inMenu || objectiveSystemActive || inCinematic || forceVirtualScreen;
+	return inMenu || inCinematic || forceVirtualScreen;
 }
 
 static void UnEscapeQuotes( char *arg )
@@ -999,7 +999,10 @@ static void ovrApp_HandleVrModeChanges( ovrApp * app )
 				vrapi_SetPerfThread( app->Ovr, VRAPI_PERF_THREAD_TYPE_RENDERER, app->RenderThreadTid );
 
 				ALOGV( "		vrapi_SetPerfThread( RENDERER, %d )", app->RenderThreadTid );
+
+                vrapi_SetExtraLatencyMode(app->Ovr, VRAPI_EXTRA_LATENCY_MODE_ON);
 			}
+
 		}
 	}
 	else
@@ -1263,8 +1266,12 @@ void VR_Init()
 	shutdown = false;
 }
 
+long renderThreadCPUTime[2] = {0, 0};
+
 void Doom3Quest_prepareEyeBuffer(int eye )
 {
+    renderThreadCPUTime[eye] = GetTimeInMilliSeconds();
+
 	ovrRenderer *renderer = Doom3Quest_useScreenLayer() ? &gAppState.Scene.CylinderRenderer : &gAppState.Renderer;
 
 	ovrFramebuffer *frameBuffer = &(renderer->FrameBuffer[eye]);
@@ -1286,6 +1293,16 @@ void Doom3Quest_prepareEyeBuffer(int eye )
 
 void Doom3Quest_finishEyeBuffer(int eye )
 {
+    renderThreadCPUTime[eye] = GetTimeInMilliSeconds() - renderThreadCPUTime[eye];
+
+    if (eye == 1)
+    {
+        int totalTime = renderThreadCPUTime[0] + renderThreadCPUTime[1];
+        //__android_log_print(ANDROID_LOG_INFO, "Doom3Quest", "RENDER THREAD LEFT EYE CPU TIME: %i", renderThreadCPUTime[0]);
+        //__android_log_print(ANDROID_LOG_INFO, "Doom3Quest", "RENDER THREAD RIGHT EYE CPU TIME: %i", renderThreadCPUTime[1]);
+        __android_log_print(ANDROID_LOG_INFO, "Doom3Quest", "RENDER THREAD TOTAL CPU TIME: %i", totalTime);
+    }
+
     GLCheckErrors( __LINE__ );
 
 	ovrRenderer *renderer = Doom3Quest_useScreenLayer() ? &gAppState.Scene.CylinderRenderer : &gAppState.Renderer;

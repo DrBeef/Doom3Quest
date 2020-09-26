@@ -349,4 +349,5 @@ idCVar vr_weaponsight( 					"vr_weaponsight", "0", CVAR_BOOL | CVAR_ARCHIVE, "We
 idCVar vr_throwables( 					"vr_throwables", "1", CVAR_BOOL | CVAR_ARCHIVE, "Throwable Grenades.\n 0 = Disable\n 1 = Throw and release with trigger" );
 idCVar vr_turnmode( 					"vr_turnmode", "0", CVAR_BOOL | CVAR_ARCHIVE, "Turn Mode.\n 0 = Snap Turn\n 1 = Smooth Turn" );
 idCVar vr_turnangle( 					"vr_turnangle", "45", CVAR_INTEGER | CVAR_ARCHIVE, "Turn Angle. angle for snap, or velocity for smooth" );
+idCVar vr_hudmode( 					"vr_hudmode", "0", CVAR_BOOL | CVAR_ARCHIVE, "HUD Mode.\n 1 = Attached to off-hand controller\n 0 = Fixed" );
 

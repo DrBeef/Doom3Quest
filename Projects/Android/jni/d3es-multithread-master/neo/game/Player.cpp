@@ -2703,8 +2703,6 @@ void idPlayer::DrawHUD( idUserInterface *_hud ) {
 			//cursor->Redraw( gameLocal.realClientTime );
 		}
 	}
-
-    renderSystem->CaptureRenderToImage( "_hudImage" );
 }
 
 
@@ -2718,7 +2716,6 @@ void idPlayer::UpdateVrHud()
 {
     static idVec3 hudOrigin;
     static idMat3 hudAxis;
-    float hudPitch;
 
     if (pVRClientInfo != nullptr)
 
@@ -2733,9 +2730,8 @@ void idPlayer::UpdateVrHud()
         hudEntity.allowSurfaceInViewID = entityNumber + 1;
 
         {
-            hudPitch = 10.0f;
 
-            float yaw;
+            if (vr_hudmode.GetInteger() == 0)
             {
 				// CalculateRenderView must have been called first
 				const idVec3 &viewOrigin = firstPersonViewOrigin;
@@ -2743,8 +2739,9 @@ void idPlayer::UpdateVrHud()
 
 				if (pVRClientInfo)
 				{
+                    float yaw;
 					idAngles angles;
-					float *pAngles = pVRClientInfo->offhandangles;
+
 					angles.pitch = pVRClientInfo->offhandangles[PITCH];
 					angles.yaw = viewAngles.yaw +
 								 (pVRClientInfo->offhandangles[YAW] - pVRClientInfo->hmdorientation[YAW]);
@@ -2758,24 +2755,30 @@ void idPlayer::UpdateVrHud()
 
 					idAngles a(0, viewAngles.yaw - pVRClientInfo->hmdorientation[YAW], 0);
 					offpos *= a.ToMat3();
-					offpos *= cvarSystem->GetCVarFloat( "vr_worldscale" );
+					offpos *= vr_worldscale.GetFloat();
 
 					{
 						hudOrigin = viewOrigin + offpos;
 					}
 				}
-
-//                GetViewPos( hudOrigin, hudAxis );
-//                yaw = viewAngles.yaw;
+                hudOrigin += hudAxis[2] * 16.0f;
+                hudOrigin += hudAxis[1] * -8.5f;
+                hudAxis *= 0.7; // scale
             }
-            //hudAxis = idAngles( hudPitch, yaw, 0.0f ).ToMat3();
+            else {
+                //Fixed HUD, but make it take a short time to catch up with the player's yaw
+                static float yaw_x = 0.0f;
+                static float yaw_y = 1.0f;
+                yaw_x = 0.97f * yaw_x + 0.03f * cosf(DEG2RAD(viewAngles.yaw));
+                yaw_y = 0.97f * yaw_y + 0.03f * sinf(DEG2RAD(viewAngles.yaw));
 
-            //hudOrigin += hudAxis[0] * 24.0f;//vr_hudPosDis.GetFloat();
-            hudOrigin += hudAxis[1] * -8.0f;
-            hudOrigin += hudAxis[2] * 16.0f;
+                GetViewPos( hudOrigin, hudAxis );
+                hudAxis = idAngles( 10.0f, RAD2DEG(atan2(yaw_y, yaw_x)), 0.0f ).ToMat3();
+                hudOrigin += hudAxis[0] * 24.0f;
+                hudOrigin.z += 4.0f;
+                hudOrigin += hudAxis[1] * -8.5f;
+            }
         }
-
-        hudAxis *= 0.7;
 
         hudEntity.axis = hudAxis;
         hudEntity.origin = hudOrigin;
@@ -5046,7 +5049,7 @@ void idPlayer::UpdateViewAngles( void ) {
 	int i;
 	idAngles delta;
 
-	if ( !noclip && ( gameLocal.inCinematic || privateCameraView || gameLocal.GetCamera() || influenceActive == INFLUENCE_LEVEL2 || objectiveSystemOpen ) ) {
+	if ( !noclip && ( gameLocal.inCinematic || privateCameraView || gameLocal.GetCamera() || influenceActive == INFLUENCE_LEVEL2 /*|| objectiveSystemOpen*/ ) ) {
 		// no view changes at all, but we still want to update the deltas or else when
 		// we get out of this mode, our view will snap to a kind of random angle
 		UpdateDeltaViewAngles( viewAngles );
@@ -7515,7 +7518,10 @@ void idPlayer::CalculateViewWeaponPos( bool pointer, idVec3 &origin, idMat3 &axi
 	///HACK
 	if (currentWeapon == weapon_pda)
     {
-        idVec3	pdaOffs( 30, -7, -14 );
+        //idVec3	pdaOffs( 30, -7, -14 );
+
+        //Put it behind us
+        idVec3	pdaOffs( -30, -7, -14 );
 	    origin += pdaOffs * viewAxis;
     }
 
@@ -7648,7 +7654,7 @@ idVec3 idPlayer::GetEyePosition( void ) const {
 	if (pVRClientInfo)
     {
 		float eyeHeight = 0;
-		float vrEyeHeight = (-(pVRClientInfo->hmdposition[1] +  cvarSystem->GetCVarFloat( "vr_heightoffset" )) * cvarSystem->GetCVarFloat( "vr_worldscale" ));
+		float vrEyeHeight = (-(pVRClientInfo->hmdposition[1] +  vr_heightoffset.GetFloat()) * vr_worldscale.GetFloat());
 
 		//Add special handling for physical crouching at some point
 /*		if (physicsObj.IsCrouching() && PHYSICAL_CROUCH) {

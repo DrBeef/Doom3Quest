@@ -2950,7 +2950,7 @@ void idWeapon::Event_LaunchProjectiles( int num_projectiles, float spread, float
 			vrClientInfo *pVRClientInfo = owner->GetVRClientInfo();
 			if (owner->GetCurrentWeapon() == WEAPON_GREANDE &&
 				pVRClientInfo != nullptr &&
-				cvarSystem->GetCVarBool("vr_throwables"))
+				vr_throwables.GetBool())
 			{
 				idVec3	releaseOffset( -pVRClientInfo->throw_origin[2],
 										 -pVRClientInfo->throw_origin[0],
@@ -3000,7 +3000,7 @@ void idWeapon::Event_LaunchProjectiles( int num_projectiles, float spread, float
 			projBounds = proj->GetPhysics()->GetBounds().Rotate( proj->GetPhysics()->GetAxis() );
 
 			if (owner->GetCurrentWeapon() != WEAPON_GREANDE ||
-				!cvarSystem->GetCVarBool("vr_throwables")) {
+				!vr_throwables.GetBool()) {
 				// make sure the projectile starts inside the bounding box of the owner
 				if (i == 0) {
 					//muzzle_pos = muzzleOrigin + playerViewAxis[ 0 ] * 2.0f;

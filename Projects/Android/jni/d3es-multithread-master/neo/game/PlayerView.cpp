@@ -462,16 +462,16 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
 		return;
 	}
 
-	player->DrawHUD(hud);
+    if ( player->objectiveSystemOpen ) {
+        player->objectiveSystem->Redraw( gameLocal.time );
+    } else {
+        player->DrawHUD(hud);
+    }
 
-	// place the sound origin for the player
-	gameSoundWorld->PlaceListener( view->vieworg, view->viewaxis, player->entityNumber + 1, gameLocal.time, hud ? hud->State().GetString( "location" ) : "Undefined" );
+    renderSystem->CaptureRenderToImage( "_hudImage" );
 
-	// if the objective system is up, don't do normal drawing
-	if ( player->objectiveSystemOpen ) {
-		player->objectiveSystem->Redraw( gameLocal.time );
-		return;
-	}
+    // place the sound origin for the player
+    gameSoundWorld->PlaceListener( view->vieworg, view->viewaxis, player->entityNumber + 1, gameLocal.time, hud ? hud->State().GetString( "location" ) : "Undefined" );
 
 	// hack the shake in at the very last moment, so it can't cause any consistency problems
 	renderView_t	hackedView = *view;
@@ -733,16 +733,8 @@ void idPlayerView::RenderPlayerView( idUserInterface *hud ) {
 	    if (eyeView &&
 	        !game->InCinematic())
 	    {
-	    	int eye = cvarSystem->GetCVarInteger("vr_eye");
-            if (eye == 0) // left eye
-            {
-                eyeView->vieworg += eyeView->viewaxis[1] *
-                		(cvarSystem->GetCVarFloat( "vr_ipd" ) / 2.0f) * cvarSystem->GetCVarFloat( "vr_worldscale" );
-            } else if (eye == 1) // right eye
-            {
-                eyeView->vieworg -= eyeView->viewaxis[1] *
-                		(cvarSystem->GetCVarFloat( "vr_ipd" ) / 2.0f) * cvarSystem->GetCVarFloat( "vr_worldscale" );
-            }
+			eyeView->vieworg += (vr_eye.GetInteger() == 0 ? 1.0f : -1.0f) * eyeView->viewaxis[1] *
+					(vr_ipd.GetFloat() / 2.0f) * vr_worldscale.GetFloat();
         }
 
 		if (g_skipViewEffects.GetBool()) {
