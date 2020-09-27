@@ -328,6 +328,27 @@ void idSessionLocal::SetMainMenuGuiVars( void ) {
 	SetPbMenuGuiVars();
 }
 
+const char *TimeStampToFilename( ) {
+	static char timeString[MAX_STRING_CHARS];
+	timeString[0] = '\0';
+
+	time_t t = time(NULL);
+	tm*	time = localtime( &t );
+	idStr out;
+
+	// english gets "month/day/year  hour:min" + "am" or "pm"
+	out = "Save: ";
+	out += va( "%d", time->tm_year + 1900 );
+	out += va( "%02d", time->tm_mon + 1 );
+	out += va( "%02d", time->tm_mday );
+	out += va( "%02d", time->tm_hour );
+	out += va( "%02d", time->tm_min );
+	out += va( "%02d", time->tm_sec );
+	idStr::Copynz( timeString, out, sizeof( timeString ) );
+
+	return timeString;
+}
+
 /*
 ==============
 idSessionLocal::HandleSaveGameMenuCommands
@@ -346,7 +367,7 @@ bool idSessionLocal::HandleSaveGameMenuCommand( idCmdArgs &args, int &icmd ) {
 	}
 
 	if ( !idStr::Icmp( cmd, "saveGame" ) ) {
-		const char *saveGameName = guiActive->State().GetString("saveGameName");
+		const char *saveGameName = TimeStampToFilename();//guiActive->State().GetString("saveGameName");
 		if ( saveGameName && saveGameName[0] ) {
 
 			// First see if the file already exists unless they pass '1' to authorize the overwrite
@@ -439,7 +460,8 @@ bool idSessionLocal::HandleSaveGameMenuCommand( idCmdArgs &args, int &icmd ) {
 			guiActive->SetStateString( "loadgame_shot",  screenshot );
 
 			saveName.RemoveColors();
-			guiActive->SetStateString( "saveGameName", saveName );
+			//guiActive->SetStateString( "saveGameName", saveName );
+			guiActive->SetStateString( "saveGameName", TimeStampToFilename() );
 			guiActive->SetStateString( "saveGameDescription", description );
 
 			ID_TIME_T timeStamp;
