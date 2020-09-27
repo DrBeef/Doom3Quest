@@ -2397,6 +2397,7 @@ void idCommonLocal::Vibrate(int duration, int channel, float intensity )
 idCommonLocal::Frame
 =================
 */
+extern bool running;
 void idCommonLocal::Frame( void ) {
 	try {
 
@@ -2436,6 +2437,10 @@ void idCommonLocal::Frame( void ) {
 			}
 		} else {
 			session->Frame();
+
+			//if we set the running to false then just return;
+			if (!running)
+				return;
 
 			// normal, in-sequence screen update
 			session->UpdateScreen( false );
@@ -3052,6 +3057,7 @@ void idCommonLocal::Init( int argc, char **argv ) {
 		Sys_Error("Error while starting the async timer: %s", SDL_GetError());
 }
 
+void GLimp_WindowActive(bool active);
 
 /*
 =================
@@ -3059,6 +3065,11 @@ idCommonLocal::Shutdown
 =================
 */
 void idCommonLocal::Shutdown( void ) {
+
+    //Will stop the render thread
+    GLimp_WindowActive(false);
+    usleep(100 * 1000);
+
 	if (async_timer) {
 		SDL_RemoveTimer(async_timer);
 		async_timer = 0;

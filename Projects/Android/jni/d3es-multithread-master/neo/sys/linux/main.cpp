@@ -292,7 +292,10 @@ void idSysLocal::OpenURL( const char *url, bool quit ) {
 main
 ===============
 */
+
 #ifdef __ANDROID__
+
+bool running = true;
 int main_android(int argc, char **argv) {
 #else
 int main(int argc, char **argv) {
@@ -322,7 +325,7 @@ int main(int argc, char **argv) {
 		common->Init( 0, NULL );
 	}
 
-	while (1) {
+	while (running) {
 		common->Frame();
 	}
 

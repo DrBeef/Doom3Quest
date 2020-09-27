@@ -6409,12 +6409,12 @@ void idPlayer::UpdateFlashlightHolster()
 
 		idAngles a(0, viewAngles.yaw - pVRClientInfo->hmdorientation[YAW], 0);
 		holsterOffset *= a.ToMat3();
-        holsterOffset *= cvarSystem->GetCVarFloat( "vr_worldscale" );
+        holsterOffset *= vr_worldscale.GetFloat();
         flashlightRenderEntity.origin = firstPersonViewOrigin + holsterOffset;
 
         flashlightRenderEntity.entityNum = ENTITYNUM_NONE;
 
-        flashlightRenderEntity.axis = idAngles(-60, 90, 0).ToMat3() * firstPersonViewAxis;
+        flashlightRenderEntity.axis = idAngles(-60, 90, 0).ToMat3() * firstPersonViewAxis * 0.8f;
 
         flashlightRenderEntity.allowSurfaceInViewID = entityNumber + 1;
         flashlightRenderEntity.weaponDepthHack = true;

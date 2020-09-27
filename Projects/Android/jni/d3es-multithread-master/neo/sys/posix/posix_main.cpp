@@ -81,8 +81,9 @@ static char exit_spawn[ 1024 ] = { 0 };
 Posix_Exit
 ================
 */
+extern bool running;
 void Posix_Exit(int ret) {
-	if ( tty_enabled ) {
+/*	if ( tty_enabled ) {
 		Sys_Printf( "shutdown terminal support\n" );
 		if ( tcsetattr( 0, TCSADRAIN, &tty_tc ) == -1 ) {
 			Sys_Printf( "tcsetattr failed: %s\n", strerror( errno ) );
@@ -99,6 +100,9 @@ void Posix_Exit(int ret) {
 		exit( set_exit );
 	}
 	exit( ret );
+ */
+
+	running = false;
 }
 
 /*
