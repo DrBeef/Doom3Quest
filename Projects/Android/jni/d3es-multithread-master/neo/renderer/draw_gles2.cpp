@@ -536,8 +536,8 @@ void RB_ComputeMVP( const drawSurf_t * const surf, float mvp[32] ) {
 		localProjectionMatrix[14] = backEnd.viewDef->projectionMatrix[14] - surf->space->modelDepthHack;
 	}
 
-    myGlMultMatrix(surf->space->modelViewMatrix[0], localProjectionMatrix, mvp);
-    myGlMultMatrix(surf->space->modelViewMatrix[1], localProjectionMatrix, (mvp + 16) );
+    myGlMultMatrix(surf->space->eyeModelViewMatrix[0], localProjectionMatrix, mvp);
+    myGlMultMatrix(surf->space->eyeModelViewMatrix[1], localProjectionMatrix, (mvp + 16) );
 }
 
 /*
@@ -1290,15 +1290,15 @@ void RB_GLSL_FogPass(const drawSurf_t* drawSurfs, const drawSurf_t* drawSurfs2, 
 	// It is expected to be already active
 	globalImages->fogImage->Bind();
 
-	fogPlanes[0][0] = a * backEnd.viewDef->worldSpace.centerModelViewMatrix[2];
-	fogPlanes[0][1] = a * backEnd.viewDef->worldSpace.centerModelViewMatrix[6];
-	fogPlanes[0][2] = a * backEnd.viewDef->worldSpace.centerModelViewMatrix[10];
-	fogPlanes[0][3] = a * backEnd.viewDef->worldSpace.centerModelViewMatrix[14];
+	fogPlanes[0][0] = a * backEnd.viewDef->worldSpace.eyeModelViewMatrix[2][2];
+	fogPlanes[0][1] = a * backEnd.viewDef->worldSpace.eyeModelViewMatrix[2][6];
+	fogPlanes[0][2] = a * backEnd.viewDef->worldSpace.eyeModelViewMatrix[2][10];
+	fogPlanes[0][3] = a * backEnd.viewDef->worldSpace.eyeModelViewMatrix[2][14];
 
-	fogPlanes[1][0] = a * backEnd.viewDef->worldSpace.centerModelViewMatrix[0];
-	fogPlanes[1][1] = a * backEnd.viewDef->worldSpace.centerModelViewMatrix[4];
-	fogPlanes[1][2] = a * backEnd.viewDef->worldSpace.centerModelViewMatrix[8];
-	fogPlanes[1][3] = a * backEnd.viewDef->worldSpace.centerModelViewMatrix[12];
+	fogPlanes[1][0] = a * backEnd.viewDef->worldSpace.eyeModelViewMatrix[2][0];
+	fogPlanes[1][1] = a * backEnd.viewDef->worldSpace.eyeModelViewMatrix[2][4];
+	fogPlanes[1][2] = a * backEnd.viewDef->worldSpace.eyeModelViewMatrix[2][8];
+	fogPlanes[1][3] = a * backEnd.viewDef->worldSpace.eyeModelViewMatrix[2][12];
 
 	// texture 1 is the entering plane fade correction
 	GL_SelectTexture(1);
@@ -1971,12 +1971,12 @@ void RB_GLSL_T_RenderShaderPasses(const drawSurf_t* surf, const float mvp[16]) {
 				                       ac->normal.ToFloatPtr());
 
 				// Setup the modelViewMatrix, we will need it to compute the reflection
-				GL_UniformMatrix4fv(offsetof(shaderProgram_t, modelViewMatrix), surf->space->centerModelViewMatrix);
+				GL_UniformMatrix4fv(offsetof(shaderProgram_t, modelViewMatrix), surf->space->eyeModelViewMatrix[2]);
 
 				// Setup the texture matrix like original D3 code does: using the transpose modelViewMatrix of the view
 				// NB: this is curious, not sure why this is done like this....
 				float mat[16];
-				R_TransposeGLMatrix(backEnd.viewDef->worldSpace.centerModelViewMatrix, mat);
+				R_TransposeGLMatrix(backEnd.viewDef->worldSpace.eyeModelViewMatrix[2], mat);
 				GL_UniformMatrix4fv(offsetof(shaderProgram_t, textureMatrix), mat);
 			} else { // TG_EXPLICIT
 				// Otherwise, this is just regular surface shader with explicit texcoords

@@ -258,9 +258,11 @@ void R_LockSurfaceScene( viewDef_t *parms ) {
     // update the view origin and axis, and all
     // the entity matricies
     for (vModel = tr.lockSurfacesCmd.viewDef->viewEntitys; vModel; vModel = vModel->next) {
-        myGlMultMatrix(vModel->modelMatrix, tr.lockSurfacesCmd.viewDef->worldSpace.modelViewMatrix[0], vModel->modelViewMatrix[0]);
-        myGlMultMatrix(vModel->modelMatrix, tr.lockSurfacesCmd.viewDef->worldSpace.modelViewMatrix[1], vModel->modelViewMatrix[1]);
-        myGlMultMatrix(vModel->modelMatrix, tr.lockSurfacesCmd.viewDef->worldSpace.centerModelViewMatrix, vModel->centerModelViewMatrix);
+    	for (int eye = 0; eye < 3; ++eye) {
+			myGlMultMatrix(vModel->modelMatrix,
+						   tr.lockSurfacesCmd.viewDef->worldSpace.eyeModelViewMatrix[eye],
+						   vModel->eyeModelViewMatrix[eye]);
+		}
     }
 
 	// add the stored off surface commands again

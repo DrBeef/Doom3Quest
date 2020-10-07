@@ -369,8 +369,13 @@ typedef struct viewEntity_s {
 	float				modelDepthHack;
 
 	float				modelMatrix[16];		// local coords to global coords
-	float				modelViewMatrix[2][16];	// local coords to left/right eye coords
-	float				centerModelViewMatrix[16];	// local coords to center eye coords
+
+	union {
+		// local coords to left/right/center eye coords
+		float eyeModelViewMatrix[3][16];
+		// Can also be treated as a float[48]
+		float modelViewMatrix[48];
+	};
 } viewEntity_t;
 
 

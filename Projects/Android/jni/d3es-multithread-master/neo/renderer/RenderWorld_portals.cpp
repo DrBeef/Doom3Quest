@@ -128,10 +128,10 @@ bool idRenderWorldLocal::PortalIsFoggedOut( const portal_t *p ) {
 		a = -0.5f / alpha;
 	}
 
-	forward[0] = a * tr.viewDef->worldSpace.centerModelViewMatrix[2];
-	forward[1] = a * tr.viewDef->worldSpace.centerModelViewMatrix[6];
-	forward[2] = a * tr.viewDef->worldSpace.centerModelViewMatrix[10];
-	forward[3] = a * tr.viewDef->worldSpace.centerModelViewMatrix[14];
+	forward[0] = a * tr.viewDef->worldSpace.eyeModelViewMatrix[2][2];
+	forward[1] = a * tr.viewDef->worldSpace.eyeModelViewMatrix[2][6];
+	forward[2] = a * tr.viewDef->worldSpace.eyeModelViewMatrix[2][10];
+	forward[3] = a * tr.viewDef->worldSpace.eyeModelViewMatrix[2][14];
 
 	w = p->w;
 	for ( i = 0 ; i < w->GetNumPoints() ; i++ ) {

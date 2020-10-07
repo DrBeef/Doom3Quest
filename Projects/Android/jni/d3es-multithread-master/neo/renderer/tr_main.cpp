@@ -42,6 +42,9 @@ extern const unsigned int      NUM_FRAME_DATA = 2;
 extern frameData_t	           *smpFrameData[NUM_FRAME_DATA];
 extern volatile unsigned int   smpFrame;
 
+extern "C" bool Doom3Quest_useScreenLayer();
+
+
 /*
 ======================
 idScreenRect::Clear
@@ -734,10 +737,10 @@ void R_GlobalToNormalizedDeviceCoordinates( const idVec3 &global, idVec3 &ndc ) 
 
 		for ( i = 0 ; i < 4 ; i ++ ) {
 			view[i] =
-			    global[0] * tr.primaryView->worldSpace.centerModelViewMatrix[ i + 0 * 4 ] +
-			    global[1] * tr.primaryView->worldSpace.centerModelViewMatrix[ i + 1 * 4 ] +
-			    global[2] * tr.primaryView->worldSpace.centerModelViewMatrix[ i + 2 * 4 ] +
-			    tr.primaryView->worldSpace.centerModelViewMatrix[ i + 3 * 4 ];
+			    global[0] * tr.primaryView->worldSpace.eyeModelViewMatrix[2][ i + 0 * 4 ] +
+			    global[1] * tr.primaryView->worldSpace.eyeModelViewMatrix[2][ i + 1 * 4 ] +
+			    global[2] * tr.primaryView->worldSpace.eyeModelViewMatrix[2][ i + 2 * 4 ] +
+			    tr.primaryView->worldSpace.eyeModelViewMatrix[2][ i + 3 * 4 ];
 		}
 
 		for ( i = 0 ; i < 4 ; i ++ ) {
@@ -752,10 +755,10 @@ void R_GlobalToNormalizedDeviceCoordinates( const idVec3 &global, idVec3 &ndc ) 
 
 		for ( i = 0 ; i < 4 ; i ++ ) {
 			view[i] =
-			    global[0] * tr.viewDef->worldSpace.centerModelViewMatrix[ i + 0 * 4 ] +
-			    global[1] * tr.viewDef->worldSpace.centerModelViewMatrix[ i + 1 * 4 ] +
-			    global[2] * tr.viewDef->worldSpace.centerModelViewMatrix[ i + 2 * 4 ] +
-			    tr.viewDef->worldSpace.centerModelViewMatrix[ i + 3 * 4 ];
+			    global[0] * tr.viewDef->worldSpace.eyeModelViewMatrix[2][ i + 0 * 4 ] +
+			    global[1] * tr.viewDef->worldSpace.eyeModelViewMatrix[2][ i + 1 * 4 ] +
+			    global[2] * tr.viewDef->worldSpace.eyeModelViewMatrix[2][ i + 2 * 4 ] +
+			    tr.viewDef->worldSpace.eyeModelViewMatrix[2][ i + 3 * 4 ];
 		}
 
 
@@ -848,6 +851,7 @@ R_SetViewMatrix
 Sets up the world to view matrix for a given viewParm
 =================
 */
+
 void R_SetViewMatrix( viewDef_t *viewDef ) {
 	idVec3	origin;
 	viewEntity_t *world;
@@ -871,13 +875,17 @@ void R_SetViewMatrix( viewDef_t *viewDef ) {
 		world->modelMatrix[1 * 4 + 1] = 1;
 		world->modelMatrix[2 * 4 + 2] = 1;
 
-		for (int eye = 0; eye < 3; ++eye) {
+		for (int eye = 0; eye <= 2; ++eye) {
 			// transform by the camera placement
 			origin = viewDef->renderView.vieworg;
 
-			if (eye < 2) {
+
+			if (eye < 2 &&
+				!Doom3Quest_useScreenLayer())
+			{
 				origin += (eye == 0 ? 1.0f : -1.0f) * viewDef->renderView.viewaxis[1] *
-						  ((0.065f) / 2.0f) * (43.0f);
+						  (cvarSystem->GetCVarFloat("vr_ipd") / 2.0f) *
+						  cvarSystem->GetCVarFloat("vr_worldscale");
 			}
 
 			viewerMatrix[0] = viewDef->renderView.viewaxis[0][0];
@@ -903,13 +911,9 @@ void R_SetViewMatrix( viewDef_t *viewDef ) {
 			viewerMatrix[11] = 0;
 			viewerMatrix[15] = 1;
 
-			if (eye < 2) {
-				// convert from our coordinate system (looking down X)
-				// to OpenGL's coordinate system (looking down -Z)
-				myGlMultMatrix(viewerMatrix, s_flipMatrix, world->modelViewMatrix[eye]);
-			} else {
-				myGlMultMatrix(viewerMatrix, s_flipMatrix, world->centerModelViewMatrix);
-			}
+			// convert from our coordinate system (looking down X)
+			// to OpenGL's coordinate system (looking down -Z)
+			myGlMultMatrix(viewerMatrix, s_flipMatrix, world->eyeModelViewMatrix[eye]);
 		}
 	}
 }

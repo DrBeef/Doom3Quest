@@ -193,7 +193,7 @@ void SCR_DrawTextRightAlign( float &y, const char *text, ... ) {
 SCR_DrawFPS
 ==================
 */
-#define	FPS_FRAMES	16
+#define	FPS_FRAMES	5
 float SCR_DrawFPS( float y ) {
 	char		*s;
 	int			w;
