@@ -18,25 +18,34 @@
 #include "glsl_shaders.h"
 
 const char * const zfillShaderVP = R"(
-#version 100
+#version 300 es
+
+// Multiview
+#define NUM_VIEWS 2
+#extension GL_OVR_multiview2 : enable
+layout(num_views=NUM_VIEWS) in;
+
 precision mediump float;
 
 // In
-attribute highp vec4 attr_Vertex;
-attribute vec4 attr_TexCoord;
+in highp vec4 attr_Vertex;
+in vec4 attr_TexCoord;
         
 // Uniforms
-uniform highp mat4 u_modelViewProjectionMatrix;
+uniform ShaderMatrices
+{
+    uniform highp mat4 modelViewProjectionMatrix[NUM_VIEWS];
+} u_shaderMatrices;
 uniform mat4 u_textureMatrix;
         
 // Out
 // gl_Position
-varying vec2 var_TexDiffuse;
+out vec2 var_TexDiffuse;
         
-void main(void)
+void main()
 {
   var_TexDiffuse = (u_textureMatrix * attr_TexCoord).xy;  // Homogeneous coordinates of textureMatrix supposed to be 1
 
-  gl_Position = u_modelViewProjectionMatrix * attr_Vertex;
+  gl_Position = u_shaderMatrices.modelViewProjectionMatrix[gl_ViewID_OVR] * attr_Vertex;
 }
 )";

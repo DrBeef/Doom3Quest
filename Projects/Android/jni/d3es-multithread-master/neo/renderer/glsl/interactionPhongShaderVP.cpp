@@ -18,19 +18,28 @@
 #include "glsl_shaders.h"
 
 const char * const interactionPhongShaderVP = R"(
-#version 100
+#version 300 es
+
+// Multiview
+#define NUM_VIEWS 2
+#extension GL_OVR_multiview2 : enable
+layout(num_views=NUM_VIEWS) in;
+
 precision highp float;
   
 // In
-attribute highp vec4 attr_Vertex;
-attribute lowp vec4 attr_Color;
-attribute vec4 attr_TexCoord;
-attribute vec3 attr_Tangent;
-attribute vec3 attr_Bitangent;
-attribute vec3 attr_Normal;
+in highp vec4 attr_Vertex;
+in lowp vec4 attr_Color;
+in vec4 attr_TexCoord;
+in vec3 attr_Tangent;
+in vec3 attr_Bitangent;
+in vec3 attr_Normal;
   
 // Uniforms
-uniform highp mat4 u_modelViewProjectionMatrix;
+uniform ShaderMatrices
+{
+    uniform highp mat4 modelViewProjectionMatrix[NUM_VIEWS];
+} u_shaderMatrices;
 uniform mat4 u_lightProjection;
 uniform lowp float u_colorModulate;
 uniform lowp float u_colorAdd;
@@ -45,15 +54,15 @@ uniform vec4 u_specularMatrixT;
   
 // Out
 // gl_Position
-varying vec2 var_TexDiffuse;
-varying vec2 var_TexNormal;
-varying vec2 var_TexSpecular;
-varying vec4 var_TexLight;
-varying lowp vec4 var_Color;
-varying vec3 var_L;
-varying vec3 var_V;
+out vec2 var_TexDiffuse;
+out vec2 var_TexNormal;
+out vec2 var_TexSpecular;
+out vec4 var_TexLight;
+out lowp vec4 var_Color;
+out vec3 var_L;
+out vec3 var_V;
   
-void main(void)
+void main()
 {
   mat3 M = mat3(attr_Tangent, attr_Bitangent, attr_Normal);
   
@@ -83,6 +92,6 @@ void main(void)
     var_Color = (attr_Color * u_colorModulate) + vec4(u_colorAdd);
   }
   
-  gl_Position = u_modelViewProjectionMatrix * attr_Vertex;
+  gl_Position = u_shaderMatrices.modelViewProjectionMatrix[gl_ViewID_OVR] * attr_Vertex;
 }
 )";

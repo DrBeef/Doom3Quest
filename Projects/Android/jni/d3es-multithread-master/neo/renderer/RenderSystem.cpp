@@ -258,7 +258,9 @@ void R_LockSurfaceScene( viewDef_t *parms ) {
     // update the view origin and axis, and all
     // the entity matricies
     for (vModel = tr.lockSurfacesCmd.viewDef->viewEntitys; vModel; vModel = vModel->next) {
-        myGlMultMatrix(vModel->modelMatrix, tr.lockSurfacesCmd.viewDef->worldSpace.modelViewMatrix, vModel->modelViewMatrix);
+        myGlMultMatrix(vModel->modelMatrix, tr.lockSurfacesCmd.viewDef->worldSpace.modelViewMatrix[0], vModel->modelViewMatrix[0]);
+        myGlMultMatrix(vModel->modelMatrix, tr.lockSurfacesCmd.viewDef->worldSpace.modelViewMatrix[1], vModel->modelViewMatrix[1]);
+        myGlMultMatrix(vModel->modelMatrix, tr.lockSurfacesCmd.viewDef->worldSpace.centerModelViewMatrix, vModel->centerModelViewMatrix);
     }
 
 	// add the stored off surface commands again
@@ -583,7 +585,7 @@ void idRenderSystemLocal::BeginFrame( int windowWidth, int windowHeight ) {
 	cmd = (setBufferCommand_t *)R_GetCommandBuffer( sizeof( *cmd ) );
 	cmd->commandId = RC_SET_BUFFER;
 	cmd->frameCount = frameCount;
-	cmd->buffer = cvarSystem->GetCVarInteger("vr_eye");
+	cmd->buffer = 0;
 
 }
 

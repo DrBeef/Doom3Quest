@@ -272,7 +272,9 @@ viewEntity_t* R_SetEntityDefViewEntity(idRenderEntityLocal* def) {
 
 	// we may not have a viewDef if we are just creating shadows at entity creation time
 	if ( tr.viewDef ) {
-		myGlMultMatrix(vModel->modelMatrix, tr.viewDef->worldSpace.modelViewMatrix, vModel->modelViewMatrix);
+		myGlMultMatrix(vModel->modelMatrix, tr.viewDef->worldSpace.modelViewMatrix[0], vModel->modelViewMatrix[0]);
+		myGlMultMatrix(vModel->modelMatrix, tr.viewDef->worldSpace.modelViewMatrix[1], vModel->modelViewMatrix[1]);
+		myGlMultMatrix(vModel->modelMatrix, tr.viewDef->worldSpace.centerModelViewMatrix, vModel->centerModelViewMatrix);
 
 		vModel->next = tr.viewDef->viewEntitys;
 		tr.viewDef->viewEntitys = vModel;
@@ -627,7 +629,7 @@ idScreenRect R_ClippedLightScissorRectangle(viewLight_t* vLight) {
 			idPlane eye, clip;
 			idVec3 ndc;
 
-			R_TransformModelToClip(w[j].ToVec3(), tr.viewDef->worldSpace.modelViewMatrix, tr.viewDef->projectionMatrix, eye,
+			R_TransformModelToClip(w[j].ToVec3(), tr.viewDef->worldSpace.centerModelViewMatrix, tr.viewDef->projectionMatrix, eye,
 			                       clip);
 
 			if ( clip[3] <= 0.01f ) {
@@ -692,7 +694,7 @@ idScreenRect R_CalcLightScissorRectangle(viewLight_t* vLight) {
 
 	tri = vLight->lightDef->frustumTris;
 	for ( int i = 0; i < tri->numVerts; i++ ) {
-		R_TransformModelToClip(tri->verts[i].xyz, tr.viewDef->worldSpace.modelViewMatrix,
+		R_TransformModelToClip(tri->verts[i].xyz, tr.viewDef->worldSpace.centerModelViewMatrix,
 		                       tr.viewDef->projectionMatrix, eye, clip);
 
 		// if it is near clipped, clip the winding polygons to the view frustum
@@ -1049,7 +1051,7 @@ idRenderModel* R_EntityDefDynamicModel(idRenderEntityLocal* def) {
 	if ( def->dynamicModel && model->DepthHack() != 0.0f && tr.viewDef ) {
 		idPlane eye, clip;
 		idVec3 ndc;
-		R_TransformModelToClip(def->parms.origin, tr.viewDef->worldSpace.modelViewMatrix, tr.viewDef->projectionMatrix,
+		R_TransformModelToClip(def->parms.origin, tr.viewDef->worldSpace.centerModelViewMatrix, tr.viewDef->projectionMatrix,
 		                       eye,
 		                       clip);
 		R_TransformClipToDevice(clip, tr.viewDef, ndc);

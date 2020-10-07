@@ -2509,21 +2509,16 @@ void idSessionLocal::UpdateScreen( bool outOfSequence ) {
 		Sys_GrabMouseCursor( false );
 	}
 
-	for (int eye = 0; eye < 2; ++eye) {
+	renderSystem->BeginFrame(renderSystem->GetScreenWidth(), renderSystem->GetScreenHeight());
 
-		cvarSystem->SetCVarInteger("vr_eye", eye);
+	// draw everything
+	Draw();
 
-		renderSystem->BeginFrame(renderSystem->GetScreenWidth(), renderSystem->GetScreenHeight());
-
-        // draw everything
-        Draw();
-
-        if (com_speeds.GetBool()) {
-            renderSystem->EndFrame(&time_frontend, &time_backend);
-        } else {
-            renderSystem->EndFrame(NULL, NULL);
-        }
-    }
+	if (com_speeds.GetBool()) {
+		renderSystem->EndFrame(&time_frontend, &time_backend);
+	} else {
+		renderSystem->EndFrame(NULL, NULL);
+	}
 
 	insideUpdateScreen = false;
 }

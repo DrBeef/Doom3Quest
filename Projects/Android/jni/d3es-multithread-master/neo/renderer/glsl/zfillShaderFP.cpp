@@ -18,11 +18,11 @@
 #include "glsl_shaders.h"
 
 const char * const zfillShaderFP = R"(
-#version 100
+#version 300 es
 precision mediump float;
         
 // In
-varying vec2 var_TexDiffuse;
+in vec2 var_TexDiffuse;
         
 // Uniforms
 uniform sampler2D u_fragmentMap0;
@@ -30,14 +30,14 @@ uniform lowp float u_alphaTest;
 uniform lowp vec4 u_glColor;
         
 // Out
-// gl_FragCoord
+layout(location = 0) out vec4 fragColor;
         
-void main(void)
+void main()
 {
-    if (u_alphaTest > texture2D(u_fragmentMap0, var_TexDiffuse).a) {
+    if (u_alphaTest > texture(u_fragmentMap0, var_TexDiffuse).a) {
       discard;
     }
         
-  gl_FragColor = u_glColor;
+  fragColor = u_glColor;
 }
 )";

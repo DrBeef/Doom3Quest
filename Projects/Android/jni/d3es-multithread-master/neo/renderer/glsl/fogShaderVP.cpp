@@ -18,24 +18,33 @@
 #include "glsl_shaders.h"
 
 const char * const fogShaderVP = R"(
-#version 100
+#version 300 es
+
+// Multiview
+#define NUM_VIEWS 2
+#extension GL_OVR_multiview2 : enable
+layout(num_views=NUM_VIEWS) in;
+
 precision mediump float;
   
 // In
-attribute highp vec4 attr_Vertex;      // input Vertex Coordinates
+in highp vec4 attr_Vertex;      // input Vertex Coordinates
   
 // Uniforms
-uniform highp mat4 u_modelViewProjectionMatrix;
+uniform ShaderMatrices
+{
+    uniform highp mat4 modelViewProjectionMatrix[NUM_VIEWS];
+} u_shaderMatrices;
 uniform mat4 u_fogMatrix;        // fogPlanes 0, 1, 3 (CATION: not 2!), 2
   
 // Out
 // gl_Position                   // output Vertex Coordinates
-varying vec2 var_TexFog;         // output Fog TexCoord
-varying vec2 var_TexFogEnter;    // output FogEnter TexCoord
+out vec2 var_TexFog;         // output Fog TexCoord
+out vec2 var_TexFogEnter;    // output FogEnter TexCoord
   
-void main(void)
+void main()
 {
-  gl_Position = u_modelViewProjectionMatrix * attr_Vertex;
+  gl_Position = u_shaderMatrices.modelViewProjectionMatrix[gl_ViewID_OVR] * attr_Vertex;
 
   // What will be computed:
   //

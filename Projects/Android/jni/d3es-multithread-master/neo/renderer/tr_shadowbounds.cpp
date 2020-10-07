@@ -473,10 +473,10 @@ void world_to_hclip( const viewDef_t *viewDef, const idVec4 &global, idVec4 &cli
 
 	for ( i = 0 ; i < 4 ; i ++ ) {
 		view[i] =
-		    global[0] * viewDef->worldSpace.modelViewMatrix[ i + 0 * 4 ] +
-		    global[1] * viewDef->worldSpace.modelViewMatrix[ i + 1 * 4 ] +
-		    global[2] * viewDef->worldSpace.modelViewMatrix[ i + 2 * 4 ] +
-		    global[3] *	viewDef->worldSpace.modelViewMatrix[ i + 3 * 4 ];
+		    global[0] * viewDef->worldSpace.centerModelViewMatrix[ i + 0 * 4 ] +
+		    global[1] * viewDef->worldSpace.centerModelViewMatrix[ i + 1 * 4 ] +
+		    global[2] * viewDef->worldSpace.centerModelViewMatrix[ i + 2 * 4 ] +
+		    global[3] *	viewDef->worldSpace.centerModelViewMatrix[ i + 3 * 4 ];
 	}
 
 

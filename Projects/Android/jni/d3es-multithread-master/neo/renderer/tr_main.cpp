@@ -734,10 +734,10 @@ void R_GlobalToNormalizedDeviceCoordinates( const idVec3 &global, idVec3 &ndc ) 
 
 		for ( i = 0 ; i < 4 ; i ++ ) {
 			view[i] =
-			    global[0] * tr.primaryView->worldSpace.modelViewMatrix[ i + 0 * 4 ] +
-			    global[1] * tr.primaryView->worldSpace.modelViewMatrix[ i + 1 * 4 ] +
-			    global[2] * tr.primaryView->worldSpace.modelViewMatrix[ i + 2 * 4 ] +
-			    tr.primaryView->worldSpace.modelViewMatrix[ i + 3 * 4 ];
+			    global[0] * tr.primaryView->worldSpace.centerModelViewMatrix[ i + 0 * 4 ] +
+			    global[1] * tr.primaryView->worldSpace.centerModelViewMatrix[ i + 1 * 4 ] +
+			    global[2] * tr.primaryView->worldSpace.centerModelViewMatrix[ i + 2 * 4 ] +
+			    tr.primaryView->worldSpace.centerModelViewMatrix[ i + 3 * 4 ];
 		}
 
 		for ( i = 0 ; i < 4 ; i ++ ) {
@@ -752,10 +752,10 @@ void R_GlobalToNormalizedDeviceCoordinates( const idVec3 &global, idVec3 &ndc ) 
 
 		for ( i = 0 ; i < 4 ; i ++ ) {
 			view[i] =
-			    global[0] * tr.viewDef->worldSpace.modelViewMatrix[ i + 0 * 4 ] +
-			    global[1] * tr.viewDef->worldSpace.modelViewMatrix[ i + 1 * 4 ] +
-			    global[2] * tr.viewDef->worldSpace.modelViewMatrix[ i + 2 * 4 ] +
-			    tr.viewDef->worldSpace.modelViewMatrix[ i + 3 * 4 ];
+			    global[0] * tr.viewDef->worldSpace.centerModelViewMatrix[ i + 0 * 4 ] +
+			    global[1] * tr.viewDef->worldSpace.centerModelViewMatrix[ i + 1 * 4 ] +
+			    global[2] * tr.viewDef->worldSpace.centerModelViewMatrix[ i + 2 * 4 ] +
+			    tr.viewDef->worldSpace.centerModelViewMatrix[ i + 3 * 4 ];
 		}
 
 
@@ -871,35 +871,46 @@ void R_SetViewMatrix( viewDef_t *viewDef ) {
 		world->modelMatrix[1 * 4 + 1] = 1;
 		world->modelMatrix[2 * 4 + 2] = 1;
 
-		// transform by the camera placement
-		origin = viewDef->renderView.vieworg;
+		for (int eye = 0; eye < 3; ++eye) {
+			// transform by the camera placement
+			origin = viewDef->renderView.vieworg;
 
-		viewerMatrix[0] = viewDef->renderView.viewaxis[0][0];
-		viewerMatrix[4] = viewDef->renderView.viewaxis[0][1];
-		viewerMatrix[8] = viewDef->renderView.viewaxis[0][2];
-		viewerMatrix[12] = -origin[0] * viewerMatrix[0] + -origin[1] * viewerMatrix[4] +
-						   -origin[2] * viewerMatrix[8];
+			if (eye < 2) {
+				origin += (eye == 0 ? 1.0f : -1.0f) * viewDef->renderView.viewaxis[1] *
+						  ((0.065f) / 2.0f) * (43.0f);
+			}
 
-		viewerMatrix[1] = viewDef->renderView.viewaxis[1][0];
-		viewerMatrix[5] = viewDef->renderView.viewaxis[1][1];
-		viewerMatrix[9] = viewDef->renderView.viewaxis[1][2];
-		viewerMatrix[13] = -origin[0] * viewerMatrix[1] + -origin[1] * viewerMatrix[5] +
-						   -origin[2] * viewerMatrix[9];
+			viewerMatrix[0] = viewDef->renderView.viewaxis[0][0];
+			viewerMatrix[4] = viewDef->renderView.viewaxis[0][1];
+			viewerMatrix[8] = viewDef->renderView.viewaxis[0][2];
+			viewerMatrix[12] = -origin[0] * viewerMatrix[0] + -origin[1] * viewerMatrix[4] +
+							   -origin[2] * viewerMatrix[8];
 
-		viewerMatrix[2] = viewDef->renderView.viewaxis[2][0];
-		viewerMatrix[6] = viewDef->renderView.viewaxis[2][1];
-		viewerMatrix[10] = viewDef->renderView.viewaxis[2][2];
-		viewerMatrix[14] = -origin[0] * viewerMatrix[2] + -origin[1] * viewerMatrix[6] +
-						   -origin[2] * viewerMatrix[10];
+			viewerMatrix[1] = viewDef->renderView.viewaxis[1][0];
+			viewerMatrix[5] = viewDef->renderView.viewaxis[1][1];
+			viewerMatrix[9] = viewDef->renderView.viewaxis[1][2];
+			viewerMatrix[13] = -origin[0] * viewerMatrix[1] + -origin[1] * viewerMatrix[5] +
+							   -origin[2] * viewerMatrix[9];
 
-		viewerMatrix[3] = 0;
-		viewerMatrix[7] = 0;
-		viewerMatrix[11] = 0;
-		viewerMatrix[15] = 1;
+			viewerMatrix[2] = viewDef->renderView.viewaxis[2][0];
+			viewerMatrix[6] = viewDef->renderView.viewaxis[2][1];
+			viewerMatrix[10] = viewDef->renderView.viewaxis[2][2];
+			viewerMatrix[14] = -origin[0] * viewerMatrix[2] + -origin[1] * viewerMatrix[6] +
+							   -origin[2] * viewerMatrix[10];
 
-		// convert from our coordinate system (looking down X)
-		// to OpenGL's coordinate system (looking down -Z)
-		myGlMultMatrix(viewerMatrix, s_flipMatrix, world->modelViewMatrix);
+			viewerMatrix[3] = 0;
+			viewerMatrix[7] = 0;
+			viewerMatrix[11] = 0;
+			viewerMatrix[15] = 1;
+
+			if (eye < 2) {
+				// convert from our coordinate system (looking down X)
+				// to OpenGL's coordinate system (looking down -Z)
+				myGlMultMatrix(viewerMatrix, s_flipMatrix, world->modelViewMatrix[eye]);
+			} else {
+				myGlMultMatrix(viewerMatrix, s_flipMatrix, world->centerModelViewMatrix);
+			}
+		}
 	}
 }
 

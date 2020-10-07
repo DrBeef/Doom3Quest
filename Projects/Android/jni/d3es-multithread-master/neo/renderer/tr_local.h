@@ -369,7 +369,8 @@ typedef struct viewEntity_s {
 	float				modelDepthHack;
 
 	float				modelMatrix[16];		// local coords to global coords
-	float				modelViewMatrix[16];	// local coords to eye coords
+	float				modelViewMatrix[2][16];	// local coords to left/right eye coords
+	float				centerModelViewMatrix[16];	// local coords to center eye coords
 } viewEntity_t;
 
 
@@ -1253,7 +1254,11 @@ typedef struct shaderProgram_s {
 	GLint		alphaTest;
 	GLint		specularExponent;
 
-	GLint		modelViewProjectionMatrix;
+//	GLint		modelViewProjectionMatrix;
+	//New for multiview
+	GLuint		shaderMatricesBuffer;
+	GLuint		shaderMatricesBinding;
+
 	GLint		modelViewMatrix;
 	GLint		textureMatrix;
 	GLint		localLightOrigin;

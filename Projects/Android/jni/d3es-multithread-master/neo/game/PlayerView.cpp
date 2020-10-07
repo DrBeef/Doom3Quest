@@ -730,12 +730,12 @@ void idPlayerView::RenderPlayerView( idUserInterface *hud ) {
 	{
         renderView_t *eyeView = view ? new renderView_t(*view) : NULL;
 
-	    if (eyeView &&
+/*	    if (eyeView &&
 	        !game->InCinematic())
 	    {
 			eyeView->vieworg += (vr_eye.GetInteger() == 0 ? 1.0f : -1.0f) * eyeView->viewaxis[1] *
 					(vr_ipd.GetFloat() / 2.0f) * vr_worldscale.GetFloat();
-        }
+        }*/
 
 		if (g_skipViewEffects.GetBool()) {
 			SingleView(hud, eyeView);

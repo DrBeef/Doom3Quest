@@ -84,9 +84,9 @@ void Doom3Quest_getHMDOrientation();
 
 void Doom3Quest_getTrackedRemotesOrientation(int controlscheme);
 
-void Doom3Quest_prepareEyeBuffer(int eye);
+void Doom3Quest_prepareEyeBuffer();
 
-void Doom3Quest_finishEyeBuffer(int eye);
+void Doom3Quest_finishEyeBuffer();
 
 void Doom3Quest_submitFrame();
 

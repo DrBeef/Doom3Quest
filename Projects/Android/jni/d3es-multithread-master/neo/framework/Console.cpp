@@ -206,39 +206,29 @@ float SCR_DrawFPS( float y ) {
 
 	int new_y = idMath::FtoiFast(y) + 300;
 
-	int eye = cvarSystem->GetCVarInteger("vr_eye");
-	if (eye == 0) {
-		// don't use serverTime, because that will be drifting to
-		// correct for internet lag changes, timescales, timedemos, etc
-		t = Sys_Milliseconds();
-		frameTime = t - previous;
-		previous = t;
+	// don't use serverTime, because that will be drifting to
+	// correct for internet lag changes, timescales, timedemos, etc
+	t = Sys_Milliseconds();
+	frameTime = t - previous;
+	previous = t;
 
-		previousTimes[index % FPS_FRAMES] = frameTime;
-		index++;
-		if (index > FPS_FRAMES) {
-			// average multiple frames together to smooth changes out a bit
-			total = 0;
-			for (i = 0; i < FPS_FRAMES; i++) {
-				total += previousTimes[i];
-			}
-			if (!total) {
-				total = 1;
-			}
-			fps = 10000 * FPS_FRAMES / total;
-			fps = (fps + 5) / 10;
-
-			s = va("%ifps", fps);
-			w = strlen(s) * SMALLCHAR_WIDTH;
-
-			renderSystem->DrawSmallStringExt((634 / 2) - w, new_y, s, colorWhite, true,
-										   localConsole.charSetShader);
+	previousTimes[index % FPS_FRAMES] = frameTime;
+	index++;
+	if (index > FPS_FRAMES) {
+		// average multiple frames together to smooth changes out a bit
+		total = 0;
+		for (i = 0; i < FPS_FRAMES; i++) {
+			total += previousTimes[i];
 		}
-	}
-	else {
-		//For right eye just use same value
+		if (!total) {
+			total = 1;
+		}
+		fps = 10000 * FPS_FRAMES / total;
+		fps = (fps + 5) / 10;
+
 		s = va("%ifps", fps);
 		w = strlen(s) * SMALLCHAR_WIDTH;
+
 		renderSystem->DrawSmallStringExt((634 / 2) - w, new_y, s, colorWhite, true,
 									   localConsole.charSetShader);
 	}

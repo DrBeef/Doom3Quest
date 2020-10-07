@@ -254,7 +254,6 @@ extern idCVar	net_clientLagOMeter;
 //VR CVARS
 extern idCVar vr_ipd;
 extern idCVar vr_worldscale;
-extern idCVar vr_eye;
 extern idCVar vr_heightoffset;
 extern idCVar vr_controlscheme;
 extern idCVar	vr_shakeamplitude;

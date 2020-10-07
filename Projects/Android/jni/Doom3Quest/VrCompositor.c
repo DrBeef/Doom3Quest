@@ -118,10 +118,10 @@ ovrLayerCylinder2 BuildCylinderLayer( ovrRenderer * cylinderRenderer,
 	const float circScale = density * 0.5f / textureWidth;
 	const float circBias = -circScale * ( 0.5f * ( 1.0f - 1.0f / circScale ) );
 
+	ovrFramebuffer * cylinderFrameBuffer = &cylinderRenderer->FrameBuffer;
+
 	for ( int eye = 0; eye < VRAPI_FRAME_LAYER_EYE_MAX; eye++ )
 	{
-		ovrFramebuffer * cylinderFrameBuffer = &cylinderRenderer->FrameBuffer[eye];
-		
 		ovrMatrix4f modelViewMatrix = ovrMatrix4f_Multiply( &tracking->Eye[eye].ViewMatrix, &cylinderTransform );
 		layer.Textures[eye].TexCoordsFromTanAngles = ovrMatrix4f_Inverse( &modelViewMatrix );
 		layer.Textures[eye].ColorSwapChain = cylinderFrameBuffer->ColorTextureSwapChain;

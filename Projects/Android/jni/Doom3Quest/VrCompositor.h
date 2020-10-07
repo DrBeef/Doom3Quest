@@ -64,6 +64,7 @@ typedef struct
 	ovrTextureSwapChain *	ColorTextureSwapChain;
 	GLuint *				DepthBuffers;
 	GLuint *				FrameBuffers;
+	bool 					UseMultiview;
 } ovrFramebuffer;
 
 void ovrFramebuffer_SetCurrent( ovrFramebuffer * frameBuffer );
@@ -83,7 +84,7 @@ ovrRenderer
 
 typedef struct
 {
-	ovrFramebuffer	FrameBuffer[VRAPI_FRAME_LAYER_EYE_MAX];
+	ovrFramebuffer	FrameBuffer;
 	ovrMatrix4f		ProjectionMatrix;
 	int				NumBuffers;
 } ovrRenderer;

@@ -18,17 +18,17 @@
 #include "glsl_shaders.h"
 
 const char * const interactionShaderFP = R"(
-#version 100
+#version 300 es
 precision highp float;
   
 // In
-varying vec2 var_TexDiffuse;
-varying vec2 var_TexNormal;
-varying vec2 var_TexSpecular;
-varying vec4 var_TexLight;
-varying lowp vec4 var_Color;
-varying vec3 var_L;
-varying vec3 var_H;
+in vec2 var_TexDiffuse;
+in vec2 var_TexNormal;
+in vec2 var_TexSpecular;
+in vec4 var_TexLight;
+in lowp vec4 var_Color;
+in vec3 var_L;
+in vec3 var_H;
   
 // Uniforms
 uniform lowp vec4 u_diffuseColor;
@@ -41,21 +41,21 @@ uniform sampler2D u_fragmentMap3;     // u_diffuseTexture
 uniform sampler2D u_fragmentMap4;     // u_specularTexture
   
 // Out
-// gl_FragCoord
+layout(location = 0) out vec4 fragColor;
   
-void main(void)
+void main()
 {
   vec3 L = normalize(var_L);
   vec3 H = normalize(var_H);
-  vec3 N = 2.0 * texture2D(u_fragmentMap0, var_TexNormal.st).agb - 1.0;
+  vec3 N = 2.0 * texture(u_fragmentMap0, var_TexNormal.st).agb - 1.0;
   
   float NdotL = clamp(dot(N, L), 0.0, 1.0);
   float NdotH = clamp(dot(N, H), 0.0, 1.0);
   
-  vec3 lightProjection = texture2DProj(u_fragmentMap2, var_TexLight.xyw).rgb;
-  vec3 lightFalloff = texture2D(u_fragmentMap1, vec2(var_TexLight.z, 0.5)).rgb;
-  vec3 diffuseColor = texture2D(u_fragmentMap3, var_TexDiffuse).rgb * u_diffuseColor.rgb;
-  vec3 specularColor = 2.0 * texture2D(u_fragmentMap4, var_TexSpecular).rgb * u_specularColor.rgb;
+  vec3 lightProjection = textureProj(u_fragmentMap2, var_TexLight.xyw).rgb;
+  vec3 lightFalloff = texture(u_fragmentMap1, vec2(var_TexLight.z, 0.5)).rgb;
+  vec3 diffuseColor = texture(u_fragmentMap3, var_TexDiffuse).rgb * u_diffuseColor.rgb;
+  vec3 specularColor = 2.0 * texture(u_fragmentMap4, var_TexSpecular).rgb * u_specularColor.rgb;
   
   float specularFalloff = pow(NdotH, 12.0); // Hardcoded to try to match with original D3 look
   
@@ -65,6 +65,6 @@ void main(void)
   color *= NdotL * lightProjection;
   color *= lightFalloff;
   
-  gl_FragColor = vec4(color, 1.0) * var_Color;
+  fragColor = vec4(color, 1.0) * var_Color;
 }
 )";

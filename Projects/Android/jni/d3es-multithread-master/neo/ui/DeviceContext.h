@@ -101,7 +101,6 @@ public:
 
 	// DG: this is used for the "make sure menus are rendered as 4:3" hack
 	void				SetMenuScaleFix(bool enable);
-	void				SetMenuScaleForVR( bool enable );
 	bool				IsMenuScaleFixActive() const {
 		return fixOffsetForMenu.x != 0.0f || fixOffsetForMenu.y != 0.0f;
 	}

@@ -15,6 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <GLES3/gl3.h>
 #include "sys/platform.h"
 #include "renderer/VertexCache.h"
 
@@ -89,6 +90,33 @@ GL_UniformMatrix4fv
 */
 static void GL_UniformMatrix4fv(GLint location, const GLfloat* value) {
 	qglUniformMatrix4fv(*( GLint * )((char*) backEnd.glState.currentProgram + location), 1, GL_FALSE, value);
+}
+
+/*
+====================
+GL_UniformMatrix4fv
+====================
+*/
+static void GL_UniformBuffer(GLint location, const float value[32]) {
+
+	// Update the scene matrices.
+	glBindBuffer(GL_UNIFORM_BUFFER, *( GLint * )((char*) backEnd.glState.currentProgram + location));
+	float* shaderMatrices = (float*)glMapBufferRange(
+			GL_UNIFORM_BUFFER,
+			0,
+			32 * sizeof(float),
+			GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+
+	if (shaderMatrices == NULL)
+	{
+		common->Error("Shader Matrices Uniform Buffer is NULL");
+		return;
+	}
+
+	memcpy((char*)shaderMatrices, value, 32 * sizeof(float));
+
+	glUnmapBuffer(GL_UNIFORM_BUFFER);
+	qglBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 /*
@@ -247,7 +275,27 @@ static void RB_GLSL_GetUniformLocations(shaderProgram_t* shader) {
 	shader->glColor = qglGetUniformLocation(shader->program, "u_glColor");
 	shader->alphaTest = qglGetUniformLocation(shader->program, "u_alphaTest");
 	shader->specularExponent = qglGetUniformLocation(shader->program, "u_specularExponent");
-	shader->modelViewProjectionMatrix = qglGetUniformLocation(shader->program, "u_modelViewProjectionMatrix");
+
+	GLuint shaderMatricesUniformLocation = glGetUniformBlockIndex(shader->program, "ShaderMatrices");
+
+	int numBufferBindings = 0;
+	shader->shaderMatricesBinding = numBufferBindings++;
+	glUniformBlockBinding(
+			shader->program,
+			shaderMatricesUniformLocation,
+			shader->shaderMatricesBinding);
+
+	//Create the buffer
+	qglGenBuffers(1, &shader->shaderMatricesBuffer);
+	glBindBuffer(GL_UNIFORM_BUFFER, shader->shaderMatricesBuffer);
+	glBufferData(
+			GL_UNIFORM_BUFFER,
+			2 * 16 * sizeof(float),
+			NULL,
+			GL_STATIC_DRAW);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+
 	shader->modelViewMatrix = qglGetUniformLocation(shader->program, "u_modelViewMatrix");
 	shader->textureMatrix = qglGetUniformLocation(shader->program, "u_textureMatrix");
 	shader->clipPlane = qglGetUniformLocation(shader->program, "u_clipPlane");
@@ -475,7 +523,7 @@ RB_ComputeMVP
 Compute the model view matrix, with eventually required projection matrix depth hacks
 =================
 */
-void RB_ComputeMVP( const drawSurf_t * const surf, float mvp[16] ) {
+void RB_ComputeMVP( const drawSurf_t * const surf, float mvp[32] ) {
 	// Get the projection matrix
 	float localProjectionMatrix[16];
 	memcpy(localProjectionMatrix, backEnd.viewDef->projectionMatrix, sizeof(localProjectionMatrix));
@@ -488,7 +536,8 @@ void RB_ComputeMVP( const drawSurf_t * const surf, float mvp[16] ) {
 		localProjectionMatrix[14] = backEnd.viewDef->projectionMatrix[14] - surf->space->modelDepthHack;
 	}
 
-    myGlMultMatrix(surf->space->modelViewMatrix, localProjectionMatrix, mvp);
+    myGlMultMatrix(surf->space->modelViewMatrix[0], localProjectionMatrix, mvp);
+    myGlMultMatrix(surf->space->modelViewMatrix[1], localProjectionMatrix, (mvp + 16) );
 }
 
 /*
@@ -747,6 +796,12 @@ static void RB_GLSL_CreateDrawInteractions(const drawSurf_t* surf, const viewLig
 		GL_UseProgram(&interactionShader);
 	}
 
+	glBindBufferBase(
+		GL_UNIFORM_BUFFER,
+		backEnd.glState.currentProgram->shaderMatricesBinding,
+		backEnd.glState.currentProgram->shaderMatricesBuffer);
+
+
 	// Setup attributes arrays
 	// Vertex attribute is always enabled
 	// Color attribute is always enabled
@@ -762,9 +817,9 @@ static void RB_GLSL_CreateDrawInteractions(const drawSurf_t* surf, const viewLig
 		// perform setup here that will not change over multiple interaction passes
 
 		if ( surf->space != backEnd.currentSpace ) {
-			float mvp[16];
+			float mvp[32];
 			RB_ComputeMVP(surf, mvp);
-			GL_UniformMatrix4fv(offsetof(shaderProgram_t, modelViewProjectionMatrix), mvp);
+			GL_UniformBuffer(offsetof(shaderProgram_t, shaderMatricesBuffer), mvp);
 		}
 
 		// Hack Depth Range if necessary
@@ -922,10 +977,10 @@ void RB_GLSL_RenderDrawSurfChainWithFunction(const drawSurf_t* drawSurfs,
 
 		// Change the MVP matrix if needed
 		if ( drawSurf->space != backEnd.currentSpace ) {
-			float mvp[16];
+			float mvp[32];
 			RB_ComputeMVP(drawSurf, mvp);
 			// We can set the uniform now, as the shader is already bound
-			GL_UniformMatrix4fv(offsetof(shaderProgram_t, modelViewProjectionMatrix), mvp);
+			GL_UniformBuffer(offsetof(shaderProgram_t, shaderMatricesBuffer), mvp);
 		}
 
 		// Hack Depth Range if necessary
@@ -995,6 +1050,11 @@ void RB_GLSL_StencilShadowPass(const drawSurf_t* drawSurfs, const viewLight_t* v
 
 	// Use the stencil shadow shader
 	GL_UseProgram(&stencilShadowShader);
+
+	glBindBufferBase(
+			GL_UNIFORM_BUFFER,
+			backEnd.glState.currentProgram->shaderMatricesBinding,
+			backEnd.glState.currentProgram->shaderMatricesBuffer);
 
 	// Setup attributes arrays
 	// Vertex attribute is always enabled
@@ -1186,6 +1246,11 @@ void RB_GLSL_FogPass(const drawSurf_t* drawSurfs, const drawSurf_t* drawSurfs2, 
 
 	GL_UseProgram(&fogShader);
 
+	glBindBufferBase(
+			GL_UNIFORM_BUFFER,
+			backEnd.glState.currentProgram->shaderMatricesBinding,
+			backEnd.glState.currentProgram->shaderMatricesBuffer);
+
 	// Setup attributes arrays
 	// Vertex attribute is always enabled
 	// Disable Color attribute (as it is enabled by default)
@@ -1225,15 +1290,15 @@ void RB_GLSL_FogPass(const drawSurf_t* drawSurfs, const drawSurf_t* drawSurfs2, 
 	// It is expected to be already active
 	globalImages->fogImage->Bind();
 
-	fogPlanes[0][0] = a * backEnd.viewDef->worldSpace.modelViewMatrix[2];
-	fogPlanes[0][1] = a * backEnd.viewDef->worldSpace.modelViewMatrix[6];
-	fogPlanes[0][2] = a * backEnd.viewDef->worldSpace.modelViewMatrix[10];
-	fogPlanes[0][3] = a * backEnd.viewDef->worldSpace.modelViewMatrix[14];
+	fogPlanes[0][0] = a * backEnd.viewDef->worldSpace.centerModelViewMatrix[2];
+	fogPlanes[0][1] = a * backEnd.viewDef->worldSpace.centerModelViewMatrix[6];
+	fogPlanes[0][2] = a * backEnd.viewDef->worldSpace.centerModelViewMatrix[10];
+	fogPlanes[0][3] = a * backEnd.viewDef->worldSpace.centerModelViewMatrix[14];
 
-	fogPlanes[1][0] = a * backEnd.viewDef->worldSpace.modelViewMatrix[0];
-	fogPlanes[1][1] = a * backEnd.viewDef->worldSpace.modelViewMatrix[4];
-	fogPlanes[1][2] = a * backEnd.viewDef->worldSpace.modelViewMatrix[8];
-	fogPlanes[1][3] = a * backEnd.viewDef->worldSpace.modelViewMatrix[12];
+	fogPlanes[1][0] = a * backEnd.viewDef->worldSpace.centerModelViewMatrix[0];
+	fogPlanes[1][1] = a * backEnd.viewDef->worldSpace.centerModelViewMatrix[4];
+	fogPlanes[1][2] = a * backEnd.viewDef->worldSpace.centerModelViewMatrix[8];
+	fogPlanes[1][3] = a * backEnd.viewDef->worldSpace.centerModelViewMatrix[12];
 
 	// texture 1 is the entering plane fade correction
 	GL_SelectTexture(1);
@@ -1549,6 +1614,11 @@ void RB_GLSL_FillDepthBuffer(drawSurf_t** drawSurfs, int numDrawSurfs) {
 		GL_UseProgram(&zfillShader);
 	}
 
+	glBindBufferBase(
+			GL_UNIFORM_BUFFER,
+			backEnd.glState.currentProgram->shaderMatricesBinding,
+			backEnd.glState.currentProgram->shaderMatricesBuffer);
+
 	// Setup attributes arrays
 	// Vertex attribute is always enabled
 	// TexCoord attribute is always enabled
@@ -1589,10 +1659,10 @@ void RB_GLSL_FillDepthBuffer(drawSurf_t** drawSurfs, int numDrawSurfs) {
 
 		// Change the MVP matrix if needed
 		if ( drawSurf->space != backEnd.currentSpace ) {
-			float mvp[16];
+			float mvp[32];
 			RB_ComputeMVP(drawSurf, mvp);
 			// We can set the uniform now as it shader is already bound
-			GL_UniformMatrix4fv(offsetof(shaderProgram_t, modelViewProjectionMatrix), mvp);
+			GL_UniformBuffer(offsetof(shaderProgram_t, shaderMatricesBuffer), mvp);
 		}
 
 		// Hack Depth Range if necessary
@@ -1811,6 +1881,11 @@ void RB_GLSL_T_RenderShaderPasses(const drawSurf_t* surf, const float mvp[16]) {
 				// This is diffuse cube mapping
 				GL_UseProgram(&diffuseCubeShader);
 
+				glBindBufferBase(
+						GL_UNIFORM_BUFFER,
+						backEnd.glState.currentProgram->shaderMatricesBinding,
+						backEnd.glState.currentProgram->shaderMatricesBuffer);
+
 				// Possible that normals should be transformed by a normal matrix in the shader ? I am not sure...
 
 				// Setup texcoord array to use the normals
@@ -1827,6 +1902,11 @@ void RB_GLSL_T_RenderShaderPasses(const drawSurf_t* surf, const float mvp[16]) {
 				// This is skybox cube mapping
 				GL_UseProgram(&skyboxCubeShader);
 
+				glBindBufferBase(
+						GL_UNIFORM_BUFFER,
+						backEnd.glState.currentProgram->shaderMatricesBinding,
+						backEnd.glState.currentProgram->shaderMatricesBuffer);
+
 				// Disable TexCoord attribute
 				GL_DisableVertexAttribArray(ATTR_TEXCOORD);
 
@@ -1842,6 +1922,11 @@ void RB_GLSL_T_RenderShaderPasses(const drawSurf_t* surf, const float mvp[16]) {
 			} else if ( pStage->texture.texgen == TG_WOBBLESKY_CUBE ) {
 				// This is skybox cube mapping, with special texture matrix
 				GL_UseProgram(&skyboxCubeShader);
+
+				glBindBufferBase(
+						GL_UNIFORM_BUFFER,
+						backEnd.glState.currentProgram->shaderMatricesBinding,
+						backEnd.glState.currentProgram->shaderMatricesBuffer);
 
 				// Disable TexCoord attribute
 				GL_DisableVertexAttribArray(ATTR_TEXCOORD);
@@ -1873,6 +1958,11 @@ void RB_GLSL_T_RenderShaderPasses(const drawSurf_t* surf, const float mvp[16]) {
 				// This is reflection cubemapping
 				GL_UseProgram(&reflectionCubeShader);
 
+				glBindBufferBase(
+						GL_UNIFORM_BUFFER,
+						backEnd.glState.currentProgram->shaderMatricesBinding,
+						backEnd.glState.currentProgram->shaderMatricesBuffer);
+
 				// NB: in original D3, if the surface had a bump map it would lead to the "Bumpy reflection cubemaping" shader being used.
 				// This is not implemented for now, we only do standard reflection cubemaping. Visual difference is really minor.
 
@@ -1881,16 +1971,21 @@ void RB_GLSL_T_RenderShaderPasses(const drawSurf_t* surf, const float mvp[16]) {
 				                       ac->normal.ToFloatPtr());
 
 				// Setup the modelViewMatrix, we will need it to compute the reflection
-				GL_UniformMatrix4fv(offsetof(shaderProgram_t, modelViewMatrix), surf->space->modelViewMatrix);
+				GL_UniformMatrix4fv(offsetof(shaderProgram_t, modelViewMatrix), surf->space->centerModelViewMatrix);
 
 				// Setup the texture matrix like original D3 code does: using the transpose modelViewMatrix of the view
 				// NB: this is curious, not sure why this is done like this....
 				float mat[16];
-				R_TransposeGLMatrix(backEnd.viewDef->worldSpace.modelViewMatrix, mat);
+				R_TransposeGLMatrix(backEnd.viewDef->worldSpace.centerModelViewMatrix, mat);
 				GL_UniformMatrix4fv(offsetof(shaderProgram_t, textureMatrix), mat);
 			} else { // TG_EXPLICIT
 				// Otherwise, this is just regular surface shader with explicit texcoords
 				GL_UseProgram(&diffuseMapShader);
+
+				glBindBufferBase(
+						GL_UNIFORM_BUFFER,
+						backEnd.glState.currentProgram->shaderMatricesBinding,
+						backEnd.glState.currentProgram->shaderMatricesBuffer);
 
 				// Setup the TexCoord pointer
 				GL_VertexAttribPointer(offsetof(shaderProgram_t, attr_TexCoord), 2, GL_FLOAT, false, sizeof(idDrawVert),
@@ -1926,7 +2021,7 @@ void RB_GLSL_T_RenderShaderPasses(const drawSurf_t* surf, const float mvp[16]) {
 				// MVP
 				if ( !bMVPSet[pStage->texture.texgen] ) {
 					// Setup the MVP uniform
-					GL_UniformMatrix4fv(offsetof(shaderProgram_t, modelViewProjectionMatrix), mvp);
+					GL_UniformBuffer(offsetof(shaderProgram_t, shaderMatricesBuffer), mvp);
 					bMVPSet[pStage->texture.texgen] = true;
 				}
 			}
@@ -2102,7 +2197,7 @@ int RB_GLSL_DrawShaderPasses(drawSurf_t** drawSurfs, int numDrawSurfs) {
 	// For each surface loop
 	/////////////////////////
 
-	float mvp[16];
+	float mvp[32];
 	backEnd.currentSpace = NULL;
 
 	int i;
@@ -2257,6 +2352,11 @@ void RB_GLSL_BlendLight(const drawSurf_t *drawSurfs, const drawSurf_t *drawSurfs
 
 	// Use blendLight shader
 	GL_UseProgram(&blendLightShader);
+
+	glBindBufferBase(
+			GL_UNIFORM_BUFFER,
+			backEnd.glState.currentProgram->shaderMatricesBinding,
+			backEnd.glState.currentProgram->shaderMatricesBuffer);
 
 	// Texture 1 will get the falloff texture
 	GL_SelectTexture(1);

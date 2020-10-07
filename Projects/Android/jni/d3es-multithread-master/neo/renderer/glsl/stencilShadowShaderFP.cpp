@@ -18,14 +18,14 @@
 #include "glsl_shaders.h"
 
 const char * const stencilShadowShaderFP = R"(
-#version 100
+#version 300 es
 precision lowp float;
   
 // Out
-// gl_FragColor
+layout(location = 0) out vec4 fragColor;
   
-void main(void)
+void main()
 {
-  gl_FragColor = vec4(0,0,0,1.0);
+  fragColor = vec4(0,0,0,1.0);
 }
 )";

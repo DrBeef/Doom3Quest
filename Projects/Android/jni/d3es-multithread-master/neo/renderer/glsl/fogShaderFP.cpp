@@ -18,12 +18,12 @@
 #include "glsl_shaders.h"
 
 const char * const fogShaderFP = R"(
-#version 100
+#version 300 es
 precision mediump float;
   
 // In
-varying vec2 var_TexFog;            // input Fog TexCoord
-varying vec2 var_TexFogEnter;       // input FogEnter TexCoord
+in vec2 var_TexFog;            // input Fog TexCoord
+in vec2 var_TexFogEnter;       // input FogEnter TexCoord
   
 // Uniforms
 uniform sampler2D u_fragmentMap0;   // Fog Image
@@ -31,10 +31,10 @@ uniform sampler2D u_fragmentMap1;   // Fog Enter Image
 uniform lowp vec4 u_fogColor;       // Fog Color
   
 // Out
-// gl_FragCoord                     // output Fragment color
+layout(location = 0) out vec4 fragColor;
   
-void main(void)
+void main()
 {
-  gl_FragColor = texture2D( u_fragmentMap0, var_TexFog ) * texture2D( u_fragmentMap1, var_TexFogEnter ) * vec4(u_fogColor.rgb, 1.0);
+  fragColor = texture( u_fragmentMap0, var_TexFog ) * texture( u_fragmentMap1, var_TexFogEnter ) * vec4(u_fogColor.rgb, 1.0);
 }
 )";
