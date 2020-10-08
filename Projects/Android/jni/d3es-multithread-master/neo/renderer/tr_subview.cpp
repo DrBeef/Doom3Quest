@@ -324,6 +324,8 @@ static void R_RemoteRender( drawSurf_t *surf, textureStage_t *stage ) {
 	parms->superView = tr.viewDef;
 	parms->subviewSurface = surf;
 
+	R_FrameBufferStart();
+
 	// generate render commands for it
 	R_RenderView(parms);
 
@@ -335,6 +337,8 @@ static void R_RemoteRender( drawSurf_t *surf, textureStage_t *stage ) {
 
 	tr.CaptureRenderToImage( stage->image->imgName );
 	tr.UnCrop();
+
+	R_FrameBufferEnd();
 }
 
 /*
@@ -376,6 +380,8 @@ void R_MirrorRender( drawSurf_t *surf, textureStage_t *stage, idScreenRect sciss
 	// triangle culling order changes with mirroring
 	parms->isMirror = ( ( (int)parms->isMirror ^ (int)tr.viewDef->isMirror ) != 0 );
 
+	R_FrameBufferStart();
+
 	// generate render commands for it
 	R_RenderView( parms );
 
@@ -385,6 +391,8 @@ void R_MirrorRender( drawSurf_t *surf, textureStage_t *stage, idScreenRect sciss
 
 	tr.CaptureRenderToImage( stage->image->imgName );
 	tr.UnCrop();
+
+	R_FrameBufferEnd();
 }
 
 /*
@@ -426,6 +434,8 @@ void R_XrayRender( drawSurf_t *surf, textureStage_t *stage, idScreenRect scissor
 	// triangle culling order changes with mirroring
 	parms->isMirror = ( ( (int)parms->isMirror ^ (int)tr.viewDef->isMirror ) != 0 );
 
+	R_FrameBufferStart();
+
 	// generate render commands for it
 	R_RenderView( parms );
 
@@ -435,6 +445,8 @@ void R_XrayRender( drawSurf_t *surf, textureStage_t *stage, idScreenRect scissor
 
 	tr.CaptureRenderToImage( stage->image->imgName );
 	tr.UnCrop();
+
+	R_FrameBufferEnd();
 }
 
 /*

@@ -418,6 +418,12 @@ void RB_ExecuteBackEndCommands( const emptyCommand_t *cmds ) {
 					RB_CopyRender(cmd);
 					c_copyRenders++;
 					break;
+				case RC_DIRECT_BUFFER_START:
+					R_FrameBufferStart();
+					break;
+				case RC_DIRECT_BUFFER_END:
+					R_FrameBufferEnd();
+					break;
 				default:
 					common->Error("RB_ExecuteBackEndCommands: bad commandId");
 					break;

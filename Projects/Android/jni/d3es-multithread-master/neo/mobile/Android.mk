@@ -88,6 +88,7 @@ src_renderer = \
 	renderer/tr_trisurf.cpp \
 	renderer/tr_turboshadow.cpp \
 	renderer/etc_android.cpp \
+	renderer/framebuffer.cpp
 
 src_framework = \
 	framework/CVarSystem.cpp \

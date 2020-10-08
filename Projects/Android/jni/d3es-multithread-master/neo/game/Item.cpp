@@ -713,10 +713,12 @@ void idObjective::Event_CamShot( ) {
 			fullView.width = SCREEN_WIDTH;
 			fullView.height = SCREEN_HEIGHT;
 			// draw a view to a texture
+			renderSystem->DirectFrameBufferStart();
 			renderSystem->CropRenderSize( 256, 256, true );
 			gameRenderWorld->RenderScene( &fullView );
 			renderSystem->CaptureRenderToFile( shotName );
 			renderSystem->UnCrop();
+			renderSystem->DirectFrameBufferEnd();
 		}
 	}
 }

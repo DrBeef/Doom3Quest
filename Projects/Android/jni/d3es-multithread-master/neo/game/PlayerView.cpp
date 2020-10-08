@@ -455,6 +455,7 @@ idAngles idPlayerView::AngleOffset() const {
 idPlayerView::SingleView
 ==================
 */
+
 void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) {
 
 	// normal rendering
@@ -462,13 +463,18 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
 		return;
 	}
 
+	renderSystem->DirectFrameBufferStart();
+
     if ( player->objectiveSystemOpen ) {
         player->objectiveSystem->Redraw( gameLocal.time );
     } else {
         player->DrawHUD(hud);
     }
 
-    //renderSystem->CaptureRenderToImage( "_hudImage" );
+    renderSystem->CaptureRenderToImage( "_hudImage" );
+
+	renderSystem->DirectFrameBufferEnd();
+
 
     // place the sound origin for the player
     gameSoundWorld->PlaceListener( view->vieworg, view->viewaxis, player->entityNumber + 1, gameLocal.time, hud ? hud->State().GetString( "location" ) : "Undefined" );

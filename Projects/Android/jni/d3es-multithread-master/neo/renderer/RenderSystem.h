@@ -229,6 +229,9 @@ public:
 	// texture filter / mipmapping / repeat won't be modified by the upload
 	// returns false if the image wasn't found
 	virtual bool			UploadImage( const char *imageName, const byte *data, int width, int height ) = 0;
+
+	virtual void 			DirectFrameBufferStart() = 0;
+	virtual void 			DirectFrameBufferEnd() = 0;
 };
 
 extern idRenderSystem *			renderSystem;

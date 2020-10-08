@@ -1738,6 +1738,8 @@ void idRenderSystemLocal::InitOpenGL( void ) {
 			common->Printf( "glGetError() = 0x%x\n", err );
 		}
 	}
+
+	R_InitFrameBuffer();
 }
 
 /*

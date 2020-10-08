@@ -491,7 +491,9 @@ typedef enum {
 	RC_DRAW_VIEW,
 	RC_SET_BUFFER,
 	RC_COPY_RENDER,
-	RC_SWAP_BUFFERS		// can't just assume swap at end of list because
+	RC_SWAP_BUFFERS,		// can't just assume swap at end of list because
+	RC_DIRECT_BUFFER_START,
+	RC_DIRECT_BUFFER_END
 	// of forced list submission before syncs
 } renderCommand_t;
 
@@ -715,6 +717,8 @@ public:
 	virtual void			UnCrop();
 	virtual bool			UploadImage( const char *imageName, const byte *data, int width, int height );
 
+	virtual void 			DirectFrameBufferStart();
+	virtual void 			DirectFrameBufferEnd();
 public:
 	// internal functions
 	idRenderSystemLocal( void );
@@ -1208,6 +1212,11 @@ void R_FreeEntityDefOverlay( idRenderEntityLocal *def );
 void R_FreeEntityDefFadedDecals( idRenderEntityLocal *def, int time );
 
 void R_CreateLightDefFogPortals( idRenderLightLocal *ldef );
+
+// Framebuffer stuff
+void R_InitFrameBuffer();
+void R_FrameBufferStart();
+void R_FrameBufferEnd();
 
 /*
 ============================================================
