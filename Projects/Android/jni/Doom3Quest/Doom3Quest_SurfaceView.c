@@ -1365,14 +1365,14 @@ void VR_Init()
 
 long renderThreadCPUTime = 0;
 
-void Doom3Quest_prepareEyeBuffer(int eye )
+void Doom3Quest_prepareEyeBuffer( )
 {
-    renderThreadCPUTime = GetTimeInMilliSeconds();
-
 	ovrRenderer *renderer = Doom3Quest_useScreenLayer() ? &gAppState.Scene.CylinderRenderer : &gAppState.Renderer;
 
 	ovrFramebuffer *frameBuffer = &(renderer->FrameBuffer);
 	ovrFramebuffer_SetCurrent(frameBuffer);
+
+	renderThreadCPUTime = GetTimeInMilliSeconds();
 
 	GL(glEnable(GL_SCISSOR_TEST));
 	GL(glDepthMask(GL_TRUE));

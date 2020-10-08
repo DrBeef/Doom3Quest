@@ -139,10 +139,10 @@ idItem::UpdateRenderEntity
 */
 bool idItem::UpdateRenderEntity( renderEntity_s *renderEntity, const renderView_t *renderView ) const {
 
-/*	if ( lastRenderViewTime == renderView->time ) {
+	if ( lastRenderViewTime == renderView->time ) {
 		return false;
 	}
-*/
+
 	lastRenderViewTime = renderView->time;
 
 	// check for glow highlighting if near the center of the view

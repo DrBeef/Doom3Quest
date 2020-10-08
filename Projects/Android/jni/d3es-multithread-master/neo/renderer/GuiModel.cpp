@@ -193,7 +193,7 @@ void idGuiModel::EmitSurface( guiModelSurface_t *surf, float modelMatrix[16], fl
 
 	viewEntity_t *guiSpace = (viewEntity_t *)R_ClearedFrameAlloc( sizeof( *guiSpace ) );
 	memcpy( guiSpace->modelMatrix, modelMatrix, sizeof( guiSpace->modelMatrix ) );
-	memcpy( guiSpace->modelViewMatrix, modelViewMatrix, sizeof( guiSpace->modelViewMatrix ) );
+	memcpy(guiSpace->viewMatrix, modelViewMatrix, sizeof( guiSpace->viewMatrix ) );
 	guiSpace->weaponDepthHack = depthHack;
 
 	// add the surface, which might recursively create another gui
@@ -209,13 +209,13 @@ void idGuiModel::EmitToCurrentView( float modelMatrix[16], bool depthHack ) {
 	float	modelViewMatrix[48];
 
 	//Left Eye
-	myGlMultMatrix( modelMatrix, tr.viewDef->worldSpace.eyeModelViewMatrix[0],
+	myGlMultMatrix( modelMatrix, tr.viewDef->worldSpace.eyeViewMatrix[0],
 					modelViewMatrix );
 	//Right Eye
-	myGlMultMatrix( modelMatrix, tr.viewDef->worldSpace.eyeModelViewMatrix[1],
+	myGlMultMatrix( modelMatrix, tr.viewDef->worldSpace.eyeViewMatrix[1],
 					modelViewMatrix + 16);
 	//Center Eye
-	myGlMultMatrix( modelMatrix, tr.viewDef->worldSpace.eyeModelViewMatrix[2],
+	myGlMultMatrix( modelMatrix, tr.viewDef->worldSpace.eyeViewMatrix[2],
 					modelViewMatrix + 32);
 
 	for ( int i = 0 ; i < surfaces.Num() ; i++ ) {
@@ -281,11 +281,21 @@ void idGuiModel::EmitFullScreen( void ) {
 	viewDef->projectionMatrix[15] = 1.0f;
 
 	for (int i = 0; i < 3; ++i) {
-		viewDef->worldSpace.eyeModelViewMatrix[i][0] = 1.0f;
-		viewDef->worldSpace.eyeModelViewMatrix[i][5] = 1.0f;
-		viewDef->worldSpace.eyeModelViewMatrix[i][10] = 1.0f;
-		viewDef->worldSpace.eyeModelViewMatrix[i][15] = 1.0f;
+		viewDef->worldSpace.eyeViewMatrix[i][0] = 1.0f;
+		viewDef->worldSpace.eyeViewMatrix[i][5] = 1.0f;
+		viewDef->worldSpace.eyeViewMatrix[i][10] = 1.0f;
+		viewDef->worldSpace.eyeViewMatrix[i][15] = 1.0f;
 	}
+
+	viewDef->worldSpace.viewMatrix[0] = 1.0f;
+	viewDef->worldSpace.viewMatrix[5] = 1.0f;
+	viewDef->worldSpace.viewMatrix[10] = 1.0f;
+	viewDef->worldSpace.viewMatrix[15] = 1.0f;
+
+	viewDef->worldSpace.modelMatrix[0] = 1.0f;
+	viewDef->worldSpace.modelMatrix[5] = 1.0f;
+	viewDef->worldSpace.modelMatrix[10] = 1.0f;
+	viewDef->worldSpace.modelMatrix[15] = 1.0f;
 
 	viewDef->maxDrawSurfs = surfaces.Num();
 	viewDef->drawSurfs = (drawSurf_t **)R_FrameAlloc( viewDef->maxDrawSurfs * sizeof( viewDef->drawSurfs[0] ) );
@@ -296,7 +306,7 @@ void idGuiModel::EmitFullScreen( void ) {
 
 	// add the surfaces to this view
 	for ( int i = 0 ; i < surfaces.Num() ; i++ ) {
-		EmitSurface( &surfaces[i], viewDef->worldSpace.modelMatrix, viewDef->worldSpace.modelViewMatrix, false );
+		EmitSurface(&surfaces[i], viewDef->worldSpace.modelMatrix, viewDef->worldSpace.viewMatrix, false );
 	}
 
 	tr.viewDef = oldViewDef;

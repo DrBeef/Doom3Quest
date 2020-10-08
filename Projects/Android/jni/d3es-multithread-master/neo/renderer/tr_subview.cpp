@@ -125,7 +125,7 @@ bool R_PreciseCullSurface( const drawSurf_t *drawSurf, idBounds &ndcBounds ) {
 		int j;
 		unsigned int pointFlags;
 
-		R_TransformModelToClip( tri->verts[i].xyz, drawSurf->space->eyeModelViewMatrix[2],
+		R_TransformModelToClip( tri->verts[i].xyz, drawSurf->space->eyeViewMatrix[2],
 		                        tr.viewDef->projectionMatrix, eye, clip );
 
 		pointFlags = 0;

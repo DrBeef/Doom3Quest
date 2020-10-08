@@ -737,10 +737,10 @@ void R_GlobalToNormalizedDeviceCoordinates( const idVec3 &global, idVec3 &ndc ) 
 
 		for ( i = 0 ; i < 4 ; i ++ ) {
 			view[i] =
-			    global[0] * tr.primaryView->worldSpace.eyeModelViewMatrix[2][ i + 0 * 4 ] +
-			    global[1] * tr.primaryView->worldSpace.eyeModelViewMatrix[2][ i + 1 * 4 ] +
-			    global[2] * tr.primaryView->worldSpace.eyeModelViewMatrix[2][ i + 2 * 4 ] +
-			    tr.primaryView->worldSpace.eyeModelViewMatrix[2][ i + 3 * 4 ];
+			    global[0] * tr.primaryView->worldSpace.eyeViewMatrix[2][i + 0 * 4 ] +
+			    global[1] * tr.primaryView->worldSpace.eyeViewMatrix[2][i + 1 * 4 ] +
+			    global[2] * tr.primaryView->worldSpace.eyeViewMatrix[2][i + 2 * 4 ] +
+                tr.primaryView->worldSpace.eyeViewMatrix[2][i + 3 * 4 ];
 		}
 
 		for ( i = 0 ; i < 4 ; i ++ ) {
@@ -755,10 +755,10 @@ void R_GlobalToNormalizedDeviceCoordinates( const idVec3 &global, idVec3 &ndc ) 
 
 		for ( i = 0 ; i < 4 ; i ++ ) {
 			view[i] =
-			    global[0] * tr.viewDef->worldSpace.eyeModelViewMatrix[2][ i + 0 * 4 ] +
-			    global[1] * tr.viewDef->worldSpace.eyeModelViewMatrix[2][ i + 1 * 4 ] +
-			    global[2] * tr.viewDef->worldSpace.eyeModelViewMatrix[2][ i + 2 * 4 ] +
-			    tr.viewDef->worldSpace.eyeModelViewMatrix[2][ i + 3 * 4 ];
+			    global[0] * tr.viewDef->worldSpace.eyeViewMatrix[2][i + 0 * 4 ] +
+			    global[1] * tr.viewDef->worldSpace.eyeViewMatrix[2][i + 1 * 4 ] +
+			    global[2] * tr.viewDef->worldSpace.eyeViewMatrix[2][i + 2 * 4 ] +
+                tr.viewDef->worldSpace.eyeViewMatrix[2][i + 3 * 4 ];
 		}
 
 
@@ -913,7 +913,7 @@ void R_SetViewMatrix( viewDef_t *viewDef ) {
 
 			// convert from our coordinate system (looking down X)
 			// to OpenGL's coordinate system (looking down -Z)
-			myGlMultMatrix(viewerMatrix, s_flipMatrix, world->eyeModelViewMatrix[eye]);
+			myGlMultMatrix(viewerMatrix, s_flipMatrix, world->eyeViewMatrix[eye]);
 		}
 	}
 }

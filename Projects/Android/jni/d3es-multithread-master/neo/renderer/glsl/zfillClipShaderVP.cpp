@@ -34,8 +34,10 @@ in vec4 attr_TexCoord;
 // Uniforms
 uniform ShaderMatrices
 {
-    uniform highp mat4 modelViewProjectionMatrix[NUM_VIEWS];
+    uniform highp mat4 viewMatrix[NUM_VIEWS];
 } u_shaderMatrices;
+uniform highp mat4 u_modelMatrix;
+uniform highp mat4 u_projectionMatrix;
 uniform mat4 u_textureMatrix;
 uniform vec4 u_clipPlane;
         
@@ -50,6 +52,6 @@ void main()
 
   var_TexClip = vec2( dot( u_clipPlane, attr_Vertex), 0.5 );
 
-  gl_Position = u_shaderMatrices.modelViewProjectionMatrix[gl_ViewID_OVR] * attr_Vertex;
+  gl_Position = u_projectionMatrix * (u_shaderMatrices.viewMatrix[gl_ViewID_OVR] * (u_modelMatrix * attr_Vertex));
 }
 )";

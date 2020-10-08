@@ -468,7 +468,7 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
         player->DrawHUD(hud);
     }
 
-    renderSystem->CaptureRenderToImage( "_hudImage" );
+    //renderSystem->CaptureRenderToImage( "_hudImage" );
 
     // place the sound origin for the player
     gameSoundWorld->PlaceListener( view->vieworg, view->viewaxis, player->entityNumber + 1, gameLocal.time, hud ? hud->State().GetString( "location" ) : "Undefined" );
@@ -727,32 +727,19 @@ idPlayerView::RenderPlayerView
 void idPlayerView::RenderPlayerView( idUserInterface *hud ) {
 	const renderView_t *view = player->GetRenderView();
 
-	{
-        renderView_t *eyeView = view ? new renderView_t(*view) : NULL;
-
-/*	    if (eyeView &&
-	        !game->InCinematic())
-	    {
-			eyeView->vieworg += (vr_eye.GetInteger() == 0 ? 1.0f : -1.0f) * eyeView->viewaxis[1] *
-					(vr_ipd.GetFloat() / 2.0f) * vr_worldscale.GetFloat();
-        }*/
-
 		if (g_skipViewEffects.GetBool()) {
-			SingleView(hud, eyeView);
+		SingleView( hud, view );
 		} else {
 			if (player->GetInfluenceMaterial() || player->GetInfluenceEntity()) {
-				InfluenceVision(hud, eyeView);
+			InfluenceVision( hud, view );
 			} else if (gameLocal.time < dvFinishTime) {
-				DoubleVision(hud, eyeView, dvFinishTime - gameLocal.time);
+			DoubleVision( hud, view, dvFinishTime - gameLocal.time );
 			} else if (player->PowerUpActive(BERSERK)) {
-				BerserkVision(hud, eyeView);
+			BerserkVision( hud, view );
 			} else {
-				SingleView(hud, eyeView);
+			SingleView( hud, view );
 			}
 			ScreenFade();
-		}
-
-        delete eyeView;
 	}
 
 	if ( net_clientLagOMeter.GetBool() && lagoMaterial && gameLocal.isClient ) {

@@ -34,8 +34,10 @@ in lowp vec4 attr_Color;
 // Uniforms
 uniform ShaderMatrices
 {
-    uniform highp mat4 modelViewProjectionMatrix[NUM_VIEWS];
+    uniform highp mat4 viewMatrix[NUM_VIEWS];
 } u_shaderMatrices;
+uniform highp mat4 u_modelMatrix;
+uniform highp mat4 u_projectionMatrix;
 uniform mat4 u_textureMatrix;
 uniform lowp float u_colorAdd;
 uniform lowp float u_colorModulate;
@@ -56,6 +58,6 @@ void main()
     var_Color = (attr_Color * u_colorModulate) + vec4(u_colorAdd);
   }
     
-  gl_Position = u_shaderMatrices.modelViewProjectionMatrix[gl_ViewID_OVR] * attr_Vertex;
+  gl_Position = u_projectionMatrix * (u_shaderMatrices.viewMatrix[gl_ViewID_OVR] * (u_modelMatrix * attr_Vertex));
 }
 )";

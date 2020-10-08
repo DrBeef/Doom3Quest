@@ -260,8 +260,8 @@ void R_LockSurfaceScene( viewDef_t *parms ) {
     for (vModel = tr.lockSurfacesCmd.viewDef->viewEntitys; vModel; vModel = vModel->next) {
     	for (int eye = 0; eye < 3; ++eye) {
 			myGlMultMatrix(vModel->modelMatrix,
-						   tr.lockSurfacesCmd.viewDef->worldSpace.eyeModelViewMatrix[eye],
-						   vModel->eyeModelViewMatrix[eye]);
+						   tr.lockSurfacesCmd.viewDef->worldSpace.eyeViewMatrix[eye],
+						   vModel->eyeViewMatrix[eye]);
 		}
     }
 

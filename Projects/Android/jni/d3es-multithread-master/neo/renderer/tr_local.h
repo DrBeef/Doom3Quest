@@ -372,9 +372,9 @@ typedef struct viewEntity_s {
 
 	union {
 		// local coords to left/right/center eye coords
-		float eyeModelViewMatrix[3][16];
+		float eyeViewMatrix[3][16];
 		// Can also be treated as a float[48]
-		float modelViewMatrix[48];
+		float viewMatrix[48];
 	};
 } viewEntity_t;
 
@@ -1259,8 +1259,10 @@ typedef struct shaderProgram_s {
 	GLint		alphaTest;
 	GLint		specularExponent;
 
-//	GLint		modelViewProjectionMatrix;
-	//New for multiview
+	GLint		modelMatrix;
+	GLint		projectionMatrix;
+	//New for multiview - The view matrix uniform
+	bool		shaderMatricesBufferSet;
 	GLuint		shaderMatricesBuffer;
 	GLuint		shaderMatricesBinding;
 

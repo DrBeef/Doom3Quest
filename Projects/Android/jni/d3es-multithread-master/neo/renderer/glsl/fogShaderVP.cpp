@@ -33,8 +33,10 @@ in highp vec4 attr_Vertex;      // input Vertex Coordinates
 // Uniforms
 uniform ShaderMatrices
 {
-    uniform highp mat4 modelViewProjectionMatrix[NUM_VIEWS];
+    uniform highp mat4 viewMatrix[NUM_VIEWS];
 } u_shaderMatrices;
+uniform highp mat4 u_modelMatrix;
+uniform highp mat4 u_projectionMatrix;
 uniform mat4 u_fogMatrix;        // fogPlanes 0, 1, 3 (CATION: not 2!), 2
   
 // Out
@@ -44,7 +46,7 @@ out vec2 var_TexFogEnter;    // output FogEnter TexCoord
   
 void main()
 {
-  gl_Position = u_shaderMatrices.modelViewProjectionMatrix[gl_ViewID_OVR] * attr_Vertex;
+  gl_Position = u_projectionMatrix * (u_shaderMatrices.viewMatrix[gl_ViewID_OVR] * (u_modelMatrix * attr_Vertex));
 
   // What will be computed:
   //

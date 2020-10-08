@@ -170,8 +170,7 @@ bool idSmokeParticles::EmitSmoke( const idDeclParticle *smoke, const int systemS
 		return false;
 	}
 
-	if ( !gameLocal.isNewFrame )
-	{
+	if ( !gameLocal.isNewFrame ) {
 		return false;
 	}
 
@@ -298,11 +297,10 @@ bool idSmokeParticles::UpdateRenderEntity( renderEntity_s *renderEntity, const r
 		return false;
 	}
 
-	// Need to regenerate smoke particles for each eye - commented this out or you only get smoke in the left eye!
-/*	if ( renderView->time == currentParticleTime && !renderView->forceUpdate  && !renderView->forceSmokeUpdate ) {
+	// don't regenerate it if it is current
+	if ( renderView->time == currentParticleTime && !renderView->forceUpdate ) {
 		return false;
-	}*/
-
+	}
 	currentParticleTime = renderView->time;
 
 	particleGen_t g;
