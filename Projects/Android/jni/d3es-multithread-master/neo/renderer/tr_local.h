@@ -1269,11 +1269,10 @@ typedef struct shaderProgram_s {
 	GLint		specularExponent;
 
 	GLint		modelMatrix;
-	GLint		projectionMatrix;
-	//New for multiview - The view matrix uniform
-	bool		shaderMatricesBufferSet;
-	GLuint		shaderMatricesBuffer;
-	GLuint		shaderMatricesBinding;
+
+	//New for multiview - The view and projection matrix uniforms
+	GLuint		projectionMatrixBinding;
+	GLuint		viewMatricesBinding;
 
 	GLint		modelViewMatrix;
 	GLint		textureMatrix;

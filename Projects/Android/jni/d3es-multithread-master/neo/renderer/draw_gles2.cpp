@@ -35,6 +35,14 @@ shaderProgram_t skyboxCubeShader;
 shaderProgram_t reflectionCubeShader;
 shaderProgram_t stencilShadowShader;
 
+#define ORTHO_PROJECTION			0
+#define NORMAL_PROJECTION			1
+#define WEAPON_PROJECTION			2
+#define DEPTH_HACK_PROJECTION		3
+#define NUM_DEPTH_HACK_PROJECTIONS  20
+GLuint		viewMatricesBuffer;
+GLuint		projectionMatricesBuffer[DEPTH_HACK_PROJECTION + NUM_DEPTH_HACK_PROJECTIONS];
+
 #define ATTR_VERTEX     0   // Don't change this, as WebGL require the vertex attrib 0 to be always bound
 #define ATTR_COLOR      1
 #define ATTR_TEXCOORD   2
@@ -94,26 +102,53 @@ static void GL_UniformMatrix4fv(GLint location, const GLfloat* value) {
 
 /*
 ====================
-GL_UniformMatrix4fv
+GL_ViewMatricesUniformBuffer
 ====================
 */
-static void GL_UniformBuffer(GLint location, const float value[32]) {
+static void GL_ViewMatricesUniformBuffer(const float value[32]) {
 
 	// Update the scene matrices.
-	glBindBuffer(GL_UNIFORM_BUFFER, *( GLint * )((char*) backEnd.glState.currentProgram + location));
-	float* shaderMatrices = (float*)glMapBufferRange(
+	glBindBuffer(GL_UNIFORM_BUFFER, viewMatricesBuffer);
+	float* viewMatrices = (float*)glMapBufferRange(
 			GL_UNIFORM_BUFFER,
 			0,
-			32 * sizeof(float),
+			2 * 16 * sizeof(float),
 			GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
 
-	if (shaderMatrices == NULL)
+	if (viewMatrices == NULL)
 	{
-		common->Error("Shader Matrices Uniform Buffer is NULL");
+		common->Error("View Matrices Uniform Buffer is NULL");
 		return;
 	}
 
-	memcpy((char*)shaderMatrices, value, 32 * sizeof(float));
+	memcpy((char*)viewMatrices, value, 32 * sizeof(float));
+
+	glUnmapBuffer(GL_UNIFORM_BUFFER);
+	qglBindBuffer(GL_UNIFORM_BUFFER, 0);
+}
+
+/*
+====================
+GL_ProjectionMatricesUniformBuffer
+====================
+*/
+static void GL_ProjectionMatricesUniformBuffer(GLint projectionMatricesBuffer, const float value[16]) {
+
+	// Update the scene matrices.
+	glBindBuffer(GL_UNIFORM_BUFFER, projectionMatricesBuffer);
+	float* projectionMatrix = (float*)glMapBufferRange(
+			GL_UNIFORM_BUFFER,
+			0,
+			16 * sizeof(float),
+			GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+
+	if (projectionMatrix == NULL)
+	{
+		common->Error("Projection Matrices Uniform Buffer is NULL");
+		return;
+	}
+
+	memcpy((char*)projectionMatrix, value, 16 * sizeof(float));
 
 	glUnmapBuffer(GL_UNIFORM_BUFFER);
 	qglBindBuffer(GL_UNIFORM_BUFFER, 0);
@@ -278,28 +313,24 @@ static void RB_GLSL_GetUniformLocations(shaderProgram_t* shader) {
 	shader->alphaTest = qglGetUniformLocation(shader->program, "u_alphaTest");
 	shader->specularExponent = qglGetUniformLocation(shader->program, "u_specularExponent");
 
-	shader->projectionMatrix = qglGetUniformLocation(shader->program, "u_projectionMatrix");
 	shader->modelMatrix = qglGetUniformLocation(shader->program, "u_modelMatrix");
 
-	//Shader Matrices for the View Matrix
-	GLuint shaderMatricesUniformLocation = glGetUniformBlockIndex(shader->program, "ShaderMatrices");
+	//Shader Matrices for the View Matrices
+	GLuint viewMatricesUniformLocation = glGetUniformBlockIndex(shader->program, "ViewMatrices");
 	int numBufferBindings = 0;
-	shader->shaderMatricesBinding = numBufferBindings++;
+	shader->viewMatricesBinding = numBufferBindings++;
 	glUniformBlockBinding(
 			shader->program,
-			shaderMatricesUniformLocation,
-			shader->shaderMatricesBinding);
+			viewMatricesUniformLocation,
+			shader->viewMatricesBinding);
 
-	//Create the buffer
-	qglGenBuffers(1, &shader->shaderMatricesBuffer);
-	glBindBuffer(GL_UNIFORM_BUFFER, shader->shaderMatricesBuffer);
-	glBufferData(
-			GL_UNIFORM_BUFFER,
-			2 * 16 * sizeof(float),
-			NULL,
-			GL_STATIC_DRAW);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
+	//Shader Matrices for the Projection Matrix
+	GLuint projectionMatrixUniformLocation = glGetUniformBlockIndex(shader->program, "ProjectionMatrix");
+	shader->projectionMatrixBinding = numBufferBindings++;
+	glUniformBlockBinding(
+			shader->program,
+			projectionMatrixUniformLocation,
+			shader->projectionMatrixBinding);
 
 	shader->modelViewMatrix = qglGetUniformLocation(shader->program, "u_modelViewMatrix");
 	shader->textureMatrix = qglGetUniformLocation(shader->program, "u_textureMatrix");
@@ -358,7 +389,30 @@ RB_GLSL_InitShaders
 =================
 */
 static bool RB_GLSL_InitShaders(void) {
-	// main Interaction shader
+
+	//Generate buffer for 2 * view matrices
+	qglGenBuffers(1, &viewMatricesBuffer);
+    glBindBuffer(GL_UNIFORM_BUFFER, viewMatricesBuffer);
+    glBufferData(
+            GL_UNIFORM_BUFFER,
+            2 * 16 * sizeof(float),
+            NULL,
+            GL_STATIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    for (int i = 0; i < (NUM_DEPTH_HACK_PROJECTIONS+DEPTH_HACK_PROJECTION); ++i)
+	{
+		qglGenBuffers(1, &projectionMatricesBuffer[i]);
+		glBindBuffer(GL_UNIFORM_BUFFER, projectionMatricesBuffer[i]);
+		glBufferData(
+				GL_UNIFORM_BUFFER,
+				16 * sizeof(float),
+				NULL,
+				GL_STATIC_DRAW);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	}
+
+    // main Interaction shader
 	common->Printf("Loading main interaction shader\n");
 	memset(&interactionShader, 0, sizeof(shaderProgram_t));
 
@@ -528,20 +582,50 @@ RB_ComputeProjection
 Compute the required projection matrix depth hacks
 =================
 */
-void RB_ComputeProjection(const drawSurf_t * const surf, float *projection) {
+void RB_ComputeProjection(bool weaponDepthHack, float modelDepthHack, float *projection) {
 	// Get the projection matrix
 	float localProjectionMatrix[16];
 	memcpy(localProjectionMatrix, backEnd.viewDef->projectionMatrix, sizeof(localProjectionMatrix));
 
 	// Quick and dirty hacks on the projection matrix
-	if ( surf->space->weaponDepthHack ) {
+	if ( weaponDepthHack ) {
 		localProjectionMatrix[14] = backEnd.viewDef->projectionMatrix[14] * 0.25;
-	}
-	if ( surf->space->modelDepthHack != 0.0 ) {
-		localProjectionMatrix[14] = backEnd.viewDef->projectionMatrix[14] - surf->space->modelDepthHack;
+	} else if ( modelDepthHack != 0.0 ) {
+		localProjectionMatrix[14] = backEnd.viewDef->projectionMatrix[14] - modelDepthHack;
 	}
 
 	memcpy(projection, localProjectionMatrix, sizeof(localProjectionMatrix));
+}
+
+/*
+=================
+RB_CalculateProjection
+
+Compute which projection matrix buffer should be used
+=================
+*/
+
+GLuint RB_CalculateProjection(const drawSurf_t * const surf) {
+	GLuint result = NORMAL_PROJECTION;
+	if ( surf->space->weaponDepthHack ) {
+		result = WEAPON_PROJECTION;
+	} else if ( surf->space->modelDepthHack != 0.0 ) {
+		result = DEPTH_HACK_PROJECTION + (GLuint)(surf->space->modelDepthHack * (float)NUM_DEPTH_HACK_PROJECTIONS);
+	} else if (
+	        //Is this set up as an orthographic projection?
+            backEnd.viewDef->projectionMatrix[0] == 2.0f / 640.0f &&
+			backEnd.viewDef->projectionMatrix[5] == -2.0f / 480.0f &&
+			backEnd.viewDef->projectionMatrix[10] == -2.0f / 1.0f &&
+			backEnd.viewDef->projectionMatrix[12] == -1.0f &&
+			backEnd.viewDef->projectionMatrix[13] == 1.0f &&
+			backEnd.viewDef->projectionMatrix[14] == -1.0f &&
+			backEnd.viewDef->projectionMatrix[15] == 1.0f
+			)
+	{
+		result = ORTHO_PROJECTION;
+	}
+
+	return result;
 }
 
 /*
@@ -802,8 +886,8 @@ static void RB_GLSL_CreateDrawInteractions(const drawSurf_t* surf, const viewLig
 
 	glBindBufferBase(
 		GL_UNIFORM_BUFFER,
-		backEnd.glState.currentProgram->shaderMatricesBinding,
-		backEnd.glState.currentProgram->shaderMatricesBuffer);
+		backEnd.glState.currentProgram->viewMatricesBinding,
+		viewMatricesBuffer);
 
 
 	// Setup attributes arrays
@@ -821,17 +905,12 @@ static void RB_GLSL_CreateDrawInteractions(const drawSurf_t* surf, const viewLig
 		// perform setup here that will not change over multiple interaction passes
 
 		if ( surf->space != backEnd.currentSpace ) {
-			float projection[16];
-			RB_ComputeProjection(surf, projection);
-			GL_UniformMatrix4fv(offsetof(shaderProgram_t, projectionMatrix), projection);
 			GL_UniformMatrix4fv(offsetof(shaderProgram_t, modelMatrix), surf->space->modelMatrix);
 
-			if (!backEnd.glState.currentProgram->shaderMatricesBufferSet)
-			{
-				// We can set the uniform now as it shader is already bound
-				GL_UniformBuffer(offsetof(shaderProgram_t, shaderMatricesBuffer), backEnd.viewDef->worldSpace.viewMatrix);
-				backEnd.glState.currentProgram->shaderMatricesBufferSet = true;
-			}
+			glBindBufferBase(
+					GL_UNIFORM_BUFFER,
+					backEnd.glState.currentProgram->projectionMatrixBinding,
+					projectionMatricesBuffer[RB_CalculateProjection(surf)]);
 		}
 
 		// Hack Depth Range if necessary
@@ -989,18 +1068,12 @@ void RB_GLSL_RenderDrawSurfChainWithFunction(const drawSurf_t* drawSurfs,
 
 		// Change the MVP matrix if needed
 		if ( drawSurf->space != backEnd.currentSpace ) {
-			float projection[16];
-			RB_ComputeProjection(drawSurf, projection);
-			GL_UniformMatrix4fv(offsetof(shaderProgram_t, projectionMatrix), projection);
 			GL_UniformMatrix4fv(offsetof(shaderProgram_t, modelMatrix), drawSurf->space->modelMatrix);
 
-			// We can set the uniform now, as the shader is already bound
-			if (!backEnd.glState.currentProgram->shaderMatricesBufferSet)
-			{
-				// We can set the uniform now as it shader is already bound
-				GL_UniformBuffer(offsetof(shaderProgram_t, shaderMatricesBuffer), backEnd.viewDef->worldSpace.viewMatrix);
-				backEnd.glState.currentProgram->shaderMatricesBufferSet = true;
-			}
+			glBindBufferBase(
+					GL_UNIFORM_BUFFER,
+					backEnd.glState.currentProgram->projectionMatrixBinding,
+					projectionMatricesBuffer[RB_CalculateProjection(drawSurf)]);
 		}
 
 		// Hack Depth Range if necessary
@@ -1073,8 +1146,8 @@ void RB_GLSL_StencilShadowPass(const drawSurf_t* drawSurfs, const viewLight_t* v
 
 	glBindBufferBase(
             GL_UNIFORM_BUFFER,
-			backEnd.glState.currentProgram->shaderMatricesBinding,
-			backEnd.glState.currentProgram->shaderMatricesBuffer);
+			backEnd.glState.currentProgram->viewMatricesBinding,
+			viewMatricesBuffer);
 
 	// Setup attributes arrays
 	// Vertex attribute is always enabled
@@ -1268,8 +1341,8 @@ void RB_GLSL_FogPass(const drawSurf_t* drawSurfs, const drawSurf_t* drawSurfs2, 
 
 	glBindBufferBase(
 			GL_UNIFORM_BUFFER,
-			backEnd.glState.currentProgram->shaderMatricesBinding,
-			backEnd.glState.currentProgram->shaderMatricesBuffer);
+			backEnd.glState.currentProgram->viewMatricesBinding,
+			viewMatricesBuffer);
 
 	// Setup attributes arrays
 	// Vertex attribute is always enabled
@@ -1636,8 +1709,8 @@ void RB_GLSL_FillDepthBuffer(drawSurf_t** drawSurfs, int numDrawSurfs) {
 
 	glBindBufferBase(
 			GL_UNIFORM_BUFFER,
-			backEnd.glState.currentProgram->shaderMatricesBinding,
-			backEnd.glState.currentProgram->shaderMatricesBuffer);
+			backEnd.glState.currentProgram->viewMatricesBinding,
+			viewMatricesBuffer);
 
 	// Setup attributes arrays
 	// Vertex attribute is always enabled
@@ -1679,17 +1752,12 @@ void RB_GLSL_FillDepthBuffer(drawSurf_t** drawSurfs, int numDrawSurfs) {
 
 		// Change the MVP matrix if needed
 		if ( drawSurf->space != backEnd.currentSpace ) {
-			float projection[16];
-			RB_ComputeProjection(drawSurf, projection);
-			GL_UniformMatrix4fv(offsetof(shaderProgram_t, projectionMatrix), projection);
 			GL_UniformMatrix4fv(offsetof(shaderProgram_t, modelMatrix), drawSurf->space->modelMatrix);
 
-			if (!backEnd.glState.currentProgram->shaderMatricesBufferSet)
-			{
-				// We can set the uniform now as it shader is already bound
-				GL_UniformBuffer(offsetof(shaderProgram_t, shaderMatricesBuffer), backEnd.viewDef->worldSpace.viewMatrix);
-				backEnd.glState.currentProgram->shaderMatricesBufferSet = true;
-			}
+			glBindBufferBase(
+					GL_UNIFORM_BUFFER,
+					backEnd.glState.currentProgram->projectionMatrixBinding,
+					projectionMatricesBuffer[RB_CalculateProjection(drawSurf)]);
 		}
 
 		// Hack Depth Range if necessary
@@ -1749,7 +1817,7 @@ RB_GLSL_T_RenderShaderPasses
 This is also called for the generated 2D rendering
 ==================
 */
-void RB_GLSL_T_RenderShaderPasses(const drawSurf_t* surf, const float projection[16]) {
+void RB_GLSL_T_RenderShaderPasses(const drawSurf_t* surf, GLuint projection) {
 
 	// global constants
 	static const GLfloat zero[1] = { 0 };
@@ -1910,8 +1978,8 @@ void RB_GLSL_T_RenderShaderPasses(const drawSurf_t* surf, const float projection
 
 				glBindBufferBase(
 						GL_UNIFORM_BUFFER,
-						backEnd.glState.currentProgram->shaderMatricesBinding,
-						backEnd.glState.currentProgram->shaderMatricesBuffer);
+						backEnd.glState.currentProgram->viewMatricesBinding,
+						viewMatricesBuffer);
 
 				// Possible that normals should be transformed by a normal matrix in the shader ? I am not sure...
 
@@ -1931,8 +1999,8 @@ void RB_GLSL_T_RenderShaderPasses(const drawSurf_t* surf, const float projection
 
 				glBindBufferBase(
 						GL_UNIFORM_BUFFER,
-						backEnd.glState.currentProgram->shaderMatricesBinding,
-						backEnd.glState.currentProgram->shaderMatricesBuffer);
+						backEnd.glState.currentProgram->viewMatricesBinding,
+						viewMatricesBuffer);
 
 				// Disable TexCoord attribute
 				GL_DisableVertexAttribArray(ATTR_TEXCOORD);
@@ -1952,8 +2020,8 @@ void RB_GLSL_T_RenderShaderPasses(const drawSurf_t* surf, const float projection
 
 				glBindBufferBase(
 						GL_UNIFORM_BUFFER,
-						backEnd.glState.currentProgram->shaderMatricesBinding,
-						backEnd.glState.currentProgram->shaderMatricesBuffer);
+						backEnd.glState.currentProgram->viewMatricesBinding,
+						viewMatricesBuffer);
 
 				// Disable TexCoord attribute
 				GL_DisableVertexAttribArray(ATTR_TEXCOORD);
@@ -1987,8 +2055,8 @@ void RB_GLSL_T_RenderShaderPasses(const drawSurf_t* surf, const float projection
 
 				glBindBufferBase(
 						GL_UNIFORM_BUFFER,
-						backEnd.glState.currentProgram->shaderMatricesBinding,
-						backEnd.glState.currentProgram->shaderMatricesBuffer);
+						backEnd.glState.currentProgram->viewMatricesBinding,
+						viewMatricesBuffer);
 
 				// NB: in original D3, if the surface had a bump map it would lead to the "Bumpy reflection cubemaping" shader being used.
 				// This is not implemented for now, we only do standard reflection cubemaping. Visual difference is really minor.
@@ -2011,8 +2079,8 @@ void RB_GLSL_T_RenderShaderPasses(const drawSurf_t* surf, const float projection
 
 				glBindBufferBase(
 						GL_UNIFORM_BUFFER,
-						backEnd.glState.currentProgram->shaderMatricesBinding,
-						backEnd.glState.currentProgram->shaderMatricesBuffer);
+						backEnd.glState.currentProgram->viewMatricesBinding,
+						viewMatricesBuffer);
 
 				// Setup the TexCoord pointer
 				GL_VertexAttribPointer(offsetof(shaderProgram_t, attr_TexCoord), 2, GL_FLOAT, false, sizeof(idDrawVert),
@@ -2047,15 +2115,13 @@ void RB_GLSL_T_RenderShaderPasses(const drawSurf_t* surf, const float projection
 
 				// MVP
 				if ( !bMVPSet[pStage->texture.texgen] ) {
-					GL_UniformMatrix4fv(offsetof(shaderProgram_t, projectionMatrix), projection);
 					GL_UniformMatrix4fv(offsetof(shaderProgram_t, modelMatrix), surf->space->modelMatrix);
 
-					if (!backEnd.glState.currentProgram->shaderMatricesBufferSet)
-					{
-						// We can set the uniform now as it shader is already bound
-						GL_UniformBuffer(offsetof(shaderProgram_t, shaderMatricesBuffer), backEnd.viewDef->worldSpace.viewMatrix);
-						backEnd.glState.currentProgram->shaderMatricesBufferSet = true;
-					}
+					glBindBufferBase(
+							GL_UNIFORM_BUFFER,
+							backEnd.glState.currentProgram->projectionMatrixBinding,
+                            projectionMatricesBuffer[projection]);
+
 					bMVPSet[pStage->texture.texgen] = true;
 				}
 			}
@@ -2231,7 +2297,7 @@ int RB_GLSL_DrawShaderPasses(drawSurf_t** drawSurfs, int numDrawSurfs) {
 	// For each surface loop
 	/////////////////////////
 
-	float projection[16];
+	GLuint projection = -1;
 	backEnd.currentSpace = NULL;
 
 	int i;
@@ -2260,7 +2326,7 @@ int RB_GLSL_DrawShaderPasses(drawSurf_t** drawSurfs, int numDrawSurfs) {
 
 		// Change the MVP matrix if needed
 		if ( drawSurfs[i]->space != backEnd.currentSpace ) {
-			RB_ComputeProjection(drawSurfs[i], projection);
+			projection = RB_CalculateProjection(drawSurfs[i]);
 			// We can't set the uniform now, as we still don't know which shader to use
 		}
 
@@ -2389,8 +2455,8 @@ void RB_GLSL_BlendLight(const drawSurf_t *drawSurfs, const drawSurf_t *drawSurfs
 
 	glBindBufferBase(
 			GL_UNIFORM_BUFFER,
-			backEnd.glState.currentProgram->shaderMatricesBinding,
-			backEnd.glState.currentProgram->shaderMatricesBuffer);
+			backEnd.glState.currentProgram->viewMatricesBinding,
+			viewMatricesBuffer);
 
 	// Texture 1 will get the falloff texture
 	GL_SelectTexture(1);
@@ -2542,19 +2608,37 @@ void RB_GLSL_PrepareShaders(void) {
 	// No shaders set by default
 	GL_UseProgram(NULL);
 
-	//Indicate that none have the view matrix set yet
-	interactionShader.shaderMatricesBufferSet = false;
-	interactionShader.shaderMatricesBufferSet = false;
-	interactionPhongShader.shaderMatricesBufferSet = false;
-	fogShader.shaderMatricesBufferSet = false;
-	blendLightShader.shaderMatricesBufferSet = false;
-	zfillShader.shaderMatricesBufferSet = false;
-	zfillClipShader.shaderMatricesBufferSet = false;
-	diffuseMapShader.shaderMatricesBufferSet = false;
-	diffuseCubeShader.shaderMatricesBufferSet = false;
-	skyboxCubeShader.shaderMatricesBufferSet = false;
-	reflectionCubeShader.shaderMatricesBufferSet = false;
-	stencilShadowShader.shaderMatricesBufferSet = false;
+	//Set up the buffers that won't change this frame
+	GL_ViewMatricesUniformBuffer(backEnd.viewDef->worldSpace.viewMatrix);
+
+	float orthoProjectionMatrix[16];
+	memset(orthoProjectionMatrix, 0, sizeof(orthoProjectionMatrix));
+	orthoProjectionMatrix[0] = 2.0f / 640.0f;
+	orthoProjectionMatrix[5] = -2.0f / 480.0f;
+	orthoProjectionMatrix[10] = -2.0f / 1.0f;
+	orthoProjectionMatrix[12] = -1.0f;
+	orthoProjectionMatrix[13] = 1.0f;
+	orthoProjectionMatrix[14] = -1.0f;
+	orthoProjectionMatrix[15] = 1.0f;
+
+	//0 is ortho projection matrix
+	GL_ProjectionMatricesUniformBuffer(projectionMatricesBuffer[ORTHO_PROJECTION], orthoProjectionMatrix);
+
+	//1 is unadjusted projection matrix
+	GL_ProjectionMatricesUniformBuffer(projectionMatricesBuffer[NORMAL_PROJECTION], backEnd.viewDef->projectionMatrix);
+
+	//2 is weapon depth hack projection
+	float projection[16];
+	RB_ComputeProjection(true, 0.0, projection);
+	GL_ProjectionMatricesUniformBuffer(projectionMatricesBuffer[WEAPON_PROJECTION], projection);
+
+	//3+ ore model depth hack projections
+	for (int i = 0; i < NUM_DEPTH_HACK_PROJECTIONS; ++i)
+	{
+		float depthHack = (float)(i+1) / float(NUM_DEPTH_HACK_PROJECTIONS);
+		RB_ComputeProjection(false, depthHack, projection);
+		GL_ProjectionMatricesUniformBuffer(projectionMatricesBuffer[DEPTH_HACK_PROJECTION + i], projection);
+	}
 
 	// Always enable the vertex, color and texcoord attributes arrays
 	GL_EnableVertexAttribArray(ATTR_VERTEX);

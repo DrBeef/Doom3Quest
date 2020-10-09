@@ -36,12 +36,15 @@ in vec3 attr_Bitangent;
 in vec3 attr_Normal;
   
 // Uniforms
-uniform ShaderMatrices
+layout(shared) uniform ViewMatrices
 {
-    uniform highp mat4 viewMatrix[NUM_VIEWS];
-} u_shaderMatrices;
+    uniform highp mat4 u_viewMatrices[NUM_VIEWS];
+};
+layout(shared) uniform ProjectionMatrix
+{
+    uniform highp mat4 u_projectionMatrix;
+};
 uniform highp mat4 u_modelMatrix;
-uniform highp mat4 u_projectionMatrix;
 uniform mat4 u_lightProjection;
 uniform lowp float u_colorModulate;
 uniform lowp float u_colorAdd;
@@ -94,6 +97,6 @@ void main()
     var_Color = (attr_Color * u_colorModulate) + vec4(u_colorAdd);
   }
   
-  gl_Position = u_projectionMatrix * (u_shaderMatrices.viewMatrix[gl_ViewID_OVR] * (u_modelMatrix * attr_Vertex));
+  gl_Position = u_projectionMatrix * (u_viewMatrices[gl_ViewID_OVR] * (u_modelMatrix * attr_Vertex));
 }
 )";
