@@ -172,6 +172,7 @@ public:
 
 	static idCVar		com_showAngles;
 	static idCVar		com_showTics;
+	static idCVar		com_skipTics;
 	static idCVar		com_minTics;
 	static idCVar		com_fixedTic;
 	static idCVar		com_showDemo;

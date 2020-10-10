@@ -39,8 +39,10 @@ shaderProgram_t stencilShadowShader;
 #define NORMAL_PROJECTION			1
 #define WEAPON_PROJECTION			2
 #define DEPTH_HACK_PROJECTION		3
-#define NUM_DEPTH_HACK_PROJECTIONS  20
+#define NUM_DEPTH_HACK_PROJECTIONS  50
 GLuint		viewMatricesBuffer;
+
+bool        projectionMatricesSet = false;
 GLuint		projectionMatricesBuffer[DEPTH_HACK_PROJECTION + NUM_DEPTH_HACK_PROJECTIONS];
 
 #define ATTR_VERTEX     0   // Don't change this, as WebGL require the vertex attrib 0 to be always bound
@@ -2611,34 +2613,52 @@ void RB_GLSL_PrepareShaders(void) {
 	//Set up the buffers that won't change this frame
 	GL_ViewMatricesUniformBuffer(backEnd.viewDef->worldSpace.viewMatrix);
 
-	float orthoProjectionMatrix[16];
-	memset(orthoProjectionMatrix, 0, sizeof(orthoProjectionMatrix));
-	orthoProjectionMatrix[0] = 2.0f / 640.0f;
-	orthoProjectionMatrix[5] = -2.0f / 480.0f;
-	orthoProjectionMatrix[10] = -2.0f / 1.0f;
-	orthoProjectionMatrix[12] = -1.0f;
-	orthoProjectionMatrix[13] = 1.0f;
-	orthoProjectionMatrix[14] = -1.0f;
-	orthoProjectionMatrix[15] = 1.0f;
+	static bool first = true;
+	static float defaultProjection[16];
+	if (first) {
+        memset(defaultProjection, 0, 16 * sizeof(float));
+        first = false;
+    }
 
-	//0 is ortho projection matrix
-	GL_ProjectionMatricesUniformBuffer(projectionMatricesBuffer[ORTHO_PROJECTION], orthoProjectionMatrix);
+    //We only need to do the following if the default projection changes
+	if (memcmp(defaultProjection, backEnd.viewDef->projectionMatrix, 16 * sizeof(float)) != 0)
+    {
+	    //Take a copy of the default projection
+        memcpy(defaultProjection, backEnd.viewDef->projectionMatrix, 16 * sizeof(float));
 
-	//1 is unadjusted projection matrix
-	GL_ProjectionMatricesUniformBuffer(projectionMatricesBuffer[NORMAL_PROJECTION], backEnd.viewDef->projectionMatrix);
+        float orthoProjectionMatrix[16];
+        memset(orthoProjectionMatrix, 0, sizeof(orthoProjectionMatrix));
+        orthoProjectionMatrix[0] = 2.0f / 640.0f;
+        orthoProjectionMatrix[5] = -2.0f / 480.0f;
+        orthoProjectionMatrix[10] = -2.0f / 1.0f;
+        orthoProjectionMatrix[12] = -1.0f;
+        orthoProjectionMatrix[13] = 1.0f;
+        orthoProjectionMatrix[14] = -1.0f;
+        orthoProjectionMatrix[15] = 1.0f;
 
-	//2 is weapon depth hack projection
-	float projection[16];
-	RB_ComputeProjection(true, 0.0, projection);
-	GL_ProjectionMatricesUniformBuffer(projectionMatricesBuffer[WEAPON_PROJECTION], projection);
+        //0 is ortho projection matrix
+        GL_ProjectionMatricesUniformBuffer(projectionMatricesBuffer[ORTHO_PROJECTION],
+                                           orthoProjectionMatrix);
 
-	//3+ ore model depth hack projections
-	for (int i = 0; i < NUM_DEPTH_HACK_PROJECTIONS; ++i)
-	{
-		float depthHack = (float)(i+1) / float(NUM_DEPTH_HACK_PROJECTIONS);
-		RB_ComputeProjection(false, depthHack, projection);
-		GL_ProjectionMatricesUniformBuffer(projectionMatricesBuffer[DEPTH_HACK_PROJECTION + i], projection);
-	}
+        //1 is unadjusted projection matrix
+        GL_ProjectionMatricesUniformBuffer(projectionMatricesBuffer[NORMAL_PROJECTION],
+                                           backEnd.viewDef->projectionMatrix);
+
+        //2 is weapon depth hack projection
+        float projection[16];
+        RB_ComputeProjection(true, 0.0, projection);
+        GL_ProjectionMatricesUniformBuffer(projectionMatricesBuffer[WEAPON_PROJECTION], projection);
+
+        //3+ ore model depth hack projections
+        for (int i = 0; i < NUM_DEPTH_HACK_PROJECTIONS; ++i) {
+            float depthHack = (float) (i + 1) / float(NUM_DEPTH_HACK_PROJECTIONS);
+            RB_ComputeProjection(false, depthHack, projection);
+            GL_ProjectionMatricesUniformBuffer(projectionMatricesBuffer[DEPTH_HACK_PROJECTION + i],
+                                               projection);
+        }
+
+        projectionMatricesSet = true;
+    }
 
 	// Always enable the vertex, color and texcoord attributes arrays
 	GL_EnableVertexAttribArray(ATTR_VERTEX);

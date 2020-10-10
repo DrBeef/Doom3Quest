@@ -587,10 +587,12 @@ void idPlayerView::DoubleVision( idUserInterface *hud, const renderView_t *view,
 	shift = fabs( shift );
 
 	// if double vision, render to a texture
+	renderSystem->DirectFrameBufferStart();
 	renderSystem->CropRenderSize( 512, 256, true );
 	SingleView( hud, view );
 	renderSystem->CaptureRenderToImage( "_scratch" );
 	renderSystem->UnCrop();
+	renderSystem->DirectFrameBufferEnd();
 
 	// carry red tint if in berserk mode
 	idVec4 color(1, 1, 1, 1);
@@ -611,12 +613,14 @@ idPlayerView::BerserkVision
 ===================
 */
 void idPlayerView::BerserkVision( idUserInterface *hud, const renderView_t *view ) {
+    renderSystem->DirectFrameBufferStart();
 	renderSystem->CropRenderSize( 512, 256, true );
 	SingleView( hud, view );
 	renderSystem->CaptureRenderToImage( "_scratch" );
 	renderSystem->UnCrop();
 	renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
 	renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, dvMaterial );
+    renderSystem->DirectFrameBufferEnd();
 }
 
 
@@ -712,11 +716,13 @@ void idPlayerView::InfluenceVision( idUserInterface *hud, const renderView_t *vi
 		}
 	}
 	if ( player->GetInfluenceMaterial() ) {
+        renderSystem->DirectFrameBufferStart();
 		SingleView( hud, view );
 		renderSystem->CaptureRenderToImage( "_currentRender" );
 		renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, pct );
 		renderSystem->DrawStretchPic( 0.0f, 0.0f, 640.0f, 480.0f, 0.0f, 0.0f, 1.0f, 1.0f, player->GetInfluenceMaterial() );
-	} else if ( player->GetInfluenceEntity() == NULL ) {
+        renderSystem->DirectFrameBufferEnd();
+    } else if ( player->GetInfluenceEntity() == NULL ) {
 		SingleView( hud, view );
 		return;
 	} else {
@@ -733,17 +739,17 @@ idPlayerView::RenderPlayerView
 void idPlayerView::RenderPlayerView( idUserInterface *hud ) {
 	const renderView_t *view = player->GetRenderView();
 
-		if (g_skipViewEffects.GetBool()) {
+	if (g_skipViewEffects.GetBool()) {
 		SingleView( hud, view );
 		} else {
 			if (player->GetInfluenceMaterial() || player->GetInfluenceEntity()) {
-			InfluenceVision( hud, view );
+			    InfluenceVision( hud, view );
 			} else if (gameLocal.time < dvFinishTime) {
-			DoubleVision( hud, view, dvFinishTime - gameLocal.time );
+			    DoubleVision( hud, view, dvFinishTime - gameLocal.time );
 			} else if (player->PowerUpActive(BERSERK)) {
-			BerserkVision( hud, view );
+			    BerserkVision( hud, view );
 			} else {
-			SingleView( hud, view );
+			    SingleView( hud, view );
 			}
 			ScreenFade();
 	}
