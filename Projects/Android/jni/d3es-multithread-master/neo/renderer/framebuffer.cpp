@@ -5,7 +5,7 @@ GPL3
 #include "renderer/tr_local.h"
 #include "renderer/VertexCache.h"
 
-#define FRAMEBUFFER_POOL_SIZE
+#define FRAMEBUFFER_POOL_SIZE 3
 
 static GLuint m_framebuffer[FRAMEBUFFER_POOL_SIZE];
 static GLuint m_depthbuffer[FRAMEBUFFER_POOL_SIZE];
