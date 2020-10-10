@@ -69,7 +69,7 @@ src_renderer = \
 	renderer/RenderWorld_load.cpp \
 	renderer/RenderWorld_portals.cpp \
 	renderer/VertexCache.cpp \
-	renderer/draw_gles2.cpp \
+	renderer/draw_gles3_multiview.cpp \
 	renderer/draw_common.cpp \
 	renderer/tr_backend.cpp \
 	renderer/tr_deform.cpp \
