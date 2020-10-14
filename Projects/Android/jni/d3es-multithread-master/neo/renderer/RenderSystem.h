@@ -152,6 +152,7 @@ public:
 	virtual bool			IsFullScreen( void ) const = 0;
 	virtual int				GetScreenWidth( void ) const = 0;
 	virtual int				GetScreenHeight( void ) const = 0;
+	virtual float 			GetFOV() const = 0;
 
 	// allocate a renderWorld to be used for drawing
 	virtual idRenderWorld *	AllocRenderWorld( void ) = 0;

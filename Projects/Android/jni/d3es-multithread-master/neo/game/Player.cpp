@@ -7226,7 +7226,7 @@ Returns the base FOV
 float idPlayer::DefaultFov( void ) const {
 	float fov;
 
-	fov = g_fov.GetFloat();
+	fov = renderSystem->GetFOV();
 	if ( gameLocal.isMultiplayer ) {
 		if ( fov < 90.0f ) {
 			return 90.0f;

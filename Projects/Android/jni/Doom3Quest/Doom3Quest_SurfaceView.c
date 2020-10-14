@@ -48,7 +48,7 @@ Copyright	:	Copyright 2015 Oculus VR, LLC. All Rights reserved.
 //Define all variables here that were externs in the VrCommon.h
 bool Doom3Quest_initialised;
 float playerYaw;
-float vrFOV;
+float vrFOV = 0.0f;
 bool vr_moveuseoffhand;
 float vr_snapturn_angle;
 bool vr_switchsticks;
@@ -783,13 +783,14 @@ void ovrRenderer_Clear( ovrRenderer * renderer )
 	renderer->NumBuffers = VRAPI_FRAME_LAYER_EYE_MAX;
 }
 
+float Doom3Quest_GetFOV();
 
 void ovrRenderer_Create( int width, int height, ovrRenderer * renderer, const ovrJava * java )
 {
 	renderer->NumBuffers = 1; // Multiview
 
 	//Now using a symmetrical render target, based on the horizontal FOV
-    vrFOV = vrapi_GetSystemPropertyInt( java, VRAPI_SYS_PROP_SUGGESTED_EYE_FOV_DEGREES_X);
+	Doom3Quest_GetFOV();
 
 	// Create the multi view frame buffer
 	ovrFramebuffer_Create( &renderer->FrameBuffer,
@@ -1047,6 +1048,15 @@ static void ovrApp_Clear( ovrApp * app )
 static ovrApp gAppState;
 static ovrJava java;
 static bool destroyed = false;
+
+float Doom3Quest_GetFOV()
+{
+	if (vrFOV == 0.0f) {
+		vrFOV = vrapi_GetSystemPropertyInt(&gAppState.Java, VRAPI_SYS_PROP_SUGGESTED_EYE_FOV_DEGREES_X);
+	}
+
+	return vrFOV;
+}
 
 static void ovrApp_HandleVrModeChanges( ovrApp * app )
 {
