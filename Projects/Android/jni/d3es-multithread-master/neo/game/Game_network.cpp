@@ -994,7 +994,7 @@ void idGameLocal::ClientReadSnapshot( int clientNum, int sequence, const int gam
 	// update the game time
 	framenum = gameFrame;
 	time = gameTime;
-	previousTime = time - msec;
+	previousTime = time - USERCMD_MSEC;
 
 	// so that StartSound/StopSound doesn't risk skipping
 	isNewFrame = true;
@@ -1492,7 +1492,7 @@ gameReturn_t idGameLocal::ClientPrediction( int clientNum, const usercmd_t *clie
 	// update the game time
 	framenum++;
 	previousTime = time;
-	time += msec;
+	time += USERCMD_MSEC;
 
 	// update the real client time and the new frame flag
 	if ( time > realClientTime ) {

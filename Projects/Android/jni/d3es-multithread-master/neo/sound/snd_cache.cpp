@@ -31,6 +31,8 @@ If you have questions concerning this license or the applicable additional terms
 
 #include "sound/snd_local.h"
 
+#include "renderer/RenderSystem.h"
+
 #define USE_SOUND_CACHE_ALLOCATOR
 
 #ifdef USE_SOUND_CACHE_ALLOCATOR

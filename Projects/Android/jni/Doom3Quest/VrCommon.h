@@ -66,6 +66,8 @@ void controlMouse(ovrInputStateTrackedRemote *newState, ovrInputStateTrackedRemo
 
 
 //Called from engine code
+int Doom3Quest_GetRefresh();
+
 bool Doom3Quest_useScreenLayer();
 
 void Doom3Quest_GetScreenRes(int *width, int *height);

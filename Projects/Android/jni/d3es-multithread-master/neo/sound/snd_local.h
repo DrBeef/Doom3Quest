@@ -43,6 +43,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "framework/UsercmdGen.h"
 #include "sound/efxlib.h"
 #include "sound/sound.h"
+#include "renderer/RenderSystem.h"
 
 // demo sound commands
 typedef enum {

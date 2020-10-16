@@ -1330,7 +1330,7 @@ void idTarget_SetFov::Event_Activate( idEntity *activator ) {
 	cinematic = true;
 
 	idPlayer *player = gameLocal.GetLocalPlayer();
-	fovSetting.Init( gameLocal.time, SEC2MS( spawnArgs.GetFloat( "time" ) ), player ? player->DefaultFov() : g_fov.GetFloat(), spawnArgs.GetFloat( "fov" ) );
+	fovSetting.Init( gameLocal.time, SEC2MS( spawnArgs.GetFloat( "time" ) ), player ? player->DefaultFov() : renderSystem->GetFOV(), spawnArgs.GetFloat( "fov" ) );
 	BecomeActive( TH_THINK );
 }
 

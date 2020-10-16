@@ -1051,11 +1051,14 @@ static bool destroyed = false;
 
 float Doom3Quest_GetFOV()
 {
-	if (vrFOV == 0.0f) {
-		vrFOV = vrapi_GetSystemPropertyInt(&gAppState.Java, VRAPI_SYS_PROP_SUGGESTED_EYE_FOV_DEGREES_X);
-	}
+	vrFOV = vrapi_GetSystemPropertyInt(&gAppState.Java, VRAPI_SYS_PROP_SUGGESTED_EYE_FOV_DEGREES_X);
 
 	return vrFOV;
+}
+
+int Doom3Quest_GetRefresh()
+{
+	return Doom3Quest_initialised ? vrapi_GetSystemPropertyInt(&gAppState.Java, VRAPI_SYS_PROP_DISPLAY_REFRESH_RATE) : 60;
 }
 
 static void ovrApp_HandleVrModeChanges( ovrApp * app )
@@ -1585,8 +1588,11 @@ void * AppThreadFunction(void * parm ) {
     // Create the scene if not yet created.
     ovrScene_Create( m_width, m_height, &gAppState.Scene, &java );
 
-    //Set the screen refresh
-    vrapi_SetDisplayRefreshRate(gAppState.Ovr, DISPLAY_REFRESH);
+    //Set the screen refresh - only for Quest 1
+    bool quest1 = false;
+    if (quest1) {
+		vrapi_SetDisplayRefreshRate(gAppState.Ovr, DISPLAY_REFRESH);
+	}
 
     //Run loading loop until we are ready to start QzDoom
     while (!destroyed && !Doom3Quest_initialised) {

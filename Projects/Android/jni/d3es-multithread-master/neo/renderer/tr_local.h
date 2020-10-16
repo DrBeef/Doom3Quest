@@ -687,6 +687,7 @@ public:
 	virtual int				GetScreenWidth( void ) const;
 	virtual int				GetScreenHeight( void ) const;
 	virtual float 			GetFOV() const;
+	virtual int 			GetRefresh() const;
 
 	virtual idRenderWorld *	AllocRenderWorld( void );
 	virtual void			FreeRenderWorld( idRenderWorld *rw );

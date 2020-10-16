@@ -37,8 +37,10 @@ If you have questions concerning this license or the applicable additional terms
 ===============================================================================
 */
 
-const int USERCMD_HZ			= 60;
-const int USERCMD_MSEC			= 1000 / USERCMD_HZ;
+//const int USERCMD_HZ			= 60;
+//const int USERCMD_MSEC			= 1000 / USERCMD_HZ;
+
+#define USERCMD_MSEC			(1000 / (renderSystem ? renderSystem->GetRefresh() : 60))
 
 // usercmd_t->button bits
 const int BUTTON_ATTACK			= BIT(0);

@@ -1793,8 +1793,18 @@ int idRenderSystemLocal::GetScreenHeight( void ) const {
 	return glConfig.vidHeight;
 }
 
-extern "C" Doom3Quest_GetFOV();
+extern "C"
+{
+    float Doom3Quest_GetFOV();
+    int Doom3Quest_GetRefresh();
+}
+
 float idRenderSystemLocal::GetFOV() const
 {
 	return Doom3Quest_GetFOV();
+}
+
+int idRenderSystemLocal::GetRefresh() const
+{
+	return Doom3Quest_GetRefresh();
 }

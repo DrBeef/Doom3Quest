@@ -4930,7 +4930,7 @@ void idPlayer::BobCycle( const idVec3 &pushVelocity ) {
 
 		// check for footstep / splash sounds
 		old = bobCycle;
-		bobCycle = (int)( old + bobmove * gameLocal.msec ) & 255;
+		bobCycle = (int)( old + bobmove * USERCMD_MSEC ) & 255;
 		bobFoot = ( bobCycle & 128 ) >> 7;
 		bobfracsin = idMath::Fabs( sin( ( bobCycle & 127 ) / 127.0 * idMath::PI ) );
 	}*/
@@ -5883,7 +5883,7 @@ void idPlayer::AdjustSpeed( void ) {
 		bobFrac = 0.0f;
 	} else if ( !physicsObj.OnLadder() && ( usercmd.buttons & BUTTON_RUN ) && ( usercmd.forwardmove || usercmd.rightmove ) && ( usercmd.upmove >= 0 ) ) {
 		if ( !gameLocal.isMultiplayer && !physicsObj.IsCrouching() && !PowerUpActive( ADRENALINE ) ) {
-			stamina -= MS2SEC( gameLocal.msec );
+			stamina -= MS2SEC( USERCMD_MSEC );
 		}
 		if ( stamina < 0 ) {
 			stamina = 0;
@@ -5904,7 +5904,7 @@ void idPlayer::AdjustSpeed( void ) {
 			 rate *= 1.25f;
 		}
 
-		stamina += rate * MS2SEC( gameLocal.msec );
+		stamina += rate * MS2SEC( USERCMD_MSEC );
 		if ( stamina > pm_stamina.GetFloat() ) {
 			stamina = pm_stamina.GetFloat();
 		}
