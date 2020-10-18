@@ -1051,7 +1051,7 @@ static bool destroyed = false;
 
 float Doom3Quest_GetFOV()
 {
-	vrFOV = vrapi_GetSystemPropertyInt(&gAppState.Java, VRAPI_SYS_PROP_SUGGESTED_EYE_FOV_DEGREES_X);
+	vrFOV = vrapi_GetSystemPropertyInt(&gAppState.Java, VRAPI_SYS_PROP_SUGGESTED_EYE_FOV_DEGREES_Y);
 
 	return vrFOV;
 }
