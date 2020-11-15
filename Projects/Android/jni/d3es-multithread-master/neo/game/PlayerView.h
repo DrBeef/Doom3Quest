@@ -91,6 +91,12 @@ public:
 	// temp for view testing
 	void				EnableBFGVision( bool b ) { bfgVision = b; };
 
+	// for VR comfort vision
+	void				EnableVrComfortVision(bool b)
+	{
+		vrComfortVision = b;
+	};
+
 private:
 	void				SingleView( idUserInterface *hud, const renderView_t *view );
 	void				DoubleVision( idUserInterface *hud, const renderView_t *view, int offset );
@@ -109,6 +115,7 @@ private:
 	idAngles			kickAngles;
 
 	bool				bfgVision;			//
+    bool				vrComfortVision;	//  "tunnel" to improve vrComfort
 
 	const idMaterial *	tunnelMaterial;		// health tunnel vision
 	const idMaterial *	armorMaterial;		// armor damage view effect

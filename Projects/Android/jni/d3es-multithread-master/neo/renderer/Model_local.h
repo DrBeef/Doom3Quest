@@ -189,6 +189,7 @@ public:
 private:
 	idList<idMD5Joint>			joints;
 	idList<idJointQuat>			defaultPose;
+	idList<idJointMat>			invertedDefaultPose;
 	idList<idMD5Mesh>			meshes;
 
 	void						CalculateBounds( const idJointMat *joints );

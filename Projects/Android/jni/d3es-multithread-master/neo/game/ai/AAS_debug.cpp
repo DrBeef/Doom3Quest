@@ -232,7 +232,7 @@ void idAASLocal::ShowArea( const idVec3 &origin ) const {
 idAASLocal::ShowWalkPath
 ============
 */
-void idAASLocal::ShowWalkPath( const idVec3 &origin, int goalAreaNum, const idVec3 &goalOrigin ) const {
+void idAASLocal::ShowWalkPath( const idVec3 &origin, int goalAreaNum, const idVec3 &goalOrigin, int travelFlags ) const {
 	int i, areaNum, curAreaNum, travelTime;
 	idReachability *reach;
 	idVec3 org, areaCenter;

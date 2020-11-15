@@ -33,12 +33,12 @@ If you have questions concerning this license or the applicable additional terms
 #include "idlib/Dict.h"
 #include "renderer/Model.h"
 
-#include "physics/Clip.h"
+#include "../physics/Clip.h"
 
 //
 // animation channels
 // these can be changed by modmakers and licensees to be whatever they need.
-const int ANIM_NumAnimChannels		= 5;
+const int ANIM_NumAnimChannels		= 7;
 const int ANIM_MaxAnimsPerChannel	= 3;
 const int ANIM_MaxSyncedAnims		= 3;
 
@@ -50,6 +50,10 @@ const int ANIMCHANNEL_TORSO			= 1;
 const int ANIMCHANNEL_LEGS			= 2;
 const int ANIMCHANNEL_HEAD			= 3;
 const int ANIMCHANNEL_EYELIDS		= 4;
+// Koz add channels for right and left hand;
+const int ANIMCHANNEL_RIGHTHAND		= 5;
+const int ANIMCHANNEL_LEFTHAND		= 6;
+// Koz end
 
 // for converting from 24 frames per second to milliseconds
 ID_INLINE int FRAME2MS( int framenum ) {

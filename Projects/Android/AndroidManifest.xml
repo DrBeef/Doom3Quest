@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 		package="com.drbeef.doom3quest"
-		android:versionCode="14"
-		android:versionName="0.1.1" android:installLocation="auto" >
+		android:versionCode="16"
+		android:versionName="0.2.0" android:installLocation="auto" >
 
 	<!-- Tell the system this app requires OpenGL ES 3.1. -->
 	<uses-feature android:glEsVersion="0x00030001" android:required="true"/>
@@ -18,6 +18,7 @@
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 	<application android:allowBackup="false" android:icon="@drawable/ic_qquest" android:label="@string/doom3quest">
 		<meta-data android:name="com.samsung.android.vr.application.mode" android:value="vr_only"/>
+		<meta-data android:name="com.oculus.supportedDevices" android:value="quest|delmar"/>
 		<!-- The activity is the built-in NativeActivity framework class. -->
 		<!-- launchMode is set to singleTask because there should never be multiple copies of the app running. -->
 		<!-- Theme.Black.NoTitleBar.Fullscreen gives solid black instead of a (bad stereoscopic) gradient on app transition. -->
@@ -29,8 +30,9 @@
 				android:label="@string/doom3quest"
 				android:launchMode="singleTask"
 				android:screenOrientation="landscape"
+				android:resizeableActivity="false"
 				android:excludeFromRecents="false"
-				android:configChanges="screenSize|screenLayout|orientation|keyboardHidden|keyboard|navigation|uiMode">
+				android:configChanges="density|keyboard|keyboardHidden|navigation|orientation|screenLayout|screenSize|uiMode">
 			<!-- Tell NativeActivity the name of the .so -->
 			<meta-data android:name="android.app.lib_name" android:value="Doom3Quest" />
 			<!-- This filter lets the apk show up as a launchable icon. -->

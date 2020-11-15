@@ -127,6 +127,7 @@ public:
 	idLinkList<idEntity>	snapshotNode;			// for being linked into snapshotEntities list
 	int						snapshotSequence;		// last snapshot this entity was in
 	int						snapshotBits;			// number of bits this entity occupied in the last snapshot
+	bool					snapshotStale;			// Set to true if this entity is considered stale in the snapshot
 
 	idStr					name;					// name of entity
 	idDict					spawnArgs;				// key/value pairs used to spawn and initialize entity
@@ -173,7 +174,10 @@ public:
 	void					SetName( const char *name );
 	const char *			GetName( void ) const;
 	virtual void			UpdateChangeableSpawnArgs( const idDict *source );
-
+    int						GetEntityNumber() const
+    {
+        return entityNumber;
+    }
 							// clients generate views based on all the player specific options,
 							// cameras have custom code, and everything else just uses the axis orientation
 	virtual renderView_t *	GetRenderView();

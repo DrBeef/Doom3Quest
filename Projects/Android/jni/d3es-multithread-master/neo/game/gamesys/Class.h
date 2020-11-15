@@ -31,7 +31,7 @@ If you have questions concerning this license or the applicable additional terms
 
 #include "idlib/containers/Hierarchy.h"
 
-#include "gamesys/Event.h"
+#include "Event.h"
 
 class idClass;
 class idTypeInfo;

@@ -107,6 +107,7 @@ src_game = \
 	game/Sound.cpp \
 	game/Target.cpp \
 	game/Trigger.cpp \
+	game/Vr.cpp \
 	game/Weapon.cpp \
 	game/WorldSpawn.cpp \
 	game/ai/AAS.cpp \

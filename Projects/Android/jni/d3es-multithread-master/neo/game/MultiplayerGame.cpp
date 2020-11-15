@@ -2451,7 +2451,7 @@ void idMultiplayerGame::DropWeapon( int clientNum ) {
 	if ( !ent || !ent->IsType( idPlayer::Type ) ) {
 		return;
 	}
-	static_cast< idPlayer* >( ent )->DropWeapon( false );
+	static_cast< idPlayer* >( ent )->DropWeapons( false );
 }
 
 /*

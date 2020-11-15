@@ -80,6 +80,8 @@ public:
 	bool			operator==(	const idJointMat &a ) const;					// exact compare, no epsilon
 	bool			operator!=(	const idJointMat &a ) const;					// exact compare, no epsilon
 
+	void			Invert();
+
 	idMat3			ToMat3( void ) const;
 	idVec3			ToVec3( void ) const;
 	idJointQuat		ToJointQuat( void ) const;
@@ -225,6 +227,35 @@ ID_INLINE bool idJointMat::operator==( const idJointMat &a ) const {
 
 ID_INLINE bool idJointMat::operator!=( const idJointMat &a ) const {
 	return !Compare( a );
+}
+
+/*
+========================
+idJointMat::Invert
+========================
+*/
+ID_INLINE void idJointMat::Invert()
+{
+	float tmp[3];
+
+	// negate inverse rotated translation part
+	tmp[0] = mat[0 * 4 + 0] * mat[0 * 4 + 3] + mat[1 * 4 + 0] * mat[1 * 4 + 3] + mat[2 * 4 + 0] * mat[2 * 4 + 3];
+	tmp[1] = mat[0 * 4 + 1] * mat[0 * 4 + 3] + mat[1 * 4 + 1] * mat[1 * 4 + 3] + mat[2 * 4 + 1] * mat[2 * 4 + 3];
+	tmp[2] = mat[0 * 4 + 2] * mat[0 * 4 + 3] + mat[1 * 4 + 2] * mat[1 * 4 + 3] + mat[2 * 4 + 2] * mat[2 * 4 + 3];
+	mat[0 * 4 + 3] = -tmp[0];
+	mat[1 * 4 + 3] = -tmp[1];
+	mat[2 * 4 + 3] = -tmp[2];
+
+	// transpose rotation part
+	tmp[0] = mat[0 * 4 + 1];
+	mat[0 * 4 + 1] = mat[1 * 4 + 0];
+	mat[1 * 4 + 0] = tmp[0];
+	tmp[1] = mat[0 * 4 + 2];
+	mat[0 * 4 + 2] = mat[2 * 4 + 0];
+	mat[2 * 4 + 0] = tmp[1];
+	tmp[2] = mat[1 * 4 + 2];
+	mat[1 * 4 + 2] = mat[2 * 4 + 1];
+	mat[2 * 4 + 1] = tmp[2];
 }
 
 ID_INLINE idMat3 idJointMat::ToMat3( void ) const {

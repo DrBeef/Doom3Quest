@@ -279,7 +279,7 @@ void idProjectile::FreeLightDef( void ) {
 idProjectile::Launch
 =================
 */
-void idProjectile::Launch( const idVec3 &start, const idVec3 &dir, const idVec3 &pushVelocity, const float timeSinceFire, const float launchPower, const float dmgPower ) {
+void idProjectile::Launch( const idVec3& start, const idVec3& dir, const idVec3& pushVelocity, const float timeSinceFire, const float launchPower, const float dmgPower, const float motionThrowSpeed ) {
 	float			fuse;
 	float			endthrust;
 	idVec3			velocity;
@@ -310,6 +310,11 @@ void idProjectile::Launch( const idVec3 &start, const idVec3 &dir, const idVec3 
 	spawnArgs.GetVector( "velocity", "0 0 0", velocity );
 
 	speed = velocity.Length() * launchPower;
+
+	// Koz if throwing a grenade use the tracked hand velocity when using motion controls if the controller is not mounted
+	if( motionThrowSpeed != 0 )
+		speed = motionThrowSpeed;
+	// Koz end
 
 	damagePower = dmgPower;
 
@@ -780,6 +785,43 @@ void idProjectile::Explode( const trace_t &collision, idEntity *ignore ) {
 
 	if ( state == EXPLODED || state == FIZZLED ) {
 		return;
+	}
+
+	// activate rumble for player
+	idPlayer* player = gameLocal.GetLocalPlayer();
+	const bool isHitscan = spawnArgs.GetBool( "net_instanthit" );
+	if( player != NULL && isHitscan == false )
+	{
+
+		// damage
+		const char* damageDefName = spawnArgs.GetString( "def_damage" );
+		const idDict* damageDef = gameLocal.FindEntityDefDict( damageDefName );
+		int damage;
+		if( damageDef != NULL )
+		{
+			damage = damageDef->GetInt( "damage" );
+		}
+		else
+		{
+			damage = 200;
+		}
+		float damageScale = idMath::ClampFloat( 0.25f, 1.0f, ( float )damage * ( 1.0f / 200.0f ) );	// 50...200 -> min...max rumble
+
+		// distance
+		float dist = ( GetPhysics()->GetOrigin() - player->GetPhysics()->GetOrigin() ).LengthFast();
+		float distScale = 1.0f - idMath::ClampFloat( 0.0f, 1.0f, ( dist * ( 1.0f / 4000.0f ) ) + 0.25f );		// 0...4000 -> max...min rumble
+
+		distScale *= damageScale;	// apply damage scale here, weaker damage produces less rumble
+
+		// determine rumble
+		float highMag = distScale;
+		int highDuration = idMath::Ftoi( 300.0f * distScale );
+		float lowMag = distScale * 0.75f;
+		int lowDuration = idMath::Ftoi( 500.0f * distScale );
+
+		// Carl: TODO calculate direction
+		player->hands[HAND_RIGHT].SetControllerShake( highMag, highDuration, lowMag, lowDuration );
+		player->hands[HAND_LEFT].SetControllerShake( highMag, highDuration, lowMag, lowDuration );
 	}
 
 	// stop sound

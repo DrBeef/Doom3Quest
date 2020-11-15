@@ -1079,6 +1079,8 @@ void idAI::Think( void ) {
 		} else {
 			// clear the ik before we do anything else so the skeleton doesn't get updated twice
 			walkIK.ClearJointMods();
+			// Koz
+			armIK.ClearJointMods();
 
 			switch( move.moveType ) {
 			case MOVETYPE_DEAD :
@@ -3453,6 +3455,18 @@ void idAI::PlayCinematic( void ) {
 
 	torsoAnim.animBlendFrames = 0;
 	torsoAnim.lastAnimBlendFrames = 0;
+
+	// Koz begin
+	leftHandAnim.animBlendFrames = 0;
+	leftHandAnim.lastAnimBlendFrames = 0;
+
+	rightHandAnim.animBlendFrames = 0;
+	rightHandAnim.lastAnimBlendFrames = 0;
+
+	ProcessEvent( &AI_PlayAnim, ANIMCHANNEL_LEFTHAND, animname );
+	ProcessEvent( &AI_PlayAnim, ANIMCHANNEL_RIGHTHAND, animname );
+	// Koz end
+
 	ProcessEvent( &AI_PlayAnim, ANIMCHANNEL_TORSO, animname );
 
 	// make sure our model gets updated
@@ -3547,6 +3561,16 @@ idAI::EnemyDead
 void idAI::EnemyDead( void ) {
 	ClearEnemy();
 	AI_ENEMY_DEAD = true;
+}
+
+/*
+=====================
+idAI::ListenTo
+=====================
+*/
+void idAI::ListenTo( idEntity* ent )
+{
+	Event_LookAtEntity(ent, 1.0f);
 }
 
 /*

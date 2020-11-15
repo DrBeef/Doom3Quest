@@ -38,6 +38,57 @@ If you have questions concerning this license or the applicable additional terms
 
 ===============================================================================
 */
+typedef unsigned short halfFloat_t;
+
+// GPU half-float bit patterns
+#define HF_MANTISSA(x)	(x&1023)
+#define HF_EXP(x)		((x&32767)>>10)
+#define HF_SIGN(x)		((x&32768)?-1:1)
+/*
+========================
+F16toF32
+========================
+*/
+ID_INLINE float F16toF32( halfFloat_t x )
+{
+    int e = HF_EXP( x );
+    int m = HF_MANTISSA( x );
+    int s = HF_SIGN( x );
+
+    if( 0 < e && e < 31 )
+    {
+        return s * powf( 2.0f, ( e - 15.0f ) ) * ( 1 + m / 1024.0f );
+    }
+    else if( m == 0 )
+    {
+        return s * 0.0f;
+    }
+    return s * powf( 2.0f, -14.0f ) * ( m / 1024.0f );
+}
+
+/*
+========================
+F32toF16
+========================
+*/
+ID_INLINE halfFloat_t F32toF16( float a )
+{
+    unsigned int f = *( unsigned* )( &a );
+    unsigned int signbit  = ( f & 0x80000000 ) >> 16;
+    int exponent = ( ( f & 0x7F800000 ) >> 23 ) - 112;
+    unsigned int mantissa = ( f & 0x007FFFFF );
+
+    if( exponent <= 0 )
+    {
+        return 0;
+    }
+    if( exponent > 30 )
+    {
+        return ( halfFloat_t )( signbit | 0x7BFF );
+    }
+
+    return ( halfFloat_t )( signbit | ( exponent << 10 ) | ( mantissa >> 13 ) );
+}
 
 class idDrawVert {
 public:
@@ -61,7 +112,87 @@ public:
 
 	void			SetColor( dword color );
 	dword			GetColor( void ) const;
+
+	void				SetTexCoord( const idVec2& st );
+	void				SetTexCoord( float s, float t );
+	void				SetTexCoordS( float s );
+	void				SetTexCoordT( float t );
+	const idVec2		GetTexCoord() const;
+	const float			GetTexCoordS() const;
+	const float			GetTexCoordT() const;
 };
+
+/*
+========================
+idDrawVert::SetTexCoord
+========================
+*/
+ID_INLINE void idDrawVert::SetTexCoord( const idVec2& st )
+{
+    SetTexCoordS( st.x );
+    SetTexCoordT( st.y );
+}
+
+/*
+========================
+idDrawVert::SetTexCoord
+========================
+*/
+ID_INLINE void idDrawVert::SetTexCoord( float s, float t )
+{
+    SetTexCoordS( s );
+    SetTexCoordT( t );
+}
+
+/*
+========================
+idDrawVert::SetTexCoordS
+========================
+*/
+ID_INLINE void idDrawVert::SetTexCoordS( float s )
+{
+    st[0] = F32toF16( s );
+}
+
+/*
+========================
+idDrawVert::SetTexCoordT
+========================
+*/
+ID_INLINE void idDrawVert::SetTexCoordT( float t )
+{
+    st[1] = F32toF16( t );
+}
+
+/*
+========================
+idDrawVert::GetTexCoord
+========================
+*/
+ID_INLINE const idVec2	idDrawVert::GetTexCoord() const
+{
+    return idVec2( F16toF32( st[0] ), F16toF32( st[1] ) );
+}
+
+/*
+========================
+idDrawVert::GetTexCoordT
+========================
+*/
+ID_INLINE const float idDrawVert::GetTexCoordS() const
+{
+    return F16toF32( st[0] );
+}
+
+/*
+========================
+idDrawVert::GetTexCoordS
+========================
+*/
+ID_INLINE const float idDrawVert::GetTexCoordT() const
+{
+    return F16toF32( st[1] );
+}
 
 ID_INLINE float idDrawVert::operator[]( const int index ) const {
 	assert( index >= 0 && index < 5 );

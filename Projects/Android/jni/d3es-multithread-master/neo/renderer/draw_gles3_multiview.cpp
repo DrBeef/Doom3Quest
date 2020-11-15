@@ -43,7 +43,7 @@ shaderProgram_t stencilShadowShader;
 GLuint		viewMatricesBuffer;
 
 bool        projectionMatricesSet = false;
-GLuint		projectionMatricesBuffer[DEPTH_HACK_PROJECTION + NUM_DEPTH_HACK_PROJECTIONS];
+GLuint		projectionMatricesBuffer[DEPTH_HACK_PROJECTION + NUM_DEPTH_HACK_PROJECTIONS + 1];
 
 #define ATTR_VERTEX     0   // Don't change this, as WebGL require the vertex attrib 0 to be always bound
 #define ATTR_COLOR      1
@@ -402,7 +402,7 @@ static bool RB_GLSL_InitShaders(void) {
             GL_STATIC_DRAW);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-    for (int i = 0; i < (NUM_DEPTH_HACK_PROJECTIONS+DEPTH_HACK_PROJECTION); ++i)
+    for (int i = 0; i <= (NUM_DEPTH_HACK_PROJECTIONS+DEPTH_HACK_PROJECTION); ++i)
 	{
 		qglGenBuffers(1, &projectionMatricesBuffer[i]);
 		glBindBuffer(GL_UNIFORM_BUFFER, projectionMatricesBuffer[i]);
@@ -2650,8 +2650,8 @@ void RB_GLSL_PrepareShaders(void) {
         GL_ProjectionMatricesUniformBuffer(projectionMatricesBuffer[WEAPON_PROJECTION], projection);
 
         //3+ ore model depth hack projections
-        for (int i = 0; i < NUM_DEPTH_HACK_PROJECTIONS; ++i) {
-            float depthHack = (float) (i + 1) / float(NUM_DEPTH_HACK_PROJECTIONS);
+        for (int i = 0; i <= NUM_DEPTH_HACK_PROJECTIONS; ++i) {
+            float depthHack = (float)(i+1) / float(NUM_DEPTH_HACK_PROJECTIONS+1);
             RB_ComputeProjection(false, depthHack, projection);
             GL_ProjectionMatricesUniformBuffer(projectionMatricesBuffer[DEPTH_HACK_PROJECTION + i],
                                                projection);

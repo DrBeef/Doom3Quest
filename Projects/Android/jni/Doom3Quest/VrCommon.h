@@ -72,7 +72,7 @@ bool Doom3Quest_useScreenLayer();
 
 void Doom3Quest_GetScreenRes(int *width, int *height);
 
-void Doom3Quest_Vibrate(int duration, int channel, float intensity);
+void Doom3Quest_Vibrate(int channel, float low, float high);
 
 bool Doom3Quest_processMessageQueue();
 

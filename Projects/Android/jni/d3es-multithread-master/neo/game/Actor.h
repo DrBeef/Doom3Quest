@@ -166,7 +166,7 @@ public:
 							// damage
 	void					SetupDamageGroups( void );
 	virtual	void			Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir, const char *damageDefName, const float damageScale, const int location );
-	int						GetDamageForLocation( int damage, int location );
+	int						GetDamageForLocation( int damage, int location, bool headMultiplier = false );
 	const char *			GetDamageGroup( int location );
 	void					ClearPain( void );
 	virtual bool			Pain( idEntity *inflictor, idEntity *attacker, int damage, const idVec3 &dir, int location );
@@ -199,6 +199,7 @@ public:
 	virtual	renderView_t *	GetRenderView();
 
 							// animation state control
+	int						PlayAnim( int channel, const char* name );
 	int						GetAnim( int channel, const char *name );
 	void					UpdateAnimState( void );
 	void					SetAnimState( int channel, const char *name, int blendFrames );
@@ -209,8 +210,17 @@ public:
 	bool					AnimDone( int channel, int blendFrames ) const;
 	virtual void			SpawnGibs( const idVec3 &dir, const char *damageDefName );
 
+	idEntity*				GetHeadEntity()
+	{
+		return head.GetEntity();
+	};
+
 protected:
 	friend class			idAnimState;
+
+	// Carl: navigation (originally in AI.h)
+	idAAS* 					aas;
+	int						travelFlags;
 
 	float					fovDot;				// cos( fovDegrees )
 	idVec3					eyeOffset;			// offset of eye relative to physics origin
@@ -239,6 +249,9 @@ protected:
 	jointHandle_t			soundJoint;
 
 	idIK_Walk				walkIK;
+    // Koz
+    idIK_Reach				armIK;
+    // Koz
 
 	idStr					animPrefix;
 	idStr					painAnim;
@@ -255,6 +268,10 @@ protected:
 	idAnimState				headAnim;
 	idAnimState				torsoAnim;
 	idAnimState				legsAnim;
+    // Koz
+    idAnimState				leftHandAnim;
+    idAnimState				rightHandAnim;
+    // Koz end
 
 	bool					allowPain;
 	bool					allowEyeFocus;

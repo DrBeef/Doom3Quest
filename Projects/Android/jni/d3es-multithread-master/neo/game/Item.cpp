@@ -845,7 +845,7 @@ idPDAItem::GiveToPlayer
 bool idPDAItem::GiveToPlayer(idPlayer *player) {
 	const char *str = spawnArgs.GetString( "pda_name" );
 	if ( player ) {
-		player->GivePDA( str, &spawnArgs );
+		player->GivePDA( str, &spawnArgs, true ); //GB True was guessed
 	}
 	return true;
 }
@@ -1203,7 +1203,7 @@ idMoveablePDAItem::GiveToPlayer
 bool idMoveablePDAItem::GiveToPlayer(idPlayer *player) {
 	const char *str = spawnArgs.GetString( "pda_name" );
 	if ( player ) {
-		player->GivePDA( str, &spawnArgs );
+		player->GivePDA( str, &spawnArgs, true );//GB True was guessed
 	}
 	return true;
 }

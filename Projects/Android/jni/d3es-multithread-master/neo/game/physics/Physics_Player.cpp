@@ -26,6 +26,7 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
+#include <Vr.h>
 #include "sys/platform.h"
 #include "gamesys/SysCvar.h"
 #include "Entity.h"
@@ -136,7 +137,16 @@ void idPhysics_Player::Accelerate( const idVec3 &wishdir, const float wishspeed,
 		accelspeed = addspeed;
 	}
 
-	current.velocity += accelspeed * wishdir;
+	// Koz instant accel/decel
+	if ( game->isVR && vr_instantAccel.GetBool() && vr_teleportMode.GetInteger() !=2 && walking && groundPlane && !OnLadder() )
+	{
+		idVec3 newVel = wishspeed * wishdir;
+		current.velocity.x = newVel.x;
+		current.velocity.y = newVel.y;
+	}
+	else {
+		current.velocity += accelspeed * wishdir;
+	}
 #else
 	// proper way (avoids strafe jump maxspeed bug), but feels bad
 	idVec3		wishVelocity;
@@ -166,7 +176,316 @@ Returns true if the velocity was clipped in some way
 */
 #define	MAX_CLIP_PLANES	5
 
-bool idPhysics_Player::SlideMove( bool gravity, bool stepUp, bool stepDown, bool push ) {
+// Koz MotionMove, allow physical movent to move player body in the world
+idVec3 idPhysics_Player::MotionMove( idVec3 &moveVelocity ) // bool gravity, bool stepUp, bool stepDown, bool push )
+{
+	int			i, j, k, pushFlags;
+	int			bumpcount, numbumps, numplanes;
+	float		d, time_left, into, totalMass;
+	idVec3		dir, planes[MAX_CLIP_PLANES];
+	idVec3		end, stepEnd, primal_velocity, endVelocity, endClipVelocity, clipVelocity;
+	trace_t		trace, stepTrace, downTrace;
+	bool		nearGround, stepped, pushed;
+
+	bool gravity = false;
+	bool stepUp = true;
+	bool stepDown = true;
+	bool push = true;
+
+	idVec3 mVel = moveVelocity;
+
+	numbumps = 4;
+
+	// Koz begin motion movement
+	//movement vector was calc'd in player::move, was converted to a velocity
+	//in idPhysics_Player::Evaluate
+	//add this temp velocity to move the player model the correct amount,
+	//and slidemove will calc physics for going up/down steps or plane following
+	//remove this vel after calc, so only a finite movement will be imparted, not deltav
+
+	time_left = (1000 / commonVr->hmdHz) * 0.001f;  //frametime;
+
+	// never turn against the ground plane
+	if ( groundPlane )
+	{
+		numplanes = 1;
+		planes[0] = groundTrace.c.normal;
+	}
+	else
+	{
+		numplanes = 0;
+	}
+
+	// never turn against original velocity
+	planes[numplanes] = mVel;
+	planes[numplanes].Normalize();
+	numplanes++;
+
+	for ( bumpcount = 0; bumpcount < numbumps; bumpcount++ )
+	{
+
+		// calculate position we are trying to move to
+		end = current.origin + time_left * mVel;
+
+		// see if we can make it there
+		gameLocal.clip.Translation( trace, current.origin, end, clipModel, clipModel->GetAxis(), clipMask, self );
+
+		time_left -= time_left * trace.fraction;
+		current.origin = trace.endpos;
+
+		// if moved the entire distance
+		if ( trace.fraction >= 1.0f )
+		{
+			break;
+		}
+
+		stepped = pushed = false;
+
+		// if we are allowed to step up
+		if ( stepUp )
+		{
+
+			nearGround = groundPlane | ladder;
+
+			if ( !nearGround )
+			{
+				// trace down to see if the player is near the ground
+				// step checking when near the ground allows the player to move up stairs smoothly while jumping
+				stepEnd = current.origin + maxStepHeight * gravityNormal;
+				gameLocal.clip.Translation( downTrace, current.origin, stepEnd, clipModel, clipModel->GetAxis(), clipMask, self );
+				nearGround = (downTrace.fraction < 1.0f && (downTrace.c.normal * -gravityNormal) > MIN_WALK_NORMAL);
+			}
+
+			// may only step up if near the ground or on a ladder
+			if ( nearGround )
+			{
+
+				// step up
+				stepEnd = current.origin - maxStepHeight * gravityNormal;
+				gameLocal.clip.Translation( downTrace, current.origin, stepEnd, clipModel, clipModel->GetAxis(), clipMask, self );
+
+				// trace along velocity
+				stepEnd = downTrace.endpos + time_left * mVel;
+
+				gameLocal.clip.Translation( stepTrace, downTrace.endpos, stepEnd, clipModel, clipModel->GetAxis(), clipMask, self );
+
+				// step down
+				stepEnd = stepTrace.endpos + maxStepHeight * gravityNormal;
+				gameLocal.clip.Translation( downTrace, stepTrace.endpos, stepEnd, clipModel, clipModel->GetAxis(), clipMask, self );
+
+				if ( downTrace.fraction >= 1.0f || (downTrace.c.normal * -gravityNormal) > MIN_WALK_NORMAL )
+				{
+
+					// if moved the entire distance
+					if ( stepTrace.fraction >= 1.0f )
+					{
+						time_left = 0;
+						current.stepUp -= (downTrace.endpos - current.origin) * gravityNormal;
+						current.origin = downTrace.endpos;
+						current.movementFlags |= PMF_STEPPED_UP;
+						mVel *= PM_STEPSCALE;
+						break;
+					}
+
+					// if the move is further when stepping up
+					if ( stepTrace.fraction > trace.fraction )
+					{
+						time_left -= time_left * stepTrace.fraction;
+						current.stepUp -= (downTrace.endpos - current.origin) * gravityNormal;
+						current.origin = downTrace.endpos;
+						current.movementFlags |= PMF_STEPPED_UP;
+						mVel *= PM_STEPSCALE;
+						trace = stepTrace;
+						stepped = true;
+					}
+				}
+			}
+		}
+
+		// if we can push other entities and not blocked by the world
+		if ( push && trace.c.entityNum != ENTITYNUM_WORLD )
+		{
+
+			clipModel->SetPosition( current.origin, clipModel->GetAxis() );
+
+			// clip movement, only push idMoveables, don't push entities the player is standing on
+			// apply impact to pushed objects
+			pushFlags = PUSHFL_CLIP | PUSHFL_ONLYMOVEABLE | PUSHFL_NOGROUNDENTITIES | PUSHFL_APPLYIMPULSE;
+
+			// clip & push
+			totalMass = gameLocal.push.ClipTranslationalPush( trace, self, pushFlags, end, end - current.origin );
+
+			if ( totalMass > 0.0f )
+			{
+				// decrease velocity based on the total mass of the objects being pushed ?
+				mVel *= 1.0f - idMath::ClampFloat( 0.0f, 1000.0f, totalMass - 20.0f ) * (1.0f / 950.0f);
+				pushed = true;
+			}
+
+			current.origin = trace.endpos;
+			time_left -= time_left * trace.fraction;
+
+			// if moved the entire distance
+			if ( trace.fraction >= 1.0f )
+			{
+				break;
+			}
+		}
+
+		if ( !stepped )
+		{
+			// let the entity know about the collision
+			self->Collide( trace, mVel );
+		}
+
+		if ( numplanes >= MAX_CLIP_PLANES )
+		{
+			// MrElusive: I think we have some relatively high poly LWO models with a lot of slanted tris
+			// where it may hit the max clip planes
+			mVel = vec3_origin;
+			return current.origin;
+		}
+
+		//
+		// if this is the same plane we hit before, nudge velocity
+		// out along it, which fixes some epsilon issues with
+		// non-axial planes
+		//
+		for ( i = 0; i < numplanes; i++ )
+		{
+			if ( (trace.c.normal * planes[i]) > 0.999f )
+			{
+				mVel += trace.c.normal;
+				break;
+			}
+		}
+		if ( i < numplanes )
+		{
+			continue;
+		}
+		planes[numplanes] = trace.c.normal;
+		numplanes++;
+
+		//
+		// modify velocity so it parallels all of the clip planes
+		//
+
+		// find a plane that it enters
+		for ( i = 0; i < numplanes; i++ )
+		{
+			into = mVel * planes[i];
+			if ( into >= 0.1f )
+			{
+				continue;		// move doesn't interact with the plane
+			}
+
+			// slide along the plane
+			clipVelocity = mVel;
+			clipVelocity.ProjectOntoPlane( planes[i], OVERCLIP );
+
+			// slide along the plane
+			endClipVelocity = endVelocity;
+			endClipVelocity.ProjectOntoPlane( planes[i], OVERCLIP );
+
+			// see if there is a second plane that the new move enters
+			for ( j = 0; j < numplanes; j++ )
+			{
+				if ( j == i )
+				{
+					continue;
+				}
+				if ( (clipVelocity * planes[j]) >= 0.1f )
+				{
+					continue;		// move doesn't interact with the plane
+				}
+
+				// try clipping the move to the plane
+				clipVelocity.ProjectOntoPlane( planes[j], OVERCLIP );
+				endClipVelocity.ProjectOntoPlane( planes[j], OVERCLIP );
+
+				// see if it goes back into the first clip plane
+				if ( (clipVelocity * planes[i]) >= 0 )
+				{
+					continue;
+				}
+
+				// slide the original velocity along the crease
+				dir = planes[i].Cross( planes[j] );
+				dir.Normalize();
+				d = dir * mVel;
+				clipVelocity = d * dir;
+
+				dir = planes[i].Cross( planes[j] );
+				dir.Normalize();
+				d = dir * endVelocity;
+				endClipVelocity = d * dir;
+
+				// see if there is a third plane the the new move enters
+				for ( k = 0; k < numplanes; k++ )
+				{
+					if ( k == i || k == j )
+					{
+						continue;
+					}
+					if ( (clipVelocity * planes[k]) >= 0.1f )
+					{
+						continue;		// move doesn't interact with the plane
+					}
+
+					// stop dead at a tripple plane interaction
+					mVel = vec3_origin;
+					return current.origin;
+				}
+			}
+
+			// if we have fixed all interactions, try another move
+			mVel = clipVelocity;
+			endVelocity = endClipVelocity;
+			break;
+		}
+	}
+
+	// step down
+	if ( stepDown && groundPlane )
+	{
+		stepEnd = current.origin + gravityNormal * maxStepHeight;
+		gameLocal.clip.Translation( downTrace, current.origin, stepEnd, clipModel, clipModel->GetAxis(), clipMask, self );
+		if ( downTrace.fraction > 1e-4f && downTrace.fraction < 1.0f )
+		{
+			current.stepUp -= (downTrace.endpos - current.origin) * gravityNormal;
+			current.origin = downTrace.endpos;
+			current.movementFlags |= PMF_STEPPED_DOWN;
+			mVel *= PM_STEPSCALE;
+		}
+	}
+
+	if ( gravity )
+	{
+		mVel = endVelocity;
+	}
+
+	// come to a dead stop when the velocity orthogonal to the gravity flipped
+	clipVelocity = mVel - gravityNormal * mVel * gravityNormal;
+	endClipVelocity = endVelocity - gravityNormal * endVelocity * gravityNormal;
+	if ( clipVelocity * endClipVelocity < 0.0f )
+	{
+		mVel = gravityNormal * mVel * gravityNormal;
+	}
+
+	//return (bool)(bumpcount == 0);
+	return current.origin;
+}
+
+/*
+==================
+idPhysics_Player::SlideMove
+
+Returns true if the velocity was clipped in some way
+==================
+*/
+
+bool idPhysics_Player::SlideMove( bool gravity, bool stepUp, bool stepDown, bool push )
+{
 	int			i, j, k, pushFlags;
 	int			bumpcount, numbumps, numplanes;
 	float		d, time_left, into, totalMass;
@@ -177,28 +496,35 @@ bool idPhysics_Player::SlideMove( bool gravity, bool stepUp, bool stepDown, bool
 
 	numbumps = 4;
 
+
 	primal_velocity = current.velocity;
 
-	if ( gravity ) {
+	if( gravity )
+	{
 		endVelocity = current.velocity + gravityVector * frametime;
 		current.velocity = ( current.velocity + endVelocity ) * 0.5f;
 		primal_velocity = endVelocity;
-		if ( groundPlane ) {
+		if( groundPlane )
+		{
 			// slide along the ground plane
 			current.velocity.ProjectOntoPlane( groundTrace.c.normal, OVERCLIP );
 		}
 	}
-	else {
+	else
+	{
 		endVelocity = current.velocity;
 	}
 
 	time_left = frametime;
 
 	// never turn against the ground plane
-	if ( groundPlane ) {
+	if( groundPlane )
+	{
 		numplanes = 1;
 		planes[0] = groundTrace.c.normal;
-	} else {
+	}
+	else
+	{
 		numplanes = 0;
 	}
 
@@ -207,7 +533,8 @@ bool idPhysics_Player::SlideMove( bool gravity, bool stepUp, bool stepDown, bool
 	planes[numplanes].Normalize();
 	numplanes++;
 
-	for ( bumpcount = 0; bumpcount < numbumps; bumpcount++ ) {
+	for( bumpcount = 0; bumpcount < numbumps; bumpcount++ )
+	{
 
 		// calculate position we are trying to move to
 		end = current.origin + time_left * current.velocity;
@@ -219,27 +546,31 @@ bool idPhysics_Player::SlideMove( bool gravity, bool stepUp, bool stepDown, bool
 		current.origin = trace.endpos;
 
 		// if moved the entire distance
-		if ( trace.fraction >= 1.0f ) {
+		if( trace.fraction >= 1.0f )
+		{
 			break;
 		}
 
 		stepped = pushed = false;
 
 		// if we are allowed to step up
-		if ( stepUp ) {
+		if( stepUp )
+		{
 
 			nearGround = groundPlane | ladder;
 
-			if ( !nearGround ) {
+			if( !nearGround )
+			{
 				// trace down to see if the player is near the ground
 				// step checking when near the ground allows the player to move up stairs smoothly while jumping
 				stepEnd = current.origin + maxStepHeight * gravityNormal;
 				gameLocal.clip.Translation( downTrace, current.origin, stepEnd, clipModel, clipModel->GetAxis(), clipMask, self );
-				nearGround = ( downTrace.fraction < 1.0f && (downTrace.c.normal * -gravityNormal) > MIN_WALK_NORMAL );
+				nearGround = ( downTrace.fraction < 1.0f && ( downTrace.c.normal * -gravityNormal ) > MIN_WALK_NORMAL );
 			}
 
 			// may only step up if near the ground or on a ladder
-			if ( nearGround ) {
+			if( nearGround )
+			{
 
 				// step up
 				stepEnd = current.origin - maxStepHeight * gravityNormal;
@@ -247,16 +578,19 @@ bool idPhysics_Player::SlideMove( bool gravity, bool stepUp, bool stepDown, bool
 
 				// trace along velocity
 				stepEnd = downTrace.endpos + time_left * current.velocity;
+
 				gameLocal.clip.Translation( stepTrace, downTrace.endpos, stepEnd, clipModel, clipModel->GetAxis(), clipMask, self );
 
 				// step down
 				stepEnd = stepTrace.endpos + maxStepHeight * gravityNormal;
 				gameLocal.clip.Translation( downTrace, stepTrace.endpos, stepEnd, clipModel, clipModel->GetAxis(), clipMask, self );
 
-				if ( downTrace.fraction >= 1.0f || (downTrace.c.normal * -gravityNormal) > MIN_WALK_NORMAL ) {
+				if( downTrace.fraction >= 1.0f || ( downTrace.c.normal * -gravityNormal ) > MIN_WALK_NORMAL )
+				{
 
 					// if moved the entire distance
-					if ( stepTrace.fraction >= 1.0f ) {
+					if( stepTrace.fraction >= 1.0f )
+					{
 						time_left = 0;
 						current.stepUp -= ( downTrace.endpos - current.origin ) * gravityNormal;
 						current.origin = downTrace.endpos;
@@ -266,7 +600,8 @@ bool idPhysics_Player::SlideMove( bool gravity, bool stepUp, bool stepDown, bool
 					}
 
 					// if the move is further when stepping up
-					if ( stepTrace.fraction > trace.fraction ) {
+					if( stepTrace.fraction > trace.fraction )
+					{
 						time_left -= time_left * stepTrace.fraction;
 						current.stepUp -= ( downTrace.endpos - current.origin ) * gravityNormal;
 						current.origin = downTrace.endpos;
@@ -280,18 +615,20 @@ bool idPhysics_Player::SlideMove( bool gravity, bool stepUp, bool stepDown, bool
 		}
 
 		// if we can push other entities and not blocked by the world
-		if ( push && trace.c.entityNum != ENTITYNUM_WORLD ) {
+		if( push && trace.c.entityNum != ENTITYNUM_WORLD )
+		{
 
 			clipModel->SetPosition( current.origin, clipModel->GetAxis() );
 
 			// clip movement, only push idMoveables, don't push entities the player is standing on
 			// apply impact to pushed objects
-			pushFlags = PUSHFL_CLIP|PUSHFL_ONLYMOVEABLE|PUSHFL_NOGROUNDENTITIES|PUSHFL_APPLYIMPULSE;
+			pushFlags = PUSHFL_CLIP | PUSHFL_ONLYMOVEABLE | PUSHFL_NOGROUNDENTITIES | PUSHFL_APPLYIMPULSE;
 
 			// clip & push
 			totalMass = gameLocal.push.ClipTranslationalPush( trace, self, pushFlags, end, end - current.origin );
 
-			if ( totalMass > 0.0f ) {
+			if( totalMass > 0.0f )
+			{
 				// decrease velocity based on the total mass of the objects being pushed ?
 				current.velocity *= 1.0f - idMath::ClampFloat( 0.0f, 1000.0f, totalMass - 20.0f ) * ( 1.0f / 950.0f );
 				pushed = true;
@@ -301,17 +638,20 @@ bool idPhysics_Player::SlideMove( bool gravity, bool stepUp, bool stepDown, bool
 			time_left -= time_left * trace.fraction;
 
 			// if moved the entire distance
-			if ( trace.fraction >= 1.0f ) {
+			if( trace.fraction >= 1.0f )
+			{
 				break;
 			}
 		}
 
-		if ( !stepped ) {
+		if( !stepped )
+		{
 			// let the entity know about the collision
 			self->Collide( trace, current.velocity );
 		}
 
-		if ( numplanes >= MAX_CLIP_PLANES ) {
+		if( numplanes >= MAX_CLIP_PLANES )
+		{
 			// MrElusive: I think we have some relatively high poly LWO models with a lot of slanted tris
 			// where it may hit the max clip planes
 			current.velocity = vec3_origin;
@@ -323,13 +663,16 @@ bool idPhysics_Player::SlideMove( bool gravity, bool stepUp, bool stepDown, bool
 		// out along it, which fixes some epsilon issues with
 		// non-axial planes
 		//
-		for ( i = 0; i < numplanes; i++ ) {
-			if ( ( trace.c.normal * planes[i] ) > 0.999f ) {
+		for( i = 0; i < numplanes; i++ )
+		{
+			if( ( trace.c.normal * planes[i] ) > 0.999f )
+			{
 				current.velocity += trace.c.normal;
 				break;
 			}
 		}
-		if ( i < numplanes ) {
+		if( i < numplanes )
+		{
 			continue;
 		}
 		planes[numplanes] = trace.c.normal;
@@ -340,9 +683,11 @@ bool idPhysics_Player::SlideMove( bool gravity, bool stepUp, bool stepDown, bool
 		//
 
 		// find a plane that it enters
-		for ( i = 0; i < numplanes; i++ ) {
+		for( i = 0; i < numplanes; i++ )
+		{
 			into = current.velocity * planes[i];
-			if ( into >= 0.1f ) {
+			if( into >= 0.1f )
+			{
 				continue;		// move doesn't interact with the plane
 			}
 
@@ -355,11 +700,14 @@ bool idPhysics_Player::SlideMove( bool gravity, bool stepUp, bool stepDown, bool
 			endClipVelocity.ProjectOntoPlane( planes[i], OVERCLIP );
 
 			// see if there is a second plane that the new move enters
-			for ( j = 0; j < numplanes; j++ ) {
-				if ( j == i ) {
+			for( j = 0; j < numplanes; j++ )
+			{
+				if( j == i )
+				{
 					continue;
 				}
-				if ( ( clipVelocity * planes[j] ) >= 0.1f ) {
+				if( ( clipVelocity * planes[j] ) >= 0.1f )
+				{
 					continue;		// move doesn't interact with the plane
 				}
 
@@ -368,7 +716,8 @@ bool idPhysics_Player::SlideMove( bool gravity, bool stepUp, bool stepDown, bool
 				endClipVelocity.ProjectOntoPlane( planes[j], OVERCLIP );
 
 				// see if it goes back into the first clip plane
-				if ( ( clipVelocity * planes[i] ) >= 0 ) {
+				if( ( clipVelocity * planes[i] ) >= 0 )
+				{
 					continue;
 				}
 
@@ -384,11 +733,14 @@ bool idPhysics_Player::SlideMove( bool gravity, bool stepUp, bool stepDown, bool
 				endClipVelocity = d * dir;
 
 				// see if there is a third plane the the new move enters
-				for ( k = 0; k < numplanes; k++ ) {
-					if ( k == i || k == j ) {
+				for( k = 0; k < numplanes; k++ )
+				{
+					if( k == i || k == j )
+					{
 						continue;
 					}
-					if ( ( clipVelocity * planes[k] ) >= 0.1f ) {
+					if( ( clipVelocity * planes[k] ) >= 0.1f )
+					{
 						continue;		// move doesn't interact with the plane
 					}
 
@@ -405,11 +757,78 @@ bool idPhysics_Player::SlideMove( bool gravity, bool stepUp, bool stepDown, bool
 		}
 	}
 
+	// Leyland
+	blink = false;
+	idVec3 headOrigin = commonVr->uncrouchedHMDViewOrigin - current.origin;
+	headOrigin.z = 0.f;
+
+	static const float headBodyLimit = 11.f;
+	static const float maxHeadDist = headBodyLimit + 24.5f;
+	static const float headBodyLimitSq = headBodyLimit * headBodyLimit;
+	static const float maxHeadDistSq = maxHeadDist * maxHeadDist;
+
+	idBounds bounds(idVec3(-5,-5,-5), idVec3(5,5,5));
+	idVec3 start;
+
+	// see if we can raise our head high enough
+	start = end = current.origin;
+	start.z += 20.f;
+	end.z = commonVr->uncrouchedHMDViewOrigin.z;
+	gameLocal.clip.TraceBounds( trace, start, end, bounds, clipMask, self );
+	commonVr->headHeightDiff = trace.endpos.z - end.z;
+
+	if( trace.fraction < 1.f )
+	{
+		if( !headBumped )
+		{
+			blink = true;
+			headBumped = true;
+		}
+	}
+	else
+	{
+		if( headBumped )
+		{
+			blink = true;
+			headBumped = false;
+		}
+	}
+
+	// clamp to a max distance
+	float headDistSq = headOrigin.LengthSqr();
+	if( headDistSq > maxHeadDistSq )
+	{
+		headOrigin *= maxHeadDist / sqrtf(headDistSq);
+		headDistSq = maxHeadDistSq;
+		blink = true;
+	}
+
+	// head collision check if we are outside the body bounds
+	if( headDistSq > headBodyLimitSq )
+	{
+		// see if we can make it there
+		start = current.origin;
+		start.z = commonVr->uncrouchedHMDViewOrigin.z + commonVr->headHeightDiff;
+		end = headOrigin + start;
+		gameLocal.clip.TraceBounds( trace, start, end, bounds, clipMask, self );
+
+		if( trace.fraction < 1.0f )
+		{
+			blink = true;
+		}
+
+		headOrigin = trace.endpos - current.origin;
+	}
+	headOrigin.z = commonVr->headHeightDiff;
+	// end Leyland
+
 	// step down
-	if ( stepDown && groundPlane ) {
+	if( stepDown && groundPlane )
+	{
 		stepEnd = current.origin + gravityNormal * maxStepHeight;
 		gameLocal.clip.Translation( downTrace, current.origin, stepEnd, clipModel, clipModel->GetAxis(), clipMask, self );
-		if ( downTrace.fraction > 1e-4f && downTrace.fraction < 1.0f ) {
+		if( downTrace.fraction > 1e-4f && downTrace.fraction < 1.0f )
+		{
 			current.stepUp -= ( downTrace.endpos - current.origin ) * gravityNormal;
 			current.origin = downTrace.endpos;
 			current.movementFlags |= PMF_STEPPED_DOWN;
@@ -417,18 +836,21 @@ bool idPhysics_Player::SlideMove( bool gravity, bool stepUp, bool stepDown, bool
 		}
 	}
 
-	if ( gravity ) {
+	if( gravity )
+	{
 		current.velocity = endVelocity;
 	}
+
 
 	// come to a dead stop when the velocity orthogonal to the gravity flipped
 	clipVelocity = current.velocity - gravityNormal * current.velocity * gravityNormal;
 	endClipVelocity = endVelocity - gravityNormal * endVelocity * gravityNormal;
-	if ( clipVelocity * endClipVelocity < 0.0f ) {
+	if( clipVelocity * endClipVelocity < 0.0f )
+	{
 		current.velocity = gravityNormal * current.velocity * gravityNormal;
 	}
 
-	return (bool)( bumpcount == 0 );
+	return ( bool )( bumpcount == 0 );
 }
 
 /*
@@ -447,6 +869,16 @@ void idPhysics_Player::Friction( void ) {
 	if ( walking ) {
 		// ignore slope movement, remove all velocity in gravity direction
 		vel += (vel * gravityNormal) * gravityNormal;
+
+		// Koz instant accel/decel
+		if ( game->isVR && vr_instantAccel.GetBool() && vr_teleportMode.GetInteger() != 2 && groundPlane && !OnLadder() )
+		{
+			if ( command.forwardmove == 0 && command.rightmove == 0 )
+			{
+				current.velocity.x = 0;
+				current.velocity.y = 0;
+			}
+		}
 	}
 
 	speed = vel.Length();
@@ -732,9 +1164,11 @@ void idPhysics_Player::WalkMove( void ) {
 		}
 	}
 
+
 	// don't do anything if standing still
 	vel = current.velocity - (current.velocity * gravityNormal) * gravityNormal;
-	if ( !vel.LengthSqr() ) {
+	if( !vel.LengthSqr() && !commonVr->motionMoveDelta.x && !commonVr->motionMoveDelta.y )
+	{
 		return;
 	}
 
@@ -1078,27 +1512,52 @@ void idPhysics_Player::CheckDuck( void ) {
 	if ( current.movementType == PM_DEAD ) {
 		maxZ = pm_deadheight.GetFloat();
 	} else {
-		// stand up when up against a ladder
-		if ( command.upmove < 0 && !ladder ) {
-			// duck
-			current.movementFlags |= PMF_DUCKED;
-		} else {
-			// stand up if possible
-			if ( current.movementFlags & PMF_DUCKED ) {
-				// try to stand up
-				end = current.origin - ( pm_normalheight.GetFloat() - pm_crouchheight.GetFloat() ) * gravityNormal;
-				gameLocal.clip.Translation( trace, current.origin, end, clipModel, clipModel->GetAxis(), clipMask, self );
-				if ( trace.fraction >= 1.0f ) {
-					current.movementFlags &= ~PMF_DUCKED;
-				}
+		if ( current.movementType == PM_NORMAL && game->isVR && vr_crouchMode.GetInteger() == 0 && !(command.buttons & BUTTON_CROUCH) )
+			// game is in full motion crouch mode, dont do anything except change the bounding box to crouch height if ducking
+			// and change the player speed to crouch speed if player has ducked enough.
+			// thought I was going to have to do a bunch of bullshit to toggle the crouch anim
+			// but turns out the walk anim with the waist IK doesn't look too terrible for now
+			// of course, I haven't tested crouching EVERYWHERE in the game yet.....
+			//
+		{
+			maxZ = pm_normalviewheight.GetFloat() + commonVr->poseHmdBodyPositionDelta.z + commonVr->headHeightDiff;
+			idMath::ClampFloat(pm_crouchheight.GetFloat(), pm_normalheight.GetFloat(), maxZ);
+			maxZ = (int)maxZ; // if this is not cast as an int, it crashes the savegame file!!!!!!! WTF?
+
+			current.movementFlags &= ~PMF_DUCKED;
+			// If we're using floor height, it only counts as crouching if we're actually trying to duck, not simply sitting.
+			if (maxZ <= (pm_crouchheight.GetFloat() + 2) && (!vr_useFloorHeight.GetBool() || commonVr->userDuckingAmount > vr_crouchTriggerDist.GetFloat() / vr_scale.GetFloat()))
+			{
+				playerSpeed = crouchSpeed;
+				if (!ladder)
+					current.movementFlags |= PMF_DUCKED;
 			}
 		}
+		else {
+			// stand up when up against a ladder
+			if (command.upmove < 0 && !ladder) {
+				// duck
+				current.movementFlags |= PMF_DUCKED;
+			} else {
+				// stand up if possible
+				if (current.movementFlags & PMF_DUCKED) {
+					// try to stand up
+					end = current.origin -
+						  (pm_normalheight.GetFloat() - pm_crouchheight.GetFloat()) * gravityNormal;
+					gameLocal.clip.Translation(trace, current.origin, end, clipModel,
+											   clipModel->GetAxis(), clipMask, self);
+					if (trace.fraction >= 1.0f) {
+						current.movementFlags &= ~PMF_DUCKED;
+					}
+				}
+			}
 
-		if ( current.movementFlags & PMF_DUCKED ) {
-			playerSpeed = crouchSpeed;
-			maxZ = pm_crouchheight.GetFloat();
-		} else {
-			maxZ = pm_normalheight.GetFloat();
+			if (current.movementFlags & PMF_DUCKED) {
+				playerSpeed = crouchSpeed;
+				maxZ = pm_crouchheight.GetFloat();
+			} else {
+				maxZ = pm_normalheight.GetFloat();
+			}
 		}
 	}
 	// if the clipModel height should change
@@ -1351,8 +1810,7 @@ void idPhysics_Player::MovePlayer( int msec ) {
 	current.velocity -= current.pushVelocity;
 
 	// view vectors
-	viewAngles.ToVectors( &viewForward, NULL, NULL );
-	viewForward *= clipModelAxis;
+	viewForward = commandForward * clipModelAxis;
 	viewRight = gravityNormal.Cross( viewForward );
 	viewRight.Normalize();
 
@@ -1506,7 +1964,7 @@ idPhysics_Player::idPhysics_Player( void ) {
 	maxStepHeight = 0;
 	maxJumpHeight = 0;
 	memset( &command, 0, sizeof( command ) );
-	viewAngles.Zero();
+	commandForward = idVec3( 1, 0, 0 );
 	framemsec = 0;
 	frametime = 0;
 	playerSpeed = 0;
@@ -1571,7 +2029,7 @@ void idPhysics_Player::Save( idSaveGame *savefile ) const {
 	savefile->WriteInt( debugLevel );
 
 	savefile->WriteUsercmd( command );
-	savefile->WriteAngles( viewAngles );
+	savefile->WriteVec3( commandForward );
 
 	savefile->WriteInt( framemsec );
 	savefile->WriteFloat( frametime );
@@ -1608,7 +2066,7 @@ void idPhysics_Player::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( debugLevel );
 
 	savefile->ReadUsercmd( command );
-	savefile->ReadAngles( viewAngles );
+	savefile->ReadVec3( commandForward );
 
 	savefile->ReadInt( framemsec );
 	savefile->ReadFloat( frametime );
@@ -1633,9 +2091,11 @@ void idPhysics_Player::Restore( idRestoreGame *savefile ) {
 idPhysics_Player::SetPlayerInput
 ================
 */
-void idPhysics_Player::SetPlayerInput( const usercmd_t &cmd, const idAngles &newViewAngles ) {
+//void idPhysics_Player::SetPlayerInput( const usercmd_t &cmd, const idAngles &newViewAngles ) {
+void idPhysics_Player::SetPlayerInput( const usercmd_t& cmd, const idVec3& forwardVector ) {
 	command = cmd;
-	viewAngles = newViewAngles;		// can't use cmd.angles cause of the delta_angles
+	//viewAngles = newViewAngles;		// can't use cmd.angles cause of the delta_angles
+	commandForward = forwardVector;		// can't use cmd.angles cause of the delta_angles
 }
 
 /*
@@ -1781,7 +2241,7 @@ idPhysics_Player::ApplyImpulse
 ================
 */
 void idPhysics_Player::ApplyImpulse( const int id, const idVec3 &point, const idVec3 &impulse ) {
-	if ( current.movementType != PM_NOCLIP ) {
+	if ( current.movementType != PM_NOCLIP && !(game->isVR && !vr_knockBack.GetBool())) {
 		current.velocity += impulse * invMass;
 	}
 }

@@ -112,6 +112,38 @@ typedef struct snapshot_s {
 	struct snapshot_s *		next;
 } snapshot_t;
 
+struct timeState_t
+{
+    int					time;
+    int					previousTime;
+    int					realClientTime;
+
+    void				Set( int t, int pt, int rct )
+    {
+        time = t;
+        previousTime = pt;
+        realClientTime = rct;
+    };
+    void				Get( int& t, int& pt, int& rct )
+    {
+        t = time;
+        pt = previousTime;
+        rct = realClientTime;
+    };
+    void				Save( idSaveGame* savefile ) const
+    {
+        savefile->WriteInt( time );
+        savefile->WriteInt( previousTime );
+        savefile->WriteInt( realClientTime );
+    }
+    void				Restore( idRestoreGame* savefile )
+    {
+        savefile->ReadInt( time );
+        savefile->ReadInt( previousTime );
+        savefile->ReadInt( realClientTime );
+    }
+};
+
 const int MAX_EVENT_PARAM_SIZE		= 128;
 
 typedef struct entityNetEvent_s {
@@ -200,12 +232,28 @@ template< class type >
 class idEntityPtr {
 public:
 							idEntityPtr();
-
 	// save games
 	void					Save( idSaveGame *savefile ) const;					// archives object for save game file
 	void					Restore( idRestoreGame *savefile );					// unarchives object from save game file
 
-	idEntityPtr<type> &		operator=( type *ent );
+	/*idEntityPtr<type> &		operator=( type *ent );
+	idEntityPtr& 			operator=( const idEntityPtr& ep );
+	idEntityPtr& 			operator=( const type* ent );*/
+	idEntityPtr& 			operator=( const type* ent );
+	idEntityPtr& 			operator=( const idEntityPtr& ep );
+
+    bool					operator==( const idEntityPtr& ep )
+    {
+        return spawnId == ep.spawnId;
+    }
+	type* 					operator->() const
+	{
+		return GetEntity();
+	}
+	operator type* () const
+	{
+		return GetEntity();
+	}
 
 	// synchronize entity pointers over the network
 	int						GetSpawnId( void ) const { return spawnId; }
@@ -296,6 +344,9 @@ public:
 	idEntityPtr<idEntity>	lastGUIEnt;				// last entity with a GUI, used by Cmd_NextGUI_f
 	int						lastGUI;				// last GUI on the lastGUIEnt
 
+	timeState_t				fast;
+	timeState_t				slow;
+
 	// ---------------------- Public idGame Interface -------------------
 
 							idGameLocal();
@@ -304,6 +355,12 @@ public:
 	virtual void			Shutdown( void );
 	virtual void			SetLocalClient( int clientNum );
 	virtual void 			SetVRClientInfo(vrClientInfo *pVRClientInfo);
+	virtual void			EvaluateVRMoveMode(idVec3 &viewangles, usercmd_t &cmd, int buttonCurrentlyClicked, float snapTurn);
+	//GB Trying to move animator function
+	virtual bool			AnimatorGetJointTransform(idAnimator* animator, jointHandle_t jointHandle, int currentTime, idVec3 &offset, idMat3 &axis );
+    virtual bool            CMDButtonsAttackCall(int &teleportCanceled);
+    virtual bool            CMDButtonsPhysicalCrouch();
+	virtual float			CalcTorsoYawDelta(usercmd_t &cmd);
 	virtual void			ThrottleUserInfo( void );
 	virtual const idDict *	SetUserInfo( int clientNum, const idDict &userInfo, bool isClient, bool canModify );
 	virtual const idDict *	GetUserInfo( int clientNum );
@@ -448,10 +505,18 @@ public:
 	void					SetGlobalMaterial( const idMaterial *mat );
 	const idMaterial *		GetGlobalMaterial();
 
+	virtual bool				IsPDAOpen() const;
+
 	void					SetGibTime( int _time ) { nextGibTime = _time; };
 	int						GetGibTime() { return nextGibTime; };
 
+	// Koz made public
+	void					SetScriptFPS( const float com_engineHz );
+	// Koz end
+
 	bool					NeedRestart();
+
+	virtual int				GetTimeGroupTime( int timeGroup );
 
 private:
 	const static int		INITIAL_SPAWN_COUNT = 1;
@@ -551,7 +616,7 @@ private:
 	void					GetShakeSounds( const idDict *dict );
 
 	virtual void			SelectTimeGroup( int timeGroup );
-	virtual int				GetTimeGroupTime( int timeGroup );
+
 	virtual void			GetBestGameType( const char* map, const char* gametype, char buf[ MAX_STRING_CHARS ] );
 
 	void					Tokenize( idStrList &out, const char *in );
@@ -576,28 +641,42 @@ public:
 //============================================================================
 
 template< class type >
-ID_INLINE idEntityPtr<type>::idEntityPtr() {
-	spawnId = 0;
+ID_INLINE idEntityPtr<type>::idEntityPtr()
+{
+    spawnId = 0;
 }
 
 template< class type >
-ID_INLINE void idEntityPtr<type>::Save( idSaveGame *savefile ) const {
-	savefile->WriteInt( spawnId );
+ID_INLINE void idEntityPtr<type>::Save( idSaveGame* savefile ) const
+{
+    savefile->WriteInt( spawnId );
 }
 
 template< class type >
-ID_INLINE void idEntityPtr<type>::Restore( idRestoreGame *savefile ) {
-	savefile->ReadInt( spawnId );
+ID_INLINE void idEntityPtr<type>::Restore( idRestoreGame* savefile )
+{
+    savefile->ReadInt( spawnId );
 }
 
 template< class type >
-ID_INLINE idEntityPtr<type> &idEntityPtr<type>::operator=( type *ent ) {
-	if ( ent == NULL ) {
-		spawnId = 0;
-	} else {
-		spawnId = ( gameLocal.spawnIds[ent->entityNumber] << GENTITYNUM_BITS ) | ent->entityNumber;
-	}
-	return *this;
+ID_INLINE idEntityPtr<type>& idEntityPtr<type>::operator=( const type* ent )
+{
+    if( ent == NULL )
+    {
+        spawnId = 0;
+    }
+    else
+    {
+        spawnId = ( gameLocal.spawnIds[ent->entityNumber] << GENTITYNUM_BITS ) | ent->entityNumber;
+    }
+    return *this;
+}
+
+template< class type >
+ID_INLINE idEntityPtr< type >& idEntityPtr<type>::operator=( const idEntityPtr& ep )
+{
+    spawnId = ep.spawnId;
+    return *this;
 }
 
 template< class type >

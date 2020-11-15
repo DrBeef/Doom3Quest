@@ -274,6 +274,16 @@ bool idGameLocal::InCinematic()
 	return inCinematic;
 }
 
+/*
+========================
+idGameLocal::IsPDAOpen
+========================
+*/
+bool idGameLocal::IsPDAOpen() const
+{
+    return GetLocalPlayer() && GetLocalPlayer()->objectiveSystemOpen;
+}
+
 
 /*
 ===========
@@ -766,9 +776,414 @@ void idGameLocal::SetLocalClient( int clientNum ) {
 
 void idGameLocal::SetVRClientInfo(vrClientInfo *pVR)
 {
+	/*
+	pVR->hmdorientation[0] = 0.0;
+	pVR->hmdorientation[1] = 0.0;
+	pVR->hmdorientation[2] = 0.0;*/
 	pVRClientInfo = pVR;
 }
 
+/*
+================
+Koz
+idGameLocal::CalcTorsoYawDelta()
+
+Calculates a yaw offset to rotate the player model torso to a somewhat forward position
+based on view direction and tracked hand controller position.
+================
+*/
+
+float idGameLocal::CalcTorsoYawDelta(usercmd_t &cmd)
+{
+	// we want to orient the body relative to the view ( if movement, body will be auto positioned by move )
+	// to do : improve this - it's pretty hacky, just calcs a mostly naive forward vector for the body based on view direction and hand positions.
+	static int influenceLevel = 0;
+
+	if ( gameLocal.GetLocalPlayer() )
+	{
+		influenceLevel = gameLocal.GetLocalPlayer()->GetInfluenceLevel();
+
+		// for fucks sake this is now officially beyond ridiculous.
+		// Turns out the teleport sequences in delta labs are just private camera views of the 'hell tunnel'
+		// which are meshes built off in the corner of the level.  No player influece is set, and if the torso is
+		// updated here, it screws up the view rendering the teleport sequence.
+		if ( gameLocal.GetLocalPlayer()->GetPrivateCameraView() )
+		{
+			// bail if the teleport camera is active.
+			if ( strstr( gameLocal.GetLocalPlayer()->GetPrivateCameraView()->GetName(), "teleportView" ) ) return 0.0;
+		}
+	}
+
+	if ( influenceLevel == 0 && !gameLocal.inCinematic && commonVr->VR_USE_MOTION_CONTROLS && !commonVr->thirdPersonMovement && (abs( cmd.forwardmove ) < .1 || abs( cmd.rightmove ) < .1) )
+	{
+		idVec3 rightHandPos;
+		idVec3 rightHandForwardVec;
+		idVec3 leftHandPos;
+		idVec3 leftHandForwardVec;
+		idVec3 combinedHandVec;
+		idVec3 centerHandsPos;
+		idVec3 hipPos;
+		idVec3 viewDirVec;
+		idVec3 bodyDirVec;
+		idVec3 bodyToHandCenterVec;
+
+		idVec3 torsoVec;
+		static idVec3 lastTorsoVec = vec3_zero;
+
+		float bodyYaw;
+		float viewYaw;
+
+		if (!gameLocal.GetLocalPlayer()) {
+			/*if (common->GetCurrentGame() == DOOM3_BFG)
+                common->Printf("Local player null, skipping for now...\n");*/
+			return 0.0;
+		}
+		bodyYaw = gameLocal.GetLocalPlayer()->viewAngles.yaw;
+		viewYaw = gameLocal.GetLocalPlayer()->viewAngles.yaw - commonVr->bodyYawOffset + commonVr->poseHmdAngles.yaw;
+
+		viewYaw = idAngles( 0.0f, viewYaw, 0.0f ).Normalize180().yaw;
+		static float targetBodyYaw = viewYaw;
+
+		hipPos = gameLocal.GetLocalPlayer()->GetPlayerPhysics()->GetOrigin();
+		hipPos.z += 48.0f;
+
+		rightHandPos = commonVr->currentHandWorldPosition[HAND_RIGHT /*0*/ ];// right Hand
+		rightHandForwardVec = rightHandPos - hipPos;
+		rightHandForwardVec.z = 0.0f;
+		rightHandForwardVec.Normalize();
+
+		leftHandPos = commonVr->currentHandWorldPosition[HAND_LEFT /*1*/ ];// left hand
+		leftHandForwardVec = leftHandPos - hipPos;
+		leftHandForwardVec.z = 0.0f;
+		leftHandForwardVec.Normalize();
+
+		combinedHandVec = leftHandForwardVec + rightHandForwardVec;
+		combinedHandVec.Normalize();
+
+		//body direction vector;
+		bodyDirVec = hipPos + (gameLocal.GetLocalPlayer()->viewAxis[0] * 40);
+		bodyDirVec = bodyDirVec - hipPos;
+		bodyDirVec.z = 0.0f;
+		bodyDirVec.Normalize();
+
+		viewDirVec = gameLocal.GetLocalPlayer()->GetPlayerPhysics()->GetOrigin() + (idAngles( 0.0f, viewYaw, 0.0f ).ToMat3()[0] * 40);
+		viewDirVec = viewDirVec - gameLocal.GetLocalPlayer()->GetPlayerPhysics()->GetOrigin();
+		viewDirVec.z = 0.0f;
+		viewDirVec.Normalize();
+
+		// check if hands are moving behind body.
+		if ( fabs( idMath::AngleDelta( rightHandForwardVec.ToAngles().yaw, bodyDirVec.ToAngles().yaw ) ) >= 80 ||
+			 fabs( idMath::AngleDelta( leftHandForwardVec.ToAngles().yaw, bodyDirVec.ToAngles().yaw ) ) >= 80 )
+		{
+			//common->Printf( "hand deltas > 80 resetting %d\n",Sys_Milliseconds() );
+			leftHandForwardVec =  bodyDirVec; //viewDirVec
+			rightHandForwardVec = bodyDirVec; //viewDirVec
+			leftHandPos = hipPos + (gameLocal.GetLocalPlayer()->viewAxis[0] * 40); // viewDirVec * 40;
+			rightHandPos = hipPos + (gameLocal.GetLocalPlayer()->viewAxis[0] * 40); // viewDirVec * 40;
+			combinedHandVec = leftHandForwardVec + rightHandForwardVec;
+			combinedHandVec.Normalize();
+		}
+
+		centerHandsPos = (leftHandPos + rightHandPos) / 2.0f;
+
+		bodyToHandCenterVec = hipPos - centerHandsPos;
+		bodyToHandCenterVec.z = 0;
+		bodyToHandCenterVec.Normalize();
+
+		if ( bodyToHandCenterVec * viewDirVec < 0 ) // this shouldn't really happen.
+		{
+			bodyToHandCenterVec *= -1;
+		}
+
+		/*
+        gameRenderWorld->DebugLine( colorYellow, hipPos, hipPos + bodyDirVec * 40, 20 );
+        gameRenderWorld->DebugLine( colorRed, hipPos, hipPos + rightHandForwardVec * 40, 20 );
+        gameRenderWorld->DebugLine( colorBlue, hipPos, hipPos + leftHandForwardVec * 40, 20 );
+        gameRenderWorld->DebugLine( colorBrown, hipPos, hipPos + viewDirVec * 40, 20 );
+        gameRenderWorld->DebugLine( colorPink, hipPos, hipPos + combinedHandVec * 40, 20 );
+        gameRenderWorld->DebugLine( colorPurple, hipPos, hipPos + bodyToHandCenterVec * 40, 20 );
+        */
+
+		torsoVec = viewDirVec;
+
+		if ( fabs( idMath::AngleDelta( viewDirVec.ToAngles().Normalize180().yaw, combinedHandVec.ToAngles().Normalize180().yaw ) ) > 80.0f )
+		{
+			torsoVec = combinedHandVec + bodyToHandCenterVec;
+		}
+
+		torsoVec.Normalize();
+
+		if ( viewDirVec * torsoVec < 0.0f )
+		{
+			torsoVec = viewDirVec + lastTorsoVec;
+			torsoVec.z = 0.0f;
+			torsoVec.Normalize();
+		}
+
+		lastTorsoVec = torsoVec;
+
+		float desiredBody = torsoVec.ToAngles().Normalize180().yaw;
+		float angDelta = fabs( idMath::AngleDelta( targetBodyYaw, (viewYaw + bodyToHandCenterVec.ToAngles().Normalize180().yaw) / 2 ) );
+		float turnDelta;
+
+		if ( angDelta > 5.0f ) targetBodyYaw = (viewYaw + bodyToHandCenterVec.ToAngles().Normalize180().yaw) / 2;// viewYaw;
+
+		if ( fabs( idMath::AngleDelta( targetBodyYaw, viewYaw ) ) > 70.0f ) targetBodyYaw = viewYaw;
+
+		turnDelta = -idMath::AngleDelta( bodyYaw, targetBodyYaw );
+
+		float cmdYaw = 0.0f;
+		float degPerFrame = fabs( turnDelta ) > 30 ? turnDelta : fabs( turnDelta ) / (200.0f / (1000 / commonVr->hmdHz));// 1.0f;
+
+		if ( fabs( turnDelta ) < degPerFrame )
+		{
+			cmdYaw = turnDelta;
+		}
+		else
+		{
+			cmdYaw = turnDelta > 0.0f ? degPerFrame : -degPerFrame;
+		}
+
+		if ( fabs( cmdYaw ) < 0.1f ) cmdYaw = 0.0f;
+
+		commonVr->bodyYawOffset += cmdYaw;
+		commonVr->bodyYawOffset = idAngles(0.0f, commonVr->bodyYawOffset, 0.0f).Normalize180().yaw;
+
+		return cmdYaw;
+	}
+
+	return 0.0;
+}
+
+bool idGameLocal::CMDButtonsAttackCall(int &teleportCanceled)
+{
+	if ( commonVr->teleportButtonCount != 0 && vr_teleportMode.GetInteger() == 0 )// dont cancel teleport
+	{
+		commonVr->teleportButtonCount = 0;
+		teleportCanceled = 1;
+		return false;
+	}
+	else if ( teleportCanceled == 0 )
+	{
+		return true;
+	}
+	return false;
+}
+
+bool idGameLocal::CMDButtonsPhysicalCrouch()
+{
+	// Koz begin crouch trigger
+	if ( commonVr->userDuckingAmount > vr_crouchTriggerDist.GetFloat() / vr_scale.GetFloat() && vr_crouchMode.GetInteger() == 1 ) return true;
+	return false;
+}
+
+/*
+ * GB Begin - Moved Render call to Animator
+ */
+//GB Trying to move animator function
+bool idGameLocal::AnimatorGetJointTransform(idAnimator* animator, jointHandle_t jointHandle, int currentTime, idVec3 &offset, idMat3 &axis )
+{
+	return animator->GetJointTransform( jointHandle, -1, offset, axis );
+}
+
+/*
+================
+Koz begin
+idUsercmdGenLocal::EvaluateVRMoveMode()
+
+Process the different VR movement mode options
+================
+*/
+void idGameLocal::EvaluateVRMoveMode(idVec3 &viewangles, usercmd_t &cmd, int buttonCurrentlyClicked, float snapTurn)
+{
+	static int thirdPersonTime = commonVr->Sys_Milliseconds();
+	static bool moveStarted = 0; // no movement
+	static int numButtonClicks = 0; // start not pressed.
+	static int pressedLastPoll = false;
+	static int lastMoveTime = gameLocal.time;
+
+	if ( commonVr->didTeleport )
+	{
+		commonVr->didTeleport = false;
+		if ( vr_teleportMode.GetInteger() == 0 )
+		{
+			viewangles[YAW] += commonVr->teleportDir;
+			common->Printf( "Teleport dir yaw adding %f angles to view \n", commonVr->teleportDir );
+			commonVr->teleportDir = 0.0f;
+			//return;
+		}
+	}
+
+	//GB - Include Dr. Beefs SnapTurn
+	if ( snapTurn != 0.0 && (commonVr->Sys_Milliseconds() - commonVr->lastComfortTime >= vr_comfortRepeat.GetInteger()) )
+	{
+		viewangles[YAW] += snapTurn;
+		commonVr->lastComfortTime = commonVr->Sys_Milliseconds();
+	}
+
+	// Koz make sure the torso faces some form of forward.
+	if( !ik_debug.GetBool() ) {
+		viewangles[YAW] += CalcTorsoYawDelta(cmd);
+	}
+
+	bool okToMove = false;
+	bool moveRequested = ( abs( cmd.forwardmove ) >= 0.05 || abs( cmd.rightmove ) >= 0.05 );
+
+	if ( moveRequested )
+	{
+		lastMoveTime = gameLocal.time;
+	}
+	else if ( gameLocal.time - lastMoveTime < 100 )
+	{
+		moveRequested = true;
+	}
+
+
+	if ( game->InCinematic() == true) return; // do nothing in cinematics
+
+	if ( buttonCurrentlyClicked && !pressedLastPoll && moveRequested )
+	{
+		numButtonClicks++;
+		if ( numButtonClicks == 3 ) numButtonClicks = 1;
+		pressedLastPoll = true;
+	}
+
+	if ( !buttonCurrentlyClicked )
+	{
+		pressedLastPoll = false;
+	}
+
+	if ( !moveRequested )
+	{
+		numButtonClicks = 0;
+		moveStarted = false;
+	}
+	else
+	{
+		switch ( vr_moveClick.GetInteger() )
+		{
+			case 0: // normal movement
+
+				okToMove = true;
+				break;
+
+			case 1: // click and hold to walk
+
+				if ( numButtonClicks > 0 && buttonCurrentlyClicked )
+				{
+					okToMove = true;
+				}
+				break;
+
+			case 2: // click to start walking, then touch only.
+
+				if ( numButtonClicks > 0 )
+				{
+					okToMove = true;
+				}
+				break;
+
+			case 3: // click to start walking, pressing again will run while pressed
+				if ( numButtonClicks > 0 )
+				{
+					okToMove = true;
+				}
+				if ( numButtonClicks == 2 )
+				{
+					moveStarted = true;
+				}
+				if ( moveStarted && buttonCurrentlyClicked )
+				{
+					cmd.buttons |= BUTTON_RUN;
+				}
+				break;
+
+			case 4: // click to start walking, clicking again will toggle running on and off
+				if ( numButtonClicks > 0 )
+				{
+					okToMove = true;
+				}
+				if ( numButtonClicks == 2 )
+				{
+					cmd.buttons |= BUTTON_RUN;
+				}
+				break;
+
+			default:
+				okToMove = true;
+				break;
+		}
+	}
+
+	// okToMove is true for Doom VFR
+//	if (vr_teleportMode.GetInteger() == 2) {
+//		cmd.forwardmove = 0.0f;
+//		cmd.rightmove = 0.0f;
+//		okToMove = true;
+//	}
+
+	if ( !okToMove )
+	{
+		cmd.forwardmove = 0.0f;
+		cmd.rightmove = 0.0f;
+		return;
+	}
+
+	if (commonVr->VR_USE_MOTION_CONTROLS && !commonVr->thirdPersonMovement && (vr_movePoint.GetInteger() == 1 || vr_movePoint.GetInteger() > 2) &&
+		(abs(cmd.forwardmove) >= .1 || abs(cmd.rightmove) >= .1) || vr_teleportMode.GetInteger() == 2) // body will follow motion from move vector
+	{
+		static idAngles controllerAng;
+		int hand;
+		switch( vr_movePoint.GetInteger() )
+		{
+			case 1: // off hand
+				hand = 1 - vr_weaponHand.GetInteger();
+				break;
+			case 3: // weapon hand
+				hand = vr_weaponHand.GetInteger();
+				break;
+			case 4:
+				hand = 1; // left hand
+				break;
+			case 5:
+				hand = 0; // right hand
+				break;
+		}
+
+		controllerAng = commonVr->poseHandRotationAngles[hand];
+		viewangles[YAW] += controllerAng.yaw - commonVr->bodyYawOffset;
+		commonVr->bodyYawOffset = controllerAng.yaw;
+	}
+	else if ( !commonVr->VR_USE_MOTION_CONTROLS || vr_movePoint.GetInteger() == 2 ) // body will follow view
+	{
+		viewangles[YAW] += commonVr->poseHmdAngles.yaw - commonVr->bodyMoveAng;
+		commonVr->bodyMoveAng = commonVr->poseHmdAngles.yaw;
+		commonVr->bodyYawOffset = commonVr->poseHmdAngles.yaw;
+	}
+
+	if ( vr_motionSickness.GetInteger() == 10 )
+	{
+		if ( cmd.forwardmove != 0 || cmd.rightmove != 0 )
+		{
+			commonVr->thirdPersonMovement = true;
+			thirdPersonTime = commonVr->Sys_Milliseconds();
+			// third person movement is switched off again in player.cpp
+			// once the speed hits zero and forwardmove and rightmove are 0
+		}
+		else
+		{
+			//in case the player has jumped on something moving in third person,
+			//put a timeout here so the view will snap back if the controls haven't been touched
+			//in a bit.
+			if ( commonVr->thirdPersonMovement == true && ( commonVr->Sys_Milliseconds() - thirdPersonTime ) > 300 ) commonVr->thirdPersonMovement = false;
+
+		}
+	}
+	else
+	{
+		commonVr->thirdPersonMovement = false;
+	}
+}
 
 /*
 ===========
@@ -1185,6 +1600,10 @@ void idGameLocal::MapPopulate( void ) {
 	// before the physics are run so entities can bind correctly
 	Printf( "==== Processing events ====\n" );
 	idEvent::ServiceEvents();
+
+    // Must set GAME_FPS for script after populating, because some maps run their own scripts
+    // when spawning the world, and GAME_FPS will not be found before then.
+    SetScriptFPS( 60.0f );
 }
 
 /*
@@ -1247,11 +1666,13 @@ bool idGameLocal::InitFromSaveGame( const char *mapName, idRenderWorld *renderWo
 	gameRenderWorld = renderWorld;
 	gameSoundWorld = soundWorld;
 
-	idRestoreGame savegame( saveGameFile );
+    SetScriptFPS(renderSystem->GetRefresh());
+
+    idRestoreGame savegame( saveGameFile );
 
 	savegame.ReadBuildNumber();
 
-	// Create the list of all objects in the game
+    // Create the list of all objects in the game
 	savegame.CreateObjects();
 
 	// Load the idProgram, also checking to make sure scripting hasn't changed since the savegame
@@ -1265,10 +1686,10 @@ bool idGameLocal::InitFromSaveGame( const char *mapName, idRenderWorld *renderWo
 		return false;
 	}
 
-	// load the map needed for this savegame
-	LoadMap( mapName, 0 );
+    // load the map needed for this savegame
+    LoadMap( mapName, 0 );
 
-	savegame.ReadInt( i );
+    savegame.ReadInt( i );
 	g_skill.SetInteger( i );
 
 	// precache the player
@@ -1438,6 +1859,27 @@ bool idGameLocal::InitFromSaveGame( const char *mapName, idRenderWorld *renderWo
 
 	// free up any unused animations
 	animationLib.FlushUnusedAnims();
+
+	// Carl: InitTeleportTarget here instead of in idPlayer::Restore so it is always done AFTER the teleport target is loaded
+	if (GetLocalPlayer())
+	{
+		idPlayer *player = GetLocalPlayer();
+		player->InitTeleportTarget();
+		// if we autosaved while teleporting QuakeCon style, stop the QuakeCon style effect
+		if (player->noclip)// && player->playerView.bfgVision)
+		{
+			extern idCVar timescale;
+			player->warpTime = 0;
+			player->noclip = false;
+			player->warpMove = false;
+			player->warpAim = false;
+			player->warpVel = vec3_origin;
+			player->jetMove = false;
+			player->jetMoveVel = vec3_origin;
+			timescale.SetFloat(1.0f);
+			//player->playerView.EnableBFGVision(false);
+		}
+	}
 
 	gamestate = GAMESTATE_ACTIVE;
 
@@ -1846,6 +2288,21 @@ void idGameLocal::InitScriptForMap( void ) {
 		}
 	}
 }
+/*
+===================
+idGameLocal::SetScriptFPS
+===================
+*/
+void idGameLocal::SetScriptFPS( const float engineHz )
+{
+    idVarDef* fpsDef = program.GetDef( &type_float, "GAME_FPS", &def_namespace );
+    if( fpsDef != NULL )
+    {
+        eval_t fpsValue;
+        fpsValue._float = engineHz;
+        fpsDef->SetValue( fpsValue, false );
+    }
+}
 
 /*
 ===========
@@ -2204,7 +2661,7 @@ gameReturn_t idGameLocal::RunFrame( const usercmd_t *clientCmds ) {
 
     player->SetVRClientInfo(pVRClientInfo);
 
-	if ( !isMultiplayer && g_stopTime.GetBool() ) {
+	if ( !isMultiplayer && g_stopTime.GetBool() || commonVr->VR_GAME_PAUSED  ) {
 		// clear any debug lines from a previous frame
 		gameRenderWorld->DebugClearLines( time + 1 );
 
@@ -2349,7 +2806,11 @@ gameReturn_t idGameLocal::RunFrame( const usercmd_t *clientCmds ) {
 		ret.sessionCommand[0] = 0;
 
 		if ( !isMultiplayer && player ) {
-			ret.health = player->health;
+            for( int h = 0; h < 2; h++ ) {
+                GetLocalPlayer()->hands[h].GetControllerShake(ret.vibrationLow[h],
+                                                              ret.vibrationHigh[h]);
+            }
+		    ret.health = player->health;
 			ret.heartRate = player->heartRate;
 			ret.stamina = idMath::FtoiFast( player->stamina );
 			// combat is a 0-100 value based on lastHitTime and lastDmgTime
@@ -3278,7 +3739,7 @@ void idGameLocal::AddEntityToHash( const char *name, idEntity *ent ) {
 	if ( FindEntity( name ) ) {
 		Error( "Multiple entities named '%s'", name );
 	}
-	entityHash.Add( entityHash.GenerateKey( name, true ), ent->entityNumber );
+	entityHash.Add(entityHash.GenerateKey(name, true), ent->entityNumber);
 }
 
 /*
@@ -3667,6 +4128,19 @@ void idGameLocal::RadiusDamage( const idVec3 &origin, idEntity *inflictor, idEnt
 			}
 
 			ent->Damage( inflictor, attacker, dir, damageDefName, damageScale, INVALID_JOINT );
+
+            // If the player is local. SHAkkkkkkeeee!
+            if( !gameLocal.isMultiplayer && GetLocalPlayer() )
+            {
+                if( ent->IsType( idPlayer::Type ) )
+                {
+                    idPlayer* player = static_cast< idPlayer* >( ent );
+                    if( player )
+                    {
+                        player->ControllerShakeFromDamage( damage, dir );
+                    }
+                }
+            }
 		}
 	}
 

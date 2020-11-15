@@ -26,6 +26,10 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
+#include "game/Game_local.h"
+#include "game/Vr.h"
+#include "game/gamesys/SysCvar.h"
+
 #include "sys/platform.h"
 #include "idlib/math/Vector.h"
 #include "idlib/Lib.h"
@@ -34,6 +38,8 @@ If you have questions concerning this license or the applicable additional terms
 #include "framework/async/AsyncNetwork.h"
 
 #include "framework/UsercmdGen.h"
+#include "Game.h"
+
 
 #include "renderer/RenderSystem.h"
 
@@ -713,6 +719,10 @@ void idUsercmdGenLocal::CmdButtons( void ) {
 
 	cmd.buttons = 0;
 
+    // Koz begin cancel teleport if fire button pressed.
+    static int teleportCanceled = 0;
+    bool performAttack = true;
+
 	// figure button bits
 	for (i = 0 ; i <= 7 ; i++) {
 		if ( ButtonState( (usercmdButton_t)( UB_BUTTON0 + i ) ) ) {
@@ -722,8 +732,12 @@ void idUsercmdGenLocal::CmdButtons( void ) {
 
 	// check the attack button
 	if ( ButtonState( UB_ATTACK ) ) {
-		cmd.buttons |= BUTTON_ATTACK;
+        performAttack = game->CMDButtonsAttackCall(teleportCanceled);
+        if(performAttack)
+	        cmd.buttons |= BUTTON_ATTACK;
 	}
+
+    teleportCanceled &= ButtonState( UB_ATTACK );
 
 	// check the run button
 	if ( toggled_run.on ^ ( in_alwaysRun.GetBool() && idAsyncNetwork::IsActive() ) ) {
@@ -744,6 +758,20 @@ void idUsercmdGenLocal::CmdButtons( void ) {
 	// check the mouse look button
 	if ( ButtonState( UB_MLOOK ) ^ in_freeLook.GetInteger() ) {
 		cmd.buttons |= BUTTON_MLOOK;
+	}
+
+	if( ButtonState( UB_UP ) )
+	{
+		cmd.buttons |= BUTTON_JUMP;
+	}
+	if( toggled_crouch.on )
+	{
+		cmd.buttons |= BUTTON_CROUCH;
+	}
+
+	if(game->CMDButtonsPhysicalCrouch())
+	{
+		cmd.buttons |= BUTTON_CROUCH;
 	}
 }
 
@@ -772,7 +800,8 @@ creates the current command for this frame
 ================
 */
 void idUsercmdGenLocal::MakeCurrent( void ) {
-	idVec3		oldAngles;
+    idVec3 oldAngles = viewangles;
+    static int thirdPersonTime = Sys_Milliseconds();
 	int		i;
 	static float prevYaw = 0;
 
@@ -793,6 +822,35 @@ void idUsercmdGenLocal::MakeCurrent( void ) {
 		// get basic movement from keyboard
 		KeyMove();
 
+		//Call game specific VR stuff and gubbins
+		int buttonCurrentlyClicked =ButtonState( UB_IMPULSE41 );
+
+		//Dr Beefs Code
+		float forward,strafe;
+		float hmd_forward,hmd_strafe;
+		float up = 0;
+		float yaw = 0;
+		float pitch = 0;
+		float roll = 0;
+		VR_GetMove(&forward, &strafe, &hmd_forward, &hmd_strafe, &up, &yaw, &pitch, &roll);
+
+		//Maybe this is right as long as I don't include HMD
+		cmd.rightmove = idMath::ClampChar( cmd.rightmove + strafe );
+		cmd.forwardmove = idMath::ClampChar( cmd.forwardmove + forward);
+
+		game->EvaluateVRMoveMode(viewangles, cmd, buttonCurrentlyClicked, yaw);
+
+		// check to make sure the angles haven't wrapped
+		if( viewangles[PITCH] - oldAngles[PITCH] > 90 )
+		{
+			viewangles[PITCH] = oldAngles[PITCH] + 90;
+		}
+		else if( oldAngles[PITCH] - viewangles[PITCH] > 90 )
+		{
+			viewangles[PITCH] = oldAngles[PITCH] - 90;
+		}
+
+
 #if 0
 		// get basic movement from mouse
 		MouseMove();
@@ -801,7 +859,7 @@ void idUsercmdGenLocal::MakeCurrent( void ) {
 		JoystickMove();
 #endif
 
-		float forward,strafe;
+		/*float forward,strafe;
 		float hmd_forward,hmd_strafe;
 		float up = 0;
 		float yaw = 0;
@@ -830,14 +888,14 @@ void idUsercmdGenLocal::MakeCurrent( void ) {
 			viewangles[PITCH] = oldAngles[PITCH] + 90;
 		} else if ( oldAngles[PITCH] - viewangles[PITCH] > 90 ) {
 			viewangles[PITCH] = oldAngles[PITCH] - 90;
-		}
+		}*/
 	} else {
 		mouseDx = 0;
 		mouseDy = 0;
 	}
 
 	for ( i = 0; i < 3; i++ ) {
-		cmd.angles[i] = ANGLE2SHORT( viewangles[i] );
+		cmd.angles[i] = ANGLE2SHORT( viewangles[i] );  // Koz this sets player body
 	}
 
 	cmd.mx = continuousMouseX;
@@ -845,7 +903,6 @@ void idUsercmdGenLocal::MakeCurrent( void ) {
 
 	flags = cmd.flags;
 	impulse = cmd.impulse;
-
 }
 
 //=====================================================================

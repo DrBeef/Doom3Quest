@@ -34,7 +34,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "renderer/Model.h"
 #include "renderer/RenderSystem.h"
 
-#include "gamesys/Class.h"
+#include "Class.h"
 
 /*
 

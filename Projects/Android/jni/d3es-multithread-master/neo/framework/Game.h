@@ -29,6 +29,7 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __GAME_H__
 #define __GAME_H__
 
+
 #include "idlib/BitMsg.h"
 #include "idlib/Dict.h"
 #include "framework/UsercmdGen.h"
@@ -53,16 +54,28 @@ class idNetworkSystem;
 ===============================================================================
 */
 
-typedef struct {
+struct gameReturn_t {
+	gameReturn_t() :
+			syncNextGameFrame( false )
+	{
+		for( int h = 0; h < 2; h++ )
+		{
+			vibrationLow[h] = 0;
+			vibrationHigh[h] = 0;
+		}
+	}
+
 	char		sessionCommand[MAX_STRING_CHARS];	// "map", "disconnect", "victory", etc
 	int			consistencyHash;					// used to check for network game divergence
 	int			health;
 	int			heartRate;
+    int			vibrationLow[2];
+    int			vibrationHigh[2];
 	int			stamina;
 	int			combat;
 	bool		syncNextGameFrame;					// used when cinematics are skipped to prevent session from simulating several game frames to
 													// keep the game time in sync with real time
-} gameReturn_t;
+};
 
 typedef enum {
 	ALLOW_YES = 0,
@@ -92,7 +105,22 @@ public:
 
 	virtual void 				SetVRClientInfo(vrClientInfo *pVRClientInfo) = 0;
 
+	virtual void 				EvaluateVRMoveMode(idVec3 &viewangles, usercmd_t &cmd, int buttonCurrentlyClicked, float snapTurn) = 0;
+    virtual bool 				CMDButtonsAttackCall(int &teleportCanceled) = 0;
+    virtual bool 				CMDButtonsPhysicalCrouch() = 0;
+
 	virtual bool 				InCinematic() = 0;
+
+	// Release the mouse when the PDA is open
+	virtual bool				IsPDAOpen() const = 0;
+
+	//GB Trying to move animator function
+	virtual bool				AnimatorGetJointTransform(idAnimator* animator, jointHandle_t jointHandle, int currentTime, idVec3 &offset, idMat3 &axis ) = 0;
+
+	// Koz begin
+	// VR State
+	bool						isVR = 1;
+	// Koz end
 
 	// Sets the user info for a client.
 	// if canModify is true, the game can modify the user info in the returned dictionary pointer, server will forward the change back

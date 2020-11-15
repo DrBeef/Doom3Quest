@@ -99,9 +99,10 @@ idCVar g_cinematic(					"g_cinematic",				"1",			CVAR_GAME | CVAR_BOOL, "skips u
 idCVar g_cinematicMaxSkipTime(		"g_cinematicMaxSkipTime",	"600",			CVAR_GAME | CVAR_FLOAT, "# of seconds to allow game to run when skipping cinematic.  prevents lock-up when cinematic doesn't end.", 0, 3600 );
 
 idCVar g_muzzleFlash(				"g_muzzleFlash",			"1",			CVAR_GAME | CVAR_ARCHIVE | CVAR_BOOL, "show muzzle flashes" );
-idCVar g_projectileLights(			"g_projectileLights",		"1",			CVAR_GAME | CVAR_ARCHIVE | CVAR_BOOL, "show dynamic lights on projectiles" );
+//SB disable by default for VR
+idCVar g_projectileLights(			"g_projectileLights",		"0",			CVAR_GAME | CVAR_ARCHIVE | CVAR_BOOL, "show dynamic lights on projectiles" );
 idCVar g_bloodEffects(				"g_bloodEffects",			"1",			CVAR_GAME | CVAR_ARCHIVE | CVAR_BOOL, "show blood splats, sprays and gibs" );
-idCVar g_doubleVision(				"g_doubleVision",			"1",			CVAR_GAME | CVAR_ARCHIVE | CVAR_BOOL, "show double vision when taking damage" );
+idCVar g_doubleVision(				"g_doubleVision",			"0",			CVAR_GAME | CVAR_ARCHIVE | CVAR_BOOL, "show double vision when taking damage" );
 idCVar g_hitEffect(					"g_hitEffect",				"1",			CVAR_GAME | CVAR_ARCHIVE | CVAR_BOOL, "mess up player camera when taking damage" );
 idCVar g_monsters(					"g_monsters",				"1",			CVAR_GAME | CVAR_BOOL, "" );
 idCVar g_decals(					"g_decals",					"1",			CVAR_GAME | CVAR_ARCHIVE | CVAR_BOOL, "show decals such as bullet holes" );
@@ -343,9 +344,11 @@ idCVar vr_heightoffset(				"vr_heightoffset",			"0.0",			CVAR_GAME | CVAR_FLOAT 
 idCVar vr_controlscheme(			"vr_controlscheme",		"0",			CVAR_GAME | CVAR_INTEGER, "VR Control Scheme: 0 = right handed, 10 = left handed" );
 idCVar vr_shakeamplitude(           "vr_shakeamplitude",        "0.8", CVAR_FLOAT | CVAR_ARCHIVE, "Screen shake amplitude 0.0 = disabled to 1.0 = full\n", 0.0f, 1.0f );
 idCVar vr_knockback(                "vr_knockback",         "0", CVAR_BOOL | CVAR_ARCHIVE | CVAR_GAME, "Enable damage knockback in VR. 0 = Disabled, 1 = Enabled" );
-idCVar vr_weaponsight( 					"vr_weaponsight", "0", CVAR_BOOL | CVAR_ARCHIVE, "Weapon Sight.\n 0 = Disable\n 1 = Lasersight" );
 idCVar vr_throwables( 					"vr_throwables", "1", CVAR_BOOL | CVAR_ARCHIVE, "Throwable Grenades.\n 0 = Disable\n 1 = Throw and release with trigger" );
 idCVar vr_turnmode( 					"vr_turnmode", "0", CVAR_BOOL | CVAR_ARCHIVE, "Turn Mode.\n 0 = Snap Turn\n 1 = Smooth Turn" );
 idCVar vr_turnangle( 					"vr_turnangle", "45", CVAR_INTEGER | CVAR_ARCHIVE, "Turn Angle. angle for snap, or velocity for smooth" );
-idCVar vr_hudmode( 					"vr_hudmode", "0", CVAR_BOOL | CVAR_ARCHIVE, "HUD Mode.\n 1 = Attached to off-hand controller\n 0 = Fixed" );
-
+idCVar vr_hudmode( 					"vr_hudmode", "1", CVAR_BOOL | CVAR_ARCHIVE, "HUD Mode.\n 1 = Attached to off-hand controller\n 0 = Fixed" );
+idCVar g_infiniteAmmo( "g_infiniteAmmo", "0", CVAR_GAME | CVAR_BOOL, "infinite ammo" );
+idCVar g_useWeaponDepthHack( "g_useWeaponDepthHack", "0", CVAR_BOOL | CVAR_GAME |  CVAR_ARCHIVE, "Crunch z depth on weapons" );// Koz
+idCVar g_weaponShadows( "g_weaponShadows", "1", CVAR_BOOL | CVAR_GAME | CVAR_ARCHIVE, "Cast shadows from weapons" ); // Koz
+idCVar timescale( "timescale", "1", CVAR_SYSTEM | CVAR_FLOAT, "Number of game frames to run per render frame", 0.001f, 100.0f );

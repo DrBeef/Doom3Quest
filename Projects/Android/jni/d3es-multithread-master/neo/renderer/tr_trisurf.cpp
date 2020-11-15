@@ -2200,6 +2200,7 @@ deformInfo_t *R_BuildDeformInfo( int numVerts, const idDrawVert *verts, int numI
 
 	deform->numSourceVerts = numVerts;
 	deform->numOutputVerts = tri.numVerts;
+	deform->verts = tri.verts;
 
 	deform->numIndexes = numIndexes;
 	deform->indexes = tri.indexes;

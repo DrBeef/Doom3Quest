@@ -27,6 +27,8 @@ If you have questions concerning this license or the applicable additional terms
 */
 
 #include <SDL.h>
+#include <d3es-multithread-master/neo/game/Vr.h>
+
 
 #include "sys/platform.h"
 #include "idlib/containers/HashTable.h"
@@ -75,6 +77,11 @@ struct version_s {
 			version_s( void ) { sprintf( string, "%s.%d%s %s-%s %s %s", ENGINE_VERSION, BUILD_NUMBER, BUILD_DEBUG, BUILD_OS, BUILD_CPU, ID__DATE__, ID__TIME__ ); }
 	char	string[256];
 } version;
+
+
+idCVar vr_refresh( "vr_refresh", "60", CVAR_INTEGER | CVAR_ARCHIVE, "Refresh rate" );
+idCVar vr_supersampling( "vr_supersampling", "-1.0", CVAR_FLOAT | CVAR_ARCHIVE, "Supersampling" );
+idCVar vr_msaa( "vr_msaa",  "1", CVAR_FLOAT | CVAR_ARCHIVE, "MSAA" );
 
 idCVar com_version( "si_version", version.string, CVAR_SYSTEM|CVAR_ROM|CVAR_SERVERINFO, "engine version" );
 idCVar com_skipRenderer( "com_skipRenderer", "0", CVAR_BOOL|CVAR_SYSTEM, "skip the renderer completely" );
@@ -162,7 +169,7 @@ public:
 	virtual int					ButtonState( int key );
 	virtual int					KeyState( int key );
 
-    virtual void 				Vibrate(int duration, int channel, float intensity );
+    virtual void 				Vibrate(int channel, float low, float high );
 
     // DG: hack to allow adding callbacks and exporting additional functions without breaking the game ABI
 	//     see Common.h for longer explanation...
@@ -1460,7 +1467,7 @@ void Com_ExecMachineSpec_f( const idCmdArgs &args ) {
 		cvarSystem->SetCVarInteger( "image_preload", 1, CVAR_ARCHIVE );
 		cvarSystem->SetCVarInteger( "image_useAllFormats", 1, CVAR_ARCHIVE );
 		cvarSystem->SetCVarInteger( "image_usePrecompressedTextures", 1, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_downSize", 1, CVAR_ARCHIVE );
+		cvarSystem->SetCVarInteger( "image_downSize", 0, CVAR_ARCHIVE );
 		cvarSystem->SetCVarInteger( "image_anisotropy", 0, CVAR_ARCHIVE );
 		cvarSystem->SetCVarInteger( "image_useCompression", 1, CVAR_ARCHIVE );
 		cvarSystem->SetCVarInteger( "image_ignoreHighQuality", 1, CVAR_ARCHIVE );
@@ -1478,8 +1485,8 @@ void Com_ExecMachineSpec_f( const idCmdArgs &args ) {
 	cvarSystem->SetCVarBool( "r_forceLoadImages", false, CVAR_ARCHIVE );
 
 	cvarSystem->SetCVarBool( "g_decals", true, CVAR_ARCHIVE );
-	cvarSystem->SetCVarBool( "g_projectileLights", true, CVAR_ARCHIVE );
-	cvarSystem->SetCVarBool( "g_doubleVision", true, CVAR_ARCHIVE );
+	//cvarSystem->SetCVarBool( "g_projectileLights", true, CVAR_ARCHIVE );
+	//cvarSystem->SetCVarBool( "g_doubleVision", false, CVAR_ARCHIVE );
 	cvarSystem->SetCVarBool( "g_muzzleFlash", true, CVAR_ARCHIVE );
 
 #if MACOS_X
@@ -2384,11 +2391,11 @@ void idCommonLocal::InitSIMD( void ) {
 
 extern "C" void Doom3Quest_setUseScreenLayer(int use);
 extern "C" void Doom3Quest_FrameSetup(int controlscheme);
-extern "C" void Doom3Quest_Vibrate(int duration, int channel, float intensity );
+extern "C" void Doom3Quest_Vibrate(int channel, float low, float high );
 
-void idCommonLocal::Vibrate(int duration, int channel, float intensity )
+void idCommonLocal::Vibrate(int channel, float low, float high)
 {
-    Doom3Quest_Vibrate(duration, channel, intensity );
+    Doom3Quest_Vibrate(channel, low, high);
 }
 
 
@@ -2445,6 +2452,13 @@ void idCommonLocal::Frame( void ) {
 			// normal, in-sequence screen update
 			session->UpdateScreen( false );
 		}
+
+		/*
+		// process the rumble
+		for(int i = 0; i < 2; i++) {
+			Vibrate(i, ret.vibrationLow[i], ret.vibrationHigh[i]);
+		}
+		*/
 
 		// report timing information
 		if ( com_speeds.GetBool() ) {
@@ -3043,6 +3057,10 @@ void idCommonLocal::Init( int argc, char **argv ) {
 
 		// load the persistent console history
 		console->LoadHistory();
+
+		//commonVr->VR_USE_MOTION_CONTROLS = false;
+		//common->Vibrate(0,0,0);
+
 
 		com_fullyInitialized = true;
 	}

@@ -558,10 +558,126 @@ void idRenderModelMD5::LoadModel() {
 	}
 	parser.ExpectTokenString( "}" );
 
-	for( i = 0; i < meshes.Num(); i++ ) {
+    //-----------------------------------------
+    // create the inverse of the base pose joints to support tech6 style deformation
+    // of base pose vertexes, normals, and tangents.
+    //
+    // vertex * joints * inverseJoints == vertex when joints is the base pose
+    // When the joints are in another pose, it gives the animated vertex position
+    //-----------------------------------------
+    invertedDefaultPose.SetNum( SIMD_ROUND_JOINTS( joints.Num() ) );
+    for( int i = 0; i < joints.Num(); i++ )
+    {
+        invertedDefaultPose[i] = poseMat3[i];
+        invertedDefaultPose[i].Invert();
+    }
+    SIMD_INIT_LAST_JOINT( invertedDefaultPose.Ptr(), joints.Num() );
+
+	idStr materialName; // Koz
+	bool isPDAmesh = false;
+
+	for( int i = 0; i < meshes.Num(); i++ )
+	{
+		isPDAmesh = false;
 		parser.ExpectTokenString( "mesh" );
-		meshes[ i ].ParseMesh( parser, defaultPose.Num(), poseMat3 );
+		meshes[i].ParseMesh( parser, defaultPose.Num(), poseMat3 );
+
+		// Koz begin
+		// Remove hands from weapon & pda viewmodels if desired.
+
+		materialName = meshes[i].shader->GetName();
+		if ( materialName.IsEmpty() )
+		{
+			meshes[i].shader = NULL;
+		}
+		else
+		{
+			if ( materialName == "textures/common/pda_gui" || materialName == "_pdaImage" ||  materialName == "_pdaimage" )
+			{
+				// Koz pda  - change material to _pdaImage instead of deault
+				// this allows rendering the PDA & swf menus to the model ingame.
+				// if we find this gui, we also need to add a surface to the model, so flag.
+				meshes[i].shader = declManager->FindMaterial( "_pdaImage" );
+				isPDAmesh = true;
+			}
+		}
+
+		if ( isPDAmesh )
+		{
+
+
+			{
+				common->Printf( "Load pda model\n" );
+				for ( int ti = 0; ti < meshes[i].NumVerts(); ti++ )
+				{
+					common->Printf( "Numverts %d Vert %d %f %f %f : %f %f %f %f\n", meshes[i].NumVerts(), ti, meshes[i].deformInfo->verts[ti].xyz.x,
+						meshes[i].deformInfo->verts[ti].xyz.y,
+						meshes[i].deformInfo->verts[ti].xyz.z,
+						meshes[i].deformInfo->verts[ti].GetTexCoordS(),
+						meshes[i].deformInfo->verts[ti].GetTexCoordT(),
+						meshes[i].deformInfo->verts[ti].st[0],
+						meshes[i].deformInfo->verts[ti].st[1]);
+				}
+			}
+
+
+			common->Printf( "PDA gui found, creating gui surface for hitscan.\n" );
+
+			modelSurface_t  pdasurface;
+
+			pdasurface.id = 0;
+			pdasurface.shader = declManager->FindMaterial( "_pdaImage" );
+
+			srfTriangles_t * pdageometry = AllocSurfaceTriangles( meshes[i].NumVerts(), meshes[i].deformInfo->numIndexes );
+			assert( pdageometry != NULL );
+
+			// infinite bounds
+			pdageometry->bounds[0][0] =
+			pdageometry->bounds[0][1] =
+			pdageometry->bounds[0][2] = -99999;
+			pdageometry->bounds[1][0] =
+			pdageometry->bounds[1][1] =
+			pdageometry->bounds[1][2] = 99999;
+
+			pdageometry->numVerts = meshes[i].NumVerts();
+			pdageometry->numIndexes = meshes[i].deformInfo->numIndexes;
+
+			for ( int zz = 0; zz < pdageometry->numIndexes; zz++ )
+			{
+				pdageometry->indexes[zz] = meshes[i].deformInfo->indexes[zz];
+			}
+
+			for ( int zz = 0; zz < pdageometry->numVerts; zz++ )
+			{
+				//GB Fix Verts (if needed)
+				pdageometry->verts[zz].xyz = meshes[i].deformInfo->verts[zz].xyz;
+				//pdageometry->verts[zz].SetTexCoord( meshes[i].deformInfo->verts[zz].GetTexCoord() );
+				pdageometry->verts[zz].st = meshes[i].deformInfo->verts[zz].st;
+			}
+
+
+			{
+				common->Printf( "verify pda model\n" );
+				for ( int ti = 0; ti < pdageometry->numVerts; ti++ )
+				{
+					common->Printf( "Numverts %d Vert %d %f %f %f : %f %f %f %f\n", pdageometry->numVerts, ti, pdageometry->verts[ti].xyz.x,
+						pdageometry->verts[ti].xyz.y,
+						pdageometry->verts[ti].xyz.z,
+						pdageometry->verts[ti].GetTexCoordS(),
+						pdageometry->verts[ti].GetTexCoordT(),
+						pdageometry->verts[ti].st[0],
+						pdageometry->verts[ti].st[1] );
+				}
+			}
+
+
+			pdasurface.geometry = pdageometry;
+			AddSurface( pdasurface );
+		}
+		// Koz end PDA
 	}
+
+
 
 	//
 	// calculate the bounds of the model

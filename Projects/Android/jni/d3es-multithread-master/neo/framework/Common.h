@@ -58,6 +58,11 @@ typedef enum {
 #define STRTABLE_ID				"#str_"
 #define STRTABLE_ID_LENGTH		5
 
+extern idCVar vr_refresh;
+extern idCVar vr_supersampling;
+extern idCVar vr_msaa;
+
+
 extern idCVar		com_version;
 extern idCVar		com_skipRenderer;
 extern idCVar		com_asyncInput;
@@ -213,7 +218,7 @@ public:
 	virtual int					KeyState( int key ) = 0;
 
 								//Haptic Feedback
-	virtual void 				Vibrate(int duration, int channel, float intensity ) = 0;
+	virtual void 				Vibrate(int channel, float low, float high ) = 0;
 
 	/* Some Mods (like Ruiner and DarkMod when it still was a mod) used "SourceHook"
 	 * to override Doom3 Methods to call their own code before the original method

@@ -366,8 +366,15 @@ bool idSessionLocal::HandleSaveGameMenuCommand( idCmdArgs &args, int &icmd ) {
 		return true;
 	}
 
+	if ( !idStr::Icmp( cmd, "createNewName" ) ) {
+		guiActive->SetStateString( "saveGameName", TimeStampToFilename() );
+		guiActive->StateChanged( com_frameTime );
+		return true;
+	}
+
 	if ( !idStr::Icmp( cmd, "saveGame" ) ) {
-		const char *saveGameName = TimeStampToFilename();//guiActive->State().GetString("saveGameName");
+		//const char *saveGameName = TimeStampToFilename();//
+		const char *saveGameName = guiActive->State().GetString("saveGameName");
 		if ( saveGameName && saveGameName[0] ) {
 
 			// First see if the file already exists unless they pass '1' to authorize the overwrite
@@ -460,8 +467,7 @@ bool idSessionLocal::HandleSaveGameMenuCommand( idCmdArgs &args, int &icmd ) {
 			guiActive->SetStateString( "loadgame_shot",  screenshot );
 
 			saveName.RemoveColors();
-			//guiActive->SetStateString( "saveGameName", saveName );
-			guiActive->SetStateString( "saveGameName", TimeStampToFilename() );
+			guiActive->SetStateString( "saveGameName", saveName );
 			guiActive->SetStateString( "saveGameDescription", description );
 
 			ID_TIME_T timeStamp;

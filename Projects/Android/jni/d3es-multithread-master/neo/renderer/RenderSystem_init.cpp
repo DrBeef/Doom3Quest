@@ -1624,6 +1624,8 @@ void idRenderSystemLocal::Init( void ) {
 	// we used to memset tr, but now that it is a class, we can't, so
 	// there may be other state we need to reset
 
+	hudOpacity = 1.0f;
+
 	multithreadActive = r_multithread.GetBool();
 	useSpinLock = false;
 	spinLockDelay = 500;
@@ -1791,6 +1793,15 @@ idRenderSystemLocal::GetScreenHeight
 */
 int idRenderSystemLocal::GetScreenHeight( void ) const {
 	return glConfig.vidHeight;
+}
+
+/*
+========================
+idRenderSystemLocal::SetHUDOpacity
+========================
+*/
+void idRenderSystemLocal::SetHudOpacity( float opacity ) {
+	hudOpacity = opacity;
 }
 
 extern "C"

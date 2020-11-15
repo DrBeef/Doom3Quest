@@ -357,9 +357,12 @@ Called when a weapon fires, generates head twitches, etc
 ==================
 */
 void idPlayerView::WeaponFireFeedback( const idDict *weaponDef ) {
+	if ( game->isVR && !vr_headKick.GetBool() ) return; // Koz skip head kick from weapon recoil in vr
+
 	int		recoilTime;
 
 	recoilTime = weaponDef->GetInt( "recoilTime" );
+
 	// don't shorten a damage kick in progress
 	if ( recoilTime && kickFinishTime < gameLocal.time ) {
 		idAngles angles;
@@ -370,6 +373,7 @@ void idPlayerView::WeaponFireFeedback( const idDict *weaponDef ) {
 	}
 
 	//Defined for the VR weapons - defaults in case they are missing
+	/*
 	float controllerShakeHighMag = weaponDef->GetFloat( "controllerShakeHighMag", "1.0" );
 	int controllerShakeHighTime = weaponDef->GetInt( "controllerShakeHighTime", "0" );
 	vrClientInfo *pVRClientInfo = player->GetVRClientInfo();
@@ -383,7 +387,7 @@ void idPlayerView::WeaponFireFeedback( const idDict *weaponDef ) {
 	if (cvarSystem->GetCVarBool("vr_weapon_stabilised"))
 	{
 		common->Vibrate(controllerShakeHighTime, rightHanded ? 0 : 1, controllerShakeHighMag);
-	}
+	}*/
 }
 
 /*
@@ -402,15 +406,18 @@ void idPlayerView::CalculateShake() {
 	// since CurrentShakeAmplitudeForPosition() returns all the shake sounds
 	// the player can hear, it can go over 1.0 too.
 	//
+	// Koz
+	if ( game->isVR ) shakeVolume *= vr_shakeAmplitude.GetFloat();
+
 	shakeAng[0] = gameLocal.random.CRandomFloat() * shakeVolume * vr_shakeamplitude.GetFloat();
 	shakeAng[1] = gameLocal.random.CRandomFloat() * shakeVolume * vr_shakeamplitude.GetFloat();
 	shakeAng[2] = gameLocal.random.CRandomFloat() * shakeVolume * vr_shakeamplitude.GetFloat();
 
-	if (shakeVolume > 0.1) {
+	/*if (shakeVolume > 0.1) {
         //Shake controllers!
         common->Vibrate(50, 0, idMath::ClampFloat(0.1, 1.0, shakeVolume*2.0f + 0.1f));
         common->Vibrate(50, 1, idMath::ClampFloat(0.1, 1.0, shakeVolume*2.0f + 0.1f));
-    }
+    }*/
 }
 
 /*
@@ -463,15 +470,24 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
 		return;
 	}
 
-	renderSystem->DirectFrameBufferStart();
+    renderSystem->DirectFrameBufferStart();
 
-    if ( player->objectiveSystemOpen ) {
-        player->objectiveSystem->Redraw( gameLocal.time );
-    } else {
+
+	if ( player->objectiveSystemOpen ) {
+		cvarSystem->SetCVarBool("draw_pda", true);
+		renderSystem->CropRenderSize( 1024, 1024, true );
+		player->objectiveSystem->Redraw( gameLocal.time );
+        renderSystem->CaptureRenderToImage( "_pdaImage" );
+		renderSystem->UnCrop();
+		//globalImages->pdaImage->Resize( rendertarget.w, rendertarget.h );
+		cvarSystem->SetCVarBool("draw_pda", false);
+	} else {
+		renderSystem->SetHudOpacity(player->GetHudAlpha());
         player->DrawHUD(hud);
+		renderSystem->SetHudOpacity(1.0f);
+        renderSystem->CaptureRenderToImage( "_hudImage" );
     }
 
-    renderSystem->CaptureRenderToImage( "_hudImage" );
 
 	renderSystem->DirectFrameBufferEnd();
 
@@ -565,6 +581,16 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
 			renderSystem->DrawStretchPic( 0.0f, 0.0f, 640.0f, 480.0f, 0.0f, 0.0f, 1.0f, 1.0f, mtr );
 		}
 	}
+
+	// Koz begin
+	if ( game->isVR )
+
+	{
+		commonVr->lastViewOrigin = view->vieworg;
+		commonVr->lastViewAxis = view->viewaxis;
+	}
+	// Koz end
+
 }
 
 /*
@@ -618,9 +644,9 @@ void idPlayerView::BerserkVision( idUserInterface *hud, const renderView_t *view
 	SingleView( hud, view );
 	renderSystem->CaptureRenderToImage( "_scratch" );
 	renderSystem->UnCrop();
+    renderSystem->DirectFrameBufferEnd();
 	renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
 	renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, dvMaterial );
-    renderSystem->DirectFrameBufferEnd();
 }
 
 
@@ -705,8 +731,11 @@ idPlayerView::InfluenceVision
 ===================
 */
 void idPlayerView::InfluenceVision( idUserInterface *hud, const renderView_t *view ) {
+    //Influence vision doesn't work with multiview, simplest thing is to do is to skip it altogether
+    SingleView( hud, view );
+    return;
 
-	float distance = 0.0f;
+/*	float distance = 0.0f;
 	float pct = 1.0f;
 	if ( player->GetInfluenceEntity() ) {
 		distance = ( player->GetInfluenceEntity()->GetPhysics()->GetOrigin() - player->GetPhysics()->GetOrigin() ).Length();
@@ -728,7 +757,7 @@ void idPlayerView::InfluenceVision( idUserInterface *hud, const renderView_t *vi
 	} else {
 		int offset =  25 + sinf( gameLocal.time );
 		DoubleVision( hud, view, pct * offset );
-	}
+	} */
 }
 
 /*
@@ -737,25 +766,25 @@ idPlayerView::RenderPlayerView
 ===================
 */
 void idPlayerView::RenderPlayerView( idUserInterface *hud ) {
-	const renderView_t *view = player->GetRenderView();
+    const renderView_t *view = player->GetRenderView();
 
-	if (g_skipViewEffects.GetBool()) {
-		SingleView( hud, view );
-		} else {
-			if (player->GetInfluenceMaterial() || player->GetInfluenceEntity()) {
-			    InfluenceVision( hud, view );
-			} else if (gameLocal.time < dvFinishTime) {
-			    DoubleVision( hud, view, dvFinishTime - gameLocal.time );
-			} else if (player->PowerUpActive(BERSERK)) {
-			    BerserkVision( hud, view );
-			} else {
-			    SingleView( hud, view );
-			}
-			ScreenFade();
-	}
+    if (g_skipViewEffects.GetBool()) {
+        SingleView( hud, view );
+    } else {
+        if (player->GetInfluenceMaterial() || player->GetInfluenceEntity()) {
+            InfluenceVision( hud, view );
+        } else if (gameLocal.time < dvFinishTime) {
+            DoubleVision( hud, view, dvFinishTime - gameLocal.time );
+        } else if (player->PowerUpActive(BERSERK)) {
+            BerserkVision( hud, view );
+        } else {
+            SingleView( hud, view );
+        }
+        ScreenFade();
+    }
 
-	if ( net_clientLagOMeter.GetBool() && lagoMaterial && gameLocal.isClient ) {
-		renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
-		renderSystem->DrawStretchPic( 10.0f, 380.0f, 64.0f, 64.0f, 0.0f, 0.0f, 1.0f, 1.0f, lagoMaterial );
-	}
+    if ( net_clientLagOMeter.GetBool() && lagoMaterial && gameLocal.isClient ) {
+        renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
+        renderSystem->DrawStretchPic( 10.0f, 380.0f, 64.0f, 64.0f, 0.0f, 0.0f, 1.0f, 1.0f, lagoMaterial );
+    }
 }

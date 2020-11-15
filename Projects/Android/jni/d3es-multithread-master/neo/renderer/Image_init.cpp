@@ -1795,6 +1795,7 @@ void idImageManager::Init() {
 	currentRenderImage = ImageFromFunction("_currentRender", R_RGBA8Image );
 
 	hudImage = ImageFromFunction( "_hudImage", R_VRSurfaceImage ); // R_RGBA8Image );
+	pdaImage = ImageFromFunction( "_pdaImage", R_VRSurfaceImage ); // R_RGBA8Image );
 
 
 	cmdSystem->AddCommand( "reloadImages", R_ReloadImages_f, CMD_FL_RENDERER, "reloads images" );

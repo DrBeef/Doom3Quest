@@ -1214,16 +1214,18 @@ void idWindow::Redraw(float x, float y) {
 		return;
 	}
 
-	// DG: allow scaling menus to 4:3
 	bool fixupFor43 = false;
-	if ( flags & WIN_DESKTOP ) {
-		// only scale desktop windows (will automatically scale its sub-windows)
-		// that EITHER have the scaleto43 flag set OR are fullscreen menus and r_scaleMenusTo43 is 1
-		if( (flags & WIN_SCALETO43) ||
-			((flags & WIN_MENUGUI) && r_scaleMenusTo43.GetBool()) )
-		{
-			fixupFor43 = true;
-			dc->SetMenuScaleFix(true);
+	if (!cvarSystem->GetCVarBool("draw_pda")) // only do the following if we aren't drawing pda
+	{
+		// DG: allow scaling menus to 4:3
+		if (flags & WIN_DESKTOP) {
+			// only scale desktop windows (will automatically scale its sub-windows)
+			// that EITHER have the scaleto43 flag set OR are fullscreen menus and r_scaleMenusTo43 is 1
+			if ((flags & WIN_SCALETO43) ||
+				((flags & WIN_MENUGUI) && r_scaleMenusTo43.GetBool())) {
+				fixupFor43 = true;
+				dc->SetMenuScaleFix(true);
+			}
 		}
 	}
 

@@ -694,6 +694,7 @@ public:
 	virtual void			BeginLevelLoad( void );
 	virtual void			EndLevelLoad( void );
 	virtual bool			RegisterFont( const char *fontName, fontInfoEx_t &font );
+    virtual void			SetHudOpacity( float opacity );
 	virtual void			SetColor( const idVec4 &rgba );
 	virtual void			SetColor4( float r, float g, float b, float a );
 	virtual void			DrawStretchPic ( const idDrawVert *verts, const glIndex_t *indexes, int vertCount, int indexCount, const idMaterial *material,
@@ -737,6 +738,7 @@ public:
 
 	bool 					useSpinLock = true;
 	int						spinLockDelay = 1000;
+	float 					hudOpacity = 0.0f;
 
 	bool					windowActive = false; // True when the app is at the foreground and not minimised
 
@@ -1425,6 +1427,7 @@ typedef struct deformInfo_s {
 	// it will often be larger if the input had mirrored texture seams that needed
 	// to be busted for proper tangent spaces
 	int				numOutputVerts;
+	idDrawVert* 		verts;
 
 	int				numMirroredVerts;
 	int *			mirroredVerts;

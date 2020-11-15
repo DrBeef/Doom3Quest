@@ -44,6 +44,15 @@ If you have questions concerning this license or the applicable additional terms
 #define strcmp			idStr::Cmp		// use_idStr_Cmp
 #define strncmp			use_idStr_Cmpn
 
+enum utf8Encoding_t
+{
+	UTF8_PURE_ASCII,		// no characters with values > 127
+	UTF8_ENCODED_BOM,		// characters > 128 encoded with UTF8, but no byte-order-marker at the beginning
+	UTF8_ENCODED_NO_BOM,	// characters > 128 encoded with UTF8, with a byte-order-marker at the beginning
+	UTF8_INVALID,			// has values > 127 but isn't valid UTF8
+	UTF8_INVALID_BOM		// has a byte-order-marker at the beginning, but isn't valuid UTF8 -- it's messed up
+};
+
 #if defined( StrCmpN )
 #undef StrCmpN
 #endif

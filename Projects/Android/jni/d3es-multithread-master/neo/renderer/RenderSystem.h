@@ -172,6 +172,7 @@ public:
 	// GUI drawing just involves shader parameter setting and axial image subsections
 	virtual void			SetColor( const idVec4 &rgba ) = 0;
 	virtual void			SetColor4( float r, float g, float b, float a ) = 0;
+	virtual void			SetHudOpacity( float opacity ) = 0;
 
 	virtual void			DrawStretchPic( const idDrawVert *verts, const glIndex_t *indexes, int vertCount, int indexCount, const idMaterial *material,
 	                                        bool clip = true, float min_x = 0.0f, float min_y = 0.0f, float max_x = 640.0f, float max_y = 480.0f ) = 0;

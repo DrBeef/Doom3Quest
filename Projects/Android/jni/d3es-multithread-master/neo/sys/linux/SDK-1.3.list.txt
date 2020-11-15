@@ -128,8 +128,6 @@ bff6543d6ab3ebbb7d72aecde1802847 *src/d3xp/gamesys/TypeInfo.cpp
 4ce41c1583e13dee525c3962599d4344 *src/d3xp/Game_local.cpp
 c47b817da63b29e136b1dd15cc6616c5 *src/d3xp/Game_local.h
 228d27ea27c967bb957cbe6d79d50628 *src/d3xp/Game_network.cpp
-c48750d415082e129b09f411b9d0fbb2 *src/d3xp/Grabber.cpp
-406bec75a737035f70b7be3a896fc6d9 *src/d3xp/Grabber.h
 24c6f213c515acae0b2ea944ed4f43f7 *src/d3xp/IK.cpp
 df74f5d7c6a346ee41a131864ac33a06 *src/d3xp/IK.h
 df4cccd9cd3c0c99493ac0f9e47b1dbc *src/d3xp/Item.cpp

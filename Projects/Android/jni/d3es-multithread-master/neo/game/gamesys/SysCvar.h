@@ -257,12 +257,14 @@ extern idCVar vr_heightoffset;
 extern idCVar vr_controlscheme;
 extern idCVar	vr_shakeamplitude;
 extern idCVar	vr_knockback;
-extern idCVar vr_weaponsight;
 extern idCVar vr_throwables;
 extern idCVar vr_turnmode;
 extern idCVar vr_turnangle;
 extern idCVar vr_hudmode;
-
+extern idCVar g_infiniteAmmo;
+extern idCVar g_useWeaponDepthHack;
+extern idCVar g_weaponShadows;
+extern idCVar timescale;
 
 extern const char *si_gameTypeArgs[];
 

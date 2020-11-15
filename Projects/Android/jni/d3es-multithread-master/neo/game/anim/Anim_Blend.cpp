@@ -41,7 +41,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "anim/Anim.h"
 
 static const char *channelNames[ ANIM_NumAnimChannels ] = {
-	"all", "torso", "legs", "head", "eyelids"
+		"all", "torso", "legs", "head", "eyelids", "rightHand", "leftHand"
 };
 
 /***********************************************************************
@@ -4444,8 +4444,8 @@ bool idAnimator::GetJointTransform( jointHandle_t jointHandle, int currentTime, 
 	if ( !modelDef || ( jointHandle < 0 ) || ( jointHandle >= modelDef->NumJoints() ) ) {
 		return false;
 	}
-
-	CreateFrame( currentTime, false );
+    if(currentTime != -1)
+	    CreateFrame( currentTime, false );
 
 	offset = joints[ jointHandle ].ToVec3();
 	axis = joints[ jointHandle ].ToMat3();

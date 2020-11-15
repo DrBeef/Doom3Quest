@@ -48,9 +48,9 @@ const int BUTTON_RUN			= BIT(1);
 const int BUTTON_ZOOM			= BIT(2);
 const int BUTTON_SCORES			= BIT(3);
 const int BUTTON_MLOOK			= BIT(4);
-const int BUTTON_5				= BIT(5);
-const int BUTTON_6				= BIT(6);
-const int BUTTON_7				= BIT(7);
+const int BUTTON_JUMP			= BIT(5);
+const int BUTTON_CROUCH			= BIT(6);
+const int BUTTON_USE			= BIT(7);
 
 // usercmd_t->impulse commands
 const int IMPULSE_0				= 0;			// weap 0
@@ -79,11 +79,29 @@ const int IMPULSE_22			= 22;			// spectate
 const int IMPULSE_23			= 23;			// <unused>
 const int IMPULSE_24			= 24;			// <unused>
 const int IMPULSE_25			= 25;			// <unused>
-const int IMPULSE_26			= 26;			// <unused>
-const int IMPULSE_27			= 27;			// <unused>
-const int IMPULSE_28			= 28;			// vote yes
-const int IMPULSE_29			= 29;			// vote no
-const int IMPULSE_40			= 40;			// use vehicle
+const int IMPULSE_26			= 26;			// Carl: Fists
+const int IMPULSE_27			= 27;			// Chainsaw
+const int IMPULSE_28			= 28;			// quick 0
+const int IMPULSE_29			= 29;			// quick 1
+const int IMPULSE_30			= 30;			// quick 2
+const int IMPULSE_31			= 31;			// quick 3
+
+// Koz
+const int IMPULSE_32			= 32;			// reset HMD/Body orientation
+const int IMPULSE_33			= 33;			// toggle lasersight
+const int IMPULSE_34			= 34;			// comfort turn right
+const int IMPULSE_35			= 35;			// comfort turn left
+const int IMPULSE_36			= 36;			// toggle hud
+const int IMPULSE_37			= 37;			// toggle headingbeam
+const int IMPULSE_38			= 38;			// walk in place
+const int IMPULSE_39			= 39;			// freelook
+const int IMPULSE_40			= 40;			// Vehicle
+const int IMPULSE_41			= 41;			// click to move
+// Koz end
+const int IMPULSE_44			= 44;			// Carl: computer, freeze program
+const int IMPULSE_PAUSE = IMPULSE_44;
+const int IMPULSE_45			= 45;			// Carl: computer, resume program
+const int IMPULSE_RESUME = IMPULSE_45;
 
 // usercmd_t->flags
 const int UCF_IMPULSE_SEQUENCE	= 0x0001;		// toggled every time an impulse command is sent

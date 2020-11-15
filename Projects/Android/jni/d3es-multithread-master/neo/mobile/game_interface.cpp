@@ -22,7 +22,7 @@ void Android_SetCommand(const char * cmd)
 
 // Can only set one impulse per frame, this should be fine
 static int nextImpulse = 0;
-void Android_SetImpuse(int impulse)
+void Android_SetImpulse(int impulse)
 {
 	nextImpulse = impulse;
 }

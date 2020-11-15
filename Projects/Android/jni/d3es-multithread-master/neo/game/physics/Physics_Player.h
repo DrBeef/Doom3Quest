@@ -87,7 +87,7 @@ public:
 	float					GetMaxStepHeight( void ) const;
 	void					SetMaxJumpHeight( const float newMaxJumpHeight );
 	void					SetMovementType( const pmtype_t type );
-	void					SetPlayerInput( const usercmd_t &cmd, const idAngles &newViewAngles );
+	void					SetPlayerInput( const usercmd_t& cmd, const idVec3& forwardVector );
 	void					SetKnockBack( const int knockBackTime );
 	void					SetDebugLevel( bool set );
 							// feed back from last physics frame
@@ -132,11 +132,16 @@ public:	// common physics interface
 	void					WriteToSnapshot( idBitMsgDelta &msg ) const;
 	void					ReadFromSnapshot( const idBitMsgDelta &msg );
 
+	// Koz
+	idVec3					MotionMove( idVec3 &moveVelocity ); // bool gravity, bool stepUp, bool stepDown, bool push );
+
 private:
 	// player physics state
 	playerPState_t			current;
 	playerPState_t			saved;
-
+public:
+	bool					blink;
+	bool					headBumped;
 	// properties
 	float					walkSpeed;
 	float					crouchSpeed;
@@ -146,7 +151,7 @@ private:
 
 	// player input
 	usercmd_t				command;
-	idAngles				viewAngles;
+	idVec3					commandForward;		// can't use cmd.angles cause of the delta_angles and head tracking
 
 	// run-time variables
 	int						framemsec;

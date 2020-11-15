@@ -23,7 +23,6 @@ Copyright	:	Copyright 2015 Oculus VR, LLC. All Rights reserved.
 #include <android/native_window_jni.h>	// for native window JNI
 #include <android/input.h>
 
-#include "argtable3.h"
 #include "VrInput.h"
 
 #include <EGL/egl.h>
@@ -83,12 +82,13 @@ PFNEGLGETSYNCATTRIBKHRPROC		eglGetSyncAttribKHR;
 #endif
 
 //Let's go to the maximum!
-int CPU_LEVEL			= 4;
-int GPU_LEVEL			= 4;
-int NUM_MULTI_SAMPLES	= 1;
-int FFR					= 0;
-float SS_MULTIPLIER    = 1.0f;
-int DISPLAY_REFRESH		= 60;
+const int CPU_LEVEL			= 4;
+const int GPU_LEVEL			= 4;
+
+//Passed in from the Java code
+int NUM_MULTI_SAMPLES	= -1;
+float SS_MULTIPLIER    = -1.0f;
+int DISPLAY_REFRESH		= -1;
 
 vrClientInfo vr;
 vrClientInfo *pVRClientInfo;
@@ -102,15 +102,6 @@ float radians(float deg) {
 float degrees(float rad) {
 	return (rad * 180.0) / M_PI;
 }
-
-/* global arg_xxx structs */
-struct arg_dbl *ss;
-struct arg_int *cpu;
-struct arg_int *gpu;
-struct arg_int *msaa;
-struct arg_int *ffr;
-struct arg_int *refresh;
-struct arg_end *end;
 
 char **argv;
 int argc=0;
@@ -152,7 +143,8 @@ void Doom3Quest_setUseScreenLayer(int screen)
 
 bool Doom3Quest_useScreenLayer()
 {
-	return inMenu || inCinematic || forceVirtualScreen;
+    //Cinematics are now first person
+	return inMenu || forceVirtualScreen;
 }
 
 static void UnEscapeQuotes( char *arg )
@@ -929,17 +921,21 @@ void updateHMDOrientation()
 
     //Keep this for our records
     VectorCopy(vr.hmdposition, vr.hmdposition_last);
-
-    //Orientation
-    VectorSubtract(vr.hmdorientation_last, vr.hmdorientation, vr.hmdorientation_delta);
-
-    //Keep this for our records
-    VectorCopy(vr.hmdorientation, vr.hmdorientation_last);
 }
 
 void setHMDPosition( float x, float y, float z, float yaw )
 {
 	VectorSet(vr.hmdposition, x, y, z);
+}
+
+void setHMDOrientation( float x, float y, float z, float w )
+{
+    Vector4Set(vr.hmdorientation_quat, x, y, z, w);
+}
+
+void setHMDTranslation( float x, float y, float z)
+{
+    VectorSet(vr.hmdtranslation, x, y, z);
 }
 
 
@@ -950,35 +946,27 @@ Doom3Quest_Vibrate
 */
 
 //0 = left, 1 = right
-float vibration_channel_duration[2] = {0.0f, 0.0f};
-float vibration_channel_intensity[2] = {0.0f, 0.0f};
+float vibration_channel_intensity[2][2] = {{0.0f,0.0f},{0.0f,0.0f}};
 
-void Doom3Quest_Vibrate(int duration, int channel, float intensity )
+void Doom3Quest_Vibrate(int channel, float low, float high)
 {
-	if (vibration_channel_duration[channel] > 0.0f)
-		return;
-
-	if (vibration_channel_duration[channel] == -1.0f &&	duration != 0.0f)
-		return;
-
-	vibration_channel_duration[channel] = duration;
-	vibration_channel_intensity[channel] = intensity;
+	vibration_channel_intensity[channel][0] = low;
+	vibration_channel_intensity[channel][1] = high;
 }
 
 void VR_Doom3Main(int argc, char** argv);
 
-void VR_GetMove( float *joy_forward, float *joy_side, float *hmd_forward, float *hmd_side, float *up, float *yaw, float *pitch, float *roll )
-{
+void VR_GetMove( float *joy_forward, float *joy_side, float *hmd_forward, float *hmd_side, float *up, float *yaw, float *pitch, float *roll ) {
+    *joy_side = remote_movementSideways;
     *joy_forward = remote_movementForward;
     *hmd_forward = positional_movementForward;
-    *up = remote_movementUp;
-    *joy_side = remote_movementSideways;
     *hmd_side = positional_movementSideways;
-	*yaw = vr.hmdorientation[YAW] + snapTurn;
-	*pitch = vr.hmdorientation[PITCH];
-	*roll = vr.hmdorientation[ROLL];
+    *up = remote_movementUp;
+    //*yaw = vr.hmdorientation[YAW] + snapTurn;
+    *yaw = snapTurn;
+    //*pitch = vr.hmdorientation[PITCH];
+    //*roll = vr.hmdorientation[ROLL];}
 }
-
 
 /*
 ================================================================================
@@ -1034,8 +1022,8 @@ static void ovrApp_Clear( ovrApp * app )
     memset(app->DisplayTime, 0, MAX_TRACKING_SAMPLES * sizeof(double));
     memset(app->Tracking, 0, MAX_TRACKING_SAMPLES * sizeof(ovrTracking2));
 	app->SwapInterval = 1;
-	app->CpuLevel = 4;
-	app->GpuLevel = 4;
+	app->CpuLevel = CPU_LEVEL;
+	app->GpuLevel = GPU_LEVEL;
 	app->MainThreadTid = 0;
 	app->RenderThreadTid = 0;
 
@@ -1406,7 +1394,7 @@ void Doom3Quest_finishEyeBuffer( )
     renderThreadCPUTime = GetTimeInMilliSeconds() - renderThreadCPUTime;
 
     {
-        __android_log_print(ANDROID_LOG_INFO, "Doom3Quest", "RENDER THREAD TOTAL CPU TIME: %i", renderThreadCPUTime);
+        //__android_log_print(ANDROID_LOG_INFO, "Doom3Quest", "RENDER THREAD TOTAL CPU TIME: %ld", renderThreadCPUTime);
     }
 
     GLCheckErrors( __LINE__ );
@@ -1521,6 +1509,8 @@ void ActivateContext()
     gAppState.RenderThreadTid = gettid();
 }
 
+int questType;
+
 void * AppThreadFunction(void * parm ) {
 	gAppThread = (ovrAppThread *) parm;
 
@@ -1554,15 +1544,6 @@ void * AppThreadFunction(void * parm ) {
 	ovrApp_Clear(&gAppState);
 	gAppState.Java = java;
 
-	// This app will handle android gamepad events itself.
-	vrapi_SetPropertyInt(&gAppState.Java, VRAPI_EAT_NATIVE_GAMEPAD_EVENTS, 0);
-
-	//Set FFR property
-	vrapi_SetPropertyInt( &gAppState.Java, VRAPI_FOVEATION_LEVEL, FFR );
-
-	//Using a symmetrical render target
-	m_height = m_width = (int)(vrapi_GetSystemPropertyInt(&java, VRAPI_SYS_PROP_SUGGESTED_EYE_TEXTURE_WIDTH) *  SS_MULTIPLIER);
-
 	gAppState.CpuLevel = CPU_LEVEL;
 	gAppState.GpuLevel = GPU_LEVEL;
 	gAppState.MainThreadTid = gettid();
@@ -1572,6 +1553,41 @@ void * AppThreadFunction(void * parm ) {
 	EglInitExtensions();
 
     chdir("/sdcard/Doom3Quest");
+
+	// This app will handle android gamepad events itself.
+	vrapi_SetPropertyInt(&gAppState.Java, VRAPI_EAT_NATIVE_GAMEPAD_EVENTS, 0);
+
+	//Set device defaults
+	if (vrapi_GetSystemPropertyInt(&java, VRAPI_SYS_PROP_DEVICE_TYPE) == VRAPI_DEVICE_TYPE_OCULUSQUEST)
+	{
+		questType = 1;
+        DISPLAY_REFRESH = 60; // Fixed to 60 for oculus 1
+		if (SS_MULTIPLIER == -1.0f)
+		{
+			SS_MULTIPLIER = 1.0f;
+		}
+
+		if (NUM_MULTI_SAMPLES == -1)
+		{
+			NUM_MULTI_SAMPLES = 1;
+		}
+	}
+	else
+	{
+		questType = 2;
+		if (SS_MULTIPLIER == -1.0f)
+		{
+			SS_MULTIPLIER = 1.1f;
+		}
+
+		if (NUM_MULTI_SAMPLES == -1)
+		{
+			NUM_MULTI_SAMPLES = 1;
+		}
+	}
+
+	//Using a symmetrical render target
+	m_height = m_width = (int)(vrapi_GetSystemPropertyInt(&java, VRAPI_SYS_PROP_SUGGESTED_EYE_TEXTURE_WIDTH) *  SS_MULTIPLIER);
 
     //First handle any messages in the queue
     while ( gAppState.Ovr == NULL ) {
@@ -1588,17 +1604,16 @@ void * AppThreadFunction(void * parm ) {
     // Create the scene if not yet created.
     ovrScene_Create( m_width, m_height, &gAppState.Scene, &java );
 
-    //Set the screen refresh - only for Quest 1
-    bool quest1 = false;
-    if (quest1) {
-		vrapi_SetDisplayRefreshRate(gAppState.Ovr, DISPLAY_REFRESH);
-	}
-
     //Run loading loop until we are ready to start QzDoom
     while (!destroyed && !Doom3Quest_initialised) {
         Doom3Quest_processMessageQueue();
         Doom3Quest_getHMDOrientation();
         showLoadingIcon();
+    }
+
+    if (DISPLAY_REFRESH != -1)
+    {
+        vrapi_SetDisplayRefreshRate(gAppState.Ovr, DISPLAY_REFRESH);
     }
 
     //Should now be all set up and ready - start the Doom3 main loop
@@ -1624,7 +1639,7 @@ void Doom3Quest_FrameSetup(int controlscheme)
 
 	if (!Doom3Quest_useScreenLayer())
 	{
-		screenYaw = vr.hmdorientation[YAW];
+		screenYaw = vr.hmdorientation_temp[YAW];
 	}
 
     Doom3Quest_processHaptics();
@@ -1632,7 +1647,7 @@ void Doom3Quest_FrameSetup(int controlscheme)
     Doom3Quest_getTrackedRemotesOrientation(controlscheme);
 }
 
-void Doom3Quest_processHaptics() {//Handle haptics
+/*void Doom3Quest_processHaptics() {//Handle haptics
 	static float lastFrameTime = 0.0f;
 	float timestamp = (float)(GetTimeInMilliSeconds());
 	float frametime = timestamp - lastFrameTime;
@@ -1655,6 +1670,19 @@ void Doom3Quest_processHaptics() {//Handle haptics
 		} else {
 			vrapi_SetHapticVibrationSimple(gAppState.Ovr, controllerIDs[i], 0.0f);
 		}
+	}
+}*/
+
+void Doom3Quest_processHaptics() {//Handle haptics
+
+	float beat;
+	bool enable;
+	for (int h = 0; h < 2; ++h) {
+		beat = fabs( vibration_channel_intensity[h][0] - vibration_channel_intensity[h][1] ) / 65535;
+		if(beat > 0.0f)
+			vrapi_SetHapticVibrationSimple(gAppState.Ovr, controllerIDs[1 - h], beat);
+		else
+			vrapi_SetHapticVibrationSimple(gAppState.Ovr, controllerIDs[1 - h], 0.0f);
 	}
 }
 
@@ -1712,16 +1740,18 @@ void Doom3Quest_getHMDOrientation() {
 	*tracking = vrapi_GetPredictedTracking2(gAppState.Ovr, gAppState.DisplayTime[gAppState.MainThreadFrameIndex % MAX_TRACKING_SAMPLES]);
 
 	//Don't update game with tracking if we are in big screen mode
-	if (!Doom3Quest_useScreenLayer()) {
-
-		const ovrQuatf quatHmd = tracking->HeadPose.Pose.Orientation;
-		const ovrVector3f positionHmd = tracking->HeadPose.Pose.Position;
-
-		vec3_t rotation = {0};
-		QuatToYawPitchRoll(quatHmd, rotation, vr.hmdorientation);
-		setHMDPosition(positionHmd.x, positionHmd.y, positionHmd.z, vr.hmdorientation[YAW]);
-		updateHMDOrientation();
-	}
+    //GB Do pass the stuff but block at my end (if big screen prompt is needed)
+    const ovrQuatf quatHmd = tracking->HeadPose.Pose.Orientation;
+    const ovrVector3f positionHmd = tracking->HeadPose.Pose.Position;
+    //const ovrVector3f translationHmd = tracking->HeadPose.Pose.Translation;
+    vec3_t rotation = {0};
+    QuatToYawPitchRoll(quatHmd, rotation, vr.hmdorientation_temp);
+    setHMDPosition(positionHmd.x, positionHmd.y, positionHmd.z, 0);
+    //GB
+    setHMDOrientation(quatHmd.x, quatHmd.y, quatHmd.z, quatHmd.w);
+    //setHMDTranslation(translationHmd.x, translationHmd.y, translationHmd.z);
+    //End GB
+    updateHMDOrientation();
 }
 
 void Doom3Quest_getTrackedRemotesOrientation(int controlscheme) {
@@ -1899,20 +1929,9 @@ int JNI_OnLoad(JavaVM* vm, void* reserved)
 }
 
 JNIEXPORT jlong JNICALL Java_com_drbeef_doom3quest_GLES3JNILib_onCreate( JNIEnv * env, jclass activityClass, jobject activity,
-																	   jstring commandLineParams)
+																	   jstring commandLineParams, jlong refresh, jfloat ss, jlong msaa)
 {
 	ALOGV( "    GLES3JNILib::onCreate()" );
-
-	/* the global arg_xxx structs are initialised within the argtable */
-	void *argtable[] = {
-			ss   = arg_dbl0("s", "supersampling", "<double>", "super sampling value (e.g. 1.0)"),
-            cpu   = arg_int0("c", "cpu", "<int>", "CPU perf index 1-4 (default: 2)"),
-            gpu   = arg_int0("g", "gpu", "<int>", "GPU perf index 1-4 (default: 3)"),
-            msaa   = arg_int0("m", "msaa", "<int>", "MSAA 1-4 (default: 1)"),
-            ffr   = arg_int0("f", "ffr", "<int>", "FFR 0-4 (default: 0)"),
-            refresh   = arg_int0("r", "refresh", "<int>", "Display Refresh 60 or 72 (default: 72)"),
-			end     = arg_end(20)
-	};
 
 	jboolean iscopy;
 	const char *arg = (*env)->GetStringUTFChars(env, commandLineParams, &iscopy);
@@ -1930,41 +1949,21 @@ JNIEXPORT jlong JNICALL Java_com_drbeef_doom3quest_GLES3JNILib_onCreate( JNIEnv 
 	argv = malloc(sizeof(char*) * 255);
 	argc = ParseCommandLine(strdup(cmdLine), argv);
 
-	/* verify the argtable[] entries were allocated sucessfully */
-	if (arg_nullcheck(argtable) == 0) {
-		/* Parse the command line as defined by argtable[] */
-		arg_parse(argc, argv, argtable);
-
-        if (ss->count > 0 && ss->dval[0] > 0.0)
-        {
-            SS_MULTIPLIER = ss->dval[0];
-        }
-
-        if (cpu->count > 0 && cpu->ival[0] > 0 && cpu->ival[0] < 10)
-        {
-            CPU_LEVEL = cpu->ival[0];
-        }
-
-        if (gpu->count > 0 && gpu->ival[0] > 0 && gpu->ival[0] < 10)
-        {
-            GPU_LEVEL = gpu->ival[0];
-        }
-
-        if (msaa->count > 0 && msaa->ival[0] > 0 && msaa->ival[0] < 5)
-        {
-			NUM_MULTI_SAMPLES = msaa->ival[0];
-        }
-
-        if (ffr->count > 0 && ffr->ival[0] >= 0 && ffr->ival[0] <= 4)
-        {
-			FFR = ffr->ival[0];
-        }
-
-        if (refresh->count > 0 && (refresh->ival[0] == 60 || refresh->ival[0] == 72))
-        {
-			DISPLAY_REFRESH = refresh->ival[0];
-        }
+	if (ss != -1.0f)
+	{
+		SS_MULTIPLIER = ss;
 	}
+
+	if (msaa != -1)
+	{
+		NUM_MULTI_SAMPLES = msaa;
+	}
+
+	if (refresh != -1)
+	{
+		DISPLAY_REFRESH = refresh;
+	}
+
 
 	ovrAppThread * appThread = (ovrAppThread *) malloc( sizeof( ovrAppThread ) );
 	ovrAppThread_Create( appThread, env, activity, activityClass );

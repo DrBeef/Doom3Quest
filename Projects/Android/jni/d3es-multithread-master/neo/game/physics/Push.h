@@ -31,8 +31,8 @@ If you have questions concerning this license or the applicable additional terms
 
 #include "cm/CollisionModel.h"
 
-#include "physics/Clip.h"
-#include "GameBase.h"
+#include "Clip.h"
+#include "../GameBase.h"
 
 class idEntity;
 

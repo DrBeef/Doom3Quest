@@ -25,6 +25,8 @@ If you have questions concerning this license or the applicable additional terms
 
 ===========================================================================
 */
+#include "framework/Game.h"
+#include "../game/Vr.h"
 #include "sys/platform.h"
 #include "idlib/containers/List.h"
 #include "framework/EventLoop.h"
@@ -280,6 +282,20 @@ See if some cvars that we watch have changed
 static void R_CheckCvars( void ) {
 	globalImages->CheckCvars();
 
+	//GB Not Currently working - Fix (Create a Virtual Function)
+	// Koz
+	/*if ( game->isVR )
+	{
+		if ( vr_useFloorHeight.IsModified() || ( vr_normalViewHeight.IsModified() && vr_useFloorHeight.GetInteger() == 0 ) || vr_scale.IsModified() || commonVr->shouldRecenter )
+		{
+			commonVr->HMDResetTrackingOriginOffset();
+			vr_useFloorHeight.ClearModified();
+			vr_normalViewHeight.ClearModified();
+			vr_scale.ClearModified();
+			commonVr->shouldRecenter = false;
+		}
+	}*/
+
 	// gamma stuff
 	if ( r_gamma.IsModified() || r_brightness.IsModified() ) {
 		r_gamma.ClearModified();
@@ -314,7 +330,7 @@ just colors
 =============
 */
 void idRenderSystemLocal::SetColor( const idVec4 &rgba ) {
-	guiModel->SetColor( rgba[0], rgba[1], rgba[2], rgba[3] );
+	guiModel->SetColor(rgba[0], rgba[1], rgba[2], hudOpacity * rgba[3]);
 }
 
 
@@ -324,6 +340,7 @@ SetColor4
 =============
 */
 void idRenderSystemLocal::SetColor4( float r, float g, float b, float a ) {
+	a = hudOpacity * a;
 	guiModel->SetColor( r, g, b, a );
 }
 
@@ -1083,6 +1100,7 @@ void idRenderSystemLocal::CaptureRenderToImage( const char *imageName ) {
 	cmd->imageWidth = rc->width;
 	cmd->imageHeight = rc->height;
 	cmd->image = image;
+
 
 	guiModel->Clear();
 }

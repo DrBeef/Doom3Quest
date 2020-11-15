@@ -740,7 +740,6 @@ set(src_d3xp
 	d3xp/physics/Physics_Static.cpp
 	d3xp/physics/Physics_StaticMulti.cpp
 	d3xp/physics/Push.cpp
-	d3xp/Grabber.cpp
 	d3xp/physics/Force_Grab.cpp
 )
 

@@ -26,13 +26,15 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
+#include "framework/Game.h"
 #include "sys/platform.h"
 #include "framework/Session.h"
 #include "framework/DeclSkin.h"
 #include "renderer/GuiModel.h"
 #include "renderer/RenderWorld_local.h"
-
 #include "renderer/tr_local.h"
+
+#include "../game/anim/Anim.h"
 
 /*
 ===================
@@ -967,17 +969,22 @@ this doesn't do any occlusion testing, simply ignoring non-gui surfaces.
 start / end are in global world coordinates.
 ================
 */
-guiPoint_t	idRenderWorldLocal::GuiTrace( qhandle_t entityHandle, const idVec3 start, const idVec3 end ) const {
+guiPoint_t	idRenderWorldLocal::GuiTrace( qhandle_t entityHandle, idAnimator* animator, const idVec3 start, const idVec3 end ) const {
 	localTrace_t	local;
 	idVec3			localStart, localEnd, bestPoint;
 	int				j;
 	idRenderModel	*model;
 	srfTriangles_t	*tri;
 	const idMaterial *shader;
-	guiPoint_t	pt;
 
+	guiPoint_t	pt;
+	pt.fraction = 1.0f; // Koz
 	pt.x = pt.y = -1;
 	pt.guiId = 0;
+
+	// Koz begin
+	bool isPDA = false;
+	// Koz end
 
 	if ( ( entityHandle < 0 ) || ( entityHandle >= entityDefs.Num() ) ) {
 		common->Printf( "idRenderWorld::GuiTrace: invalid handle %i\n", entityHandle );
@@ -991,9 +998,42 @@ guiPoint_t	idRenderWorldLocal::GuiTrace( qhandle_t entityHandle, const idVec3 st
 	}
 
 	model = def->parms.hModel;
-	if ( def->parms.callback || !def->parms.hModel || def->parms.hModel->IsDynamicModel() != DM_STATIC ) {
+	//if ( def->parms.callback || !def->parms.hModel || def->parms.hModel->IsDynamicModel() != DM_STATIC) {
+	if ( !def->parms.hModel) {
 		return pt;
 	}
+
+	// Koz begin
+	// Koz allow the PDA model to be traced.
+
+	jointHandle_t guiJoints[4];
+
+	if (game->IsPDAOpen())
+	{
+
+		isPDA = idStr::Icmp( "models/md5/items/pda_view/pda_vr_idle.md5mesh", model->Name() ) == 0;
+
+		if ( isPDA )
+		{
+			guiJoints[3] = model->GetJointHandle( "BLgui" );
+			guiJoints[0] = model->GetJointHandle( "BRgui" );
+			guiJoints[1] = model->GetJointHandle( "TRgui" );
+			guiJoints[2] = model->GetJointHandle( "TLgui" );
+
+			for ( int checkJoint = 0; checkJoint < 4; checkJoint++ )
+			{
+				if ( guiJoints[checkJoint] == INVALID_JOINT ) isPDA = false;
+			}
+		}
+
+
+	}
+
+	if ( (model->IsDynamicModel() != DM_STATIC || def->parms.callback != NULL ) && !isPDA )
+	{
+		return pt;
+	}
+	// Koz end
 
 	// transform the points into local space
 	R_GlobalPointToLocal( def->modelMatrix, start, localStart );
@@ -1012,9 +1052,33 @@ guiPoint_t	idRenderWorldLocal::GuiTrace( qhandle_t entityHandle, const idVec3 st
 			continue;
 		}
 		// only trace against gui surfaces
-		if (!shader->HasGui()) {
+		if (!shader->HasGui() && !isPDA ) {
 			continue;
 		}
+
+		// Koz begin
+
+		if ( isPDA )
+		{
+
+			idMat3 discardAxis = mat3_identity;
+			idVec3 modelOrigin = def->parms.origin;
+			idMat3 modelAxis = def->parms.axis;
+
+			for ( int jj = 0; jj < 4; jj++ )
+			{
+				// overwrite surface coords for testing
+				//GBFIX
+				game->AnimatorGetJointTransform(animator, guiJoints[jj], Sys_Milliseconds(), tri->verts[jj].xyz, discardAxis );
+				//animator->GetJointTransform( guiJoints[jj], Sys_Milliseconds(), tri->verts[jj].xyz, discardAxis );
+
+				// draw debug lines from view start to gui corners
+				//	gameRenderWorld->DebugLine( colorYellow, start, modelOrigin + tri->verts[jj].xyz * modelAxis, 20 );
+
+			}
+
+		}
+		// Koz end
 
 		local = R_LocalTrace( localStart, localEnd, 0.0f, tri );
 		if ( local.fraction < 1.0 ) {
@@ -1031,7 +1095,7 @@ guiPoint_t	idRenderWorldLocal::GuiTrace( qhandle_t entityHandle, const idVec3 st
 			pt.x = ( cursor * axis[0] ) / ( axisLen[0] * axisLen[0] );
 			pt.y = ( cursor * axis[1] ) / ( axisLen[1] * axisLen[1] );
 			pt.guiId = shader->GetEntityGui();
-
+			pt.fraction = local.fraction;
 			return pt;
 		}
 	}

@@ -1222,12 +1222,13 @@ void idGameLocal::ClientReadSnapshot( int clientNum, int sequence, const int gam
 	deltaMsg.Init( base ? &base->state : NULL, &newBase->state, &msg );
 	if ( player->spectating && player->spectator != player->entityNumber && gameLocal.entities[ player->spectator ] && gameLocal.entities[ player->spectator ]->IsType( idPlayer::Type ) ) {
 		static_cast< idPlayer * >( gameLocal.entities[ player->spectator ] )->ReadPlayerStateFromSnapshot( deltaMsg );
-		weap = static_cast< idPlayer * >( gameLocal.entities[ player->spectator ] )->weapon.GetEntity();
+		//GB Not right
+		/*weap = static_cast< idPlayer * >( gameLocal.entities[ player->spectator ] )->weapon.GetEntity();
 		if ( weap && ( weap->GetRenderEntity()->bounds[0] == weap->GetRenderEntity()->bounds[1] ) ) {
 			// update the weapon's viewmodel bounds so that the model doesn't flicker in the spectator's view
 			weap->GetAnimator()->GetBounds( gameLocal.time, weap->GetRenderEntity()->bounds );
 			weap->UpdateVisuals();
-		}
+		}*/
 	} else {
 		player->ReadPlayerStateFromSnapshot( deltaMsg );
 	}

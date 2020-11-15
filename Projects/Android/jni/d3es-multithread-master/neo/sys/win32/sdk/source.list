@@ -360,8 +360,6 @@ d3xp/gamesys/TypeInfo.h
 d3xp/Game_local.cpp
 d3xp/Game_local.h
 d3xp/Game_network.cpp
-d3xp/Grabber.cpp
-d3xp/Grabber.h
 d3xp/IK.cpp
 d3xp/IK.h
 d3xp/Item.cpp

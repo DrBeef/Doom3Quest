@@ -78,4 +78,31 @@ private:
 	int						baseID;
 };
 
+/*
+================================================
+idLocalization
+================================================
+*/
+class idLocalization
+{
+public:
+	static const char* 		GetString( const char* inString );		// returns inString if string not found
+	static const char* 		FindString( const char* inString );	// Returns NULL if string not found
+
+	static void				ClearDictionary();
+	static bool				LoadDictionary( const byte* buffer, const int bufferLen, const char* name );
+
+	// This is only here for tools, normal code should only ever call GetString
+	static idLangDict& 		GetDictionary()
+	{
+		return languageDict;
+	}
+
+	static utf8Encoding_t	VerifyUTF8( const uint* buffer, const int bufferLen, const char* name );
+
+private:
+	static idLangDict					languageDict;
+	friend class idStrId;
+};
+
 #endif /* !__LANGDICT_H__ */

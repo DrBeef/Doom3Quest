@@ -836,14 +836,24 @@ void idRestoreGame::RestoreObjects( void ) {
 	// restore all the objects
 	for( i = 1; i < objects.Num(); i++ ) {
 		CallRestore_r( objects[ i ]->GetType(), objects[ i ] );
+        /*if ( objects[ i ]->IsType( idEntity::Type ) ) {
+            idEntity *ent = static_cast<idEntity *>( objects[i] );
+            if (ent->name.Icmp("player1_weapon_left2") == 0 ||
+                ent->name.Icmp( "player1_weapon_left_worldmodel2" ) == 0 ||
+                ent->name.Icmp("player1_weapon_right2") == 0 ||
+                ent->name.Icmp( "player1_weapon_right_worldmodel2" ) == 0) {
+                delete(ent);
+                //gameLocal.UnregisterEntity(ent);
+            }
+        }*/
 	}
 
 	// regenerate render entities and render lights because are not saved
 	for( i = 1; i < objects.Num(); i++ ) {
 		if ( objects[ i ]->IsType( idEntity::Type ) ) {
 			idEntity *ent = static_cast<idEntity *>( objects[ i ] );
-			ent->UpdateVisuals();
-			ent->Present();
+            ent->UpdateVisuals();
+            ent->Present();
 		}
 	}
 

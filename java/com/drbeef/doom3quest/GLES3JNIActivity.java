@@ -156,9 +156,7 @@ import static android.system.Os.setenv;
 		//Create all required folders
 		new File("/sdcard/Doom3Quest/base").mkdirs();
 
-		//Weapons - force overwrite
-		copy_asset("/sdcard/Doom3Quest/base", "pak099.pk4", true);
-
+		copy_asset("/sdcard/Doom3Quest/base", "pak399.pk4", true);
 
 		//Read these from a file and pass through
 		commandLineParams = new String("doom3quest");
@@ -195,7 +193,45 @@ import static android.system.Os.setenv;
 
 		}
 
-		mNativeHandle = GLES3JNILib.onCreate( this, commandLineParams );
+		//Parse the config file for these values
+		long refresh = 60; // Default to 60
+		float ss = -1.0F;
+		long msaa = 1; // default for both HMDs
+		String configFileName = "/sdcard/Doom3Quest/config/base/doom3quest.cfg";
+		if(new File(configFileName).exists())
+		{
+			BufferedReader br;
+			try {
+				br = new BufferedReader(new FileReader(configFileName));
+				String s;
+				while ((s=br.readLine())!=null) {
+					int i1 = s.indexOf("\"");
+					int i2 = s.lastIndexOf("\"");
+					if (i1 != -1 && i2 != -1) {
+						String value = s.substring(i1+1, i2);
+						if (s.contains("vr_refresh")) {
+							refresh = Long.parseLong(value);
+						} else if (s.contains("vr_msaa")) {
+							msaa = Long.parseLong(value);
+						} else if (s.contains("vr_supersampling")) {
+							ss = Float.parseFloat(value);
+						}
+					}
+				}
+				br.close();
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NumberFormatException e)
+			{
+				e.printStackTrace();
+			}
+		}
+
+		mNativeHandle = GLES3JNILib.onCreate( this, commandLineParams, refresh, ss, msaa );
 	}
 	
 	public void copy_asset(String path, String name, boolean force) {

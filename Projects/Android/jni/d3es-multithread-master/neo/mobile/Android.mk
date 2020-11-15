@@ -307,8 +307,7 @@ src_d3quest = \
    ../../Doom3Quest/VrInputCommon.c \
    ../../Doom3Quest/VrInputDefault.c \
    ../../Doom3Quest/mathlib.c \
-   ../../Doom3Quest/matrixlib.c \
-   ../../Doom3Quest/argtable3.c
+   ../../Doom3Quest/matrixlib.c
    
 src_core = \
     	${src_renderer} \

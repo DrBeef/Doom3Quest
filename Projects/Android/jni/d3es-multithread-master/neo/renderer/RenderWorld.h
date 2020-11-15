@@ -29,7 +29,9 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __RENDERWORLD_H__
 #define __RENDERWORLD_H__
 
+#include "../game/anim/Anim.h"
 #include "idlib/geometry/Winding.h"
+#include "idlib/geometry/JointTransform.h"
 #include "idlib/bv/Box.h"
 #include "idlib/bv/Frustum.h"
 #include "framework/DeclParticle.h"
@@ -82,6 +84,19 @@ const int SHADERPARM_PARTICLE_STOPTIME = 8;	// don't spawn any more particles af
 // guis
 const int MAX_RENDERENTITY_GUI		= 3;
 
+ID_INLINE int SIMD_ROUND_JOINTS( int numJoints )
+{
+	return ( ( numJoints + 1 ) & ~1 );
+}
+ID_INLINE void SIMD_INIT_LAST_JOINT( idJointMat* joints, int numJoints )
+{
+	if( numJoints & 1 )
+	{
+		joints[numJoints] = joints[numJoints - 1];
+	}
+}
+
+class idAnimator; // Koz
 
 typedef bool(*deferredEntityCallback_t)( renderEntity_s *, const renderView_s * );
 
@@ -247,6 +262,7 @@ typedef struct {
 typedef struct {
 	float				x, y;			// 0.0 to 1.0 range if trace hit a gui, otherwise -1
 	int					guiId;			// id of gui ( 0, 1, or 2 ) that the trace happened against
+	float				fraction;		// Koz added fraction of trace completed for touch screens
 } guiPoint_t;
 
 
@@ -377,7 +393,7 @@ public:
 	// fraction location of the trace on the gui surface, or -1,-1 if no hit.
 	// This doesn't do any occlusion testing, simply ignoring non-gui surfaces.
 	// start / end are in global world coordinates.
-	virtual guiPoint_t		GuiTrace( qhandle_t entityHandle, const idVec3 start, const idVec3 end ) const = 0;
+    virtual guiPoint_t		GuiTrace( qhandle_t entityHandle, idAnimator* animator, const idVec3 start, const idVec3 end ) const = 0; // Koz added animator
 
 	// Traces vs the render model, possibly instantiating a dynamic version, and returns true if something was hit
 	virtual bool			ModelTrace( modelTrace_t &trace, qhandle_t entityHandle, const idVec3 &start, const idVec3 &end, const float radius ) const = 0;
