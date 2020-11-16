@@ -461,8 +461,6 @@ extern idCVar	vr_hudOcclusion;
 
 extern idCVar	vr_hudLowHealth;
 
-extern idCVar	vr_listMonitorName;
-
 extern idCVar	vr_joystickMenuMapping;
 
 extern idCVar	vr_trackingPredictionUserDefined;
@@ -482,9 +480,6 @@ extern idCVar	vr_motionWeaponPitchAdj;
 extern idCVar	vr_3dgui;
 extern idCVar	vr_shakeAmplitude;
 
-extern idCVar	vr_padDeadzone;
-extern idCVar	vr_jsDeadzone;
-extern idCVar	vr_padToButtonThreshold;
 extern idCVar	vr_knockBack;
 extern idCVar	vr_jumpBounce;
 extern idCVar	vr_stepSmooth;
@@ -498,12 +493,6 @@ extern idCVar	vr_movePoint;
 extern idCVar	vr_crouchTriggerDist;
 extern idCVar	vr_crouchMode;
 extern idCVar	vr_crouchHideBody;
-
-extern idCVar	vr_wipPeriodMin;
-extern idCVar	vr_wipPeriodMax;
-
-extern idCVar	vr_wipVelocityMin;
-extern idCVar	vr_wipVelocityMax;
 
 extern idCVar	vr_headbbox;
 
@@ -557,7 +546,6 @@ extern idCVar vr_reloadMode;
 extern idCVar vr_mustEmptyHands;
 extern idCVar vr_contextSensitive;
 extern idCVar vr_dualWield;
-extern idCVar vr_voiceMicLocation;
 extern idCVar vr_debugHands;
 extern idCVar vr_rumbleChainsaw;
 
