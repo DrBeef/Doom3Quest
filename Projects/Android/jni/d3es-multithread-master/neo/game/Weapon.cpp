@@ -1193,13 +1193,13 @@ Koz return weapon enumeration
 
 weapon_t idWeapon::IdentifyWeapon()
 {
-    /*if ( lastIdentifiedFrame == idLib::frameNumber ) // only check once per game frame.
+	int currentFrameNumber = common->GetFrameNumber();
+    if ( lastIdentifiedFrame == currentFrameNumber ) // only check once per game frame.
     {
-        //GBFIX - This is true even though it isnt!!
-    	//return currentIdentifiedWeapon;
+    	return currentIdentifiedWeapon;
     }
 
-    lastIdentifiedFrame = idLib::frameNumber;*/
+    lastIdentifiedFrame = currentFrameNumber;
 
     currentIdentifiedWeapon = WEAPON_NONE;
 

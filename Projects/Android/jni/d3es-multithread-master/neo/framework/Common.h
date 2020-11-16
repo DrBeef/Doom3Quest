@@ -217,6 +217,8 @@ public:
 								// Directly sample a keystate.
 	virtual int					KeyState( int key ) = 0;
 
+	virtual int 				GetFrameNumber() = 0;
+
 								//Haptic Feedback
 	virtual void 				Vibrate(int channel, float low, float high ) = 0;
 

@@ -3754,9 +3754,10 @@ idPlayer::GetHudAlpha
 */
 float idPlayer::GetHudAlpha()
 {
-	static int lastFrame = idLib::frameNumber;
+	static int lastFrame = 0;
 	static float currentAlpha = 0.0f;
 	static float delta = 0.0f;
+	int currentFrameNumber = common->GetFrameNumber();
 
 	delta = vr_hudTransparency.GetFloat() / (125 / (1000 / commonVr->hmdHz));
 
@@ -3764,10 +3765,10 @@ float idPlayer::GetHudAlpha()
 	{
 		return hudActive ? vr_hudTransparency.GetFloat() : 0;
 	}
-	//GB This doesn't seem to work as it didn't elsewhere
-	//if ( lastFrame == idLib::frameNumber ) return currentAlpha;
 
-	lastFrame = idLib::frameNumber;
+	if ( lastFrame == currentFrameNumber ) return currentAlpha;
+
+	lastFrame = currentFrameNumber;
 
 	bool force = false;
 

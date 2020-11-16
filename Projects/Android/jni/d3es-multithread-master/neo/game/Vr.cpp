@@ -549,7 +549,7 @@ void iVr::HMDGetOrientation( idAngles &hmdAngles, idVec3 &headPositionDelta, idV
     poseLastHmdAbsolutePosition = poseHmdAbsolutePosition;
 
 
-    if ( vr_frameCheck.GetInteger() == 1 && idLib::frameNumber == lastFrame )//&& !commonVr->renderingSplash )
+    if ( vr_frameCheck.GetInteger() == 1 && common->GetFrameNumber() == lastFrame )//&& !commonVr->renderingSplash )
     {
         //make sure to return the same values for this frame.
         hmdAngles.roll = lastRoll;
@@ -586,12 +586,11 @@ void iVr::HMDGetOrientation( idAngles &hmdAngles, idVec3 &headPositionDelta, idV
             cinematicStartViewYaw = trackingOriginYawOffset;
 
         }
-        common->Printf( "HMDGetOrientation FramCheck Bail == idLib:: framenumber  lf %d  ilfn %d  rendersplash = %d\n", lastFrame, idLib::frameNumber, commonVr->renderingSplash );
+        common->Printf( "HMDGetOrientation FramCheck Bail == idLib:: framenumber  lf %d  ilfn %d  rendersplash = %d\n", lastFrame, common->GetFrameNumber(), commonVr->renderingSplash );
         return;
     }
 
-    lastFrame = idLib::frameNumber;
-
+    lastFrame = common->GetFrameNumber();
 
     static idPosef translationPose;
     static idPosef	orientationPose;
@@ -629,15 +628,10 @@ void iVr::HMDGetOrientation( idAngles &hmdAngles, idVec3 &headPositionDelta, idV
         }
 
         //GB Get all hand poses
-        idQuat weaponAdjust = idAngles(0, 0, -20).ToQuat();
-        idQuat flashlightAdjust = idAngles(0, 0, -35).ToQuat();
         idVec3 _lhandPosition = idVec3(pVRClientInfo->lhandposition[0],pVRClientInfo->lhandposition[1],pVRClientInfo->lhandposition[2]);
-        idQuat _lhandOrientation = idQuat(pVRClientInfo->lhand_orientation_quat[0],pVRClientInfo->lhand_orientation_quat[1],pVRClientInfo->lhand_orientation_quat[2],pVRClientInfo->lhand_orientation_quat[3]) *
-                (pVRClientInfo->right_handed ? flashlightAdjust : weaponAdjust);
+        idQuat _lhandOrientation = idQuat(pVRClientInfo->lhand_orientation_quat[0],pVRClientInfo->lhand_orientation_quat[1],pVRClientInfo->lhand_orientation_quat[2],pVRClientInfo->lhand_orientation_quat[3]);
         idVec3 _rhandPosition = idVec3(pVRClientInfo->rhandposition[0],pVRClientInfo->rhandposition[1],pVRClientInfo->rhandposition[2]);
-        idQuat _rhandOrientation = idQuat(pVRClientInfo->rhand_orientation_quat[0],pVRClientInfo->rhand_orientation_quat[1],pVRClientInfo->rhand_orientation_quat[2],pVRClientInfo->rhand_orientation_quat[3]) *
-                (!pVRClientInfo->right_handed ? flashlightAdjust : weaponAdjust);
-
+        idQuat _rhandOrientation = idQuat(pVRClientInfo->rhand_orientation_quat[0],pVRClientInfo->rhand_orientation_quat[1],pVRClientInfo->rhand_orientation_quat[2],pVRClientInfo->rhand_orientation_quat[3]);
 
 
         commonVr->handPose[1].Orientation = _lhandOrientation;

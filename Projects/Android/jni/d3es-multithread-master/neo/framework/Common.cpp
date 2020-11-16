@@ -169,7 +169,9 @@ public:
 	virtual int					ButtonState( int key );
 	virtual int					KeyState( int key );
 
-    virtual void 				Vibrate(int channel, float low, float high );
+	virtual int					GetFrameNumber();
+
+	virtual void 				Vibrate(int channel, float low, float high );
 
     // DG: hack to allow adding callbacks and exporting additional functions without breaking the game ABI
 	//     see Common.h for longer explanation...
@@ -1638,6 +1640,12 @@ void idCommonLocal::LocalizeSpecificMapData( const char *fileName, idLangDict &l
 	map.Write( fileName, ".map" );
 	}
 }
+
+int idCommonLocal::GetFrameNumber()
+{
+	return idLib::frameNumber;
+}
+
 
 /*
 ===============
