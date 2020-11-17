@@ -28,10 +28,9 @@ If you have questions concerning this license or the applicable additional terms
 
 #include "sys/platform.h"
 #include "framework/UsercmdGen.h"
-
 #include "physics/Physics.h"
-
 #include "physics/Force_Grab.h"
+#include "WorldSpawn.h"
 
 #include "renderer/RenderSystem.h"
 
@@ -151,7 +150,8 @@ void idForce_Grab::Evaluate( int time )
 
     objectCenter = physics->GetAbsBounds( id ).GetCenter();
 
-    if( g_grabberRandomMotion.GetBool() && !common->IsMultiplayer() )
+    //TODO: SB g_grabberRandomMotion needs defining
+    if( /* g_grabberRandomMotion.GetBool() && */ !gameLocal.isMultiplayer )
     {
         // Jitter the objectCenter around so it doesn't remain stationary
         float SinOffset = idMath::Sin( ( float )( gameLocal.time ) / 66.f );
