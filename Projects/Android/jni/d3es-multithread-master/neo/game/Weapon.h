@@ -65,6 +65,9 @@ typedef enum { // Koz weapon enumerations
 	WEAPON_ROCKETLAUNCHER,
 	WEAPON_BFG,
 	WEAPON_SOULCUBE,
+	WEAPON_SHOTGUN_DOUBLE,
+	WEAPON_SHOTGUN_DOUBLE_MP,
+	WEAPON_GRABBER,
 	WEAPON_ARTIFACT,
 	WEAPON_PDA,
 	WEAPON_FLASHLIGHT,
@@ -73,19 +76,22 @@ typedef enum { // Koz weapon enumerations
 
 // Koz flashlightOffsets - values are used to move flashlight model to 'mount' to the active weapon.  Hacky McCrappyHack was here.
 const idVec3 flashlightOffsets[int(WEAPON_NUM_WEAPONS)] = {	idVec3( 0.0f, 0.0f, 0.0f ),			// WEAPON_NONE
-                                                               idVec3( 0.0f, 0.0f, 0.0f ),			// WEAPON_FISTS
-                                                               idVec3( 0.0f, 0.0f, 0.0f ),			// WEAPON_CHAINSAW
-                                                               idVec3( -1.25f, -6.5f, 0.9f ),		// WEAPON_PISTOL
-                                                               idVec3( -1.75f, -3.5f, 1.15f ),		// WEAPON_SHOTGUN
-                                                               idVec3( -2.2f, -7.5f, 1.2f ),		// WEAPON_MACHINEGUN
-                                                               idVec3( -2.3f, -11.25f, -4.5f ),	// WEAPON_CHAINGUN
-                                                               idVec3( 0.0f, 0.0f, 0.0f ),			// WEAPON_HANDGRENADE
-                                                               idVec3( -3.0f, -6.5f, 1.65f ),		// WEAPON_PLASMAGUN
-                                                               idVec3( 4.4f, -14.5f, -3.5f ),		// WEAPON_ROCKETLAUNCHER
-                                                               idVec3( -0.5f, -6.0f, 6.9f ),		// WEAPON_BFG
-                                                               idVec3( 0.0f, 0.0f, 0.0f ),			// WEAPON_SOULCUBE
-                                                               idVec3( 0.0f, 0.0f, 0.0f ),			// WEAPON_ARTIFACT
-                                                               idVec3( 0.0f, 0.0f, 0.0f )			// WEAPON_PDA
+															   idVec3( 0.0f, 0.0f, 0.0f ),			// WEAPON_FISTS
+															   idVec3( 0.0f, 0.0f, 0.0f ),			// WEAPON_CHAINSAW
+															   idVec3( -1.25f, -6.5f, 0.9f ),		// WEAPON_PISTOL
+															   idVec3( -1.75f, -3.5f, 1.15f ),		// WEAPON_SHOTGUN
+															   idVec3( -2.2f, -7.5f, 1.2f ),		// WEAPON_MACHINEGUN
+															   idVec3( -2.3f, -11.25f, -4.5f ),	// WEAPON_CHAINGUN
+															   idVec3( 0.0f, 0.0f, 0.0f ),			// WEAPON_HANDGRENADE
+															   idVec3( -3.0f, -6.5f, 1.65f ),		// WEAPON_PLASMAGUN
+															   idVec3( 4.4f, -14.5f, -3.5f ),		// WEAPON_ROCKETLAUNCHER
+															   idVec3( -0.5f, -6.0f, 6.9f ),		// WEAPON_BFG
+															   idVec3( 0.0f, 0.0f, 0.0f ),			// WEAPON_SOULCUBE
+															   idVec3( -0.5f, -9.5f, -2.0f ),		// WEAPON_SHOTGUN_DOUBLE
+															   idVec3( -0.5f, -9.0f, -2.0f ),		// WEAPON_SHOTGUN_DOUBLE_MP
+															   idVec3( -4.25f, 6.0, 1.25f ),		// WEAPON_GRABBER
+															   idVec3( 0.0f, 0.0f, 0.0f ),			// WEAPON_ARTIFACT
+															   idVec3( 0.0f, 0.0f, 0.0f )			// WEAPON_PDA
 };
 
 typedef int ammo_t;

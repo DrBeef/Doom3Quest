@@ -282,19 +282,7 @@ See if some cvars that we watch have changed
 static void R_CheckCvars( void ) {
 	globalImages->CheckCvars();
 
-	//GB Not Currently working - Fix (Create a Virtual Function)
-	// Koz
-	/*if ( game->isVR )
-	{
-		if ( vr_useFloorHeight.IsModified() || ( vr_normalViewHeight.IsModified() && vr_useFloorHeight.GetInteger() == 0 ) || vr_scale.IsModified() || commonVr->shouldRecenter )
-		{
-			commonVr->HMDResetTrackingOriginOffset();
-			vr_useFloorHeight.ClearModified();
-			vr_normalViewHeight.ClearModified();
-			vr_scale.ClearModified();
-			commonVr->shouldRecenter = false;
-		}
-	}*/
+	//game->CheckRenderCvars();
 
 	// gamma stuff
 	if ( r_gamma.IsModified() || r_brightness.IsModified() ) {

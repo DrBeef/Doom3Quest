@@ -104,7 +104,7 @@ public:
 	virtual void				SetLocalClient( int clientNum ) = 0;
 
 	virtual void 				SetVRClientInfo(vrClientInfo *pVRClientInfo) = 0;
-
+	virtual void				CheckRenderCvars() = 0;
 	virtual void 				EvaluateVRMoveMode(idVec3 &viewangles, usercmd_t &cmd, int buttonCurrentlyClicked, float snapTurn) = 0;
     virtual bool 				CMDButtonsAttackCall(int &teleportCanceled) = 0;
     virtual bool 				CMDButtonsPhysicalCrouch() = 0;

@@ -250,6 +250,14 @@ extern idCVar	si_spectators;
 extern idCVar	net_clientSelfSmoothing;
 extern idCVar	net_clientLagOMeter;
 
+extern idCVar	g_grabberHoldSeconds;
+extern idCVar	g_grabberEnableShake;
+extern idCVar	g_grabberRandomMotion;
+extern idCVar	g_grabberHardStop;
+extern idCVar	g_grabberDamping;
+
+extern idCVar	g_xp_bind_run_once;
+
 //VR CVARS
 extern idCVar vr_ipd;
 extern idCVar vr_worldscale;
@@ -265,6 +273,8 @@ extern idCVar g_infiniteAmmo;
 extern idCVar g_useWeaponDepthHack;
 extern idCVar g_weaponShadows;
 extern idCVar timescale;
+
+
 
 extern const char *si_gameTypeArgs[];
 

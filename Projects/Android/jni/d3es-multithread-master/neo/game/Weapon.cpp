@@ -1209,28 +1209,31 @@ weapon_t idWeapon::IdentifyWeapon()
         {
             idStr weaponName = weaponDef->GetName();
 
-            if ( idStr::Icmp( "weapon_fists", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_FISTS;
-            else if ( idStr::Icmp( "weapon_chainsaw", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_CHAINSAW;
-            else if ( idStr::Icmp( "weapon_pistol", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_PISTOL;
-            else if ( idStr::Icmp( "weapon_shotgun", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_SHOTGUN;
-            else if ( idStr::Icmp( "weapon_machinegun", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_MACHINEGUN;
-            else if ( idStr::Icmp( "weapon_chaingun", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_CHAINGUN;
-            else if ( idStr::Icmp( "weapon_handgrenade", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_HANDGRENADE;
-            else if ( idStr::Icmp( "weapon_plasmagun", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_PLASMAGUN;
-            else if ( idStr::Icmp( "weapon_rocketlauncher", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_ROCKETLAUNCHER;
-            else if ( idStr::Icmp( "weapon_bfg", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_BFG;
-            else if ( idStr::Icmp( "weapon_soulcube", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_SOULCUBE;
-            else if ( idStr::Icmp( "weapon_artifact", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_ARTIFACT;
-            else if ( idStr::Icmp( "weapon_bloodstone_passive", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_ARTIFACT;
-            else if ( idStr::Icmp( "weapon_bloodstone_active1", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_ARTIFACT;
-            else if ( idStr::Icmp( "weapon_bloodstone_active2", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_ARTIFACT;
-            else if ( idStr::Icmp( "weapon_bloodstone_active3", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_ARTIFACT;
-            else if ( idStr::Icmp( "weapon_pda", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_PDA;
-            else if ( idStr::Icmp( "weapon_flashlight_new", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = lastIdentifiedWeapon;
-            //else if ( idStr::Icmp( "weapon_flashlight_new", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_FLASHLIGHT;
-            //else if ( idStr::Icmp( "weapon_flashlight", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_FLASHLIGHT;
-            else currentIdentifiedWeapon = WEAPON_NONE;
-            lastIdentifiedWeapon = currentIdentifiedWeapon;
+			if ( idStr::Icmp( "weapon_fists", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_FISTS;
+			else if ( idStr::Icmp( "weapon_chainsaw", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_CHAINSAW;
+			else if ( idStr::Icmp( "weapon_pistol", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_PISTOL;
+			else if ( idStr::Icmp( "weapon_shotgun", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_SHOTGUN;
+			else if ( idStr::Icmp( "weapon_machinegun", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_MACHINEGUN;
+			else if ( idStr::Icmp( "weapon_chaingun", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_CHAINGUN;
+			else if ( idStr::Icmp( "weapon_handgrenade", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_HANDGRENADE;
+			else if ( idStr::Icmp( "weapon_plasmagun", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_PLASMAGUN;
+			else if ( idStr::Icmp( "weapon_rocketlauncher", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_ROCKETLAUNCHER;
+			else if ( idStr::Icmp( "weapon_bfg", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_BFG;
+			else if ( idStr::Icmp( "weapon_soulcube", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_SOULCUBE;
+			else if ( idStr::Icmp( "weapon_shotgun_double_mp", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_SHOTGUN_DOUBLE_MP;
+			else if ( idStr::Icmp( "weapon_grabber", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_GRABBER;
+			else if ( idStr::Icmp( "weapon_shotgun_double", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_SHOTGUN_DOUBLE;
+			else if ( idStr::Icmp( "weapon_artifact", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_ARTIFACT;
+			else if ( idStr::Icmp( "weapon_bloodstone_passive", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_ARTIFACT;
+			else if ( idStr::Icmp( "weapon_bloodstone_active1", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_ARTIFACT;
+			else if ( idStr::Icmp( "weapon_bloodstone_active2", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_ARTIFACT;
+			else if ( idStr::Icmp( "weapon_bloodstone_active3", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_ARTIFACT;
+			else if ( idStr::Icmp( "weapon_pda", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_PDA;
+			else if ( idStr::Icmp( "weapon_flashlight_new", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = lastIdentifiedWeapon;
+				//else if ( idStr::Icmp( "weapon_flashlight_new", weaponDef->GetName() ) == 0 ) currentWeapon = WEAPON_FLASHLIGHT;
+				//else if ( idStr::Icmp( "weapon_flashlight", weaponDef->GetName() ) == 0 ) currentWeapon = WEAPON_FLASHLIGHT;
+			else currentIdentifiedWeapon = WEAPON_NONE;
+			lastIdentifiedWeapon = currentIdentifiedWeapon;
         }
     }
     if ( currentIdentifiedWeapon == WEAPON_FLASHLIGHT ) common->Printf( "Identify weapon returned %s\n", weaponDef->GetName() );
@@ -1755,6 +1758,30 @@ bool idWeapon::GetMuzzlePositionWithHacks( idVec3& origin, idMat3& axis )
             axis[0] = -axis[0];
             break;
         }
+
+		case WEAPON_SHOTGUN_DOUBLE:
+		{
+			// joint doesn't point straight, so rotate it
+			//const jointHandle_t bodJoint = animator.GetJointHandle("trigger");
+			//GetGlobalJointTransform(true, bodJoint, discardedOrigin, axis);
+			std::swap( axis[0], axis[2] ); // Koz fixme just swap like the rocketlauncher this should work now test and cleanup
+			//axis[0] = -axis[0];
+			//common->Printf( "GMPWH returning value for WEAPON_SHOTGUN_DOUBLE \n" );
+
+			break;
+		}
+
+		case WEAPON_GRABBER:
+		{
+
+			idVec3 forward = axis[0];
+			forward.Normalize();
+			const float scaleOffset = 4.0f;
+			forward *= scaleOffset;
+			origin += forward;
+			break;
+
+		}
 
         case WEAPON_PLASMAGUN:
         {
@@ -3684,7 +3711,7 @@ void idWeapon::Event_LaunchProjectiles( int num_projectiles, float spread, float
     weapon_t currentWeap;
 
     currentWeap = IdentifyWeapon();
-    if ( currentWeap == WEAPON_SHOTGUN)
+	if ( currentWeap == WEAPON_SHOTGUN || currentWeap == WEAPON_SHOTGUN_DOUBLE || currentWeap == WEAPON_SHOTGUN_DOUBLE_MP )
     {
         //idPlayer *player;
         //player = gameLocal.GetLocalPlayer();

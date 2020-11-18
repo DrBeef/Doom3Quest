@@ -215,6 +215,8 @@ public:
 		return head.GetEntity();
 	};
 
+	void					PlayFootStepSound( void );
+
 protected:
 	friend class			idAnimState;
 
@@ -289,11 +291,12 @@ protected:
 							// copies animation from body to head joints
 	void					CopyJointsFromBodyToHead( void );
 
+
 private:
 	void					SyncAnimChannels( int channel, int syncToChannel, int blendFrames );
 	void					FinishSetup( void );
 	void					SetupHead( void );
-	void					PlayFootStepSound( void );
+
 
 	void					Event_EnableEyeFocus( void );
 	void					Event_DisableEyeFocus( void );

@@ -96,6 +96,42 @@ const char *idGameLocal::sufaceTypeNames[ MAX_SURFACE_TYPES ] = {
 	"ricochet", "surftype10", "surftype11", "surftype12", "surftype13", "surftype14", "surftype15"
 };
 
+// List of all defs used by the player that will stay on the fast timeline
+static const char* fastEntityList[] =
+        {
+                "player_doommarine",
+                "weapon_chainsaw",
+                "weapon_fists",
+                "weapon_flashlight",
+                "weapon_rocketlauncher",
+                "projectile_rocket",
+                "weapon_machinegun",
+                "projectile_bullet_machinegun",
+                "weapon_pistol",
+                "projectile_bullet_pistol",
+                "weapon_handgrenade",
+                "projectile_grenade",
+                "weapon_bfg",
+                "projectile_bfg",
+                "weapon_chaingun",
+                "projectile_chaingunbullet",
+                "weapon_pda",
+                "weapon_plasmagun",
+                "projectile_plasmablast",
+                "weapon_shotgun",
+                "projectile_bullet_shotgun",
+                "weapon_soulcube",
+                "projectile_soulblast",
+                "weapon_shotgun_double",
+                "projectile_shotgunbullet_double",
+                "weapon_grabber",
+                "weapon_bloodstone_active1",
+                "weapon_bloodstone_active2",
+                "weapon_bloodstone_active3",
+                "weapon_bloodstone_passive",
+                NULL
+        };
+
 /*
 ===========
 GetGameAPI
@@ -776,10 +812,6 @@ void idGameLocal::SetLocalClient( int clientNum ) {
 
 void idGameLocal::SetVRClientInfo(vrClientInfo *pVR)
 {
-	/*
-	pVR->hmdorientation[0] = 0.0;
-	pVR->hmdorientation[1] = 0.0;
-	pVR->hmdorientation[2] = 0.0;*/
 	pVRClientInfo = pVR;
 }
 
@@ -985,6 +1017,23 @@ bool idGameLocal::AnimatorGetJointTransform(idAnimator* animator, jointHandle_t 
 {
 	return animator->GetJointTransform( jointHandle, -1, offset, axis );
 }
+
+void idGameLocal::CheckRenderCvars()
+{
+	// Koz
+	if ( game->isVR )
+	{
+		if ( vr_useFloorHeight.IsModified() || ( vr_normalViewHeight.IsModified() && vr_useFloorHeight.GetInteger() == 0 ) || vr_scale.IsModified() || commonVr->shouldRecenter )
+		{
+			commonVr->HMDResetTrackingOriginOffset();
+			vr_useFloorHeight.ClearModified();
+			vr_normalViewHeight.ClearModified();
+			vr_scale.ClearModified();
+			commonVr->shouldRecenter = false;
+		}
+	}
+}
+
 
 /*
 ================

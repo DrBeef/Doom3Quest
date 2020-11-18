@@ -541,8 +541,7 @@ extern idCVar vr_headshotMultiplier;
 extern idCVar vr_weaponCycleMode;
 extern idCVar vr_gripMode;
 extern idCVar vr_doubleClickGrip;
-extern idCVar vr_pickUpMode;
-extern idCVar vr_reloadMode;
+
 extern idCVar vr_mustEmptyHands;
 extern idCVar vr_contextSensitive;
 extern idCVar vr_dualWield;

@@ -68,7 +68,7 @@ const int	FOCUS_TIME = 300;
 const int	FOCUS_GUI_TIME = 200; // Koz fixme, only change in VR. Previously 500, reduced to 200 to drop weapon out of guis faster.
 const int	NUM_QUICK_SLOTS = 4;
 
-const int MAX_WEAPONS = 16;
+const int MAX_WEAPONS = 32;
 
 const int weapon_empty_hand = -2; // Carl: todo, maybe a different constant
 
@@ -81,19 +81,6 @@ const int MAX_HEARTRATE = 130;			// maximum
 const int ZERO_VOLUME = -40;			// volume at zero
 const int DMG_VOLUME = 5;				// volume when taking damage
 const int DEATH_VOLUME = 15;			// volume at death
-
-/*const int WEAPON_FISTS = 0;
-const int WEAPON_PISTOL = 1;
-const int WEAPON_SHOTGUN = 2;
-const int WEAPON_MACHINEGUN = 3;
-const int WEAPON_CHAINGUN = 4;
-const int WEAPON_GREANDE = 5;
-const int WEAPON_PLASMARIFLE = 6;
-const int WEAPON_ROCKETLAUNCHER = 7;
-const int WEAPON_BFG = 8;
-const int WEAPON_SOULCUBE = 9;
-const int WEAPON_CHAINSAW = 10;
-const int WEAPON_FLASHLIGHT = 11;*/
 
 const int SAVING_THROW_TIME = 5000;		// maximum one "saving throw" every five seconds
 
@@ -579,19 +566,26 @@ public:
 	int						weapon_pda;
 	int						weapon_fists;
 	int						weapon_flashlight;
-    int						weapon_chainsaw;
-    bool					harvest_lock;
-    // Koz begin
-    int						weapon_pistol;
-    int						weapon_shotgun;
-    int						weapon_machinegun;
-    int						weapon_chaingun;
-    int						weapon_handgrenade;
-    int						weapon_plasmagun;
-    int						weapon_rocketlauncher;
-    int						weapon_bfg;
-    int						weapon_flashlight_new;
-    // Koz end
+	int						weapon_chainsaw;
+	int						weapon_bloodstone;
+	int						weapon_bloodstone_active1;
+	int						weapon_bloodstone_active2;
+	int						weapon_bloodstone_active3;
+	bool					harvest_lock;
+	// Koz begin
+	int						weapon_pistol;
+	int						weapon_shotgun;
+	int						weapon_shotgun_double;
+	int						weapon_machinegun;
+	int						weapon_chaingun;
+	int						weapon_handgrenade;
+	int						weapon_plasmagun;
+	int						weapon_rocketlauncher;
+	int						weapon_bfg;
+	int						weapon_flashlight_new;
+	int						weapon_grabber;
+
+
 	int						heartRate;
 	idInterpolate<float>	heartInfo;
 	int						lastHeartAdjust;

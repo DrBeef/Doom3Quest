@@ -1561,25 +1561,31 @@ void idPlayer::Init( void ) {
 	oldFlags				= 0;
 
 	weaponEnabled			= true;
+	risingWeaponHand		= -1;
 	weapon_soulcube			= SlotForWeapon( "weapon_soulcube" );
-    weapon_pda				= SlotForWeapon( "weapon_pda" );
-    weapon_fists			= SlotForWeapon( "weapon_fists" );
-    weapon_flashlight		= SlotForWeapon( "weapon_flashlight" );
-    weapon_chainsaw			= SlotForWeapon( "weapon_chainsaw" );
-    showWeaponViewModel		= GetUserInfo()->GetBool( "ui_showGun" );
-    harvest_lock			= false;
+	weapon_pda				= SlotForWeapon( "weapon_pda" );
+	weapon_fists			= SlotForWeapon( "weapon_fists" );
+	weapon_flashlight		= SlotForWeapon( "weapon_flashlight" );
+	weapon_chainsaw			= SlotForWeapon( "weapon_chainsaw" );
+	weapon_bloodstone		= SlotForWeapon( "weapon_bloodstone_passive" );
+	weapon_bloodstone_active1 = SlotForWeapon( "weapon_bloodstone_active1" );
+	weapon_bloodstone_active2 = SlotForWeapon( "weapon_bloodstone_active2" );
+	weapon_bloodstone_active3 = SlotForWeapon( "weapon_bloodstone_active3" );
+	harvest_lock			= false;
 
-    // Koz begin;
-    weapon_pistol			= SlotForWeapon( "weapon_pistol" );
-    weapon_shotgun			= SlotForWeapon( "weapon_shotgun" );
-    weapon_machinegun		= SlotForWeapon( "weapon_machinegun" );
-    weapon_chaingun			= SlotForWeapon( "weapon_chaingun" );
-    weapon_handgrenade		= SlotForWeapon( "weapon_handgrenade" );
-    weapon_plasmagun		= SlotForWeapon( "weapon_plasmagun" );
-    weapon_rocketlauncher	= SlotForWeapon( "weapon_rocketlauncher" );
-    weapon_bfg				= SlotForWeapon( "weapon_bfg" );
-    weapon_flashlight_new	= SlotForWeapon( "weapon_flashlight_new" );
-    // Koz end
+	// Koz begin;
+	weapon_pistol			= SlotForWeapon( "weapon_pistol" );
+	weapon_shotgun			= SlotForWeapon( "weapon_shotgun" );
+	weapon_shotgun_double	= SlotForWeapon( "weapon_shotgun_double" );
+	weapon_machinegun		= SlotForWeapon( "weapon_machinegun" );
+	weapon_chaingun			= SlotForWeapon( "weapon_chaingun" );
+	weapon_handgrenade		= SlotForWeapon( "weapon_handgrenade" );
+	weapon_plasmagun		= SlotForWeapon( "weapon_plasmagun" );
+	weapon_rocketlauncher	= SlotForWeapon( "weapon_rocketlauncher" );
+	weapon_bfg				= SlotForWeapon( "weapon_bfg" );
+	weapon_flashlight_new	= SlotForWeapon( "weapon_flashlight_new" );
+	weapon_grabber			= SlotForWeapon( "weapon_grabber" );
+	// Koz end
 
 
 	lastDmgTime				= 0;
@@ -2177,17 +2183,23 @@ void idPlayer::Save( idSaveGame *savefile ) const {
 	savefile->WriteInt( weapon_fists );
 	savefile->WriteInt( weapon_flashlight );
 	savefile->WriteInt( weapon_chainsaw );
-    // Koz
-    savefile->WriteInt( weapon_pistol );
-    savefile->WriteInt( weapon_shotgun );
-    savefile->WriteInt( weapon_machinegun );
-    savefile->WriteInt( weapon_chaingun );
-    savefile->WriteInt( weapon_handgrenade );
-    savefile->WriteInt( weapon_plasmagun );
-    savefile->WriteInt( weapon_rocketlauncher );
-    savefile->WriteInt( weapon_bfg );
-    savefile->WriteInt( weapon_flashlight_new );
-    // Koz end
+	savefile->WriteInt( weapon_bloodstone );
+	savefile->WriteInt( weapon_bloodstone_active1 );
+	savefile->WriteInt( weapon_bloodstone_active2 );
+	savefile->WriteInt( weapon_bloodstone_active3 );
+	// Koz
+	savefile->WriteInt( weapon_pistol );
+	savefile->WriteInt( weapon_shotgun );
+	savefile->WriteInt( weapon_shotgun_double );
+	savefile->WriteInt( weapon_machinegun );
+	savefile->WriteInt( weapon_chaingun );
+	savefile->WriteInt( weapon_handgrenade );
+	savefile->WriteInt( weapon_plasmagun );
+	savefile->WriteInt( weapon_rocketlauncher );
+	savefile->WriteInt( weapon_bfg );
+	savefile->WriteInt( weapon_flashlight_new );
+	savefile->WriteInt( weapon_grabber );
+	// Koz end
     savefile->WriteBool( harvest_lock );
 	savefile->WriteInt( heartRate );
 
@@ -2530,21 +2542,30 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 	savefile->ReadBool(objectiveSystemOpen);
 
 
-	savefile->ReadInt(weapon_soulcube);
-	savefile->ReadInt(weapon_pda);
-	savefile->ReadInt(weapon_fists);
+	savefile->ReadInt( weapon_soulcube );
+	savefile->ReadInt( weapon_pda );
+	savefile->ReadInt( weapon_fists );
 	savefile->ReadInt( weapon_flashlight );
 	savefile->ReadInt( weapon_chainsaw );
+	savefile->ReadInt( weapon_bloodstone );
+	savefile->ReadInt( weapon_bloodstone_active1 );
+	savefile->ReadInt( weapon_bloodstone_active2 );
+	savefile->ReadInt( weapon_bloodstone_active3 );
 
+	// Koz
 	savefile->ReadInt( weapon_pistol );
-    savefile->ReadInt( weapon_shotgun );
-    savefile->ReadInt( weapon_machinegun );
-    savefile->ReadInt( weapon_chaingun );
-    savefile->ReadInt( weapon_handgrenade );
-    savefile->ReadInt( weapon_plasmagun );
-    savefile->ReadInt( weapon_rocketlauncher );
-    savefile->ReadInt( weapon_bfg );
-    savefile->ReadInt( weapon_flashlight_new );
+	savefile->ReadInt( weapon_shotgun );
+	savefile->ReadInt( weapon_shotgun_double );
+	savefile->ReadInt( weapon_machinegun );
+	savefile->ReadInt( weapon_chaingun );
+	savefile->ReadInt( weapon_handgrenade );
+	savefile->ReadInt( weapon_plasmagun );
+	savefile->ReadInt( weapon_rocketlauncher );
+	savefile->ReadInt( weapon_bfg );
+	savefile->ReadInt( weapon_flashlight_new );
+	savefile->ReadInt( weapon_grabber );
+	// Koz end
+
     savefile->ReadBool( harvest_lock );
     savefile->ReadInt(heartRate);
 
@@ -2678,6 +2699,8 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( hands[ 1 - vr_weaponHand.GetInteger() ].weaponSwitchTime );
 
 	savefile->ReadBool(weaponEnabled);
+	risingWeaponHand = -1;
+
 	savefile->ReadBool(showWeaponViewModel);
 
 	savefile->ReadSkin(skin);
@@ -13750,7 +13773,7 @@ void idPlayer::CalculateViewFlashlightPos( idVec3 &origin, idMat3 &axis, idVec3 
             origin += flashlightOffset.x * axis[1] + flashlightOffset.y * axis[0] + flashlightOffset.z * axis[2];
 
             curWeap = weaponWithFlashlightMounted->IdentifyWeapon();
-            if ( curWeap == WEAPON_ROCKETLAUNCHER )
+			if ( curWeap == WEAPON_SHOTGUN_DOUBLE || curWeap == WEAPON_ROCKETLAUNCHER )
             {
                 //hack was already present in the code to fix borked alignments for these weapons,
                 //we need to put them back

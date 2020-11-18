@@ -356,6 +356,9 @@ public:
 	virtual void			SetLocalClient( int clientNum );
 	virtual void 			SetVRClientInfo(vrClientInfo *pVRClientInfo);
 	virtual void			EvaluateVRMoveMode(idVec3 &viewangles, usercmd_t &cmd, int buttonCurrentlyClicked, float snapTurn);
+
+	virtual void			CheckRenderCvars();
+
 	//GB Trying to move animator function
 	virtual bool			AnimatorGetJointTransform(idAnimator* animator, jointHandle_t jointHandle, int currentTime, idVec3 &offset, idMat3 &axis );
     virtual bool            CMDButtonsAttackCall(int &teleportCanceled);
