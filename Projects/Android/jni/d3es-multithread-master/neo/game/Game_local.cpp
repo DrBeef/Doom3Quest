@@ -307,7 +307,7 @@ bool IsDoom3DemoVersion()
 
 bool idGameLocal::InCinematic()
 {
-	return inCinematic;
+	return inCinematic && (vr_cinematics.GetInteger() != 0);
 }
 
 /*

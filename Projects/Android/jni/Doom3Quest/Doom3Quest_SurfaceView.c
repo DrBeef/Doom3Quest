@@ -144,7 +144,7 @@ void Doom3Quest_setUseScreenLayer(int screen)
 bool Doom3Quest_useScreenLayer()
 {
     //Cinematics are now first person
-	return inMenu || forceVirtualScreen;
+	return inMenu || forceVirtualScreen || inCinematic;
 }
 
 static void UnEscapeQuotes( char *arg )
