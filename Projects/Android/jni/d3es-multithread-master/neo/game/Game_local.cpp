@@ -1652,7 +1652,7 @@ void idGameLocal::MapPopulate( void ) {
 
     // Must set GAME_FPS for script after populating, because some maps run their own scripts
     // when spawning the world, and GAME_FPS will not be found before then.
-    SetScriptFPS( 60.0f );
+	SetScriptFPS(renderSystem->GetRefresh());
 }
 
 /*
@@ -2289,6 +2289,17 @@ void idGameLocal::CacheDictionaryMedia( const idDict *dict ) {
 			FindEntityDef( kv->GetValue().c_str(), false );
 		}
 		kv = dict->MatchPrefix( "def", kv );
+	}
+
+	// Precache all available grabber "catch" damage decls
+	kv = dict->MatchPrefix( "def_damage", NULL );
+	while( kv != NULL )
+	{
+		if( kv->GetValue().Length() )
+		{
+			FindEntityDef( kv->GetValue() + "_catch", false );
+		}
+		kv = dict->MatchPrefix( "def_damage", kv );
 	}
 
 	kv = dict->MatchPrefix( "pda_name", NULL );
