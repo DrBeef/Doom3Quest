@@ -49,8 +49,8 @@ extern "C" int questType;
 
 idCVar	idSessionLocal::com_showAngles( "com_showAngles", "0", CVAR_SYSTEM | CVAR_BOOL, "" );
 idCVar	idSessionLocal::com_minTics( "com_minTics", "1", CVAR_SYSTEM, "" );
-idCVar	idSessionLocal::com_showTics( "com_showTics", "0", CVAR_SYSTEM | CVAR_BOOL, "" );
-idCVar	idSessionLocal::com_skipTics( "com_skipTics", "1", CVAR_SYSTEM | CVAR_BOOL | CVAR_ARCHIVE, "Skip all missed tics and only use one tick per frame, won't be used on Quest 1" );
+idCVar	idSessionLocal::com_showTics( "com_showTics", "1", CVAR_SYSTEM | CVAR_BOOL, "" );
+idCVar	idSessionLocal::com_skipTics( "com_skipTics", "1", CVAR_SYSTEM | CVAR_BOOL | CVAR_ARCHIVE, "Skip all missed tics and only use one tick per frame, unless in a low fps situation, then process all tics" );
 idCVar	idSessionLocal::com_fixedTic( "com_fixedTic", "0", CVAR_SYSTEM | CVAR_INTEGER | CVAR_ARCHIVE, "", -1, 10 );
 idCVar	idSessionLocal::com_showDemo( "com_showDemo", "0", CVAR_SYSTEM | CVAR_BOOL, "" );
 idCVar	idSessionLocal::com_skipGameDraw( "com_skipGameDraw", "0", CVAR_SYSTEM | CVAR_BOOL, "" );
@@ -2526,6 +2526,41 @@ void idSessionLocal::UpdateScreen( bool outOfSequence ) {
 	insideUpdateScreen = false;
 }
 
+#define	FPS_FRAMES	5
+int calcFPS(  ) {
+    static int	previousTimes[FPS_FRAMES];
+    static int	index;
+    int		i, total;
+    static int		fps = 0;
+    static	int	previous;
+    int		t, frameTime;
+
+    // don't use serverTime, because that will be drifting to
+    // correct for internet lag changes, timescales, timedemos, etc
+    t = Sys_Milliseconds();
+    frameTime = t - previous;
+    previous = t;
+
+    previousTimes[index % FPS_FRAMES] = frameTime;
+    index++;
+    if (index > FPS_FRAMES) {
+        // average multiple frames together to smooth changes out a bit
+        total = 0;
+        for (i = 0; i < FPS_FRAMES; i++) {
+            total += previousTimes[i];
+        }
+        if (!total) {
+            total = 1;
+        }
+        fps = 10000 * FPS_FRAMES / total;
+        fps = (fps + 5) / 10;
+
+        common->Printf( " FPS: %i ", fps );
+    }
+
+    return fps;
+}
+
 /*
 ===============
 idSessionLocal::Frame
@@ -2732,6 +2767,26 @@ void idSessionLocal::Frame() {
 
 	int	gameTicsToRun = latchedTicNumber - lastGameTic;
 
+    // DrBeef's "smoothing out" logic, dodgy, but seems to do the trick
+    //
+    // This is here because, for example, if we are running at 60hz, then the game tic interval is
+    // 16ms, which actually means 63 tics per second, so every half second or so we get an extra tic.
+    // This extra tic results is a movement glitch (subtle, but annoying when you are aware of it)
+    // because you move two tics worth of distance compared to the other frames, which is more obvious in VR.
+    //
+    // The solution is to just skip these extra tics, however if we skip all extra tics and only process
+    // one per frame then if the fps drop due to a lot of action, the whole game slows down, which isn't desriable.
+    // Therefore we only want to skip isolated instances of a single extra tic if we are maintaining almost max frame rate
+    int fps = calcFPS();
+    bool skipTics = false;
+    if ( com_skipTics.GetBool() && gameTicsToRun > 1)
+    {
+        int refresh = renderSystem->GetRefresh();
+
+        //Skip extra tics if we are maintaining 95% of the intended refresh rate
+        skipTics = (fps >= (refresh * 0.95F ));
+    }
+
 	int i;
 	for ( i = 0 ; i < gameTicsToRun ; i++ )
 	{
@@ -2741,17 +2796,13 @@ void idSessionLocal::Frame() {
 			break;
 		}
 
-		if ( syncNextGameFrame ) {
+		if ( syncNextGameFrame || skipTics) {
+            // Do this in case skipTics is true but this flag isn't, since RunGameTic will reset the
+            // syncNextGameFrame flag
+            syncNextGameFrame = true;
+
 			// long game frame, so break out and continue executing as if there was no hitch
 			break;
-		}
-
-		//Bit of a hack to smooth things out - needs proper testing
-		//only allow quest 2 to do this, quest 1 will slowdown too much with this enabled so
-		//prevent it being used on Q1
-		if ( questType == 2 && com_skipTics.GetBool() && gameTicsToRun > 1 ) {
-            syncNextGameFrame = true;
-            break;
 		}
 	}
 }
