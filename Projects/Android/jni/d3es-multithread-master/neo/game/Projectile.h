@@ -60,6 +60,8 @@ public :
 	virtual void			FreeLightDef( void );
 
 	idEntity *				GetOwner( void ) const;
+	void					CatchProjectile( idEntity* o, const char* reflectName );
+    int						GetProjectileState();
 
 	virtual void			Think( void );
 	virtual void			Killed( idEntity *inflictor, idEntity *attacker, int damage, const idVec3 &dir, int location );
@@ -74,6 +76,15 @@ public :
 		EVENT_DAMAGE_EFFECT = idEntity::EVENT_MAXEVENTS,
 		EVENT_MAXEVENTS
 	};
+
+	void					SetLaunchedFromGrabber( bool bl )
+	{
+		launchedFromGrabber = bl;
+	}
+	bool					GetLaunchedFromGrabber()
+	{
+		return launchedFromGrabber;
+	}
 
 	static void				DefaultDamageEffect( idEntity *soundEnt, const idDict &projectileDef, const trace_t &collision, const idVec3 &velocity );
 	static bool				ClientPredictionCollide( idEntity *soundEnt, const idDict &projectileDef, const trace_t &collision, const idVec3 &velocity, bool addDamageEffect );
@@ -92,6 +103,8 @@ protected:
 		bool				isTracer					: 1;
 		bool				noSplashDamage				: 1;
 	} projectileFlags;
+
+	bool					launchedFromGrabber;
 
 	float					thrust;
 	int						thrust_end;
@@ -146,6 +159,8 @@ public :
 	void					Spawn( void );
 	virtual void			Think( void );
 	virtual void			Launch( const idVec3 &start, const idVec3 &dir, const idVec3 &pushVelocity, const float timeSinceFire = 0.0f, const float launchPower = 1.0f, const float dmgPower = 1.0f );
+    void					SetEnemy( idEntity* ent );
+    void					Event_SetEnemy( idEntity* ent );
 
 protected:
 	float					speed;

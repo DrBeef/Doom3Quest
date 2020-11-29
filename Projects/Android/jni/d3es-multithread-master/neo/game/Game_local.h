@@ -398,6 +398,12 @@ public:
 	virtual gameReturn_t	ClientPrediction( int clientNum, const usercmd_t *clientCmds, bool lastPredictFrame );
 
 	virtual void			GetClientStats( int clientNum, char *data, const int len );
+
+	virtual bool			IsInGame() const
+	{
+		return GameState() == GAMESTATE_ACTIVE;
+	}
+
 	virtual void			SwitchTeam( int clientNum, int team );
 
 	virtual bool			DownloadRequest( const char *IP, const char *guid, const char *paks, char urls[ MAX_STRING_CHARS ] );

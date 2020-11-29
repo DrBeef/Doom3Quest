@@ -109,7 +109,11 @@ enum {
 	INVISIBILITY,
 	MEGAHEALTH,
 	ADRENALINE,
-	MAX_POWERUPS
+    INVULNERABILITY,
+    HELLTIME,
+    ENVIROSUIT,
+    ENVIROTIME,
+    MAX_POWERUPS
 };
 
 // powerup modifiers
@@ -444,9 +448,6 @@ public:
 	qhandle_t				flashlightModelDefHandle;					// handle to static renderer model
 
 	// Koz begin
-    renderEntity_t			headingBeamEntity; // Koz add a heading indicator pointing the direction the players body is facing.
-    qhandle_t				headingBeamHandle;
-    bool					headingBeamActive;
     const idDeclSkin*		skinHeadingSolid;
     const idDeclSkin*		skinHeadingArrows;
     const idDeclSkin*		skinHeadingArrowsScroll;
@@ -694,8 +695,6 @@ public:
     void					SetWeaponHandPose();
     void					SetFlashHandPose(); // Set flashlight hand pose
     void					ToggleLaserSight();
-    void					UpdateHeadingBeam();
-    void					ToggleHeadingBeam();
     void					UpdateVrHud();
     void					ToggleHud();
     void					RecreateCopyJoints();
@@ -875,6 +874,7 @@ public:
     idWeapon*				GetWeaponInHand( int hand ) const;
     // Carl: when the code needs just one weapon, guess which one is the "main" one
     idWeapon*				GetMainWeapon();
+	idWeapon*				GetGrabberWeapon() const;
     idWeapon*				GetPDAWeapon() const;
     idWeapon*				GetWeaponWithMountedFlashlight();
     int						GetBestWeaponHand();

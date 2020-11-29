@@ -4861,6 +4861,26 @@ bool idEntity::ClientReceiveEvent( int event, int time, const idBitMsg &msg ) {
 }
 
 /*
+================
+idEntity::SetGrabbedState
+================
+*/
+void idEntity::SetGrabbedState( bool grabbed )
+{
+	fl.grabbed = grabbed;
+}
+
+/*
+================
+idEntity::IsGrabbed
+================
+*/
+bool idEntity::IsGrabbed()
+{
+	return fl.grabbed;
+}
+
+/*
 ===============================================================================
 
   idAnimatedEntity

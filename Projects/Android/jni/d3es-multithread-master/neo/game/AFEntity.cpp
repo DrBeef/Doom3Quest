@@ -1119,6 +1119,61 @@ void idAFEntity_Gibbable::Damage( idEntity *inflictor, idEntity *attacker, const
 
 /*
 =====================
+idAFEntity_Gibbable::SetThrown
+=====================
+*/
+void idAFEntity_Gibbable::SetThrown( bool isThrown )
+{
+
+	if( isThrown )
+	{
+		int i, num = af.GetPhysics()->GetNumBodies();
+
+		for( i = 0; i < num; i++ )
+		{
+			idAFBody* body;
+
+			body = af.GetPhysics()->GetBody( i );
+			body->SetClipMask( MASK_MONSTERSOLID );
+		}
+	}
+
+	wasThrown = isThrown;
+}
+
+/*
+=====================
+idAFEntity_Gibbable::Collide
+=====================
+*/
+bool idAFEntity_Gibbable::Collide( const trace_t& collision, const idVec3& velocity )
+{
+
+	if( !gibbed && wasThrown )
+	{
+
+		// Everything gibs (if possible)
+		if( spawnArgs.GetBool( "gib" ) )
+		{
+			idEntity*	ent;
+
+			ent = gameLocal.entities[ collision.c.entityNum ];
+			if( ent->fl.takedamage )
+			{
+				ent->Damage( this, gameLocal.GetLocalPlayer(), collision.c.normal, "damage_thrown_ragdoll", 1.f, CLIPMODEL_ID_TO_JOINT_HANDLE( collision.c.id ) );
+			}
+
+			idVec3 vel = velocity;
+			vel.NormalizeFast();
+			Gib( vel, "damage_gib" );
+		}
+	}
+
+	return idAFEntity_Base::Collide( collision, velocity );
+}
+
+/*
+=====================
 idAFEntity_Gibbable::SpawnGibs
 =====================
 */
@@ -1158,6 +1213,8 @@ void idAFEntity_Gibbable::SpawnGibs( const idVec3 &dir, const char *damageDefNam
 			velocity += ( i & 1 ) ? dir : -dir;
 			list[i]->GetPhysics()->SetLinearVelocity( velocity * 75.0f );
 		}
+		// Don't allow grabber to pick up temporary gibs
+		list[i]->noGrab = true;
 		list[i]->GetRenderEntity()->noShadow = true;
 		list[i]->GetRenderEntity()->shaderParms[ SHADERPARM_TIME_OF_DEATH ] = gameLocal.time * 0.001f;
 		list[i]->PostEventSec( &EV_Remove, 4.0f );

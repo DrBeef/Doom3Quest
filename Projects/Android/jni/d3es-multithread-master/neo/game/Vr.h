@@ -469,8 +469,6 @@ extern idCVar	vr_deadzonePitch;
 extern idCVar	vr_deadzoneYaw;
 extern idCVar	vr_comfortDelta;
 
-extern idCVar	vr_headingBeamMode;
-
 extern idCVar	vr_weaponSight;
 extern idCVar	vr_weaponSightToSurface;
 

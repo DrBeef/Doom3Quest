@@ -90,6 +90,7 @@ src_game = \
 	game/GameEdit.cpp \
 	game/Game_local.cpp \
 	game/Game_network.cpp \
+	game/Grabber.cpp \
 	game/Item.cpp \
 	game/IK.cpp \
 	game/Light.cpp \

@@ -83,6 +83,7 @@ idProjectile::idProjectile( void ) {
 	lightColor			= vec3_zero;
 	state				= SPAWNED;
 	damagePower			= 1.0f;
+	launchedFromGrabber = false;
 	memset( &projectileFlags, 0, sizeof( projectileFlags ) );
 	memset( &renderLight, 0, sizeof( renderLight ) );
 
@@ -1061,6 +1062,45 @@ void idProjectile::Event_Touch( idEntity *other, trace_t *trace ) {
 }
 
 /*
+================
+idProjectile::CatchProjectile
+================
+*/
+void idProjectile::CatchProjectile( idEntity* o, const char* reflectName )
+{
+    idEntity* prevowner = owner.GetEntity();
+
+    owner = o;
+    physicsObj.GetClipModel()->SetOwner( o );
+
+    if( this->IsType( idGuidedProjectile::Type ) )
+    {
+        idGuidedProjectile* proj = static_cast<idGuidedProjectile*>( this );
+
+        proj->SetEnemy( prevowner );
+    }
+
+    idStr s = spawnArgs.GetString( "def_damage" );
+    s += reflectName;
+
+    const idDict* damageDef = gameLocal.FindEntityDefDict( s, false );
+    if( damageDef )
+    {
+        spawnArgs.Set( "def_damage", s );
+    }
+}
+
+/*
+================
+idProjectile::GetProjectileState
+================
+*/
+int idProjectile::GetProjectileState()
+{
+	return ( int )state;
+}
+
+/*
 =================
 idProjectile::ClientPredictionCollide
 =================
@@ -1481,6 +1521,10 @@ void idGuidedProjectile::Launch( const idVec3 &start, const idVec3 &dir, const i
 	UpdateVisuals();
 }
 
+void idGuidedProjectile::SetEnemy( idEntity* ent )
+{
+	enemy = ent;
+}
 
 /*
 ===============================================================================

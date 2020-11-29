@@ -47,6 +47,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "idlib/Lib.h"
 #include "Mover.h"
 #include "sys/sys_public.h"
+#include "framework/DeclSkin.h"
 
 
 const int ASYNC_PLAYER_INV_AMMO_BITS = idMath::BitsForInteger( 999 );	// 9 bits to cover the range [0, 999]
@@ -1240,9 +1241,6 @@ idPlayer::idPlayer() {
 	holsterModelDefHandle = -1;
 	memset( &holsterRenderEntity, 0, sizeof( holsterRenderEntity ) );
 
-	headingBeamHandle = -1;
-	memset( &headingBeamEntity, 0, sizeof( headingBeamEntity ) );
-
 	hud						= NULL;
 	objectiveSystem			= NULL;
 	objectiveSystemOpen		= false;
@@ -1804,15 +1802,6 @@ void idPlayer::Init( void ) {
 	skinCrosshairCircleDot = declManager->FindSkin( "skins/vr/crosshairCircleDot" );
 	skinCrosshairCross = declManager->FindSkin( "skins/vr/crosshairCross" );
 
-
-	// heading indicator for VR - point the direction the body is facing.
-	/*
-	 * memset( &headingBeamEntity, 0, sizeof( headingBeamEntity ) );
-	headingBeamEntity.hModel = renderModelManager->FindModel( "/models/mapobjects/headingbeam.lwo" );
-	skinHeadingSolid = declManager->FindSkin( "skins/models/headingbeamsolid" );
-	skinHeadingArrows = declManager->FindSkin( "skins/models/headingbeamarrows" );
-	skinHeadingArrowsScroll = declManager->FindSkin( "skins/models/headingbeamarrowsscroll" );*/
-
 	//GBFix Not in Original
 	hudActive = true;
 	PDAorigin = vec3_zero;
@@ -1924,6 +1913,7 @@ void idPlayer::Spawn( void ) {
 
 	idAFAttachment *headEnt = head;
 	if ( headEnt ) {
+		// supress head in non-player views, but allow it in mirrors and remote views
 		headEnt->GetRenderEntity()->suppressSurfaceInViewID = entityNumber+1;
 		headEnt->GetRenderEntity()->noSelfShadow = true;
 	}
@@ -2416,7 +2406,6 @@ void idPlayer::Save( idSaveGame *savefile ) const {
 
     // Koz begin
     savefile->WriteBool( hands[0].laserSightActive || hands[1].laserSightActive );
-    savefile->WriteBool( headingBeamActive );
     savefile->WriteBool( hudActive );
 
     savefile->WriteInt( commonVr->currentFlashlightMode );
@@ -2879,7 +2868,6 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
     InitPlayerBones();
 
     //re-init the VR ui models
-    headingBeamHandle = -1;
     hudHandle = -1;
 
     // re-init hud model
@@ -2888,14 +2876,6 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
     hudEntity.customShader = declManager->FindMaterial( "vr/hud" );
     hudEntity.weaponDepthHack = vr_hudOcclusion.GetBool();
 
-    // re-init the heading beam model
-    //memset( &headingBeamEntity, 0, sizeof( headingBeamEntity ) );
-    //headingBeamEntity.hModel = renderModelManager->FindModel( "/models/mapobjects/headingbeam.lwo" );
-
-    // re-init skins for heading indicator, crosshair, and telepad
-    skinHeadingSolid = declManager->FindSkin( "skins/models/headingbeamsolid" );
-    skinHeadingArrows = declManager->FindSkin( "skins/models/headingbeamarrows" );
-    skinHeadingArrowsScroll = declManager->FindSkin( "skins/models/headingbeamarrowsscroll" );
     skinCrosshairDot = declManager->FindSkin( "skins/vr/crosshairDot" );
     skinCrosshairCircleDot = declManager->FindSkin( "skins/vr/crosshairCircleDot" );
     skinCrosshairCross = declManager->FindSkin( "skins/vr/crosshairCross" );
@@ -2908,7 +2888,6 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
     savefile->ReadBool( laserSightActive );
     hands[ 0 ].laserSightActive = laserSightActive;
     hands[ 1 ].laserSightActive = laserSightActive;
-    savefile->ReadBool( headingBeamActive );
     savefile->ReadBool( hudActive );
 
     savefile->ReadInt( commonVr->currentFlashlightMode );
@@ -3035,8 +3014,6 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
     }
 
     vr_weaponSight.SetModified(); // make sure these get initialized properly
-    vr_headingBeamMode.SetModified();
-
     aasState = 0;
 
     // Koz end
@@ -3308,7 +3285,6 @@ void idPlayer::SavePersistantInfo( void ) {
 	playerInfo.SetInt( "health", health );
     playerInfo.SetInt( "current_weapon", hands[ GetBestWeaponHand() ].currentWeapon );
     // Koz begin
-    playerInfo.SetBool( "headingBeamActive", headingBeamActive );
     playerInfo.SetBool( "laserSightActive", hands[0].laserSightActive || hands[1].laserSightActive ); // Carl: don't change save format
     playerInfo.SetBool( "hudActive", hudActive );
     playerInfo.SetInt( "currentFlashMode", commonVr->currentFlashlightMode );
@@ -3342,7 +3318,6 @@ void idPlayer::RestorePersistantInfo( void ) {
     hands[vr_weaponHand.GetInteger()].idealWeapon = spawnArgs.GetInt( "current_weapon", "1" );
     hands[ 1 - vr_weaponHand.GetInteger() ].idealWeapon = weapon_fists;
     // Koz begin
-    headingBeamActive = spawnArgs.GetBool( "headingBeamActive", "1" );
     bool laserSightActive = spawnArgs.GetBool( "laserSightActive", "1" );
     hands[ 0 ].laserSightActive = laserSightActive;
     hands[ 1 ].laserSightActive = laserSightActive;
@@ -3401,9 +3376,9 @@ void idPlayer::UpdateSkinSetup()
 
     if ( game->isVR )
     {
-        //idStr skinN = skin->GetName();
+        idStr skinN = skin->GetName();
         //GB Force skin
-        idStr skinN = "skins/characters/player/greenmarine_arm2";
+        //idStr skinN = "skins/characters/player/greenmarine_arm2";
 
         if ( strstr( skinN.c_str(), "skins/characters/player/tshirt_mp" ) )
         {
@@ -4281,6 +4256,9 @@ void idPlayer::FireWeapon( int hand, idWeapon *weap ) {
         if( g_infiniteAmmo.GetBool() || weap->AmmoInClip() || weap->AmmoAvailable() )
         {
             weapon_t w = weap->IdentifyWeapon();
+			// Koz grabber doesn't fire projectiles, so player script won't trigger fire anim for hand if we dont do this
+			if( w == WEAPON_GRABBER ) AI_WEAPON_FIRED = true;
+
 			AI_ATTACK_HELD = true;
 			weap->BeginAttack();
 
@@ -5625,10 +5603,10 @@ void idPlayerHand::NextWeapon( int dir )
         }
 
         //GB don't let it cycle to the flashlight if  we're the weapon hand
-        if(w == owner->weapon_flashlight && whichHand == vr_weaponHand.GetInteger())
+        /*if(w == owner->weapon_flashlight && whichHand == vr_weaponHand.GetInteger())
 		{
 			continue;
-		}
+		}*/
 
         // Cycle to the flashlight if we're using our flashlight hand and the flashlight is in our inventory, OR if we set to include the flashlight in the weapon cycle.
         // todo: don't let it cycle to the flashlight if it's in the other hand and we're the weapon hand
@@ -8510,81 +8488,6 @@ void idPlayer::UpdateHolsterSlot()
 }
 
 /*
-Koz
-idPlayer::UpdateHeadingBeam
-*/
-void idPlayer::UpdateHeadingBeam()
-{
-    if ( vr_headingBeamMode.IsModified() )
-    {
-        int mode = vr_headingBeamMode.GetInteger();
-        vr_headingBeamMode.ClearModified();
-
-
-        switch ( mode )
-        {
-
-            case 0:
-                headingBeamActive = false;
-                break;
-
-            case 1:
-                headingBeamEntity.customSkin = skinHeadingSolid;
-                headingBeamActive = true;
-                break;
-
-            case 2:
-                headingBeamEntity.customSkin = skinHeadingArrows;
-                headingBeamActive = true;
-                break;
-
-            case 3:
-                headingBeamEntity.customSkin = skinHeadingArrowsScroll;
-                headingBeamActive = true;
-                break;
-
-            default:
-                headingBeamEntity.customSkin = skinHeadingArrowsScroll;
-                headingBeamActive = true;
-
-        }
-    }
-
-    if ( !headingBeamActive  )
-    {
-        // hide it
-        headingBeamEntity.allowSurfaceInViewID = -1;
-
-    }
-    else
-    {
-        idVec3 beamOrigin = GetEyePosition();
-        idMat3 beamAxis = idAngles( 0.0f, viewAngles.yaw, 0.0f ).ToMat3();
-
-        beamOrigin.z -= (pm_normalviewheight.GetFloat());
-
-        headingBeamEntity.axis = beamAxis;
-        headingBeamEntity.origin = beamOrigin;
-        headingBeamEntity.bounds.Zero();
-
-        headingBeamEntity.allowSurfaceInViewID = entityNumber + 1 ;
-
-    }
-
-    // make sure the entitydefs are updated
-    /*
-    if ( headingBeamHandle == -1 )
-    {
-        headingBeamHandle = gameRenderWorld->AddEntityDef( &headingBeamEntity );
-    }
-    else
-    {
-        gameRenderWorld->UpdateEntityDef( headingBeamHandle, &headingBeamEntity );
-    }
-	*/
-}
-
-/*
 =================
 idPlayer::CrashLand
 
@@ -9372,25 +9275,16 @@ void idPlayer::SetHandIKPos( int hand, idVec3 handOrigin, idMat3 handAxis, idQua
 
     static idVec3 weaponHandAttachJointPositionLocal = vec3_zero;
     static idMat3 weaponHandAttachJointAxisLocal = mat3_identity;
-    //idVec3 weaponHandAttachJointPositionGlobal = vec3_zero;
-    //idMat3 weaponHandAttachJointAxisGlobal = mat3_identity;
 
     idVec3 weaponHandAttachJointDefaultPositionLocal = vec3_zero;
-
-    //idVec3 handWeaponAttachJointPositionLocal = vec3_zero;
-    //idMat3 handWeaponAttachJointAxisLocal = mat3_identity;
-    //idVec3 handWeaponAttachJointPositionGlobal = vec3_zero;
-    //idMat3 handWeaponAttachJointAxisGlobal = mat3_identity;
 
     idVec3 weaponAttachDelta = vec3_zero;
 
     idVec3 handAttacherPositionLocal = vec3_zero;
     idVec3 handAttacherPositionGlobal = vec3_zero;
     idMat3 handmat = mat3_identity;
-    //idVec3 handDelta = vec3_zero;
 
     //idMat3 rot180 = idAngles( 0.0f, 180.0f, 0.0f ).ToMat3();
-
 
     commonVr->currentHandWorldPosition[hand] = handOrigin;
 
@@ -9606,6 +9500,20 @@ const idDeclPDA *idPlayer::GetPDA( void ) const {
 	} else {
 		return NULL;
 	}
+}
+
+/*
+===============
+idPlayer::GetGrabberWeapon
+Carl: Dual wielding
+===============
+*/
+idWeapon* idPlayer::GetGrabberWeapon() const
+{
+	if( hands[ 1 - vr_weaponHand.GetInteger() ].weapon.GetEntity() && hands[ 1 - vr_weaponHand.GetInteger() ].weapon->IdentifyWeapon() == WEAPON_GRABBER )
+		return hands[ 1 - vr_weaponHand.GetInteger() ].weapon.GetEntity();
+	else
+		return hands[ vr_weaponHand.GetInteger() ].weapon.GetEntity();
 }
 
 idWeapon * idPlayer::GetPDAWeapon() const
@@ -10212,12 +10120,6 @@ void idPlayer::PerformImpulse( int impulse ) {
         case IMPULSE_36: //  Toggle Hud
         {
             ToggleHud();
-            break;
-        }
-
-        case IMPULSE_37: //  toggle heading beam
-        {
-            ToggleHeadingBeam();
             break;
         }
 
@@ -11947,7 +11849,6 @@ void idPlayer::Think( void ) {
 		}
 	}
 
-	if ( game->isVR ) UpdateHeadingBeam(); // Koz
 	UpdatePDASlot();
 	UpdateHolsterSlot();
 
@@ -11991,19 +11892,6 @@ void idPlayer::ToggleLaserSight()
 	{
 		hands[ 0 ].laserSightActive = false;
 		hands[ 1 ].laserSightActive = false;
-	}
-}
-
-/*
-==============
-idPlayer::ToggleHeadingBeam  Koz toggle heading beam
-==============
-*/
-void idPlayer::ToggleHeadingBeam()
-{
-	if ( vr_headingBeamMode.GetInteger() != 0 )
-	{
-		headingBeamActive = !headingBeamActive;
 	}
 }
 
@@ -12901,6 +12789,7 @@ void idPlayer::UpdateLaserSight( int hand )
          commonVr->handInGui ||							// turn off lasersight if hand is in gui.
          gameLocal.inCinematic ||
          game->IsPDAOpen() ||							// Koz - turn off laser sight if using pda.
+         weapon->GetGrabberState() >= 2 ||	// Koz turn off laser sight if grabber is dragging an entity
          showTeleport || !weapon->GetMuzzlePositionWithHacks(muzzleOrigin, muzzleAxis)) // no lasersight for fists,grenades,soulcube etc
 
     {
@@ -13675,7 +13564,8 @@ bool idPlayer::GetHandOrHeadPositionWithHacks( int hand, idVec3& origin, idMat3&
     else if ( commonVr->GetCurrentFlashlightMode() == FLASHLIGHT_HAND && weaponEnabled && !spectating && !gameLocal.world->spawnArgs.GetBool("no_Weapons") && !game->IsPDAOpen() && !commonVr->PDAforcetoggle && hands[0].currentWeapon != weapon_pda && hands[1].currentWeapon != weapon_pda )
     {
         weapon_t currentWeapon = flashlight->IdentifyWeapon();
-        CalculateViewFlashlightPos( origin, axis, flashlightOffsets[ int( currentWeapon ) ] );
+        CalculateViewFlashlightPos( origin, axis, flashlightOffsets[hands[vr_weaponHand.GetInteger()].currentWeapon] );
+
         return false;
     }
         // Carl: todo empty non-weapon hand (currently using head instead)
@@ -13728,6 +13618,9 @@ void idPlayer::CalculateViewFlashlightPos( idVec3 &origin, idMat3 &axis, idVec3 
     if( flashlightMode == FLASHLIGHT_GUN )
     {
         weaponWithFlashlightMounted = GetWeaponWithMountedFlashlight();
+		//GB ALTERNATIVE (think I have fixed elsewhere)
+        //flashlightOffset = flashlightOffsets[int( weaponWithFlashlightMounted->IdentifyWeapon() )];
+
         if( !weaponWithFlashlightMounted || !weaponWithFlashlightMounted->GetMuzzlePositionWithHacks( origin, axis ) || commonVr->handInGui )
         {
             idAngles flashlightAx = axis.ToAngles();
@@ -14349,7 +14242,8 @@ bool idPlayer::GetTeleportBeamOrigin( idVec3 &beamOrigin, idMat3 &beamAxis ) // 
         if ( !hands[hand].weapon->ShowCrosshair() ||
              hands[hand].weapon->IsHidden() ||
              hands[ hand ].weapon->hideOffset != 0 ||						// Koz - turn off lasersight If gun is lowered ( in gui ).
-             commonVr->handInGui 						// turn off lasersight if hand is in gui.
+             commonVr->handInGui || 						// turn off lasersight if hand is in gui.
+			 hands[ hand ].weapon.GetEntity()->GetGrabberState() >= 2 	// Koz turn off laser sight if grabber is dragging an entity
              )
         {
             return false;
@@ -16722,6 +16616,10 @@ void idPlayer::SetupHolsterSlot( int hand, int stashed )
     {
         holsterAxis = idAngles(0, -90, -90).ToMat3();
     }
+	else if( strcmp(modelname, "models/weapons/grabber/grabber_world.ase") == 0 )
+	{
+		holsterAxis = idAngles(-90, 180, 0).ToMat3() * 0.5f;
+	}
     else if (strcmp(modelname, "models/weapons/machinegun/w_machinegun.lwo") == 0)
     {
         holsterAxis = idAngles(0, 90, 90).ToMat3() * 0.75f;

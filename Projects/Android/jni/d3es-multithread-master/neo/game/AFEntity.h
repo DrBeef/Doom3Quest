@@ -228,12 +228,16 @@ public:
 	void					Restore( idRestoreGame *savefile );
 	virtual void			Present( void );
 	virtual	void			Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir, const char *damageDefName, const float damageScale, const int location );
+	void					SetThrown( bool isThrown );
+    virtual bool			Collide( const trace_t& collision, const idVec3& velocity );
 	virtual void			SpawnGibs( const idVec3 &dir, const char *damageDefName );
 
 protected:
 	idRenderModel *			skeletonModel;
 	int						skeletonModelDefHandle;
 	bool					gibbed;
+
+	bool					wasThrown;
 
 	virtual void			Gib( const idVec3 &dir, const char *damageDefName );
 	void					InitSkeletonModel( void );

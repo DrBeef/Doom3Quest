@@ -89,6 +89,9 @@ const idEventDef EV_Weapon_AutoReload( "autoReload", NULL, 'f' );
 const idEventDef EV_Weapon_NetReload( "netReload" );
 const idEventDef EV_Weapon_IsInvisible( "isInvisible", NULL, 'f' );
 const idEventDef EV_Weapon_NetEndReload( "netEndReload" );
+const idEventDef EV_Weapon_GrabberHasTarget( "grabberHasTarget", NULL, 'd' );
+const idEventDef EV_Weapon_Grabber( "grabber", "d" );
+const idEventDef EV_Weapon_Grabber_SetGrabDistance( "grabberGrabDistance", "f" );
 // Koz
 const idEventDef EV_Weapon_GetWeaponSkin( "getWeaponSkin", NULL, 's' );
 const idEventDef EV_Weapon_IsMotionControlled( "isMotionControlled", NULL, 'd' );
@@ -133,6 +136,9 @@ CLASS_DECLARATION( idAnimatedEntity, idWeapon )
 	EVENT( EV_Weapon_NetReload,					idWeapon::Event_NetReload )
 	EVENT( EV_Weapon_IsInvisible,				idWeapon::Event_IsInvisible )
 	EVENT( EV_Weapon_NetEndReload,				idWeapon::Event_NetEndReload )
+	EVENT( EV_Weapon_Grabber,					idWeapon::Event_Grabber )
+	EVENT( EV_Weapon_GrabberHasTarget,			idWeapon::Event_GrabberHasTarget )
+	EVENT( EV_Weapon_Grabber_SetGrabDistance,	idWeapon::Event_GrabberSetGrabDistance )
 	EVENT( EV_Weapon_GetWeaponSkin,				idWeapon::Event_GetWeaponSkin )
 	EVENT( EV_Weapon_IsMotionControlled,		idWeapon::Event_IsMotionControlled )
 END_CLASS
@@ -166,6 +172,7 @@ idWeapon::idWeapon() {
 	guiLightHandle			= -1;
 	nozzleGlowHandle		= -1;
 	modelDefHandle			= -1;
+	grabberState = -1;
 
 	berserk					= 2;
 	brassDelay				= 0;
@@ -208,6 +215,8 @@ void idWeapon::Spawn( void ) {
 		worldModel = static_cast< idAnimatedEntity * >( gameLocal.SpawnEntityType( idAnimatedEntity::Type, NULL ) );
 		worldModel.GetEntity()->fl.networkSync = true;
 	}
+
+	grabber.Initialize();
 
 	thread = new idThread();
 	thread->ManualDelete();
@@ -414,6 +423,9 @@ void idWeapon::Save( idSaveGame *savefile ) const {
 	savefile->WriteBool( allowDrop );
 	savefile->WriteObject( projectileEnt );
 
+	savefile->WriteStaticObject( grabber );
+	savefile->WriteInt( grabberState );
+
 	savefile->WriteJoint( smokeJointView );
 
     // Koz begin
@@ -599,6 +611,9 @@ void idWeapon::Restore( idRestoreGame *savefile ) {
 	savefile->ReadBool( allowDrop );
 	savefile->ReadObject( reinterpret_cast<idClass *&>( projectileEnt ) );
 
+	savefile->ReadStaticObject( grabber );
+	savefile->ReadInt( grabberState );
+
 	savefile->ReadJoint( smokeJointView );
 
     for ( int i = 0; i < 2; i++ ) {
@@ -740,6 +755,9 @@ void idWeapon::Clear( void ) {
 	flashTime		= 250;
 	lightOn			= false;
 	silent_fire		= false;
+
+	grabberState	= -1;
+	grabber.Update( owner, this, true );
 
 	ammoType		= 0;
 	ammoRequired	= 0;
@@ -1230,8 +1248,8 @@ weapon_t idWeapon::IdentifyWeapon()
 			else if ( idStr::Icmp( "weapon_bloodstone_active3", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_ARTIFACT;
 			else if ( idStr::Icmp( "weapon_pda", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = WEAPON_PDA;
 			else if ( idStr::Icmp( "weapon_flashlight_new", weaponDef->GetName() ) == 0 ) currentIdentifiedWeapon = lastIdentifiedWeapon;
-				//else if ( idStr::Icmp( "weapon_flashlight_new", weaponDef->GetName() ) == 0 ) currentWeapon = WEAPON_FLASHLIGHT;
-				//else if ( idStr::Icmp( "weapon_flashlight", weaponDef->GetName() ) == 0 ) currentWeapon = WEAPON_FLASHLIGHT;
+			//else if ( idStr::Icmp( "weapon_flashlight_new", weaponDef->GetName() ) == 0 ) currentWeapon = WEAPON_FLASHLIGHT;
+			//else if ( idStr::Icmp( "weapon_flashlight", weaponDef->GetName() ) == 0 ) currentWeapon = WEAPON_FLASHLIGHT;
 			else currentIdentifiedWeapon = WEAPON_NONE;
 			lastIdentifiedWeapon = currentIdentifiedWeapon;
         }
@@ -1290,6 +1308,9 @@ void idWeapon::UpdateGUI( void ) {
 	renderEntity.gui[ 0 ]->SetStateBool( "player_ammo_empty", ( ammoamount == 0 ) );
 	renderEntity.gui[ 0 ]->SetStateBool( "player_clip_empty", ( inclip == 0 ) );
 	renderEntity.gui[ 0 ]->SetStateBool( "player_clip_low", ( inclip <= lowAmmo ) );
+
+	//Grabber Gui Info
+	renderEntity.gui[ 0 ]->SetStateString( "grabber_state", va( "%i", grabberState ) );
 }
 
 /***********************************************************************
@@ -1463,6 +1484,10 @@ void idWeapon::UpdateVRGUI()
     rvrStatGui->SetStateString("player_ammo_count", va("%i", ammoamount[HAND_RIGHT]));
     // koz end
 
+	// koz todo also need to figure this out for dual guis
+	//Grabber Gui Info
+	rvrStatGui->SetStateString( "grabber_state", va( "%i", grabberState ) );
+
     //health and armor
 
     if ( player )
@@ -1535,6 +1560,8 @@ void idWeapon::UpdateVRGUI()
     // koz end
 
     // koz todo also need to figure this out for dual guis
+	//Grabber Gui Info
+	lvrStatGui->SetStateString("grabber_state", va("%i", grabberState));
 }
 
 /*
@@ -2020,6 +2047,12 @@ void idWeapon::OwnerDied( void ) {
 	if ( isLinked ) {
 		SetState( "OwnerDied", 0 );
 		thread->Execute();
+
+		// Update the grabber effects
+		if( grabberState != -1 )
+		{
+			grabber.Update( owner, this, hide );
+		}
 	}
 
 	Hide();
@@ -2047,7 +2080,7 @@ void idWeapon::BeginAttack( void ) {
 	}
 
 	if ( !WEAPON_ATTACK ) {
-		if ( sndHum ) {
+		if ( sndHum && grabberState == -1 )  {   	// _D3XP :: don't stop grabber hum
 			StopSound( SND_CHANNEL_BODY, false );
 		}
 	}
@@ -2065,7 +2098,7 @@ void idWeapon::EndAttack( void ) {
 	}
 	if ( WEAPON_ATTACK ) {
 		WEAPON_ATTACK = false;
-		if ( sndHum ) {
+		if( sndHum && grabberState == -1 )  {	// _D3XP :: don't stop grabber hum
 			StartSoundShader( sndHum, SND_CHANNEL_BODY, 0, false, NULL );
 		}
 	}
@@ -2728,6 +2761,12 @@ void idWeapon::PresentWeapon( bool showViewModel, int hand ) {
         }
     }
 
+	// Update the grabber effects
+	if( grabberState != -1 )
+	{
+		grabberState = grabber.Update( owner, this, hide );
+	}
+
     // remove the muzzle flash light when it's done
     if ( (!lightOn && (gameLocal.time >= muzzleFlashEnd)) || IsHidden() )
     {
@@ -3064,6 +3103,18 @@ idWeapon::AmmoRequired
 */
 int	idWeapon::AmmoRequired( void ) const {
 	return ammoRequired;
+}
+
+/*
+================
+idWeapon::GetGrabberState
+
+Returns the current grabberState
+================
+*/
+int idWeapon::GetGrabberState() const
+{
+	return grabberState;
 }
 
 /*
@@ -3665,6 +3716,44 @@ void idWeapon::Event_SetLightParms( float parm0, float parm1, float parm2, float
 	worldMuzzleFlash.shaderParms[ SHADERPARM_ALPHA ]	= parm3;
 
 	UpdateVisuals();
+}
+
+/*
+================
+idWeapon::Event_Grabber
+================
+*/
+void idWeapon::Event_Grabber( int enable )
+{
+	if( enable )
+	{
+		grabberState = 0;
+	}
+	else
+	{
+		grabberState = -1;
+	}
+}
+
+/*
+================
+idWeapon::Event_GrabberHasTarget
+================
+*/
+void idWeapon::Event_GrabberHasTarget()
+{
+	idThread::ReturnInt( grabberState );
+}
+
+/*
+================
+idWeapon::Event_GrabberSetGrabDistance
+================
+*/
+void idWeapon::Event_GrabberSetGrabDistance( float dist )
+{
+
+	grabber.SetDragDistance( dist );
 }
 
 /*

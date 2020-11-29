@@ -34,6 +34,9 @@ If you have questions concerning this license or the applicable additional terms
 #include "Light.h"
 #include "Actor.h"
 #include "Misc.h"
+#include "Grabber.h"
+
+class idGrabber;
 
 /*
 ===============================================================================
@@ -226,6 +229,8 @@ public:
 	int						LowAmmo( void ) const;
 	int						AmmoRequired( void ) const;
     int						AmmoCount() const;
+	int						GetGrabberState() const;
+
     // Flashlight
     idAnimatedEntity* 		GetWorldModel()
     {
@@ -263,6 +268,7 @@ public:
     friend class idWeaponHolder;
     friend class idHolster;
     friend class idPlayerHand;
+	friend class idGrabber;
 
 private:
 	// script control
@@ -495,6 +501,12 @@ private:
     void					Event_IsMotionControlled();
     void					CalculateHideRise( idVec3& origin, idMat3& axis );
     // Koz end
+	idGrabber				grabber;
+	int						grabberState;
+
+	void					Event_Grabber( int enable );
+	void					Event_GrabberHasTarget();
+	void					Event_GrabberSetGrabDistance( float dist );
 };
 
 ID_INLINE bool idWeapon::IsLinked( void ) {

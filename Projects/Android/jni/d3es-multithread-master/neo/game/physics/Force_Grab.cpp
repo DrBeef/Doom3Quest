@@ -26,6 +26,7 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
+#include <gamesys/SysCvar.h>
 #include "sys/platform.h"
 #include "framework/UsercmdGen.h"
 #include "physics/Physics.h"
@@ -151,8 +152,7 @@ void idForce_Grab::Evaluate( int time )
 
     objectCenter = physics->GetAbsBounds( id ).GetCenter();
 
-    //TODO: SB g_grabberRandomMotion needs defining
-    if( /* g_grabberRandomMotion.GetBool() && */ !gameLocal.isMultiplayer )
+    if( g_grabberRandomMotion.GetBool() && !gameLocal.isMultiplayer )
     {
         // Jitter the objectCenter around so it doesn't remain stationary
         float SinOffset = idMath::Sin( ( float )( gameLocal.time ) / 66.f );

@@ -471,6 +471,16 @@ void idMoveable::Event_BecomeNonSolid( void ) {
 
 /*
 ================
+idMoveable::SetAttacker
+================
+*/
+void idMoveable::SetAttacker( idEntity* ent )
+{
+	attacker = ent;
+}
+
+/*
+================
 idMoveable::Event_Activate
 ================
 */
@@ -872,6 +882,56 @@ void idExplodingBarrel::Think( void ) {
 		particleRenderEntity.origin = physicsObj.GetAbsBounds().GetCenter();
 		particleRenderEntity.axis = mat3_identity;
 		gameRenderWorld->UpdateEntityDef( particleModelDefHandle, &particleRenderEntity );
+	}
+}
+
+/*
+================
+idExplodingBarrel::SetStability
+================
+*/
+void idExplodingBarrel::SetStability( bool stability )
+{
+    isStable = stability;
+}
+
+/*
+================
+idExplodingBarrel::IsStable
+================
+*/
+bool idExplodingBarrel::IsStable()
+{
+    return isStable;
+}
+
+/*
+================
+idExplodingBarrel::StartBurning
+================
+*/
+void idExplodingBarrel::StartBurning()
+{
+	state = BURNING;
+	AddParticles( "barrelfire.prt", true );
+}
+
+/*
+================
+idExplodingBarrel::StartBurning
+================
+*/
+void idExplodingBarrel::StopBurning()
+{
+	state = NORMAL;
+
+	if( particleModelDefHandle >= 0 )
+	{
+		gameRenderWorld->FreeEntityDef( particleModelDefHandle );
+		particleModelDefHandle = -1;
+
+		particleTime = 0;
+		memset( &particleRenderEntity, 0, sizeof( particleRenderEntity ) );
 	}
 }
 

@@ -57,6 +57,338 @@ typedef struct {
 
 #define	MAX_SCREEN_BLOBS	8
 
+class WarpPolygon_t
+{
+public:
+	idVec4					outer1;
+	idVec4					outer2;
+	idVec4					center;
+};
+
+class Warp_t
+{
+public:
+	int						id;
+	bool					active;
+
+	int						startTime;
+	float					initialRadius;
+
+	idVec3					worldOrigin;
+	idVec2					screenOrigin;
+
+	int						durationMsec;
+
+	idList<WarpPolygon_t>	polys;
+};
+
+class idPlayerView;
+class FullscreenFXManager;
+
+
+/*
+==================
+FxFader
+==================
+*/
+class FxFader
+{
+	enum
+	{
+		FX_STATE_OFF,
+		FX_STATE_RAMPUP,
+		FX_STATE_RAMPDOWN,
+		FX_STATE_ON
+	};
+
+	int						time;
+	int						state;
+	float					alpha;
+	int						msec;
+
+public:
+	FxFader();
+
+	// primary functions
+	bool					SetTriggerState( bool active );
+
+	virtual void			Save( idSaveGame* savefile );
+	virtual void			Restore( idRestoreGame* savefile );
+
+	// fader functions
+	void					SetFadeTime( int t )
+	{
+		msec = t;
+	};
+	int						GetFadeTime()
+	{
+		return msec;
+	};
+
+	// misc functions
+	float					GetAlpha()
+	{
+		return alpha;
+	};
+};
+
+
+/*
+==================
+FullscreenFX
+==================
+*/
+class FullscreenFX
+{
+protected:
+	idStr					name;
+	FxFader					fader;
+	FullscreenFXManager*		fxman;
+
+public:
+	FullscreenFX()
+	{
+		fxman = NULL;
+	};
+	virtual					~FullscreenFX()							{ };
+
+	virtual void			Initialize()							= 0;
+	virtual bool			Active()								= 0;
+	virtual void			HighQuality()							= 0;
+	virtual void			LowQuality()							{ };
+	virtual void			AccumPass( const renderView_t* view )	{ };
+	virtual bool			HasAccum()
+	{
+		return false;
+	};
+
+	void					SetName( idStr n )
+	{
+		name = n;
+	};
+	idStr					GetName()
+	{
+		return name;
+	};
+
+	void					SetFXManager( FullscreenFXManager* fx )
+	{
+		fxman = fx;
+	};
+
+	bool					SetTriggerState( bool state )
+	{
+		return fader.SetTriggerState( state );
+	};
+	void					SetFadeSpeed( int msec )
+	{
+		fader.SetFadeTime( msec );
+	};
+	float					GetFadeAlpha()
+	{
+		return fader.GetAlpha();
+	};
+
+	virtual void			Save( idSaveGame* savefile );
+	virtual void			Restore( idRestoreGame* savefile );
+};
+
+/*
+==================
+FullscreenFX_Helltime
+==================
+*/
+class FullscreenFX_Helltime : public FullscreenFX
+{
+	const idMaterial* 		initMaterial;
+	const idMaterial* 		captureMaterials[3];
+	const idMaterial* 		drawMaterial;
+	bool					clearAccumBuffer;
+
+	int						DetermineLevel();
+
+public:
+	virtual void			Initialize();
+	virtual bool			Active();
+	virtual void			HighQuality();
+	virtual void			AccumPass( const renderView_t* view );
+	virtual bool			HasAccum()
+	{
+		return true;
+	};
+
+	virtual void			Restore( idRestoreGame* savefile );
+};
+
+/*
+==================
+FullscreenFX_Multiplayer
+==================
+*/
+class FullscreenFX_Multiplayer : public FullscreenFX
+{
+	const idMaterial* 		initMaterial;
+	const idMaterial* 		captureMaterial;
+	const idMaterial* 		drawMaterial;
+	bool					clearAccumBuffer;
+
+	int						DetermineLevel();
+
+public:
+	virtual void			Initialize();
+	virtual bool			Active();
+	virtual void			HighQuality();
+	virtual void			AccumPass( const renderView_t* view );
+	virtual bool			HasAccum()
+	{
+		return true;
+	};
+
+	virtual void			Restore( idRestoreGame* savefile );
+};
+
+/*
+==================
+FullscreenFX_Warp
+==================
+*/
+class FullscreenFX_Warp : public FullscreenFX
+{
+	const idMaterial*		material;
+	bool					grabberEnabled;
+	int						startWarpTime;
+
+	void					DrawWarp( WarpPolygon_t wp, float interp );
+
+public:
+	virtual void			Initialize();
+	virtual bool			Active();
+	virtual void			HighQuality();
+
+	void					EnableGrabber( bool active )
+	{
+		grabberEnabled = active;
+		startWarpTime = gameLocal.slow.time;
+	};
+
+	virtual void			Save( idSaveGame* savefile );
+	virtual void			Restore( idRestoreGame* savefile );
+};
+
+/*
+==================
+FullscreenFX_EnviroSuit
+==================
+*/
+class FullscreenFX_EnviroSuit : public FullscreenFX
+{
+	const idMaterial*		material;
+
+public:
+	virtual void			Initialize();
+	virtual bool			Active();
+	virtual void			HighQuality();
+};
+
+/*
+==================
+FullscreenFX_DoubleVision
+==================
+*/
+class FullscreenFX_DoubleVision : public FullscreenFX
+{
+	const idMaterial*		material;
+
+public:
+	virtual void			Initialize();
+	virtual bool			Active();
+	virtual void			HighQuality();
+};
+
+/*
+==================
+FullscreenFX_InfluenceVision
+==================
+*/
+class FullscreenFX_InfluenceVision : public FullscreenFX
+{
+
+public:
+	virtual void			Initialize();
+	virtual bool			Active();
+	virtual void			HighQuality();
+};
+
+/*
+==================
+FullscreenFX_Bloom
+==================
+*/
+class FullscreenFX_Bloom : public FullscreenFX
+{
+	const idMaterial*		drawMaterial;
+	const idMaterial*		initMaterial;
+
+	float					currentIntensity;
+	float					targetIntensity;
+
+public:
+	virtual void			Initialize();
+	virtual bool			Active();
+	virtual void			HighQuality();
+
+	virtual void			Save( idSaveGame* savefile );
+	virtual void			Restore( idRestoreGame* savefile );
+};
+
+
+
+/*
+==================
+FullscreenFXManager
+==================
+*/
+class FullscreenFXManager
+{
+	idList<FullscreenFX*>	fx;
+
+	idPlayerView* 			playerView;
+	const idMaterial*		blendBackMaterial;
+
+	void					CreateFX( idStr name, idStr fxtype, int fade );
+
+public:
+	FullscreenFXManager();
+	virtual					~FullscreenFXManager();
+
+	void					Initialize( idPlayerView* pv );
+
+	void					Process( const renderView_t* view );
+	void					Blendback( float alpha );
+
+	idPlayerView*			GetPlayerView()
+	{
+		return playerView;
+	};
+	idPlayer*				GetPlayer()
+	{
+		return gameLocal.GetLocalPlayer();
+	};
+
+	int						GetNum()
+	{
+		return fx.Num();
+	};
+	FullscreenFX*			GetFX( int index )
+	{
+		return fx[index];
+	};
+	FullscreenFX*			FindFX( idStr name );
+
+	void					Save( idSaveGame* savefile );
+	void					Restore( idRestoreGame* savefile );
+};
+
 class idPlayerView {
 public:
 						idPlayerView();
@@ -105,9 +437,9 @@ private:
 	void				ScreenFade();
 
 	screenBlob_t *		GetScreenBlob();
-
 	screenBlob_t		screenBlobs[MAX_SCREEN_BLOBS];
 
+public:
 	int					dvFinishTime;		// double vision will be stopped at this time
 	const idMaterial *	dvMaterial;			// material to take the double vision screen shot
 
@@ -136,6 +468,11 @@ private:
 
 	idPlayer *			player;
 	renderView_t		view;
+
+	FullscreenFXManager*	fxManager;
+
+	int					AddWarp( idVec3 worldOrigin, float centerx, float centery, float initialRadius, float durationMsec );
+	void				FreeWarp( int id );
 };
 
 #endif /* !__GAME_PLAYERVIEW_H__ */

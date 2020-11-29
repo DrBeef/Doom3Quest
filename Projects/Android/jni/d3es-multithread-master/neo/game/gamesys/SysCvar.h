@@ -87,6 +87,12 @@ extern idCVar	g_showEnemies;
 extern idCVar	g_frametime;
 extern idCVar	g_timeentities;
 
+extern idCVar   g_testFullscreenFX;
+extern idCVar   g_testHelltimeFX;
+extern idCVar   g_testMultiplayerFX;
+extern idCVar   g_testBloomIntensity;
+extern idCVar   g_testBloomNumPasses;
+
 extern idCVar	ai_debugScript;
 extern idCVar	ai_debugMove;
 extern idCVar	ai_debugTrajectory;
