@@ -132,6 +132,7 @@ bool inMenu = false;
 bool inGameGuiActive = false;
 bool objectiveSystemActive = false;
 bool inCinematic = false;
+bool loading = false;
 
 void Doom3Quest_setUseScreenLayer(int screen)
 {
@@ -139,12 +140,12 @@ void Doom3Quest_setUseScreenLayer(int screen)
 	inGameGuiActive = !!(screen & 0x2);
 	objectiveSystemActive = !!(screen & 0x4);
 	inCinematic = !!(screen & 0x8);
+	loading = !!(screen & 0x10);
 }
 
 bool Doom3Quest_useScreenLayer()
 {
-    //Cinematics are now first person
-	return inMenu || forceVirtualScreen || inCinematic;
+	return inMenu || forceVirtualScreen || inCinematic || loading;
 }
 
 static void UnEscapeQuotes( char *arg )
