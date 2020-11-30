@@ -985,6 +985,7 @@ idAFEntity_Gibbable::idAFEntity_Gibbable( void ) {
 	skeletonModel = NULL;
 	skeletonModelDefHandle = -1;
 	gibbed = false;
+	wasThrown = false;
 }
 
 /*
@@ -1007,6 +1008,7 @@ idAFEntity_Gibbable::Save
 void idAFEntity_Gibbable::Save( idSaveGame *savefile ) const {
 	savefile->WriteBool( gibbed );
 	savefile->WriteBool( combatModel != NULL );
+	savefile->WriteBool( wasThrown );
 }
 
 /*
@@ -1019,6 +1021,7 @@ void idAFEntity_Gibbable::Restore( idRestoreGame *savefile ) {
 
 	savefile->ReadBool( gibbed );
 	savefile->ReadBool( hasCombatModel );
+	savefile->ReadBool( wasThrown );
 
 	InitSkeletonModel();
 
@@ -1037,6 +1040,7 @@ void idAFEntity_Gibbable::Spawn( void ) {
 	InitSkeletonModel();
 
 	gibbed = false;
+	wasThrown = false;
 }
 
 /*
@@ -1231,6 +1235,9 @@ void idAFEntity_Gibbable::Gib( const idVec3 &dir, const char *damageDefName ) {
 	if ( gibbed ) {
 		return;
 	}
+
+	// Don't grab this ent after it's been gibbed (and now invisible!)
+	noGrab = true;
 
 	const idDict *damageDef = gameLocal.FindEntityDefDict( damageDefName );
 	if ( !damageDef ) {

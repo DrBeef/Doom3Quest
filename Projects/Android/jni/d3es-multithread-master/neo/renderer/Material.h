@@ -273,30 +273,29 @@ typedef enum {
 } materialFlags_t;
 
 // contents flags, NOTE: make sure to keep the defines in doom_defs.script up to date with these!
-typedef enum
-{
-	CONTENTS_SOLID				= BIT( 0 ),	// an eye is never valid in a solid
-	CONTENTS_OPAQUE				= BIT( 1 ),	// blocks visibility (for ai)
-	CONTENTS_WATER				= BIT( 2 ),	// used for water
-	CONTENTS_PLAYERCLIP			= BIT( 3 ),	// solid to players
-	CONTENTS_MONSTERCLIP		= BIT( 4 ),	// solid to monsters
-	CONTENTS_MOVEABLECLIP		= BIT( 5 ),	// solid to moveable entities
-	CONTENTS_IKCLIP				= BIT( 6 ),	// solid to IK
-	CONTENTS_BLOOD				= BIT( 7 ),	// used to detect blood decals
-	CONTENTS_BODY				= BIT( 8 ),	// used for actors
-	CONTENTS_PROJECTILE			= BIT( 9 ),	// used for projectiles
-	CONTENTS_CORPSE				= BIT( 10 ),	// used for dead bodies
-	CONTENTS_RENDERMODEL		= BIT( 11 ),	// used for render models for collision detection
-	CONTENTS_TRIGGER			= BIT( 12 ),	// used for triggers
-	CONTENTS_AAS_SOLID			= BIT( 13 ),	// solid for AAS
-	CONTENTS_AAS_OBSTACLE		= BIT( 14 ),	// used to compile an obstacle into AAS that can be enabled/disabled
-	CONTENTS_FLASHLIGHT_TRIGGER	= BIT( 15 ),	// used for triggers that are activated by the flashlight
+typedef enum {
+	CONTENTS_SOLID				= BIT(0),	// an eye is never valid in a solid
+	CONTENTS_OPAQUE				= BIT(1),	// blocks visibility (for ai)
+	CONTENTS_WATER				= BIT(2),	// used for water
+	CONTENTS_PLAYERCLIP			= BIT(3),	// solid to players
+	CONTENTS_MONSTERCLIP		= BIT(4),	// solid to monsters
+	CONTENTS_MOVEABLECLIP		= BIT(5),	// solid to moveable entities
+	CONTENTS_IKCLIP				= BIT(6),	// solid to IK
+	CONTENTS_BLOOD				= BIT(7),	// used to detect blood decals
+	CONTENTS_BODY				= BIT(8),	// used for actors
+	CONTENTS_PROJECTILE			= BIT(9),	// used for projectiles
+	CONTENTS_CORPSE				= BIT(10),	// used for dead bodies
+	CONTENTS_RENDERMODEL		= BIT(11),	// used for render models for collision detection
+	CONTENTS_TRIGGER			= BIT(12),	// used for triggers
+	CONTENTS_AAS_SOLID			= BIT(13),	// solid for AAS
+	CONTENTS_AAS_OBSTACLE		= BIT(14),	// used to compile an obstacle into AAS that can be enabled/disabled
+	CONTENTS_FLASHLIGHT_TRIGGER	= BIT(15),	// used for triggers that are activated by the flashlight
 
-	// contents used by utils
-	CONTENTS_AREAPORTAL			= BIT( 20 ),	// portal separating renderer areas
-	CONTENTS_NOCSG				= BIT( 21 ),	// don't cut this brush with CSG operations in the editor
+    // contents used by utils
+    CONTENTS_AREAPORTAL			= BIT(20),	// portal separating renderer areas
+    CONTENTS_NOCSG				= BIT(21),	// don't cut this brush with CSG operations in the editor
 
-	CONTENTS_REMOVE_UTIL		= (int)(~( CONTENTS_AREAPORTAL | CONTENTS_NOCSG ))
+    CONTENTS_REMOVE_UTIL		= ~(CONTENTS_AREAPORTAL|CONTENTS_NOCSG)
 } contentsFlags_t;
 
 // surface types
