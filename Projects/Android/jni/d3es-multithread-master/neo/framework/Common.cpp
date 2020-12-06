@@ -1387,10 +1387,12 @@ void Com_WriteConfig_f( const idCmdArgs &args ) {
 Com_SetMachineSpecs_f
 =================
 */
+//Unused on Quest
+/*
 void Com_SetMachineSpec_f( const idCmdArgs &args ) {
 	commonLocal.SetMachineSpec();
 }
-
+*/
 /*
 =================
 Com_ExecMachineSpecs_f
@@ -1400,6 +1402,9 @@ Com_ExecMachineSpecs_f
 void OSX_GetVideoCard( int& outVendorId, int& outDeviceId );
 bool OSX_GetCPUIdentification( int& cpuId, bool& oldArchitecture );
 #endif
+
+//Unused on Quest
+/*
 void Com_ExecMachineSpec_f( const idCmdArgs &args ) {
 	if ( com_machineSpec.GetInteger() == 3 ) {
 		cvarSystem->SetCVarInteger( "image_anisotropy", 1, CVAR_ARCHIVE );
@@ -1505,6 +1510,7 @@ void Com_ExecMachineSpec_f( const idCmdArgs &args ) {
 	}
 #endif
 }
+*/
 
 /*
 =================
@@ -2296,8 +2302,8 @@ void idCommonLocal::InitCommands( void ) {
 	cmdSystem->AddCommand( "exit", Com_Quit_f, CMD_FL_SYSTEM, "exits the game" );
 	cmdSystem->AddCommand( "writeConfig", Com_WriteConfig_f, CMD_FL_SYSTEM, "writes a config file" );
 	cmdSystem->AddCommand( "reloadEngine", Com_ReloadEngine_f, CMD_FL_SYSTEM, "reloads the engine down to including the file system" );
-	cmdSystem->AddCommand( "setMachineSpec", Com_SetMachineSpec_f, CMD_FL_SYSTEM, "detects system capabilities and sets com_machineSpec to appropriate value" );
-	cmdSystem->AddCommand( "execMachineSpec", Com_ExecMachineSpec_f, CMD_FL_SYSTEM, "execs the appropriate config files and sets cvars based on com_machineSpec" );
+//	cmdSystem->AddCommand( "setMachineSpec", Com_SetMachineSpec_f, CMD_FL_SYSTEM, "detects system capabilities and sets com_machineSpec to appropriate value" );
+//	cmdSystem->AddCommand( "execMachineSpec", Com_ExecMachineSpec_f, CMD_FL_SYSTEM, "execs the appropriate config files and sets cvars based on com_machineSpec" );
 
 #if	!defined( ID_DEDICATED ) && !defined( __ANDROID__ )
 	// compilers
@@ -3142,6 +3148,8 @@ void idCommonLocal::Shutdown( void ) {
 	SDL_Quit();
 }
 
+extern int questType;
+
 /*
 =================
 idCommonLocal::InitGame
@@ -3167,10 +3175,10 @@ void idCommonLocal::InitGame( void ) {
 	}
 
 	idCmdArgs args;
-	if ( sysDetect ) {
-		SetMachineSpec();
-		Com_ExecMachineSpec_f( args );
-	}
+//	if ( sysDetect ) {
+//		SetMachineSpec();
+//		Com_ExecMachineSpec_f( args );
+//	}
 
 	// initialize the renderSystem data structures, but don't start OpenGL yet
 	renderSystem->Init();
@@ -3191,6 +3199,10 @@ void idCommonLocal::InitGame( void ) {
 	// exec the startup scripts
 	cmdSystem->BufferCommandText( CMD_EXEC_APPEND, "exec editor.cfg\n" );
 	cmdSystem->BufferCommandText( CMD_EXEC_APPEND, "exec default.cfg\n" );
+
+	//Execute the Quest version specific config before executing the normal config
+	char *s = va("exec quest%i_default.cfg\n", questType);
+	cmdSystem->BufferCommandText( CMD_EXEC_APPEND, s );
 
 	// skip the config file if "safe" is on the command line
 	if ( !SafeMode() ) {
@@ -3258,13 +3270,14 @@ void idCommonLocal::InitGame( void ) {
 	// have to do this twice.. first one sets the correct r_mode for the renderer init
 	// this time around the backend is all setup correct.. a bit fugly but do not want
 	// to mess with all the gl init at this point.. an old vid card will never qualify for
-	if ( sysDetect ) {
+/*	if ( sysDetect ) {
 		SetMachineSpec();
 		Com_ExecMachineSpec_f( args );
 		cvarSystem->SetCVarInteger( "s_numberOfSpeakers", 6 );
 		cmdSystem->BufferCommandText( CMD_EXEC_NOW, "s_restart\n" );
 		cmdSystem->ExecuteCommandBuffer();
 	}
+ */
 }
 
 /*

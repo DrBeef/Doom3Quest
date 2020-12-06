@@ -1573,18 +1573,21 @@ void * AppThreadFunction(void * parm ) {
 			NUM_MULTI_SAMPLES = 1;
 		}
 	}
-	else
+	else if (vrapi_GetSystemPropertyInt(&java, VRAPI_SYS_PROP_DEVICE_TYPE) == VRAPI_DEVICE_TYPE_OCULUSQUEST2)
 	{
 		questType = 2;
 		if (SS_MULTIPLIER == -1.0f)
 		{
-			SS_MULTIPLIER = 1.1f;
+			SS_MULTIPLIER = 1.2f;
 		}
 
 		if (NUM_MULTI_SAMPLES == -1)
 		{
-			NUM_MULTI_SAMPLES = 1;
+			NUM_MULTI_SAMPLES = 2;
 		}
+	} else {
+	    //Don't know what headset this is!? abort
+        return NULL;
 	}
 
 	//Using a symmetrical render target

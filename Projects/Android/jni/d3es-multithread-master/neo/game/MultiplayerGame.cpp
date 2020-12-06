@@ -1641,7 +1641,8 @@ const char* idMultiplayerGame::HandleGuiCommands( const char *_menuCommand ) {
 				vcmd = args.Argv( icmd++ );
 			}
 
-			int	oldSpec	= cvarSystem->GetCVarInteger( "com_machineSpec"	);
+			//Do nothing for this on Quest
+/*			int	oldSpec	= cvarSystem->GetCVarInteger( "com_machineSpec"	);
 
 			if ( idStr::Icmp( vcmd,	"low" )	== 0 ) {
 				cvarSystem->SetCVarInteger(	"com_machineSpec", 0 );
@@ -1664,7 +1665,7 @@ const char* idMultiplayerGame::HandleGuiCommands( const char *_menuCommand ) {
 			if ( idStr::Icmp( vcmd,	"restart" )	 ==	0) {
 				cmdSystem->BufferCommandText( CMD_EXEC_APPEND, "vid_restart\n" );
 			}
-
+*/
 			continue;
 		} else if (	!idStr::Icmp( cmd, "play" )	) {
 			if ( args.Argc() - icmd	>= 1 ) {

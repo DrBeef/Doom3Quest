@@ -158,6 +158,11 @@ import static android.system.Os.setenv;
 
 		copy_asset("/sdcard/Doom3Quest/base", "pak399.pk4", true);
 
+		//Now copy our defaults for the two headsets - These are only our defaults, users shouldn't change
+		//these so forcefully overwrite
+		copy_asset("/sdcard/Doom3Quest/config/base", "quest1_default.cfg", true);
+		copy_asset("/sdcard/Doom3Quest/config/base", "quest2_default.cfg", true);
+
 		//Read these from a file and pass through
 		commandLineParams = new String("doom3quest");
 
