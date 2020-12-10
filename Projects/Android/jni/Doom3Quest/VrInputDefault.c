@@ -290,6 +290,35 @@ void HandleInput_Default( int controlscheme, ovrInputStateTrackedRemote *pDomina
                 Android_ButtonChange(UB_ATTACK, velocityTriggeredAttack ? 1 : 0);
             }
 
+            //Does weapon velocity trigger attack (knife) and is it fast enough
+            static bool velocityTriggeredAttackOffHand = false;
+            pVRClientInfo->velocitytriggeredoffhandstate = false;
+            if (pVRClientInfo->velocitytriggeredoffhand)
+            {
+                static bool firedOffHand = false;
+                float velocity = sqrtf(powf(pOff->HeadPose.LinearVelocity.x, 2) +
+                                       powf(pOff->HeadPose.LinearVelocity.y, 2) +
+                                       powf(pOff->HeadPose.LinearVelocity.z, 2));
+
+                velocityTriggeredAttackOffHand = (velocity > VELOCITY_TRIGGER);
+
+                if (firedOffHand != velocityTriggeredAttackOffHand) {
+                    ALOGV("**WEAPON EVENT** velocity triggered (offhand) %s", velocityTriggeredAttackOffHand ? "+attack" : "-attack");
+                    //Android_ButtonChange(UB_IMPULSE37, velocityTriggeredAttackOffHand ? 1 : 0);
+                    //Android_SetImpulse(UB_IMPULSE37);
+                    pVRClientInfo->velocitytriggeredoffhandstate = true;
+                    firedOffHand = velocityTriggeredAttackOffHand;
+                }
+            }
+            else //GB This actually nevers gets run currently as we are always returning true for pVRClientInfo->velocitytriggeredoffhand (but we might not in the future when weapons are sorted)
+            {
+                //send a stop attack as we have an unfinished velocity attack
+                velocityTriggeredAttackOffHand = false;
+                ALOGV("**WEAPON EVENT**  velocity triggered -attack (offhand)");
+                //Android_ButtonChange(UB_IMPULSE37, velocityTriggeredAttackOffHand ? 1 : 0);
+                pVRClientInfo->velocitytriggeredoffhandstate = false;
+            }
+
             /*if (pVRClientInfo->weapon_stabilised)
             {
                 {
@@ -526,6 +555,7 @@ void HandleInput_Default( int controlscheme, ovrInputStateTrackedRemote *pDomina
             float vr_turn_angle = Android_GetCVarInteger("vr_turnangle");
 
             //No snap turn when using mounted gun
+            snapTurn = 0;
             static int increaseSnap = true;
             {
                 if (pPrimaryJoystick->x > 0.7f) {

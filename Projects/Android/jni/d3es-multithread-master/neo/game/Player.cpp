@@ -1552,6 +1552,9 @@ void idPlayer::Init( void ) {
 
 	flashlightPreviouslyInHand = false;
 
+	//GB
+    velocityPunched         = false;
+
 	noclip					= false;
 	godmode					= false;
 
@@ -2831,6 +2834,8 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
     holsteredWeapon = weapon_fists;
     extraHolsteredWeapon = weapon_fists;
     extraHolsteredWeaponModel = NULL;
+    //GB
+    velocityPunched = false;
 
 
     //------------------------------------------------------------
@@ -5704,14 +5709,11 @@ idPlayerHand::SelectWeapon
 */
 void idPlayerHand::SelectWeapon( int num, bool force, bool specific )
 {
-    if( vr_debugHands.GetBool() )
-    {
-        common->Printf( "Before SelectWeapon(%d, %d, %d):\n", num, force, specific );
-        debugPrint();
-    }
+	common->Printf( "Before SelectWeapon(%d, %d, %d, %d):\n", num, force, specific, whichHand);
     const char* weap;
 
-    if( !owner->weaponEnabled || owner->spectating || gameLocal.inCinematic || owner->health < 0 || commonVr->handInGui ) // Koz don't let the player change weapons if hand is currently in a gui
+    //if( !owner->weaponEnabled || owner->spectating || gameLocal.inCinematic || owner->health < 0 /*|| commonVr->handInGui*/ ) // Koz don't let the player change weapons if hand is currently in a gui
+	if( !owner->weaponEnabled || owner->spectating || gameLocal.inCinematic || owner->health < 0) // GB For some reason this is active when trying to reinstate holstered weapon
     {
         return;
     }
@@ -5829,8 +5831,8 @@ void idPlayerHand::SelectWeapon( int num, bool force, bool specific )
                 if( owner->inventory.duplicateWeapons & ( 1 << weapNum ) )
                     availableWeaponsOfThisType++;
                 // Carl: skip weapons in the holster unless we have a duplicate, TODO make it optional
-                if( weapNum == owner->holsteredWeapon )
-                    availableWeaponsOfThisType--;
+                //if( weapNum == owner->holsteredWeapon )
+				//   availableWeaponsOfThisType--;
                 // Carl: skip weapons in the other hand unless we have a duplicate (dual wielding)
                 if( weapNum == owner->hands[ 1 - whichHand ].idealWeapon )
                     availableWeaponsOfThisType--;
@@ -5878,8 +5880,8 @@ void idPlayerHand::SelectWeapon( int num, bool force, bool specific )
         if( owner->inventory.duplicateWeapons & ( 1 << num ) )
             availableWeaponsOfThisType++;
         // Carl: skip weapons in the holster unless we have a duplicate, TODO make it optional
-        if( num == owner->holsteredWeapon )
-            availableWeaponsOfThisType--;
+        //if( num == owner->holsteredWeapon )
+        //    availableWeaponsOfThisType--;
         // Carl: skip weapons in the other hand unless we have a duplicate (dual wielding)
         if( num == owner->hands[ 1 - whichHand ].idealWeapon )
             availableWeaponsOfThisType--;
@@ -5902,17 +5904,8 @@ void idPlayerHand::SelectWeapon( int num, bool force, bool specific )
         }
         else if( ( owner->weapon_pda >= 0 ) && ( num == owner->weapon_pda ) && ( owner->inventory.pdas.Num() == 0 ) )
         {
-
-            if ( game->isVR )
-            {
-                //GivePDA( NULL, NULL, false ); // hack to allow the player to change system settings in the mars city level before the PDA is given by the receptionist.
-                //idealWeapon = num;
-            }
-            else
-            {
-                owner->ShowTip( owner->spawnArgs.GetString( "text_infoTitle" ), owner->spawnArgs.GetString( "text_noPDA" ), true );
-                return;
-            }
+			owner->ShowTip( owner->spawnArgs.GetString( "text_infoTitle" ), owner->spawnArgs.GetString( "text_noPDA" ), true );
+			return;
         }
 
         // If we can't we dual-wield it?
@@ -5932,11 +5925,8 @@ void idPlayerHand::SelectWeapon( int num, bool force, bool specific )
         idealWeapon = num;
         owner->UpdateHudWeapon( whichHand );
     }
-    if( vr_debugHands.GetBool() )
-    {
-        common->Printf( "After SelectWeapon():\n" );
-        debugPrint();
-    }
+
+	common->Printf( "After SelectWeapon(%d):\n", idealWeapon);
 }
 
 /*
@@ -6052,8 +6042,11 @@ bool idPlayerHand::floatingWeapon()
 
 bool idPlayerHand::controllingWeapon()
 {
-    if( currentWeapon < 0 || !owner || !weapon || weapon->IdentifyWeapon() == WEAPON_PDA || holdingFlashlight()
-        || owner->spectating || !owner->weaponEnabled || owner->hiddenWeapon || gameLocal.world->spawnArgs.GetBool( "no_Weapons" ) )
+    /*if( currentWeapon < 0 || !owner || !weapon || weapon->IdentifyWeapon() == WEAPON_PDA || holdingFlashlight()
+        || owner->spectating || !owner->weaponEnabled || owner->hiddenWeapon || gameLocal.world->spawnArgs.GetBool( "no_Weapons" ) )*/
+    //GB removed flashlight as not a weapon so it can hit people :-)
+    if( currentWeapon < 0 || !owner || !weapon || weapon->IdentifyWeapon() == WEAPON_PDA ||
+        owner->spectating || !owner->weaponEnabled || owner->hiddenWeapon || gameLocal.world->spawnArgs.GetBool( "no_Weapons" ) )
         return false;
     return true;
 }
@@ -6567,8 +6560,8 @@ void idPlayer::Weapon_Combat( void ) {
                     FlashlightOn();
                 hands[ h ].oldFlashlightTriggerDown = true;
             }
-            // Fire weapon
-            if( (pullingTrigger && !hands[ h ].oldFlashlightTriggerDown ) || ( usercmd.buttons & BUTTON_ATTACK ) )
+
+            if( (pullingTrigger && !hands[ h ].oldFlashlightTriggerDown ) || ( usercmd.buttons & BUTTON_ATTACK && h == vr_weaponHand.GetInteger()) || (pVRClientInfo != nullptr && pVRClientInfo->velocitytriggeredoffhandstate && h == 1 - vr_weaponHand.GetInteger()))
             {
                 //common->Printf( "trigger down\n" );
                 if( hands[ h ].controllingWeapon() && !hands[h].weaponGone && !weaponGone )
@@ -6576,14 +6569,16 @@ void idPlayer::Weapon_Combat( void ) {
                     FireWeapon( h, GetWeaponInHand( h ) );
                     if( !hands[h].oldTriggerDown )
                         PlayAnim( h ? ANIMCHANNEL_LEFTHAND : ANIMCHANNEL_RIGHTHAND, "fire1" );
+                    velocityPunched = true;
                 }
             }
-            else if( (hands[ h ].oldTriggerDown && !hands[ h ].oldFlashlightTriggerDown) || oldButtons & BUTTON_ATTACK )
+            else if( (hands[ h ].oldTriggerDown && !hands[ h ].oldFlashlightTriggerDown) || (oldButtons & BUTTON_ATTACK && h == vr_weaponHand.GetInteger()) || (velocityPunched && h == 1 - vr_weaponHand.GetInteger()))
             {
                 //common->Printf( "old trigger down\n" );
                 AI_ATTACK_HELD = false;
                 GetWeaponInHand( h )->EndAttack();
                 PlayAnim( h ? ANIMCHANNEL_LEFTHAND : ANIMCHANNEL_RIGHTHAND, "idle" );
+                velocityPunched = false;
             }
             // remember the old state
             if( hands[ h ].oldFlashlightTriggerDown && !hands[ h ].triggerDown )
@@ -9716,8 +9711,7 @@ void idPlayer::TogglePDA( int hand  ) {
 	}
 
 	if ( inventory.pdas.Num() == 0 ) {
-		objectiveSystem->HandleNamedEvent( "showPDATip" );
-		//ShowTip( spawnArgs.GetString( "text_infoTitle" ), spawnArgs.GetString( "text_noPDA" ), true );
+		ShowTip( spawnArgs.GetString( "text_infoTitle" ), spawnArgs.GetString( "text_noPDA" ), true );
 		return;
 	}
 
@@ -11535,6 +11529,7 @@ void idPlayer::Think( void ) {
         }
         cvarSystem->SetCVarBool("vr_weapon_stabilised", pVRClientInfo->weapon_stabilised);
         pVRClientInfo->velocitytriggered = GetCurrentWeaponId() == WEAPON_FLASHLIGHT;
+		pVRClientInfo->velocitytriggeredoffhand = true;
         pVRClientInfo->pistol = GetCurrentWeaponId() == WEAPON_PISTOL;
     }
 
@@ -13428,7 +13423,11 @@ void idPlayer::CalculateViewWeaponPosVR( int hand, idVec3 &origin, idMat3 &axis 
 
 bool idPlayer::CanDualWield( int num ) const
 {
-    vr_dualwield_t d = (vr_dualwield_t)vr_dualWield.GetInteger();
+    if( num == weapon_flashlight || num == weapon_flashlight_new )
+        return true;
+    return false;
+
+    /*vr_dualwield_t d = (vr_dualwield_t)vr_dualWield.GetInteger();
     if( d == VR_DUALWIELD_YES || num == -1 )
         return true;
     if( d == VR_DUALWIELD_NOT_EVEN_FISTS )
@@ -13441,7 +13440,7 @@ bool idPlayer::CanDualWield( int num ) const
         return d == VR_DUALWIELD_ONLY_PISTOLS || d == VR_DUALWIELD_ONLY_PISTOLS_FLASHLIGHT || d == VR_DUALWIELD_ONLY_PISTOLS_GRENADES_FLASHLIGHT;
     if( num == weapon_handgrenade )
         return d == VR_DUALWIELD_ONLY_GRENADES || d == VR_DUALWIELD_ONLY_GRENADES_FLASHLIGHT || d == VR_DUALWIELD_ONLY_PISTOLS_GRENADES_FLASHLIGHT;
-    return false;
+    return false;*/
 }
 
 /*
@@ -13619,7 +13618,7 @@ void idPlayer::CalculateViewFlashlightPos( idVec3 &origin, idMat3 &axis, idVec3 
     {
         weaponWithFlashlightMounted = GetWeaponWithMountedFlashlight();
 		//GB ALTERNATIVE (think I have fixed elsewhere)
-        //flashlightOffset = flashlightOffsets[int( weaponWithFlashlightMounted->IdentifyWeapon() )];
+        flashlightOffset = flashlightOffsets[int( weaponWithFlashlightMounted->IdentifyWeapon() )];
 
         if( !weaponWithFlashlightMounted || !weaponWithFlashlightMounted->GetMuzzlePositionWithHacks( origin, axis ) || commonVr->handInGui )
         {
@@ -16561,7 +16560,7 @@ void idPlayer::SetupHolsterSlot( int hand, int stashed )
         // can't holster, just unholster
         if( holsteredWeapon != weapon_fists )
         {
-            if ( stashed < 0 )
+            if ( stashed != 0 )
                 SelectWeapon(holsteredWeapon, false, true);
             holsteredWeapon = weapon_fists;
             memset(&holsterRenderEntity, 0, sizeof(holsterRenderEntity));

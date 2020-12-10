@@ -488,6 +488,9 @@ public:
 
     bool					aimValidForTeleport;
 
+    //GB
+    bool					velocityPunched;
+
     bool                    flashlightPreviouslyInHand;
 
     idVec3					PDAorigin; // Koz

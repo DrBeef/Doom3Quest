@@ -66,6 +66,8 @@ typedef struct {
     bool pistol;                // True if the weapon is a pistol
 
     bool velocitytriggered; // Weapon attack triggered by velocity (knife)
+    bool velocitytriggeredoffhand; // Weapon attack triggered by velocity (puncher)
+    bool velocitytriggeredoffhandstate; // Weapon attack triggered by velocity (puncher)
 
     vec3_t offhandangles_temp;
     vec3_t offhandoffset_temp;
