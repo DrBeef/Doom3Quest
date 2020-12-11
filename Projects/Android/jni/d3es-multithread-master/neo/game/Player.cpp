@@ -1303,6 +1303,25 @@ idPlayer::idPlayer() {
     weapon_pda				= -1;
     weapon_fists			= -1;
     weapon_chainsaw			= -1;
+	weapon_none 			= -1;
+	weapon_flashlight		= -1;
+	weapon_bloodstone 		= -1;
+	weapon_bloodstone_active1 = -1;
+	weapon_bloodstone_active2 = -1;
+	weapon_bloodstone_active3 = -1;
+	// Koz begin
+	weapon_pistol 			= -1;
+	weapon_shotgun			= -1;
+	weapon_shotgun_double	= -1;
+	weapon_machinegun		= -1;
+	weapon_chaingun			= -1;
+	weapon_handgrenade		= -1;
+	weapon_plasmagun		= -1;
+	weapon_rocketlauncher	= -1;
+	weapon_bfg				= -1;
+	weapon_flashlight_new	= -1;
+	weapon_grabber			= -1;
+
 	showWeaponViewModel		= true;
 
     flashlightModelDefHandle = -1;
@@ -1563,6 +1582,7 @@ void idPlayer::Init( void ) {
 
 	weaponEnabled			= true;
 	risingWeaponHand		= -1;
+	weapon_none 			= 0;
 	weapon_soulcube			= SlotForWeapon( "weapon_soulcube" );
 	weapon_pda				= SlotForWeapon( "weapon_pda" );
 	weapon_fists			= SlotForWeapon( "weapon_fists" );
@@ -2533,7 +2553,7 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 	savefile->ReadUserInterface(objectiveSystem);
 	savefile->ReadBool(objectiveSystemOpen);
 
-
+	weapon_none = 0;
 	savefile->ReadInt( weapon_soulcube );
 	savefile->ReadInt( weapon_pda );
 	savefile->ReadInt( weapon_fists );
@@ -11528,7 +11548,11 @@ void idPlayer::Think( void ) {
             pVRClientInfo->weaponid = -1;
         }
         cvarSystem->SetCVarBool("vr_weapon_stabilised", pVRClientInfo->weapon_stabilised);
-        pVRClientInfo->velocitytriggered = GetCurrentWeaponId() == WEAPON_FLASHLIGHT;
+        int _currentWeapon = GetCurrentWeaponId();
+        if(_currentWeapon == WEAPON_FLASHLIGHT || _currentWeapon == WEAPON_FISTS)
+        	pVRClientInfo->velocitytriggered = true;
+		else
+			pVRClientInfo->velocitytriggered = false;
 		pVRClientInfo->velocitytriggeredoffhand = true;
         pVRClientInfo->pistol = GetCurrentWeaponId() == WEAPON_PISTOL;
     }
@@ -13423,7 +13447,7 @@ void idPlayer::CalculateViewWeaponPosVR( int hand, idVec3 &origin, idMat3 &axis 
 
 bool idPlayer::CanDualWield( int num ) const
 {
-    if( num == weapon_flashlight || num == weapon_flashlight_new )
+    if( num == weapon_flashlight || num == weapon_flashlight_new || num == weapon_fists || num == -1)
         return true;
     return false;
 

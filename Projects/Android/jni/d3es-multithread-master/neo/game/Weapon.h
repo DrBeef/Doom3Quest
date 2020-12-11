@@ -56,7 +56,7 @@ typedef enum {
 } weaponStatus_t;
 
 typedef enum { // Koz weapon enumerations
-	WEAPON_NONE = 0,
+	WEAPON_NONE = -1,
 	WEAPON_FISTS,
 	WEAPON_CHAINSAW,
 	WEAPON_PISTOL,

@@ -566,6 +566,8 @@ public:
 
 	vrClientInfo *pVRClientInfo;
 
+	//Gb added this to match upto the enums
+	int						weapon_none;
 	int						weapon_soulcube;
 	int						weapon_pda;
 	int						weapon_fists;

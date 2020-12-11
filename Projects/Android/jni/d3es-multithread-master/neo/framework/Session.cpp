@@ -2120,9 +2120,8 @@ bool idSessionLocal::LoadGame( const char *saveName ) {
 	// check the version, if it doesn't match, cancel the loadgame,
 	// but still load the map with the persistant playerInfo from the header
 	// so that the player doesn't lose too much progress.
-	if ( savegameVersion != SAVEGAME_VERSION &&
-		 !( savegameVersion == 16 && SAVEGAME_VERSION == 17 ) ) {	// handle savegame v16 in v17
-		common->Warning( "Savegame Version mismatch: aborting loadgame and starting level with persistent data" );
+	if ( savegameVersion <= 17) {	// handle savegame v16 in v17
+		common->Warning( "Savegame Version Too Early: aborting loadgame and starting level with persistent data" );
 		loadingSaveGame = false;
 		fileSystem->CloseFile( savegameFile );
 		savegameFile = NULL;
@@ -2570,7 +2569,7 @@ int calcFPS(  ) {
         fps = 10000 * FPS_FRAMES / total;
         fps = (fps + 5) / 10;
 
-        common->Printf( " FPS: %i ", fps );
+        //common->Printf( " FPS: %i ", fps );
     }
 
     return fps;
@@ -2776,9 +2775,9 @@ void idSessionLocal::Frame() {
 
 	// create client commands, which will be sent directly
 	// to the game
-	if ( com_showTics.GetBool() ) {
+	/*if ( com_showTics.GetBool() ) {
 		common->Printf( " Tics to run: %i ", latchedTicNumber - lastGameTic );
-	}
+	}*/
 
 	int	gameTicsToRun = latchedTicNumber - lastGameTic;
 
