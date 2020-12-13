@@ -1064,7 +1064,8 @@ void idGameLocal::EvaluateVRMoveMode(idVec3 &viewangles, usercmd_t &cmd, int but
 	}
 
 	//GB - Include Dr. Beefs SnapTurn
-	if ( snapTurn != 0.0 && (commonVr->Sys_Milliseconds() - commonVr->lastComfortTime >= vr_comfortRepeat.GetInteger()) )
+	//if ( snapTurn != 0.0 && (commonVr->Sys_Milliseconds() - commonVr->lastComfortTime >= vr_comfortRepeat.GetInteger()) )
+	if ( snapTurn != 0.0 )
 	{
 		viewangles[YAW] += snapTurn;
 		commonVr->lastComfortTime = commonVr->Sys_Milliseconds();

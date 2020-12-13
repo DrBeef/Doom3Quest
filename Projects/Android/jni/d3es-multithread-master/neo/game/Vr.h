@@ -420,8 +420,6 @@ extern idCVar	vr_wristStatMon;
 extern idCVar	vr_disableWeaponAnimation;
 extern idCVar	vr_headKick;
 
-extern idCVar	vr_weaponHand;
-
 extern idCVar	vr_flashlightMode;
 extern idCVar	vr_flashlightStrict; // Carl
 
@@ -467,7 +465,6 @@ extern idCVar	vr_trackingPredictionUserDefined;
 
 extern idCVar	vr_deadzonePitch;
 extern idCVar	vr_deadzoneYaw;
-extern idCVar	vr_comfortDelta;
 
 extern idCVar	vr_weaponSight;
 extern idCVar	vr_weaponSightToSurface;

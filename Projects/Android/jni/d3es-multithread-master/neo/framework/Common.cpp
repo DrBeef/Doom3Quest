@@ -2424,7 +2424,7 @@ void idCommonLocal::Frame( void ) {
 		// pump all the events
 		Sys_GenerateEvents();
 
-		Doom3Quest_FrameSetup(cvarSystem->GetCVarInteger("vr_controlscheme"));
+		Doom3Quest_FrameSetup(cvarSystem->GetCVarInteger("vr_weaponHand"));
 
 		if (game) {
 			game->SetVRClientInfo(pVRClientInfo);

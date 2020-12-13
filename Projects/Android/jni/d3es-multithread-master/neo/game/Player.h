@@ -41,6 +41,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "GameEdit.h"
 #include "PredictedValue.h"
 #include "Vr.h"
+#include "gamesys/SysCvar.h"
 
 class idAI;
 

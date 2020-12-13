@@ -31,8 +31,7 @@ idCVar vr_scale( "vr_scale", "1.0", CVAR_FLOAT | CVAR_ARCHIVE | CVAR_GAME, "Worl
 idCVar vr_useFloorHeight( "vr_useFloorHeight", "0", CVAR_INTEGER | CVAR_ARCHIVE | CVAR_GAME, "0 = Custom eye height. 1 = Marine Eye Height. 2 = Normal View Height. 3 = make floor line up by Doomguy crouching. 4 = make everything line up by scaling world to your height.", 0, 4 );
 idCVar vr_normalViewHeight( "vr_normalViewHeight", "73", CVAR_FLOAT | CVAR_ARCHIVE | CVAR_GAME, "Height of player's view while standing, in real world inches." );
 
-//In Menu - needs testing
-idCVar vr_weaponHand( "vr_weaponHand", "0", CVAR_INTEGER | CVAR_ARCHIVE | CVAR_GAME, "Which hand holds weapon.\n 0 = Right hand\n 1 = Left Hand\n", 0, 1 );
+
 
 //In Menu - don't think gun is working - investigate
 idCVar vr_flashlightMode( "vr_flashlightMode", "3", CVAR_INTEGER | CVAR_ARCHIVE | CVAR_GAME, "Flashlight mount.\n0 = Body\n1 = Head\n2 = Gun\n3= Hand ( if motion controls available.)" );
@@ -94,9 +93,6 @@ idCVar vr_joystickMenuMapping( "vr_joystickMenuMapping", "1", CVAR_BOOL | CVAR_A
 
 idCVar	vr_deadzonePitch( "vr_deadzonePitch", "90", CVAR_FLOAT | CVAR_GAME | CVAR_ARCHIVE, "Vertical Aim Deadzone", 0, 180 );
 idCVar	vr_deadzoneYaw( "vr_deadzoneYaw", "30", CVAR_FLOAT | CVAR_GAME | CVAR_ARCHIVE, "Horizontal Aim Deadzone", 0, 180 );
-
-//Not sure if this is used or Dr Beefs setting - not in menu
-idCVar	vr_comfortDelta( "vr_comfortDelta", "10", CVAR_FLOAT | CVAR_GAME | CVAR_ARCHIVE, "Comfort Mode turning angle ", 0, 180 );
 
 //In menu - Working fine
 idCVar	vr_weaponSight( "vr_weaponSight", "3", CVAR_INTEGER | CVAR_ARCHIVE, "Weapon Sight.\n 0 = Lasersight\n 1 = Red dot\n 2 = Circle dot\n 3 = Crosshair\n 4 = Beam + Dot\n" );
@@ -207,7 +203,7 @@ idCVar vr_mustEmptyHands( "vr_mustEmptyHands", "0", CVAR_BOOL | CVAR_GAME | CVAR
 idCVar vr_contextSensitive( "vr_contextSensitive", "1", CVAR_BOOL | CVAR_GAME | CVAR_ARCHIVE, "Are buttons context sensitive?\n0 = no just map the buttons in the binding window, 1 = yes, context sensitive buttons (default)" );
 idCVar vr_dualWield( "vr_dualWield", "2", CVAR_INTEGER | CVAR_GAME | CVAR_ARCHIVE, "Can you use two weapons at once?\n0 = not even fists, 1 = nothing, 2 = only flashlight, 3 = only grenades (VFR), 4 = only grenades/flashlight, 5 = only pistols, 6 = only pistols/flashlight, 7 = only pistols/grenades/flashlight, 8 = yes" );
 
-idCVar vr_debugHands( "vr_debugHands", "0", CVAR_BOOL | CVAR_GAME, "Enable hand/weapon/dual wielding debugging" );
+idCVar vr_debugHands( "vr_debugHands", "1", CVAR_BOOL | CVAR_GAME, "Enable hand/weapon/dual wielding debugging" );
 idCVar vr_rumbleChainsaw( "vr_rumbleChainsaw", "1", CVAR_BOOL | CVAR_GAME | CVAR_ARCHIVE, "Enable weapon (currently chainsaw only) constant haptic feedback in VR. Not recommended for wireless VR controllers." );
 
 //===================================================================
@@ -580,7 +576,7 @@ void iVr::HMDGetOrientation( idAngles &hmdAngles, idVec3 &headPositionDelta, idV
             cinematicStartViewYaw = trackingOriginYawOffset;
 
         }
-        common->Printf( "HMDGetOrientation FramCheck Bail == idLib:: framenumber  lf %d  ilfn %d  rendersplash = %d\n", lastFrame, common->GetFrameNumber(), commonVr->renderingSplash );
+        //common->Printf( "HMDGetOrientation FramCheck Bail == idLib:: framenumber  lf %d  ilfn %d  rendersplash = %d\n", lastFrame, common->GetFrameNumber(), commonVr->renderingSplash );
         return;
     }
 

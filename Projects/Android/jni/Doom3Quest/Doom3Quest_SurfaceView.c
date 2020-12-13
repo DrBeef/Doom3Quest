@@ -108,7 +108,7 @@ int argc=0;
 
 enum control_scheme {
 	RIGHT_HANDED_DEFAULT = 0,
-	LEFT_HANDED_DEFAULT = 10
+	LEFT_HANDED_DEFAULT = 1
 };
 
 /*
