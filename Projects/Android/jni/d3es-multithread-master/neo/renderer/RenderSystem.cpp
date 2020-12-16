@@ -1190,15 +1190,11 @@ bool idRenderSystemLocal::UploadImage( const char *imageName, const byte *data, 
 
 void idRenderSystemLocal::DirectFrameBufferStart()
 {
-    emptyCommand_t *cmd;
-    cmd = (emptyCommand_t *)R_GetCommandBuffer( sizeof( *cmd ) );
-    cmd->commandId = RC_DIRECT_BUFFER_START;
+	R_DirectFrameBufferStart();
 }
 
 void idRenderSystemLocal::DirectFrameBufferEnd()
 {
-    emptyCommand_t *cmd;
-    cmd = (emptyCommand_t *)R_GetCommandBuffer( sizeof( *cmd ) );
-    cmd->commandId = RC_DIRECT_BUFFER_END;
+	R_DirectFrameBufferEnd();
 }
 

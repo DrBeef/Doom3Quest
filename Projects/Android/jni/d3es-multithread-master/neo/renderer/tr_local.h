@@ -1478,6 +1478,9 @@ void *R_FrameAlloc( int bytes );
 void *R_ClearedFrameAlloc( int bytes );
 void R_FrameFree( void *data );
 
+void R_DirectFrameBufferStart();
+void R_DirectFrameBufferEnd();
+
 void *R_StaticAlloc( int bytes );		// just malloc with error checking
 void *R_ClearedStaticAlloc( int bytes );	// with memset
 void R_StaticFree( void *data );
