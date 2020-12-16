@@ -13385,7 +13385,8 @@ void idPlayer::CalculateViewWeaponPosVR( int hand, idVec3 &origin, idMat3 &axis 
         if ( currentWeaponEnum != WEAPON_PDA )
         {
             hands[hand].TrackWeaponDirection( weapOrigin );
-            hands[1 - hand].TrackWeaponDirection( weapOrigin );
+            //GB why do both hands here
+            //hands[1 - hand].TrackWeaponDirection( weapOrigin );
             weapon->CalculateHideRise( weapOrigin, weapAxis );
             //check for melee hit?
         }

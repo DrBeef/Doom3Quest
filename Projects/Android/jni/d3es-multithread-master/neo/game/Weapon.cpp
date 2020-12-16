@@ -4013,7 +4013,6 @@ void idWeapon::Event_LaunchProjectiles( int num_projectiles, float spread, float
 
 			// Normal launch
 			proj->Launch( muzzle_pos, dir, pushVelocity, fuseOffset, launchPower, dmgPower, speed );
-			proj->Launch(muzzle_pos, dir, pushVelocity, fuseOffset, launchPower, dmgPower);
 		}
 
 		// toss the brass

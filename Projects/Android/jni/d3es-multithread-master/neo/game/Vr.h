@@ -514,8 +514,6 @@ extern idCVar	vr_teleportMaxTravel;
 extern idCVar	vr_teleportThroughDoors;
 extern idCVar	vr_motionSickness;
 extern idCVar	vr_strobeTime;
-extern idCVar	vr_chaperone;
-extern idCVar	vr_chaperoneColor;
 
 extern idCVar vr_slotDebug;
 extern idCVar vr_slotMag;

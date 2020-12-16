@@ -78,8 +78,7 @@ typedef enum { // Koz weapon enumerations
 } weapon_t;
 
 // Koz flashlightOffsets - values are used to move flashlight model to 'mount' to the active weapon.  Hacky McCrappyHack was here.
-const idVec3 flashlightOffsets[int(WEAPON_NUM_WEAPONS)] = {	idVec3( 0.0f, 0.0f, 0.0f ),			// WEAPON_NONE
-															   idVec3( 0.0f, 0.0f, 0.0f ),			// WEAPON_FISTS
+const idVec3 flashlightOffsets[int(WEAPON_NUM_WEAPONS)] = {	idVec3( 0.0f, 0.0f, 0.0f ),			// WEAPON_FISTS
 															   idVec3( 0.0f, 0.0f, 0.0f ),			// WEAPON_CHAINSAW
 															   idVec3( -1.25f, -6.5f, 0.9f ),		// WEAPON_PISTOL
 															   idVec3( -1.75f, -3.5f, 1.15f ),		// WEAPON_SHOTGUN
