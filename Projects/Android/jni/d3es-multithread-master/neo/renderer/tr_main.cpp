@@ -881,7 +881,8 @@ void R_SetViewMatrix( viewDef_t *viewDef ) {
 
 
 			if (eye < 2 &&
-				!Doom3Quest_useScreenLayer())
+				!Doom3Quest_useScreenLayer() &&
+				!viewDef->renderView.forceMono)
 			{
 				origin += (eye == 0 ? 1.0f : -1.0f) * viewDef->renderView.viewaxis[1] *
 						  (cvarSystem->GetCVarFloat("vr_ipd") / 2.0f) *

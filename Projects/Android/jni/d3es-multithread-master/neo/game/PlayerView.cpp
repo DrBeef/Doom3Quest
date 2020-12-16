@@ -766,18 +766,20 @@ idPlayerView::RenderPlayerView
 ===================
 */
 void idPlayerView::RenderPlayerView( idUserInterface *hud ) {
-    const renderView_t *view = player->GetRenderView();
+    renderView_t *view = player->GetRenderView();
 
     if (g_skipViewEffects.GetBool()) {
         SingleView( hud, view );
     } else {
-        if (player->GetInfluenceMaterial() || player->GetInfluenceEntity()) {
+		view->forceMono = true;
+		if (player->GetInfluenceMaterial() || player->GetInfluenceEntity()) {
             InfluenceVision( hud, view );
         } else if (gameLocal.time < dvFinishTime) {
             DoubleVision( hud, view, dvFinishTime - gameLocal.time );
         } else if (player->PowerUpActive(BERSERK)) {
             BerserkVision( hud, view );
         } else {
+			view->forceMono = false;
             SingleView( hud, view );
         }
         ScreenFade();

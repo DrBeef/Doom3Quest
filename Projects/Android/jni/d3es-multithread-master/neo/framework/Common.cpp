@@ -2460,6 +2460,9 @@ void idCommonLocal::Frame( void ) {
 			session->UpdateScreen( false );
 		}
 
+		//In case game library wants to do anything at the end of the frame
+		game->EndFrame();
+
 		/*
 		// process the rumble
 		for(int i = 0; i < 2; i++) {

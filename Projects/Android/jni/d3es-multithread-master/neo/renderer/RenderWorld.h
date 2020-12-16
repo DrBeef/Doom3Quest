@@ -241,6 +241,7 @@ typedef struct renderView_s {
 
 	bool					cramZNear;			// for cinematics, we want to set ZNear much lower
 	bool					forceUpdate;		// for an update
+	bool 					forceMono;				// force mono
 
 	// time in milliseconds for shader effects and other time dependent rendering issues
 	int						time;

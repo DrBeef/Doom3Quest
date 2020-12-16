@@ -2703,6 +2703,16 @@ void idGameLocal::SortActiveEntityList( void ) {
 idGameLocal::RunFrame
 ================
 */
+void idGameLocal::EndFrame()
+{
+
+}
+
+/*
+================
+idGameLocal::RunFrame
+================
+*/
 gameReturn_t idGameLocal::RunFrame( const usercmd_t *clientCmds ) {
 	idEntity *	ent;
 	int			num;
