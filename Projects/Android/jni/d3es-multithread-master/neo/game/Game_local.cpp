@@ -1021,16 +1021,13 @@ bool idGameLocal::AnimatorGetJointTransform(idAnimator* animator, jointHandle_t 
 void idGameLocal::CheckRenderCvars()
 {
 	// Koz
-	if ( game->isVR )
+	if ( vr_useFloorHeight.IsModified() || ( vr_normalViewHeight.IsModified() && vr_useFloorHeight.GetInteger() == 0 ) || vr_scale.IsModified() || commonVr->shouldRecenter )
 	{
-		if ( vr_useFloorHeight.IsModified() || ( vr_normalViewHeight.IsModified() && vr_useFloorHeight.GetInteger() == 0 ) || vr_scale.IsModified() || commonVr->shouldRecenter )
-		{
-			commonVr->HMDResetTrackingOriginOffset();
-			vr_useFloorHeight.ClearModified();
-			vr_normalViewHeight.ClearModified();
-			vr_scale.ClearModified();
-			commonVr->shouldRecenter = false;
-		}
+		commonVr->HMDResetTrackingOriginOffset();
+		vr_useFloorHeight.ClearModified();
+		vr_normalViewHeight.ClearModified();
+		vr_scale.ClearModified();
+		commonVr->shouldRecenter = false;
 	}
 }
 
@@ -1064,8 +1061,8 @@ void idGameLocal::EvaluateVRMoveMode(idVec3 &viewangles, usercmd_t &cmd, int but
 	}
 
 	//GB - Include Dr. Beefs SnapTurn
-	//if ( snapTurn != 0.0 && (commonVr->Sys_Milliseconds() - commonVr->lastComfortTime >= vr_comfortRepeat.GetInteger()) )
-	if ( snapTurn != 0.0 )
+	if ( snapTurn != 0.0 && (commonVr->Sys_Milliseconds() - commonVr->lastComfortTime >= vr_comfortRepeat.GetInteger()) )
+	//if ( snapTurn != 0.0 )
 	{
 		viewangles[YAW] += snapTurn;
 		commonVr->lastComfortTime = commonVr->Sys_Milliseconds();
@@ -2705,7 +2702,7 @@ idGameLocal::RunFrame
 */
 void idGameLocal::EndFrame()
 {
-
+	CheckRenderCvars();
 }
 
 /*
