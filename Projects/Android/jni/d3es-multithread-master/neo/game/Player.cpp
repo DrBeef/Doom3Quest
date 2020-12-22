@@ -13222,7 +13222,7 @@ void idPlayer::CalculateViewWeaponPosVR( int hand, idVec3 &origin, idMat3 &axis 
 
     gunOrigin = GetEyePosition();
 
-    if ( game->isVR && commonVr->VR_USE_MOTION_CONTROLS ) gunOrigin += commonVr->leanOffset;
+    gunOrigin += commonVr->leanOffset;
 
     // direction the player body is facing.
     idMat3		bodyAxis = idAngles( 0.0, viewAngles.yaw, 0.0f ).ToMat3();
@@ -13287,163 +13287,162 @@ void idPlayer::CalculateViewWeaponPosVR( int hand, idVec3 &origin, idMat3 &axis 
         }
     }
 
-    if (commonVr->VR_USE_MOTION_CONTROLS )
-    {
-        // motion control weapon positioning.
-        //-----------------------------------
 
-        idVec3 weapOrigin = vec3_zero;
-        idMat3 weapAxis = mat3_identity;
+	// motion control weapon positioning.
+	//-----------------------------------
 
-        // idVec3 fixPosVec = idVec3( -17.0f, 6.0f, 0.0f );
-        // idVec3 fixPos = fixPosVec;
-        // idQuat fixRot = idAngles( 40.0f, -40.0f, 20.0f ).ToQuat();
-        idVec3 attacherToDefault = vec3_zero;
-        // idMat3 rot180 = idAngles( 0.0f, 180.0f, 0.0f ).ToMat3();
+	idVec3 weapOrigin = vec3_zero;
+	idMat3 weapAxis = mat3_identity;
 
-        if ( !hands[ hand ].PDAfixed && currentWeaponEnum == WEAPON_PDA )
-        {
-            // do the non-PDA hand first (the hand with the pointy finger)
-            int fingerHand = 1 - hand;
+	// idVec3 fixPosVec = idVec3( -17.0f, 6.0f, 0.0f );
+	// idVec3 fixPos = fixPosVec;
+	// idQuat fixRot = idAngles( 40.0f, -40.0f, 20.0f ).ToQuat();
+	idVec3 attacherToDefault = vec3_zero;
+	// idMat3 rot180 = idAngles( 0.0f, 180.0f, 0.0f ).ToMat3();
 
-            attacherToDefault = handWeaponAttacherToDefaultOffset[fingerHand][currentWeaponIndex];
-            originOffset = weapon->weaponHandDefaultPos[fingerHand];
-            commonVr->MotionControlGetHand( fingerHand, hands[fingerHand].motionPosition, hands[fingerHand].motionRotation );
+	if ( !hands[ hand ].PDAfixed && currentWeaponEnum == WEAPON_PDA )
+	{
+		// do the non-PDA hand first (the hand with the pointy finger)
+		int fingerHand = 1 - hand;
 
-            weaponPitch = idAngles( vr_motionWeaponPitchAdj.GetFloat(), 0.f, 0.0f ).ToQuat();
-            hands[fingerHand].motionRotation = weaponPitch * hands[fingerHand].motionRotation;
+		attacherToDefault = handWeaponAttacherToDefaultOffset[fingerHand][currentWeaponIndex];
+		originOffset = weapon->weaponHandDefaultPos[fingerHand];
+		commonVr->MotionControlGetHand( fingerHand, hands[fingerHand].motionPosition, hands[fingerHand].motionRotation );
 
-            GetViewPos( weapOrigin, weapAxis );
+		weaponPitch = idAngles( vr_motionWeaponPitchAdj.GetFloat(), 0.f, 0.0f ).ToQuat();
+		hands[fingerHand].motionRotation = weaponPitch * hands[fingerHand].motionRotation;
 
-            weapOrigin += commonVr->leanOffset;
-            //commonVr->HMDGetOrientation( hmdAngles, headPositionDelta, bodyPositionDelta, absolutePosition, false );// gameLocal.inCinematic );
+		GetViewPos( weapOrigin, weapAxis );
 
-            hmdAngles = commonVr->poseHmdAngles;
-            headPositionDelta = commonVr->poseHmdHeadPositionDelta;
-            bodyPositionDelta = commonVr->poseHmdBodyPositionDelta;
-            absolutePosition = commonVr->poseHmdAbsolutePosition;
+		weapOrigin += commonVr->leanOffset;
+		//commonVr->HMDGetOrientation( hmdAngles, headPositionDelta, bodyPositionDelta, absolutePosition, false );// gameLocal.inCinematic );
 
+		hmdAngles = commonVr->poseHmdAngles;
+		headPositionDelta = commonVr->poseHmdHeadPositionDelta;
+		bodyPositionDelta = commonVr->poseHmdBodyPositionDelta;
+		absolutePosition = commonVr->poseHmdAbsolutePosition;
 
 
-            weapAxis = idAngles( 0.0, weapAxis.ToAngles().yaw - commonVr->bodyYawOffset, 0.0f ).ToMat3();
 
-            weapOrigin += weapAxis[0] * headPositionDelta.x + weapAxis[1] * headPositionDelta.y + weapAxis[2] * headPositionDelta.z;
+		weapAxis = idAngles( 0.0, weapAxis.ToAngles().yaw - commonVr->bodyYawOffset, 0.0f ).ToMat3();
 
-            weapOrigin += hands[fingerHand].motionPosition * weapAxis;
-            weapAxis = hands[fingerHand].motionRotation.ToMat3() * weapAxis;
+		weapOrigin += weapAxis[0] * headPositionDelta.x + weapAxis[1] * headPositionDelta.y + weapAxis[2] * headPositionDelta.z;
 
-            //weapon->CalculateHideRise( weapOrigin, weapAxis );
+		weapOrigin += hands[fingerHand].motionPosition * weapAxis;
+		weapAxis = hands[fingerHand].motionRotation.ToMat3() * weapAxis;
 
-            idAngles motRot = hands[fingerHand].motionRotation.ToAngles();
-            motRot.yaw -= commonVr->bodyYawOffset;
-            motRot.Normalize180();
-            hands[fingerHand].motionRotation = motRot.ToQuat();
+		//weapon->CalculateHideRise( weapOrigin, weapAxis );
 
-            SetHandIKPos( fingerHand, weapOrigin, weapAxis, hands[fingerHand].motionRotation, false );
+		idAngles motRot = hands[fingerHand].motionRotation.ToAngles();
+		motRot.yaw -= commonVr->bodyYawOffset;
+		motRot.Normalize180();
+		hands[fingerHand].motionRotation = motRot.ToQuat();
 
-            // now switch hands and fall through again.,
-        }
-        // NOT the PDA
+		SetHandIKPos( fingerHand, weapOrigin, weapAxis, hands[fingerHand].motionRotation, false );
 
-        attacherToDefault = handWeaponAttacherToDefaultOffset[hand][currentWeaponIndex];
-        originOffset = weapon->weaponHandDefaultPos[hand];
+		// now switch hands and fall through again.,
+	}
+	// NOT the PDA
 
-        commonVr->MotionControlGetHand( hand, hands[ hand ].motionPosition, hands[ hand ].motionRotation );
+	attacherToDefault = handWeaponAttacherToDefaultOffset[hand][currentWeaponIndex];
+	originOffset = weapon->weaponHandDefaultPos[hand];
 
-        weaponPitch = idAngles( vr_motionWeaponPitchAdj.GetFloat(), 0.0f, 0.0f ).ToQuat();
-        hands[ hand ].motionRotation = weaponPitch * hands[ hand ].motionRotation;
+	commonVr->MotionControlGetHand( hand, hands[ hand ].motionPosition, hands[ hand ].motionRotation );
 
-        GetViewPos( weapOrigin, weapAxis );
+	weaponPitch = idAngles( vr_motionWeaponPitchAdj.GetFloat(), 0.0f, 0.0f ).ToQuat();
+	hands[ hand ].motionRotation = weaponPitch * hands[ hand ].motionRotation;
 
-        weapOrigin += commonVr->leanOffset;
+	GetViewPos( weapOrigin, weapAxis );
 
-        //commonVr->HMDGetOrientation( hmdAngles, headPositionDelta, bodyPositionDelta, absolutePosition, false );// gameLocal.inCinematic );
+	weapOrigin += commonVr->leanOffset;
 
-        hmdAngles = commonVr->poseHmdAngles;
-        headPositionDelta = commonVr->poseHmdHeadPositionDelta;
-        bodyPositionDelta = commonVr->poseHmdBodyPositionDelta;
-        absolutePosition = commonVr->poseHmdAbsolutePosition;
+	//commonVr->HMDGetOrientation( hmdAngles, headPositionDelta, bodyPositionDelta, absolutePosition, false );// gameLocal.inCinematic );
+
+	hmdAngles = commonVr->poseHmdAngles;
+	headPositionDelta = commonVr->poseHmdHeadPositionDelta;
+	bodyPositionDelta = commonVr->poseHmdBodyPositionDelta;
+	absolutePosition = commonVr->poseHmdAbsolutePosition;
 
 
-        weapAxis = idAngles( 0.0f, weapAxis.ToAngles().yaw - commonVr->bodyYawOffset, 0.0f ).ToMat3();
+	weapAxis = idAngles( 0.0f, weapAxis.ToAngles().yaw - commonVr->bodyYawOffset, 0.0f ).ToMat3();
 
-        weapOrigin += weapAxis[0] * headPositionDelta.x + weapAxis[1] * headPositionDelta.y + weapAxis[2] * headPositionDelta.z;
+	weapOrigin += weapAxis[0] * headPositionDelta.x + weapAxis[1] * headPositionDelta.y + weapAxis[2] * headPositionDelta.z;
 
-        weapOrigin += hands[ hand ].motionPosition * weapAxis;
+	weapOrigin += hands[ hand ].motionPosition * weapAxis;
 
-        if ( currentWeaponEnum != WEAPON_ARTIFACT && currentWeaponEnum != WEAPON_SOULCUBE )
-        {
-            weapAxis = hands[ hand ].motionRotation.ToMat3() * weapAxis;
-        }
-        else
-        {
-            weapAxis = idAngles( 0.0f ,viewAngles.yaw , 0.0f).ToMat3();
-        }
+	if ( currentWeaponEnum != WEAPON_ARTIFACT && currentWeaponEnum != WEAPON_SOULCUBE )
+	{
+		weapAxis = hands[ hand ].motionRotation.ToMat3() * weapAxis;
+	}
+	else
+	{
+		weapAxis = idAngles( 0.0f ,viewAngles.yaw , 0.0f).ToMat3();
+	}
 
-        //DebugCross( weapOrigin, weapAxis, colorYellow );
+	//DebugCross( weapOrigin, weapAxis, colorYellow );
 
-        if ( currentWeaponEnum != WEAPON_PDA )
-        {
-            hands[hand].TrackWeaponDirection( weapOrigin );
-            //GB why do both hands here
-            //hands[1 - hand].TrackWeaponDirection( weapOrigin );
-            weapon->CalculateHideRise( weapOrigin, weapAxis );
-            //check for melee hit?
-        }
-        else if( !hands[ hand ].PDAfixed )
-        {
-            // Koz FIXME hack hack hack this is getting so ungodly ugly.
-            // Lovely.  I forgot to correct the origin for the PDA model when I switched
-            // to always showing the body, so now when holding the PDA it doesn't align with your controller.
-            // will fix the assets later but for now hack this correction in.
+	if ( currentWeaponEnum != WEAPON_PDA )
+	{
+		hands[hand].TrackWeaponDirection( weapOrigin );
+		//GB why do both hands here
+		//hands[1 - hand].TrackWeaponDirection( weapOrigin );
+		weapon->CalculateHideRise( weapOrigin, weapAxis );
+		//check for melee hit?
+	}
+	else if( !hands[ hand ].PDAfixed )
+	{
+		// Koz FIXME hack hack hack this is getting so ungodly ugly.
+		// Lovely.  I forgot to correct the origin for the PDA model when I switched
+		// to always showing the body, so now when holding the PDA it doesn't align with your controller.
+		// will fix the assets later but for now hack this correction in.
 
-			/* GB Debugger Change Values
-			 * float _vr_pdaPosX = 0.0;
-			float _vr_pdaPosY = 0.0;
-			float _vr_pdaPosZ = 0.0;
-			if(_vr_pdaPosX != 0.0f && _vr_pdaPosX != vr_pdaPosX.GetFloat())
-				cvarSystem->SetCVarFloat("vr_pdaPosX", _vr_pdaPosX);
-			if(_vr_pdaPosY != 0.0f && _vr_pdaPosY != vr_pdaPosY.GetFloat())
-				cvarSystem->SetCVarFloat("vr_pdaPosY", _vr_pdaPosY);
-			if(_vr_pdaPosZ != 0.0f && _vr_pdaPosZ != vr_pdaPosZ.GetFloat())
-				cvarSystem->SetCVarFloat("vr_pdaPosZ", _vr_pdaPosZ);
-			*/
-			const idVec3 pdaHackOrigin[2] { idVec3( vr_pdaPosX.GetFloat(), vr_pdaPosY.GetFloat(), vr_pdaPosZ.GetFloat() ), idVec3( vr_pdaPosX.GetFloat(), -vr_pdaPosY.GetFloat(), vr_pdaPosZ.GetFloat() ) };
-            weapOrigin += pdaHackOrigin[hand] * weapAxis;
-        }
+		/* GB Debugger Change Values
+		 * float _vr_pdaPosX = 0.0;
+		float _vr_pdaPosY = 0.0;
+		float _vr_pdaPosZ = 0.0;
+		if(_vr_pdaPosX != 0.0f && _vr_pdaPosX != vr_pdaPosX.GetFloat())
+			cvarSystem->SetCVarFloat("vr_pdaPosX", _vr_pdaPosX);
+		if(_vr_pdaPosY != 0.0f && _vr_pdaPosY != vr_pdaPosY.GetFloat())
+			cvarSystem->SetCVarFloat("vr_pdaPosY", _vr_pdaPosY);
+		if(_vr_pdaPosZ != 0.0f && _vr_pdaPosZ != vr_pdaPosZ.GetFloat())
+			cvarSystem->SetCVarFloat("vr_pdaPosZ", _vr_pdaPosZ);
+		*/
+		const idVec3 pdaHackOrigin[2] { idVec3( vr_pdaPosX.GetFloat(), vr_pdaPosY.GetFloat(), vr_pdaPosZ.GetFloat() ), idVec3( vr_pdaPosX.GetFloat(), -vr_pdaPosY.GetFloat(), vr_pdaPosZ.GetFloat() ) };
+		weapOrigin += pdaHackOrigin[hand] * weapAxis;
+	}
 
-        idAngles motRot = hands[ hand ].motionRotation.ToAngles();
-        motRot.yaw -= commonVr->bodyYawOffset;
-        motRot.Normalize180();
-        hands[ hand ].motionRotation = motRot.ToQuat();
+	idAngles motRot = hands[ hand ].motionRotation.ToAngles();
+	motRot.yaw -= commonVr->bodyYawOffset;
+	motRot.Normalize180();
+	hands[ hand ].motionRotation = motRot.ToQuat();
 
-        SetHandIKPos( hand, weapOrigin, weapAxis, hands[ hand ].motionRotation, false );
+	SetHandIKPos( hand, weapOrigin, weapAxis, hands[ hand ].motionRotation, false );
 
-        if ( hands[ hand ].PDAfixed ) return;
+	if ( hands[ hand ].PDAfixed ) return;
 
-        if ( currentWeaponEnum == WEAPON_PDA )
-        {
+	if ( currentWeaponEnum == WEAPON_PDA )
+	{
 
-            PDAaxis = weapAxis;
-            PDAorigin = weapOrigin;
-            if ( hands[ hand ].wasPDA == false )
-            {
-                SetFlashHandPose(); // Call set flashlight hand pose script function
-                SetWeaponHandPose();
-                hands[ hand ].wasPDA = true;
-            }
-        }
-        else
-        {
-            hands[hand].wasPDA = false;
-        }
+		PDAaxis = weapAxis;
+		PDAorigin = weapOrigin;
+		if ( hands[ hand ].wasPDA == false )
+		{
+			SetFlashHandPose(); // Call set flashlight hand pose script function
+			SetWeaponHandPose();
+			hands[ hand ].wasPDA = true;
+		}
+	}
+	else
+	{
+		hands[hand].wasPDA = false;
+	}
 
-        axis = weapAxis;
-        origin = weapOrigin;
+	axis = weapAxis;
+	origin = weapOrigin;
 
-        origin -= originOffset * weapAxis;
-        origin += attacherToDefault  * weapAxis; // handWeaponAttacherToDefaultOffset[hand][currentWeaponIndex] * weapAxis; // add the attacher offsets
-    }
+	origin -= originOffset * weapAxis;
+	origin += attacherToDefault  * weapAxis; // handWeaponAttacherToDefaultOffset[hand][currentWeaponIndex] * weapAxis; // add the attacher offsets
+
 }
 
 bool idPlayer::CanDualWield( int num ) const

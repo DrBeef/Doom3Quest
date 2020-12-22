@@ -62,6 +62,9 @@ public :
 	idEntity *				GetOwner( void ) const;
 	void					CatchProjectile( idEntity* o, const char* reflectName );
     int						GetProjectileState();
+	void					Event_CreateProjectile( idEntity* owner, const idVec3& start, const idVec3& dir );
+	void					Event_LaunchProjectile( const idVec3& start, const idVec3& dir, const idVec3& pushVelocity );
+	void					Event_SetGravity( float gravity );
 
 	virtual void			Think( void );
 	virtual void			Killed( idEntity *inflictor, idEntity *attacker, int damage, const idVec3 &dir, int location );
@@ -136,6 +139,9 @@ protected:
 
 private:
 	bool					netSyncPhysics;
+
+	idVec3					launchOrigin;
+	idMat3					launchAxis;
 
 	void					AddDefaultDamageEffect( const trace_t &collision, const idVec3 &velocity );
 

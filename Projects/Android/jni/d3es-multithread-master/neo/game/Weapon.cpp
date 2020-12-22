@@ -2594,7 +2594,7 @@ void idWeapon::PresentWeapon( bool showViewModel, int hand ) {
         viewWeaponAxis = playerViewAxis;
         owner->CalculateViewFlashlightPos( viewWeaponOrigin, viewWeaponAxis, flashlightOffsets[owner->hands[vr_weaponHand.GetInteger()].currentWeapon] );
     }
-    else if ( isPlayerLeftHand ) // Koz left hand
+    else if ( isPlayerLeftHand || hand != vr_weaponHand.GetInteger()) // Koz left hand
     {
 
     }

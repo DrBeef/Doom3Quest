@@ -4117,6 +4117,8 @@ idProjectile *idAI::LaunchProjectile( const char *jointname, idEntity *target, b
 	int					num_projectiles;
 	int					i;
 	idMat3				axis;
+	idMat3				proj_axis;
+	bool				forceMuzzle;
 	idVec3				tmp;
 	idProjectile		*lastProjectile;
 
@@ -4129,6 +4131,7 @@ idProjectile *idAI::LaunchProjectile( const char *jointname, idEntity *target, b
 	attack_cone = spawnArgs.GetFloat( "attack_cone", "70" );
 	projectile_spread = spawnArgs.GetFloat( "projectile_spread", "0" );
 	num_projectiles = spawnArgs.GetInt( "num_projectiles", "1" );
+	forceMuzzle = spawnArgs.GetBool( "forceMuzzle", "0" );
 
 	GetMuzzle( jointname, muzzle, axis );
 
@@ -4151,27 +4154,38 @@ idProjectile *idAI::LaunchProjectile( const char *jointname, idEntity *target, b
 	axis[2] = axis[0];
 	axis[0] = -tmp;
 
-	// make sure the projectile starts inside the monster bounding box
-	const idBounds &ownerBounds = physicsObj.GetAbsBounds();
-	projClip = lastProjectile->GetPhysics()->GetClipModel();
-	projBounds = projClip->GetBounds().Rotate( axis );
+	proj_axis = axis;
 
-	// check if the owner bounds is bigger than the projectile bounds
-	if ( ( ( ownerBounds[1][0] - ownerBounds[0][0] ) > ( projBounds[1][0] - projBounds[0][0] ) ) &&
-		( ( ownerBounds[1][1] - ownerBounds[0][1] ) > ( projBounds[1][1] - projBounds[0][1] ) ) &&
-		( ( ownerBounds[1][2] - ownerBounds[0][2] ) > ( projBounds[1][2] - projBounds[0][2] ) ) ) {
-		if ( (ownerBounds - projBounds).RayIntersection( muzzle, viewAxis[ 0 ], distance ) ) {
-			start = muzzle + distance * viewAxis[ 0 ];
-		} else {
+	if( !forceMuzzle )  	// _D3XP
+	{
+		// make sure the projectile starts inside the monster bounding box
+		const idBounds& ownerBounds = physicsObj.GetAbsBounds();
+		projClip = lastProjectile->GetPhysics()->GetClipModel();
+		projBounds = projClip->GetBounds().Rotate( axis );
+
+		// check if the owner bounds is bigger than the projectile bounds
+		if( ( ( ownerBounds[1][0] - ownerBounds[0][0] ) > ( projBounds[1][0] - projBounds[0][0] ) ) &&
+			( ( ownerBounds[1][1] - ownerBounds[0][1] ) > ( projBounds[1][1] - projBounds[0][1] ) ) &&
+			( ( ownerBounds[1][2] - ownerBounds[0][2] ) > ( projBounds[1][2] - projBounds[0][2] ) ) )
+		{
+			if( ( ownerBounds - projBounds ).RayIntersection( muzzle, viewAxis[ 0 ], distance ) )
+			{
+				start = muzzle + distance * viewAxis[ 0 ];
+			}
+			else
+			{
+				start = ownerBounds.GetCenter();
+			}
+		}
+		else
+		{
+			// projectile bounds bigger than the owner bounds, so just start it from the center
 			start = ownerBounds.GetCenter();
 		}
-	} else {
-		// projectile bounds bigger than the owner bounds, so just start it from the center
-		start = ownerBounds.GetCenter();
-	}
 
-	gameLocal.clip.Translation( tr, start, muzzle, projClip, axis, MASK_SHOT_RENDERMODEL, this );
-	muzzle = tr.endpos;
+		gameLocal.clip.Translation( tr, start, muzzle, projClip, axis, MASK_SHOT_RENDERMODEL, this );
+		muzzle = tr.endpos;
+	}
 
 	// set aiming direction
 	GetAimDir( muzzle, target, this, dir );

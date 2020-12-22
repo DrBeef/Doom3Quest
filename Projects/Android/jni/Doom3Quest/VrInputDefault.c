@@ -131,8 +131,15 @@ void HandleInput_Default( int controlscheme, ovrInputStateTrackedRemote *pDomina
         const ovrVector3f positionRHand = pWeapon->HeadPose.Pose.Position;
         const ovrQuatf quatLHand = pOff->HeadPose.Pose.Orientation;
         const ovrVector3f positionLHand = pOff->HeadPose.Pose.Position;
+
+        VectorSet(pVRClientInfo->rhandposition, positionRHand.x, positionRHand.y, positionRHand.z);
+        Vector4Set(pVRClientInfo->rhand_orientation_quat, quatRHand.x, quatRHand.y, quatRHand.z, quatRHand.w);
+        VectorSet(pVRClientInfo->lhandposition, positionLHand.x, positionLHand.y, positionLHand.z);
+        Vector4Set(pVRClientInfo->lhand_orientation_quat, quatLHand.x, quatLHand.y, quatLHand.z, quatLHand.w);
+
         //Right Hand
-        if(pVRClientInfo->right_handed) {
+        //GB - FP Already does this so we end up with backward hands
+        /*if(pVRClientInfo->right_handed) {
             VectorSet(pVRClientInfo->rhandposition, positionRHand.x, positionRHand.y, positionRHand.z);
             Vector4Set(pVRClientInfo->rhand_orientation_quat, quatRHand.x, quatRHand.y, quatRHand.z, quatRHand.w);
             VectorSet(pVRClientInfo->lhandposition, positionLHand.x, positionLHand.y, positionLHand.z);
@@ -142,7 +149,7 @@ void HandleInput_Default( int controlscheme, ovrInputStateTrackedRemote *pDomina
             Vector4Set(pVRClientInfo->lhand_orientation_quat, quatRHand.x, quatRHand.y, quatRHand.z, quatRHand.w);
             VectorSet(pVRClientInfo->rhandposition, positionLHand.x, positionLHand.y, positionLHand.z);
             Vector4Set(pVRClientInfo->rhand_orientation_quat, quatLHand.x, quatLHand.y, quatLHand.z, quatLHand.w);
-        }
+        }*/
 
 
         //Set gun angles - We need to calculate all those we might need (including adjustments) for the client to then take its pick

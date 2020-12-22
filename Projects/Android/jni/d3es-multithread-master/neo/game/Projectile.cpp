@@ -56,12 +56,19 @@ const idEventDef EV_Fizzle( "<fizzle>", NULL );
 const idEventDef EV_RadiusDamage( "<radiusdmg>", "e" );
 const idEventDef EV_GetProjectileState( "getProjectileState", NULL, 'd' );
 
+const idEventDef EV_CreateProjectile( "projectileCreateProjectile", "evv" );
+const idEventDef EV_LaunchProjectile( "projectileLaunchProjectile", "vvv" );
+const idEventDef EV_SetGravity( "setGravity", "f" );
+
 CLASS_DECLARATION( idEntity, idProjectile )
 	EVENT( EV_Explode,				idProjectile::Event_Explode )
 	EVENT( EV_Fizzle,				idProjectile::Event_Fizzle )
 	EVENT( EV_Touch,				idProjectile::Event_Touch )
 	EVENT( EV_RadiusDamage,			idProjectile::Event_RadiusDamage )
 	EVENT( EV_GetProjectileState,	idProjectile::Event_GetProjectileState )
+	EVENT( EV_CreateProjectile,		idProjectile::Event_CreateProjectile )
+	EVENT( EV_LaunchProjectile,		idProjectile::Event_LaunchProjectile )
+	EVENT( EV_SetGravity,			idProjectile::Event_SetGravity )
 END_CLASS
 
 /*
@@ -69,7 +76,10 @@ END_CLASS
 idProjectile::idProjectile
 ================
 */
-idProjectile::idProjectile( void ) {
+idProjectile::idProjectile() :
+		launchOrigin( 0.0f ),
+		launchAxis( mat3_identity )
+{
 	owner				= NULL;
 	lightDefHandle		= -1;
 	thrust				= 0.0f;
@@ -282,6 +292,7 @@ idProjectile::Launch
 */
 void idProjectile::Launch( const idVec3& start, const idVec3& dir, const idVec3& pushVelocity, const float timeSinceFire, const float launchPower, const float dmgPower, const float motionThrowSpeed ) {
 	float			fuse;
+    float			startthrust;
 	float			endthrust;
 	idVec3			velocity;
 	idAngles		angular_velocity;
@@ -295,6 +306,7 @@ void idProjectile::Launch( const idVec3& start, const idVec3& dir, const idVec3&
 	idVec3			gravVec;
 	idVec3			tmp;
 	idMat3			axis;
+    int				thrust_start;
 	int				contents;
 	int				clipMask;
 
@@ -306,6 +318,7 @@ void idProjectile::Launch( const idVec3& start, const idVec3& dir, const idVec3&
 	}
 
 	thrust				= spawnArgs.GetFloat( "thrust" );
+    startthrust			= spawnArgs.GetFloat( "thrust_start" );
 	endthrust			= spawnArgs.GetFloat( "thrust_end" );
 
 	spawnArgs.GetVector( "velocity", "0 0 0", velocity );
@@ -338,6 +351,7 @@ void idProjectile::Launch( const idVec3& start, const idVec3& dir, const idVec3&
 	}
 
 	thrust *= mass;
+    thrust_start = SEC2MS( startthrust ) + gameLocal.time;
 	thrust_end = SEC2MS( endthrust ) + gameLocal.time;
 
 	lightStartTime = 0;
@@ -368,6 +382,13 @@ void idProjectile::Launch( const idVec3& start, const idVec3& dir, const idVec3&
 		clipMask |= CONTENTS_PROJECTILE;
 	}
 
+    if( !idStr::Cmp( this->GetEntityDefName(), "projectile_helltime_killer" ) )
+    {
+        contents = CONTENTS_MOVEABLECLIP;
+        clipMask = CONTENTS_MOVEABLECLIP;
+        fuse = 10.0f;
+    }
+
 	// don't do tracers on client, we don't know origin and direction
 	if ( spawnArgs.GetBool( "tracers" ) && gameLocal.random.RandomFloat() > 0.5f ) {
 		SetModel( spawnArgs.GetString( "model_tracer" ) );
@@ -387,6 +408,9 @@ void idProjectile::Launch( const idVec3& start, const idVec3& dir, const idVec3&
 	physicsObj.SetAngularVelocity( angular_velocity.ToAngularVelocity() * axis );
 	physicsObj.SetOrigin( start );
 	physicsObj.SetAxis( axis );
+
+    launchOrigin = start;
+    launchAxis = axis;
 
 	thruster.SetPosition( &physicsObj, 0, idVec3( GetPhysics()->GetBounds()[ 0 ].x, 0, 0 ) );
 
@@ -771,6 +795,40 @@ idProjectile::Event_RadiusDamage
 */
 void idProjectile::Event_GetProjectileState( void ) {
 	idThread::ReturnInt( state );
+}
+
+/*
+================
+idProjectile::Event_CreateProjectile
+================
+*/
+void idProjectile::Event_CreateProjectile( idEntity* owner, const idVec3& start, const idVec3& dir )
+{
+	Create( owner, start, dir );
+}
+
+/*
+================
+idProjectile::Event_LaunchProjectile
+================
+*/
+void idProjectile::Event_LaunchProjectile( const idVec3& start, const idVec3& dir, const idVec3& pushVelocity )
+{
+	Launch( start, dir, pushVelocity );
+}
+
+/*
+================
+idProjectile::Event_SetGravity
+================
+*/
+void idProjectile::Event_SetGravity( float gravity )
+{
+	idVec3 gravVec;
+
+	gravVec = gameLocal.GetGravity();
+	gravVec.NormalizeFast();
+	physicsObj.SetGravity( gravVec * gravity );
 }
 
 /*
