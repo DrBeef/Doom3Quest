@@ -164,7 +164,7 @@ public :
 
 	void					Spawn( void );
 	virtual void			Think( void );
-	virtual void			Launch( const idVec3 &start, const idVec3 &dir, const idVec3 &pushVelocity, const float timeSinceFire = 0.0f, const float launchPower = 1.0f, const float dmgPower = 1.0f );
+	virtual void			Launch( const idVec3& start, const idVec3& dir, const idVec3& pushVelocity, const float timeSinceFire = 0.0f, const float launchPower = 1.0f, const float dmgPower = 1.0f, const float motionThrowSpeed = 0.0f );
     void					SetEnemy( idEntity* ent );
     void					Event_SetEnemy( idEntity* ent );
 
@@ -195,7 +195,7 @@ public:
 
 	void					Spawn( void );
 	virtual void			Think( void );
-	virtual void			Launch( const idVec3 &start, const idVec3 &dir, const idVec3 &pushVelocity, const float timeSinceFire = 0.0f, const float power = 1.0f, const float dmgPower = 1.0f );
+	virtual void			Launch( const idVec3& start, const idVec3& dir, const idVec3& pushVelocity, const float timeSinceFire = 0.0f, const float launchPower = 1.0f, const float dmgPower = 1.0f, const float motionThrowSpeed = 0.0f );
 
 protected:
 	virtual void			GetSeekPos( idVec3 &out );
@@ -234,7 +234,7 @@ public :
 
 	void					Spawn( void );
 	virtual void			Think( void );
-	virtual void			Launch( const idVec3 &start, const idVec3 &dir, const idVec3 &pushVelocity, const float timeSinceFire = 0.0f, const float launchPower = 1.0f, const float dmgPower = 1.0f );
+	virtual void			Launch( const idVec3& start, const idVec3& dir, const idVec3& pushVelocity, const float timeSinceFire = 0.0f, const float launchPower = 1.0f, const float dmgPower = 1.0f, const float motionThrowSpeed = 0.0f );
 	virtual void			Explode( const trace_t &collision, idEntity *ignore );
 
 private:
