@@ -1414,10 +1414,11 @@ void idWeapon::UpdateVRGUI()
 
     if ( !player ) return;
 
-    if ( rvrStatGui == NULL )
-    {
-        return;
-    }
+	if (lvrStatGui == NULL)
+	{
+		common->Printf("Left Hand stat gui not found.\n");
+		return;
+	}
 
     if ( status == WP_HOLSTERED )
     {
@@ -1458,7 +1459,8 @@ void idWeapon::UpdateVRGUI()
 
     // update the right hand statwatch
 
-    if ( ammoamount[HAND_RIGHT] < 0 )
+
+    /*if ( ammoamount[HAND_RIGHT] < 0 )
     {
         // show infinite ammo
         rvrStatGui->SetStateString( "player_ammo", "" );
@@ -1489,7 +1491,7 @@ void idWeapon::UpdateVRGUI()
 	rvrStatGui->SetStateString( "grabber_state", va( "%i", grabberState ) );
 
     //health and armor
-
+	*/
     if ( player )
     {
         healthv = (float)player->health;
@@ -1511,21 +1513,13 @@ void idWeapon::UpdateVRGUI()
         armorb = idMath::ClampFloat( 0.0, 100.0, armorb );
 
     }
-
+	/*
     rvrStatGui->SetStateString( "player_health", va( "%f", healthv ) );
     //vrStatGui->SetStateString( "player_armor", va( "%i%%", armorv ) );
     rvrStatGui->SetStateString( "player_armor", va( "%f", armorv ) );
     rvrStatGui->SetStateString( "player_healthb", va( "%f", healthb ) );
     rvrStatGui->SetStateString( "player_armorb", va( "%f", armorb ) );
-
-
-    // update the left hand stat watch gui.
-
-    if (lvrStatGui == NULL)
-    {
-        common->Printf("Left Hand stat gui not found.\n");
-        return;
-    }
+	*/
 
     lvrStatGui->SetStateString("player_health", va("%f", healthv));
     //vrStatGui->SetStateString( "player_armor", va( "%i%%", armorv ) );
@@ -1533,7 +1527,7 @@ void idWeapon::UpdateVRGUI()
     lvrStatGui->SetStateString("player_healthb", va("%f", healthb));
     lvrStatGui->SetStateString("player_armorb", va("%f", armorb));
 
-    if (ammoamount[HAND_LEFT] < 0)
+    if (ammoamount[vr_weaponHand.GetInteger()] < 0)
     {
         // show infinite ammo
         lvrStatGui->SetStateString("player_ammo", "");
@@ -1541,14 +1535,14 @@ void idWeapon::UpdateVRGUI()
     else
     {
         // show remaining ammo
-        lvrStatGui->SetStateString("player_totalammo", va("%i", ammoamount[HAND_LEFT]));
-        lvrStatGui->SetStateString("player_ammo", clipsize[HAND_LEFT] ? va("%i", inclip[HAND_LEFT]) : "--");
-        lvrStatGui->SetStateString("player_clips", clipsize[HAND_LEFT] ? va("%i", ammoamount[HAND_LEFT] / clipsize[HAND_LEFT]) : "--");
-        lvrStatGui->SetStateString("player_allammo", va("%i/%i", inclip[HAND_LEFT], ammoamount[HAND_LEFT]));
+        lvrStatGui->SetStateString("player_totalammo", va("%i", ammoamount[vr_weaponHand.GetInteger()]));
+        lvrStatGui->SetStateString("player_ammo", clipsize[vr_weaponHand.GetInteger()] ? va("%i", inclip[vr_weaponHand.GetInteger()]) : "--");
+        lvrStatGui->SetStateString("player_clips", clipsize[vr_weaponHand.GetInteger()] ? va("%i", ammoamount[vr_weaponHand.GetInteger()] / clipsize[vr_weaponHand.GetInteger()]) : "--");
+        lvrStatGui->SetStateString("player_allammo", va("%i/%i", inclip[vr_weaponHand.GetInteger()], ammoamount[vr_weaponHand.GetInteger()]));
     }
-    lvrStatGui->SetStateBool("player_ammo_empty", (ammoEmpty[HAND_LEFT]));
-    lvrStatGui->SetStateBool("player_clip_empty", (clipEmpty[HAND_LEFT]));
-    lvrStatGui->SetStateBool("player_clip_low", (clipLow[HAND_LEFT]));
+    lvrStatGui->SetStateBool("player_ammo_empty", (ammoEmpty[vr_weaponHand.GetInteger()]));
+    lvrStatGui->SetStateBool("player_clip_empty", (clipEmpty[vr_weaponHand.GetInteger()]));
+    lvrStatGui->SetStateBool("player_clip_low", (clipLow[vr_weaponHand.GetInteger()]));
 
     // koz todo
 
@@ -1556,7 +1550,7 @@ void idWeapon::UpdateVRGUI()
     //Let the GUI know the total amount of ammo regardless of the ammo required value
     //rvrStatGui->SetStateString( "player_ammo_count", va( "%i", AmmoCount() ) );
 
-    lvrStatGui->SetStateString("player_ammo_count", va("%i", ammoamount[HAND_LEFT]));
+    lvrStatGui->SetStateString("player_ammo_count", va("%i", ammoamount[vr_weaponHand.GetInteger()]));
     // koz end
 
     // koz todo also need to figure this out for dual guis

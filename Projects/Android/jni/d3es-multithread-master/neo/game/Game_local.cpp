@@ -2702,7 +2702,8 @@ idGameLocal::RunFrame
 */
 void idGameLocal::EndFrame()
 {
-	CheckRenderCvars();
+	//Gb Is this causing weird movement (if so add back in height offset)
+    //CheckRenderCvars();
 }
 
 /*

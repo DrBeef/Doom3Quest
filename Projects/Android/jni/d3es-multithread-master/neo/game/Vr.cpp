@@ -28,10 +28,8 @@
 // *** Oculus HMD Variables
 idCVar vr_scale( "vr_scale", "1.0", CVAR_FLOAT | CVAR_ARCHIVE | CVAR_GAME, "World scale. Everything virtual is this times as big." );
 //In Menu - added virtual function - needs testing
-idCVar vr_useFloorHeight( "vr_useFloorHeight", "0", CVAR_INTEGER | CVAR_ARCHIVE | CVAR_GAME, "0 = Custom eye height. 1 = Marine Eye Height. 2 = Normal View Height. 3 = make floor line up by Doomguy crouching. 4 = make everything line up by scaling world to your height.", 0, 4 );
+idCVar vr_useFloorHeight( "vr_useFloorHeight", "1", CVAR_INTEGER | CVAR_ARCHIVE | CVAR_GAME, "0 = Custom eye height. 1 = Marine Eye Height. 2 = Normal View Height. 3 = make floor line up by Doomguy crouching. 4 = make everything line up by scaling world to your height.", 0, 4 );
 idCVar vr_normalViewHeight( "vr_normalViewHeight", "73", CVAR_FLOAT | CVAR_ARCHIVE | CVAR_GAME, "Height of player's view while standing, in real world inches." );
-
-
 
 //In Menu - don't think gun is working - investigate
 idCVar vr_flashlightMode( "vr_flashlightMode", "3", CVAR_INTEGER | CVAR_ARCHIVE | CVAR_GAME, "Flashlight mount.\n0 = Body\n1 = Head\n2 = Gun\n3= Hand ( if motion controls available.)" );
@@ -551,7 +549,7 @@ void iVr::HMDGetOrientation( idAngles &hmdAngles, idVec3 &headPositionDelta, idV
 
             trackingOriginOffset = lastHmdPosition;
             trackingOriginHeight = trackingOriginOffset.z;
-            if (vr_useFloorHeight.GetInteger() == 0)
+            /*if (vr_useFloorHeight.GetInteger() == 0)
                 trackingOriginOffset.z += pm_normalviewheight.GetFloat() + 5 + CM_CLIP_EPSILON - vr_normalViewHeight.GetFloat() / vr_scale.GetFloat();
             else if (vr_useFloorHeight.GetInteger() == 2)
                 trackingOriginOffset.z += 5;
@@ -565,7 +563,7 @@ void iVr::HMDGetOrientation( idAngles &hmdAngles, idVec3 &headPositionDelta, idV
                 trackingOriginHeight *= oldScale / newScale;
                 trackingOriginOffset *= oldScale / newScale;
                 vr_scale.SetFloat( newScale );
-            }
+            }*/
             common->Printf( "Resetting tracking yaw offset.\n Yaw = %f old offset = %f ", hmdAngles.yaw, trackingOriginYawOffset );
             trackingOriginYawOffset = hmdAngles.yaw;
             common->Printf( "New Tracking yaw offset %f\n", hmdAngles.yaw, trackingOriginYawOffset );
@@ -675,7 +673,7 @@ void iVr::HMDGetOrientation( idAngles &hmdAngles, idVec3 &headPositionDelta, idV
 
         trackingOriginOffset = lastHmdPosition;
         trackingOriginHeight = trackingOriginOffset.z;
-        if (vr_useFloorHeight.GetInteger() == 0)
+        /*if (vr_useFloorHeight.GetInteger() == 0)
             trackingOriginOffset.z += pm_normalviewheight.GetFloat() + 5 + CM_CLIP_EPSILON - vr_normalViewHeight.GetFloat() / vr_scale.GetFloat();
         else if (vr_useFloorHeight.GetInteger() == 2)
             trackingOriginOffset.z += 5;
@@ -689,7 +687,7 @@ void iVr::HMDGetOrientation( idAngles &hmdAngles, idVec3 &headPositionDelta, idV
             trackingOriginHeight *= oldScale / newScale;
             trackingOriginOffset *= oldScale / newScale;
             vr_scale.SetFloat(newScale);
-        }
+        }*/
         common->Printf("Resetting tracking yaw offset.\n Yaw = %f old offset = %f ", hmdAngles.yaw, trackingOriginYawOffset);
         trackingOriginYawOffset = hmdAngles.yaw;
         common->Printf( "New Tracking yaw offset %f\n", hmdAngles.yaw, trackingOriginYawOffset );

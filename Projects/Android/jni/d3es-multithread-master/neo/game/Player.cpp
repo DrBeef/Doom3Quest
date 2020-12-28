@@ -13899,7 +13899,7 @@ idVec3 idPlayer::GetEyePosition( void ) const {
 	} else {
 		org = GetPhysics()->GetOrigin();
 	}
-    return org + (GetPhysics()->GetGravityNormal() * -eyeOffset.z) + idVec3(0, 0, commonVr->headHeightDiff);
+    return org + (GetPhysics()->GetGravityNormal() * -eyeOffset.z) + idVec3(0, 0, commonVr->headHeightDiff + vr_heightoffset.GetFloat());
 
 	/*
 	if (pVRClientInfo)
