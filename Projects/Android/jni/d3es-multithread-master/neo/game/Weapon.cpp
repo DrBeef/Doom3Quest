@@ -2582,15 +2582,11 @@ void idWeapon::PresentWeapon( bool showViewModel, int hand ) {
     weapon_t currentWeapon = WEAPON_NONE;
     currentWeapon = IdentifyWeapon();
 
-    if ( isPlayerFlashlight )
+    if ( isPlayerFlashlight || hand != vr_weaponHand.GetInteger())
     {
         viewWeaponOrigin = playerViewOrigin;
         viewWeaponAxis = playerViewAxis;
         owner->CalculateViewFlashlightPos( viewWeaponOrigin, viewWeaponAxis, flashlightOffsets[owner->hands[vr_weaponHand.GetInteger()].currentWeapon] );
-    }
-    else if ( isPlayerLeftHand || hand != vr_weaponHand.GetInteger()) // Koz left hand
-    {
-
     }
     else
     {
@@ -4263,6 +4259,7 @@ void idWeapon::Event_Melee( void ) {
 		}
 
 		idThread::ReturnInt( hit );
+
 		owner->WeaponFireFeedback( GetHand(), &weaponDef->dict );
 		return;
 	}

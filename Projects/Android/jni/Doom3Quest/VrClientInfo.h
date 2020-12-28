@@ -22,7 +22,6 @@ typedef struct {
     bool dualwield;
     int weaponid;
     int lastweaponid;
-    int holsteritemactive; //0 - nothing, 1 - flashlight
 
     //FP - Carry original values
     vec4_t hmdorientation_quat;

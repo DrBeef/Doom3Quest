@@ -74,7 +74,6 @@ void HandleInput_Default( int controlscheme, ovrInputStateTrackedRemote *pDomina
 
     static bool dominantGripPushed = false;
 	static float dominantGripPushTime = 0.0f;
-    static bool canGrabFlashlight = false;
 
 
     //Need this for the touch screen
@@ -343,66 +342,19 @@ void HandleInput_Default( int controlscheme, ovrInputStateTrackedRemote *pDomina
                 }
             }*/
 
-            /*
-            if (pVRClientInfo->weaponid != -1 &&
-                    pVRClientInfo->weaponid != 11)
-            {
-                vec2_t v;
-                rotateAboutOrigin(pVRClientInfo->right_handed ? -0.2f : 0.2f, 0.0f,
-                                  -pVRClientInfo->hmdorientation[YAW], v);
-                pVRClientInfo->flashlightHolsterOffset[0] = -v[0];
-                pVRClientInfo->flashlightHolsterOffset[1] = -pVRClientInfo->hmdposition[1] * 0.45f; // almost half way down body "waist"
-                pVRClientInfo->flashlightHolsterOffset[2] = -v[1];
 
-                float distance = sqrtf(
-                        powf((pVRClientInfo->hmdposition[0] + pVRClientInfo->flashlightHolsterOffset[0]) - pWeapon->HeadPose.Pose.Position.x, 2) +
-                        powf((pVRClientInfo->hmdposition[1] + pVRClientInfo->flashlightHolsterOffset[1]) - pWeapon->HeadPose.Pose.Position.y, 2) +
-                        powf((pVRClientInfo->hmdposition[2] + pVRClientInfo->flashlightHolsterOffset[2]) - pWeapon->HeadPose.Pose.Position.z, 2));
-
-                if (distance > FLASHLIGHT_HOLSTER_DISTANCE) {
-                    canGrabFlashlight = false;
-                }
-                else if (!canGrabFlashlight && pVRClientInfo->holsteritemactive == 0) {
-                    int channel = (controlscheme >= 10) ? 0 : 1;
-                    Doom3Quest_Vibrate(40, channel, 0.4); // vibrate to let user know they can switch
-
-                    canGrabFlashlight = true;
-                }
-            }*/
 
             dominantGripPushed = (pDominantTrackedRemoteNew->Buttons &
                                   ovrButton_GripTrigger) != 0;
 
             if (dominantGripPushed) {
-                if (!canGrabFlashlight) {
-                    if (dominantGripPushTime == 0) {
-                        dominantGripPushTime = GetTimeInMilliSeconds();
-                    }
-                }
-                else
-                {
-                    if (pVRClientInfo->holsteritemactive == 0) {
-                        pVRClientInfo->lastweaponid = pVRClientInfo->weaponid;
-
-                        //Initiate flashlight from backpack mode
-                        Android_SetImpulse(UB_IMPULSE11);
-                        int channel = (controlscheme >= 10) ? 0 : 1;
-                        //Doom3Quest_Vibrate(80, channel, 0.8); // vibrate to let user know they switched
-
-                        pVRClientInfo->holsteritemactive = 1;
-                    }
+                if (dominantGripPushTime == 0) {
+                    dominantGripPushTime = GetTimeInMilliSeconds();
                 }
             }
             else
             {
-                if (pVRClientInfo->holsteritemactive == 1) {
-                    //Restores last used weapon if possible
-                    if (pVRClientInfo->weaponid != -1) {
-                        Android_SetImpulse(UB_IMPULSE0 + pVRClientInfo->weaponid);
-                    }
-                    pVRClientInfo->holsteritemactive = 0;
-                }
-                else if ((GetTimeInMilliSeconds() - dominantGripPushTime) < vr_reloadtimeoutms) {
+                if ((GetTimeInMilliSeconds() - dominantGripPushTime) < vr_reloadtimeoutms) {
                     //Reload
                     Android_SetImpulse(UB_IMPULSE13);
                 }
@@ -463,19 +415,14 @@ void HandleInput_Default( int controlscheme, ovrInputStateTrackedRemote *pDomina
              */
 
             //Jump (B Button)
-            if (pVRClientInfo->holsteritemactive != 2 && !canGrabFlashlight) {
-
-                if ((primaryButtonsNew & primaryButton2) != (primaryButtonsOld & primaryButton2))
-                {
-                    handleTrackedControllerButton_AsButton(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld, false, primaryButton2, UB_UP);
-                }
+            if ((primaryButtonsNew & primaryButton2) != (primaryButtonsOld & primaryButton2))
+            {
+                handleTrackedControllerButton_AsButton(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld, false, primaryButton2, UB_UP);
             }
 
 
             //Fire Primary
-            if (pVRClientInfo->holsteritemactive != 3 && // Can't fire while holding binoculars
-                !pVRClientInfo->velocitytriggered && // Don't fire velocity triggered weapons
-                (pDominantTrackedRemoteNew->Buttons & ovrButton_Trigger) !=
+            if ((pDominantTrackedRemoteNew->Buttons & ovrButton_Trigger) !=
                 (pDominantTrackedRemoteOld->Buttons & ovrButton_Trigger)) {
 
                 ALOGV("**WEAPON EVENT**  Not Grip Pushed %sattack", (pDominantTrackedRemoteNew->Buttons & ovrButton_Trigger) ? "+" : "-");
@@ -484,9 +431,7 @@ void HandleInput_Default( int controlscheme, ovrInputStateTrackedRemote *pDomina
             }
 
             //Duck
-            if (pVRClientInfo->holsteritemactive != 2 &&
-                !canGrabFlashlight &&
-                (primaryButtonsNew & primaryButton1) !=
+            if ((primaryButtonsNew & primaryButton1) !=
                 (primaryButtonsOld & primaryButton1)) {
 
                 handleTrackedControllerButton_AsToggleButton(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld, primaryButton1, UB_DOWN);
@@ -549,6 +494,7 @@ void HandleInput_Default( int controlscheme, ovrInputStateTrackedRemote *pDomina
                 (pOffTrackedRemoteOld->Buttons & ovrButton_Joystick)) &&
                     (pOffTrackedRemoteOld->Buttons & ovrButton_Joystick)) {
 
+                //forceVirtualScreen = !forceVirtualScreen;
                 pVRClientInfo->visible_hud = !pVRClientInfo->visible_hud;
                 //Turn on Flashlight
                 Android_SetImpulse(UB_IMPULSE16);
