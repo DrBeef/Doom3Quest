@@ -2582,8 +2582,7 @@ void idWeapon::PresentWeapon( bool showViewModel, int hand ) {
     weapon_t currentWeapon = WEAPON_NONE;
     currentWeapon = IdentifyWeapon();
 
-    //if ( isPlayerFlashlight || hand != vr_weaponHand.GetInteger())
-    if (isPlayerFlashlight)
+    if ( isPlayerFlashlight || (hand != vr_weaponHand.GetInteger() && owner->hands[hand].idealWeapon != owner->weapon_pda))
     {
         viewWeaponOrigin = playerViewOrigin;
         viewWeaponAxis = playerViewAxis;
