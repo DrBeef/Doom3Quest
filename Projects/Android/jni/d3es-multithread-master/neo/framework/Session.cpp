@@ -1229,6 +1229,21 @@ idStr idSessionLocal::GetAutoSaveName( const char *mapName ) const {
 
 /*
 ===============
+idSessionLocal::GetAutoSaveName
+===============
+*/
+idStr idSessionLocal::GetSaveMapName( const char *mapName ) const {
+	const idDecl *mapDecl = declManager->FindType( DECL_MAPDEF, mapName, false );
+	const idDeclEntityDef *mapDef = static_cast<const idDeclEntityDef *>( mapDecl );
+	if ( mapDef ) {
+		mapName = common->GetLanguageDict()->GetString( mapDef->dict.GetString( "name", mapName ) );
+	}
+	// Fixme: Localization
+	return mapName;
+}
+
+/*
+===============
 idSessionLocal::MoveToNewMap
 
 Leaves the existing userinfo and serverinfo
