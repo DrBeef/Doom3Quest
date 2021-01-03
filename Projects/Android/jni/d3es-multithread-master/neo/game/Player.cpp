@@ -8418,23 +8418,9 @@ bool idPlayer::UpdateFocusPDA()
 
 void idPlayer::SendPDAEvent( const sysEvent_t* sev )
 {
-	objectiveSystem->HandleEvent(sev, gameLocal.time );
-	//HandleGuiEvents( sev );
-	/*if ( common->Dialog().IsDialogActive() || game->Shell_IsActive() ) //commonVr->VR_GAME_PAUSED )
-    {
-        if ( common->Dialog().IsDialogActive() )
-        {
-            common->Dialog().HandleDialogEvent( sev );
-        }
-        else
-        {
-            game->Shell_HandleGuiEvent( sev );
-        }
-    }
-    else
-    {
-		HandleGuiEvents( sev );
-    }*/
+	const char *command = NULL;
+	command = objectiveSystem->HandleEvent(sev, gameLocal.time );
+	HandleGuiCommands( this, command );
 }
 
 /*
