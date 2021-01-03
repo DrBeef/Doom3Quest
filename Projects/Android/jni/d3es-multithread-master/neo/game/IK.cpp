@@ -260,7 +260,7 @@ bool idIK::SolveTwoArmBones( idVec3& startPos, idVec3& endPos, const idVec3& dir
 
 
 	// Koz - if using motion controls and displaying the body, and a controller is reporting a impossible position, restrain the arm length.
-	if ( vr_playerBodyMode.GetInteger() == 0 )
+	if (0 && vr_playerBodyMode.GetInteger() == 0 )
 	{
 		maxLen = (len0 + len1) * 1.40f;
 		if ( length > maxLen )
@@ -1340,230 +1340,264 @@ idIK_Reach::Evaluate
 void idIK_Reach::Evaluate()
 {
 
-	int i;
-	idVec3 modelOrigin, shoulderOrigin, elbowOrigin, handOrigin, shoulderDir, elbowDir, handDir;
-	idMat3 modelAxis, axis;
-	idMat3 shoulderAxis[MAX_ARMS], elbowAxis[MAX_ARMS];
-	idVec3 elbowPos[MAX_ARMS], handPos[MAX_ARMS], shoulderPos[MAX_ARMS]; // Koz
-	trace_t trace;
+    int i;
+    idVec3 modelOrigin, shoulderOrigin, elbowOrigin, handOrigin, shoulderDir, elbowDir, handDir;
+    idMat3 modelAxis, axis;
+    idMat3 shoulderAxis[MAX_ARMS], elbowAxis[MAX_ARMS];
+    idVec3 elbowPos[MAX_ARMS], handPos[MAX_ARMS], shoulderPos[MAX_ARMS]; // Koz
+    trace_t trace;
 
 
-	modelOrigin = self->GetRenderEntity()->origin;
-	modelAxis = self->GetRenderEntity()->axis;
+    modelOrigin = self->GetRenderEntity()->origin;
+    modelAxis = self->GetRenderEntity()->axis;
 
 
-	idMat3 wristMod[2] = { mat3_identity, mat3_identity };
-	// solve IK
-	for ( i = 0; i < numArms; i++ )
-	{
-		// get the position of the shoulder in world space
-		animator->GetJointTransform( shoulderJoints[i], gameLocal.time, shoulderOrigin, axis );
-		shoulderOrigin = modelOrigin + shoulderOrigin * modelAxis;
-		shoulderDir = shoulderForward[i] * axis * modelAxis;
+    idMat3 wristMod[2] = { mat3_identity, mat3_identity };
+    // solve IK
+    for ( i = 0; i < numArms; i++ )
+    {
+        // get the position of the shoulder in world space
+        animator->GetJointTransform( shoulderJoints[i], gameLocal.time, shoulderOrigin, axis );
+        shoulderOrigin = modelOrigin + shoulderOrigin * modelAxis;
+        shoulderDir = shoulderForward[i] * axis * modelAxis;
 
-		// get the position of the hand in world space
-		animator->GetJointTransform( handJoints[i], gameLocal.time, handOrigin, axis );
-		handOrigin = modelOrigin + handOrigin * modelAxis;
-		idVec3 localHandDir;
-		if( i == 1 )
-			localHandDir = shoulderForward[1] * axis;
-		else
-			localHandDir = idVec3( 1.0f, 1.0f, -0.4f ) * axis; // Carl HACK! Todo! Why is it like this???
-//			localHandDir = idVec3( rhx.GetFloat(), rhy.GetFloat(), rhz.GetFloat() ) * axis;
-		localHandDir.Normalize();
-		handDir = localHandDir * modelAxis;
-
-		shoulderPos[i] = shoulderOrigin - modelOrigin;
-		shoulderPos[i] = shoulderPos[i] * modelAxis.Transpose();
-		handPos[i] = handOrigin - modelOrigin;
-		handPos[i] = handPos[i] * modelAxis.Transpose();
-
-		// if the hand is pointing across the body, the elbow can bend that way, otherwise it can't.
-		// (x = forward, y = left, z = up)
-		bool elbowCanMatchHand = ( i == 1 ) ? localHandDir.y < 0 : localHandDir.y > 0 ;
-		// We also need to match our hand if our hand is reaching over our shoulder
-		elbowCanMatchHand = elbowCanMatchHand || ( handPos[i].z >= shoulderPos[i].z && localHandDir.x < -0.4f );
-
-		// get the IK bend direction
-		animator->GetJointTransform( elbowJoints[i], gameLocal.time, elbowOrigin, axis );
-		elbowDir = elbowForward[i] * axis * modelAxis;
-
-		if( elbowCanMatchHand )
-		{
-			// Use 80% hand dir, 20% original elbow dir
-			elbowDir.SLerp( elbowDir, -handDir, 0.8f );
-		}
-
-		// solve IK and calculate elbow position
-		SolveTwoArmBones( shoulderOrigin, handOrigin, elbowDir, upperArmLength[i] , lowerArmLength[i] , elbowOrigin );
-
-		elbowPos[i] = elbowOrigin - modelOrigin; // Koz actually move the elbow joint
-		elbowPos[i] = elbowPos[i] * modelAxis.Transpose();
-
-		// uncomment these if SolveTwoArmBones changes shoulderOrigin or handOrigin
-		// handPos[i] = handOrigin - modelOrigin;
-		// handPos[i] = handPos[i] * modelAxis.Transpose();
-
-		// shoulderPos[i] = shoulderOrigin - modelOrigin;
-		// shoulderPos[i] = shoulderPos[i] * modelAxis.Transpose();
-
-		// get the axis for the shoulder joint
-		GetBoneAxis( shoulderOrigin, elbowOrigin, shoulderDir, axis );
-
-		if(i == 0) // RIGHT HAND
-		{
-			//common->Printf("IK Right Hand Dir %.2f, %.2f, %.2f \n", localHandDir.x, localHandDir.y, localHandDir.z);
-			//common->Printf("IK Right Hand %.2f, %.2f, %.2f \n", handPos[i].x, handPos[i].y, handPos[i].z);
-			//common->Printf("IK Right Elbow %.2f, %.2f, %.2f \n", elbowPos[i].x, elbowPos[i].y, elbowPos[i].z);
-			common->Printf("IK Right Shoulder %.2f, %.2f, %.2f \n", shoulderPos[i].x, shoulderPos[i].y, shoulderPos[i].z);
-		}
-		if( ik_debug.GetBool() )
-		{
-			if( elbowCanMatchHand )
-				gameRenderWorld->DebugArrow( colorMagenta, handOrigin, handOrigin + handDir * 8.0f, 1 );
-			else
-				gameRenderWorld->DebugArrow( colorRed, handOrigin, handOrigin + handDir * 8.0f, 1 );
-			gameRenderWorld->DrawText( va( "%.2f, %.2f, %.2f", localHandDir.x, localHandDir.y, localHandDir.z ), handOrigin + handDir * 11.0f, 0.06f, colorWhite, modelAxis );
-			gameRenderWorld->DrawText( va( "%.2f, %.2f, %.2f", handPos[i].x, handPos[i].y, handPos[i].z ), handOrigin + handDir * 9.0f, 0.04f, colorWhite, modelAxis );
-			gameRenderWorld->DrawText( va( "%.2f, %.2f, %.2f", shoulderPos[i].x, shoulderPos[i].y, shoulderPos[i].z ), shoulderOrigin + handDir * 11.0f, 0.04f, colorWhite, modelAxis );
-			gameRenderWorld->DebugLine( colorCyan, shoulderOrigin, elbowOrigin );
-			gameRenderWorld->DebugLine( colorRed, elbowOrigin, handOrigin );
-			gameRenderWorld->DebugArrow( colorYellow, elbowOrigin, elbowOrigin + elbowDir * 8.0f, 1 );
-			gameRenderWorld->DebugLine( colorGreen, elbowOrigin, elbowOrigin + shoulderDir * 2.0f );
-
-		}
-
-		// roll the shoulder a bit
-		static idMat3 roll;
-		static idMat3 trsp;
-
-		if ( i == 0 )
-		{
-			roll = idAngles( 0.0f, 0.0f, (-commonVr->handRoll[i] * .1 ) - 50 ).ToMat3();
-		}
-		else
-		{
-			roll = idAngles( 0.0f, 0.0f, (-commonVr->handRoll[i] * .1) + 50 ).ToMat3();
-		}
-
-		trsp = roll * axis;
-		shoulderAxis[i] = upperArmToShoulderJoint[i] * (trsp * modelAxis.Transpose());
-
-		// get the axis for the elbow joint
-		GetBoneAxis( elbowOrigin, handOrigin, elbowDir, axis, false );
-		elbowAxis[i] = lowerArmToElbowJoint[i] * ( axis * modelAxis.Transpose() );
-
-		/*
-		gameRenderWorld->DebugLine(colorPurple, handOrigin, handOrigin + 3 * (elbowAxis[i] * modelAxis)[0], 20);
-		gameRenderWorld->DebugLine(colorBrown, handOrigin, handOrigin - 3 * (elbowAxis[i] * modelAxis)[0], 20);
-		gameRenderWorld->DebugLine(colorWhite, handOrigin, handOrigin + 3 * (elbowAxis[i] * modelAxis)[1], 20);
-		gameRenderWorld->DebugLine(colorPink, handOrigin, handOrigin - 3 * (elbowAxis[i] * modelAxis)[1], 20);
-		gameRenderWorld->DebugLine(colorOrange, handOrigin, handOrigin + 3 * (elbowAxis[i] * modelAxis)[2], 20);
-		gameRenderWorld->DebugLine(colorCyan, handOrigin, handOrigin - 3 * (elbowAxis[i] * modelAxis)[2], 20);
-		*/
-
-		// vars to check if elbow axis needs to be flipped.
-		idMat3 diff = mat3_identity;
-		idVec3 shoulderToHand;
-		idVec3 shoulderToGround;
-		const idVec3 gravityDir = idVec3(0, 0, -1);
-		//const idMat3 rollf[2] = { idAngles(180.0f, 1.0f, 4.0f).ToMat3(), idAngles(180.0f, 0.0f, -7.0f).ToMat3() };
-		const idMat3 rollf[2] = { idAngles( 180.0f, 1.0f, 4.0f ).ToMat3(), idAngles( 180.0f, 1.0f, 4.0f ).ToMat3() };
-		float crossDiff;
-		idVec3 shoulderPos;
-		idVec3 shoulderHandGroundCross;
-
-
-		// calc roll for wrist joint based on motion controller orientation
-		// this is really a bunch of hacked crap, but it looks a little better than before
-		idQuat handQ;
-		idMat3 handOr;
-		idVec3 handP;
-		idVec3 gr;
-		idVec3 ma;
-		idVec3 n;
-		idVec3 v;
-		idVec3 np;
-		idVec3 br;
-		float dist;
-		float dot;
-		float angle1;
-		float angle2;
-
-		animator->GetJointTransform(shoulderJoints[i], gameLocal.time, shoulderPos, diff);
-
-		shoulderToHand = handPos[i] - shoulderPos;
-		shoulderToGround = shoulderPos - (shoulderPos + (gravityDir * 20));
-		shoulderToHand.Normalize();
-		shoulderToGround.Normalize();
-		shoulderHandGroundCross = shoulderToHand.Cross(shoulderToGround);
-		crossDiff = shoulderHandGroundCross * elbowAxis[i][2];
-
-		wristMod[i] = idAngles(0.0f, 0.0f, 0.0f).ToMat3();
-
-		//Right hand if (crossDiff < 0 ) //elbow joint has flipped so correct it
-		if ( crossDiff > 0 ) // elbow joint has flipped so correct it
-		{
-			elbowAxis[i] = rollf[i] * elbowAxis[i];
-		}
-		commonVr->MotionControlGetHand( i, handP, handQ ); // get the rotation of the hand controller
-
-		handOr = handQ.ToMat3() * idAngles( 0.0f, -commonVr->bodyYawOffset, 0.0f ).ToMat3();
-
-		gr = handOr[2]; // axis of the hand controller used for 'roll'
-		ma = -elbowAxis[i][2]; //axis of elbow joint ( forearm ) used to calculate roll difference from gr.
-
-		//project new point np from point 'v' onto the plane defined by handOr[2] and normal elbowAxis[i][1]
-		n = elbowAxis[i][1];
-		v = gr;
-		dist = v * n;
-		np = v - dist * n;
-		np.Normalize();
-
-		// this is the angle of roll.
-		dot = np * ma;
-		angle1 = RAD2DEG(acosf(dot));
-
-		//check to see if angle should be positive or neg, by checking if angle is >90 deg from axis orthogonal to -elbowAxis[i][2]
-		br = elbowAxis[i][0];
-		//Right Hand: br = -elbowAxis[i][0];
-		dot = np * br;
-		angle2 = RAD2DEG(acosf(dot));
-		if (angle2 > 90) angle1 = -angle1;
-
-		// fix the roll a little to better align with the elbow joint.
-		//Right Hand: angle1 = angle1 - 20.0f;
-		angle1 = angle1 - 30.0f;
-		angle1 = idMath::ClampFloat( -66.0f, 66.0f, angle1 );
-
-		angle2 = angle1 * 0.3f; // roll the elbow 1/3 of the total roll.
-		angle1 -= angle2;
-
-        if(i == 0)
-            wristMod[i] = idAngles(-angle1, 0.0f, 0.0f).ToMat3();
+        // get the position of the hand in world space
+        animator->GetJointTransform( handJoints[i], gameLocal.time, handOrigin, axis );
+        handOrigin = modelOrigin + handOrigin * modelAxis;
+        idVec3 localHandDir;
+        //GB Fix IK
+        localHandDir = shoulderForward[i] * axis;
+        /*if( i == 1 )
+            localHandDir = shoulderForward[1] * axis;
         else
+            localHandDir = idVec3( 1.0f, 1.0f, -0.4f ) * axis; // Carl HACK! Todo! Why is it like this???
+//			localHandDir = idVec3( rhx.GetFloat(), rhy.GetFloat(), rhz.GetFloat() ) * axis;*/
+        localHandDir.Normalize();
+        handDir = localHandDir * modelAxis;
+
+        shoulderPos[i] = shoulderOrigin - modelOrigin;
+        shoulderPos[i] = shoulderPos[i] * modelAxis.Transpose();
+        handPos[i] = handOrigin - modelOrigin;
+        handPos[i] = handPos[i] * modelAxis.Transpose();
+
+        // if the hand is pointing across the body, the elbow can bend that way, otherwise it can't.
+        // (x = forward, y = left, z = up)
+        bool elbowCanMatchHand = ( i == 1 ) ? localHandDir.y < 0 : localHandDir.y > 0 ;
+        // We also need to match our hand if our hand is reaching over our shoulder
+        elbowCanMatchHand = elbowCanMatchHand || ( handPos[i].z >= shoulderPos[i].z && localHandDir.x < -0.4f );
+
+        // get the IK bend direction
+        animator->GetJointTransform( elbowJoints[i], gameLocal.time, elbowOrigin, axis );
+        elbowDir = elbowForward[i] * axis * modelAxis;
+
+        if( elbowCanMatchHand )
+        {
+            // Use 80% hand dir, 20% original elbow dir
+            elbowDir.SLerp( elbowDir, -handDir, 0.8f );
+        }
+
+        // solve IK and calculate elbow position
+        SolveTwoArmBones( shoulderOrigin, handOrigin, elbowDir, upperArmLength[i] , lowerArmLength[i] , elbowOrigin );
+
+        elbowPos[i] = elbowOrigin - modelOrigin; // Koz actually move the elbow joint
+        elbowPos[i] = elbowPos[i] * modelAxis.Transpose();
+
+        // uncomment these if SolveTwoArmBones changes shoulderOrigin or handOrigin
+        // handPos[i] = handOrigin - modelOrigin;
+        // handPos[i] = handPos[i] * modelAxis.Transpose();
+
+        // shoulderPos[i] = shoulderOrigin - modelOrigin;
+        // shoulderPos[i] = shoulderPos[i] * modelAxis.Transpose();
+
+        // get the axis for the shoulder joint
+        GetBoneAxis( shoulderOrigin, elbowOrigin, shoulderDir, axis );
+
+        if( ik_debug.GetBool() )
+        {
+            if( elbowCanMatchHand )
+                gameRenderWorld->DebugArrow( colorMagenta, handOrigin, handOrigin + handDir * 8.0f, 1 );
+            else
+                gameRenderWorld->DebugArrow( colorRed, handOrigin, handOrigin + handDir * 8.0f, 1 );
+            gameRenderWorld->DrawText( va( "%.2f, %.2f, %.2f", localHandDir.x, localHandDir.y, localHandDir.z ), handOrigin + handDir * 11.0f, 0.06f, colorWhite, modelAxis );
+            gameRenderWorld->DrawText( va( "%.2f, %.2f, %.2f", handPos[i].x, handPos[i].y, handPos[i].z ), handOrigin + handDir * 9.0f, 0.04f, colorWhite, modelAxis );
+            gameRenderWorld->DrawText( va( "%.2f, %.2f, %.2f", shoulderPos[i].x, shoulderPos[i].y, shoulderPos[i].z ), shoulderOrigin + handDir * 11.0f, 0.04f, colorWhite, modelAxis );
+            gameRenderWorld->DebugLine( colorCyan, shoulderOrigin, elbowOrigin );
+            gameRenderWorld->DebugLine( colorRed, elbowOrigin, handOrigin );
+            gameRenderWorld->DebugArrow( colorYellow, elbowOrigin, elbowOrigin + elbowDir * 8.0f, 1 );
+            gameRenderWorld->DebugLine( colorGreen, elbowOrigin, elbowOrigin + shoulderDir * 2.0f );
+
+        }
+
+        // roll the shoulder a bit
+        static idMat3 roll;
+        static idMat3 trsp;
+
+
+        if ( i == 0 )
+        {
+            roll = idAngles( 0.0f, 0.0f, (-commonVr->handRoll[i] * .1 ) - 50 ).ToMat3();
+        }
+        else
+        {
+            roll = idAngles( 0.0f, 0.0f, (-commonVr->handRoll[i] * .1) + 50 ).ToMat3();
+        }
+
+        trsp = roll * axis;
+        shoulderAxis[i] = upperArmToShoulderJoint[i] * (trsp * modelAxis.Transpose());
+
+        // get the axis for the elbow joint
+        GetBoneAxis( elbowOrigin, handOrigin, elbowDir, axis, false );
+        elbowAxis[i] = lowerArmToElbowJoint[i] * ( axis * modelAxis.Transpose() );
+
+        /*
+        gameRenderWorld->DebugLine(colorPurple, handOrigin, handOrigin + 3 * (elbowAxis[i] * modelAxis)[0], 20);
+        gameRenderWorld->DebugLine(colorBrown, handOrigin, handOrigin - 3 * (elbowAxis[i] * modelAxis)[0], 20);
+        gameRenderWorld->DebugLine(colorWhite, handOrigin, handOrigin + 3 * (elbowAxis[i] * modelAxis)[1], 20);
+        gameRenderWorld->DebugLine(colorPink, handOrigin, handOrigin - 3 * (elbowAxis[i] * modelAxis)[1], 20);
+        gameRenderWorld->DebugLine(colorOrange, handOrigin, handOrigin + 3 * (elbowAxis[i] * modelAxis)[2], 20);
+        gameRenderWorld->DebugLine(colorCyan, handOrigin, handOrigin - 3 * (elbowAxis[i] * modelAxis)[2], 20);
+        */
+
+        // vars to check if elbow axis needs to be flipped.
+        idMat3 diff = mat3_identity;
+        idVec3 shoulderToHand;
+        idVec3 shoulderToGround;
+        const idVec3 gravityDir = idVec3(0, 0, -1);
+        //const idMat3 rollf[2] = { idAngles(180.0f, 1.0f, 4.0f).ToMat3(), idAngles(180.0f, 0.0f, -7.0f).ToMat3() };
+        const idMat3 rollf[2] = { idAngles( 180.0f, 1.0f, 4.0f ).ToMat3(), idAngles( 180.0f, 1.0f, 4.0f ).ToMat3() };
+        float crossDiff;
+        idVec3 shoulderPos;
+        idVec3 shoulderHandGroundCross;
+
+
+        // calc roll for wrist joint based on motion controller orientation
+        // this is really a bunch of hacked crap, but it looks a little better than before
+        idQuat handQ;
+        idMat3 handOr;
+        idVec3 handP;
+        idVec3 gr;
+        idVec3 ma;
+        idVec3 n;
+        idVec3 v;
+        idVec3 np;
+        idVec3 br;
+        float dist;
+        float dot;
+        float angle1;
+        float angle2;
+
+        animator->GetJointTransform(shoulderJoints[i], gameLocal.time, shoulderPos, diff);
+
+        shoulderToHand = handPos[i] - shoulderPos;
+        shoulderToGround = shoulderPos - (shoulderPos + (gravityDir * 20));
+        shoulderToHand.Normalize();
+        shoulderToGround.Normalize();
+        shoulderHandGroundCross = shoulderToHand.Cross(shoulderToGround);
+        crossDiff = shoulderHandGroundCross * elbowAxis[i][2];
+
+        wristMod[i] = idAngles(0.0f, 0.0f, 0.0f).ToMat3();
+
+        if (i == 1) // this is the left hand
+        {
+            if ( crossDiff > 0 ) // elbow joint has flipped so correct it
+            {
+                elbowAxis[i] = rollf[i] * elbowAxis[i];
+            }
+
+            commonVr->MotionControlGetHand( i, handP, handQ ); // get the rotation of the hand controller
+
+            handOr = handQ.ToMat3() * idAngles( 0.0f, -commonVr->bodyYawOffset, 0.0f ).ToMat3();
+
+            gr = handOr[2]; // axis of the hand controller used for 'roll'
+            ma = -elbowAxis[i][2]; //axis of elbow joint ( forearm ) used to calculate roll difference from gr.
+
+            //project new point np from point 'v' onto the plane defined by handOr[2] and normal elbowAxis[i][1]
+            n = elbowAxis[i][1];
+            v = gr;
+            dist = v * n;
+            np = v - dist * n;
+            np.Normalize();
+
+            // this is the angle of roll.
+            dot = np * ma;
+            angle1 = RAD2DEG(acosf(dot));
+
+            //check to see if angle should be positive or neg, by checking if angle is >90 deg from axis orthogonal to -elbowAxis[i][2]
+            br = elbowAxis[i][0];
+            dot = np * br;
+            angle2 = RAD2DEG(acosf(dot));
+            if (angle2 > 90) angle1 = -angle1;
+
+            // fix the roll a little to better align with the elbow joint.
+
+            angle1 = angle1 - 30.0f;
+            angle1 = idMath::ClampFloat( -66.0f, 66.0f, angle1 );
+
+            angle2 = angle1 * 0.3f; // roll the elbow 1/3 of the total roll.
+            angle1 -= angle2;
+
             wristMod[i] = idAngles(angle1, 0.0f, 0.0f).ToMat3();
-		//Right Hand:
 
-		// roll the elbow a little;
-		if(i == 0)
-		    trsp = idAngles( angle2, 0.0f, 0.0f).ToMat3();
-        else
-            trsp = idAngles( -angle2, 0.0f, 0.0f).ToMat3();
-		elbowAxis[i] = trsp * elbowAxis[i];
-	}
-	//common->Printf("IK Right Elbow (2) %.2f, %.2f, %.2f \n\n", elbowPos[i].x, elbowPos[i].y, elbowPos[i].z);
-	//common->Printf("IK Right Shoulder (2) %.2f, %.2f, %.2f \n\n\n", shoulderAxis[i], shoulderAxis[i].y, shoulderAxis[i].z);
-	for ( i = 0; i < numArms; i++ )
-	{
-		animator->SetJointAxis( elbowJoints[i], JOINTMOD_WORLD_OVERRIDE, elbowAxis[i] );
-		animator->SetJointAxis( shoulderJoints[i], JOINTMOD_WORLD_OVERRIDE, shoulderAxis[i] );
-		animator->SetJointPos( elbowJoints[i], JOINTMOD_WORLD_OVERRIDE, elbowPos[i] );// Koz
-		animator->SetJointPos( handJoints[i], JOINTMOD_WORLD_OVERRIDE, handPos[i] );// Koz
-		animator->SetJointAxis(wristJoints[i], JOINTMOD_LOCAL, wristMod[i]);
-	}
+            // roll the elbow a little;
+            idMat3 trsp = idAngles( -angle2, 0.0f, 0.0f).ToMat3();
+            elbowAxis[i] = trsp * elbowAxis[i];
+        }
+        else // i == 0 - this is the right hand.
+        {
+            if (crossDiff < 0 ) //elbow joint has flipped so correct it
+            {
+                elbowAxis[i] = rollf[i] * elbowAxis[i];
+            }
 
-	ik_activate = true;
+            commonVr->MotionControlGetHand( i, handP, handQ ); // get the rotation of the hand controller
+
+            handOr = handQ.ToMat3() * idAngles( 0.0f, -commonVr->bodyYawOffset, 0.0f ).ToMat3();;
+
+            gr = handOr[2]; // axis of the hand controller used for 'roll'
+            ma = -elbowAxis[i][2]; //axis of elbow joint ( forearm ) used to calculate roll difference from gr.
+
+            //project new point np from point 'v' onto the plane defined by handOr[2] and normal elbowAxis[i][1]
+            n = elbowAxis[i][1];
+            v = gr;
+            dist = v * n;
+            np = v - dist * n;
+            np.Normalize();
+
+            // this is the angle of roll.
+            dot = np * ma;
+            angle1 = RAD2DEG(acosf(dot));
+
+            //check to see if angle should be positive or neg, by checking if angle is >90 deg from axis orthogonal to -elbowAxis[i][2]
+            br = -elbowAxis[i][0];
+            dot = np * br;
+            angle2 = RAD2DEG(acosf(dot));
+            if ( angle2 > 90 ) angle1 = -angle1;
+
+            // fix the roll a little to better align with the elbow joint.
+            angle1 = angle1 - 20.0f;
+            angle1 = idMath::ClampFloat( -66.0f, 66.0f, angle1 );
+
+            angle2 = angle1 * 0.3f;  //roll the elbow 1/3 of the total roll.
+            angle1 -= angle2;
+
+            wristMod[i] = idAngles(-angle1, 0.0f, 0.0f).ToMat3();
+
+            // roll the elbow a little;
+            idMat3 trsp = idAngles( angle2, 0.0f, 0.0f).ToMat3();
+            elbowAxis[i] = trsp * elbowAxis[i];
+        }
+    }
+
+    for ( i = 0; i < numArms; i++ )
+    {
+        animator->SetJointAxis( elbowJoints[i], JOINTMOD_WORLD_OVERRIDE, elbowAxis[i] );
+        animator->SetJointAxis( shoulderJoints[i], JOINTMOD_WORLD_OVERRIDE, shoulderAxis[i] );
+        animator->SetJointPos( elbowJoints[i], JOINTMOD_WORLD_OVERRIDE, elbowPos[i] );// Koz
+        animator->SetJointPos( handJoints[i], JOINTMOD_WORLD_OVERRIDE, handPos[i] );// Koz
+        animator->SetJointAxis(wristJoints[i], JOINTMOD_LOCAL, wristMod[i]);
+    }
+
+    ik_activate = true;
 }
 
 /*
