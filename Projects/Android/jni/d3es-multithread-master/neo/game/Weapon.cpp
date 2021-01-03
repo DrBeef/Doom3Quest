@@ -2595,9 +2595,16 @@ void idWeapon::PresentWeapon( bool showViewModel, int hand ) {
         // Koz hide weapon and muzzlerise was here, now called as weapon::CalculateHideRise in player->CalculateViewWeaponPosition to allow hand animations
     }
 
+	//HACKADOODLE-DOOO!
+	idMat3 axis = viewWeaponAxis;
+	if (currentWeapon == WEAPON_CHAINSAW)
+	{
+		axis = idAngles(45, 0, 0).ToMat3() * viewWeaponAxis;
+	}
+
     // set the physics position and orientation
     GetPhysics()->SetOrigin( viewWeaponOrigin );
-    GetPhysics()->SetAxis( viewWeaponAxis );
+    GetPhysics()->SetAxis( axis );
 
     UpdateVisuals();
 

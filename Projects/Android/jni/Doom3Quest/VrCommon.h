@@ -23,7 +23,7 @@ extern "C" {
 #if DEBUG
 #define ALOGV(...) __android_log_print( ANDROID_LOG_VERBOSE, LOG_TAG, __VA_ARGS__ )
 #else
-#define ALOGV(...)
+#define ALOGV(...) __android_log_print( ANDROID_LOG_VERBOSE, LOG_TAG, __VA_ARGS__ )
 #endif
 
 float screenYaw;
@@ -76,7 +76,7 @@ void Doom3Quest_Vibrate(int channel, float low, float high);
 
 bool Doom3Quest_processMessageQueue();
 
-void Doom3Quest_FrameSetup();
+void Doom3Quest_FrameSetup(int controlscheme, int refresh);
 
 void Doom3Quest_setUseScreenLayer(int screen);
 

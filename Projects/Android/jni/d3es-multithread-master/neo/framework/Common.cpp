@@ -2403,7 +2403,7 @@ void idCommonLocal::InitSIMD( void ) {
 }
 
 
-extern "C" void Doom3Quest_FrameSetup(int controlscheme);
+extern "C" void Doom3Quest_FrameSetup(int controlscheme, int refresh);
 extern "C" void Doom3Quest_Vibrate(int channel, float low, float high );
 
 void idCommonLocal::Vibrate(int channel, float low, float high)
@@ -2424,7 +2424,8 @@ void idCommonLocal::Frame( void ) {
 		// pump all the events
 		Sys_GenerateEvents();
 
-		Doom3Quest_FrameSetup(cvarSystem->GetCVarInteger("vr_weaponHand"));
+		Doom3Quest_FrameSetup(cvarSystem->GetCVarInteger("vr_weaponHand"),
+							  cvarSystem->GetCVarInteger("vr_refresh"));
 
 		if (game) {
 			game->SetVRClientInfo(pVRClientInfo);

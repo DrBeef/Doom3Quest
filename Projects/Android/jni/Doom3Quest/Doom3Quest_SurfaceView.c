@@ -1615,11 +1615,6 @@ void * AppThreadFunction(void * parm ) {
         showLoadingIcon();
     }
 
-    if (DISPLAY_REFRESH != -1)
-    {
-        vrapi_SetDisplayRefreshRate(gAppState.Ovr, DISPLAY_REFRESH);
-    }
-
     //Should now be all set up and ready - start the Doom3 main loop
     VR_Doom3Main(argc, argv);
 
@@ -1636,10 +1631,24 @@ void * AppThreadFunction(void * parm ) {
 }
 
 //All the stuff we want to do each frame
-void Doom3Quest_FrameSetup(int controlscheme)
+void Doom3Quest_FrameSetup(int controlscheme, int refresh)
 {
+    ALOGV("Refresh = %i", refresh);
+
 	//Use floor based tracking space
 	vrapi_SetTrackingSpace(gAppState.Ovr, VRAPI_TRACKING_SPACE_LOCAL_FLOOR);
+
+	int device = vrapi_GetSystemPropertyInt(&java, VRAPI_SYS_PROP_DEVICE_TYPE);
+	switch (device)
+    {
+        case VRAPI_DEVICE_TYPE_OCULUSQUEST:
+            //Force 60hz for Quest 1
+            vrapi_SetDisplayRefreshRate(gAppState.Ovr, 60);
+            break;
+        case VRAPI_DEVICE_TYPE_OCULUSQUEST2:
+            vrapi_SetDisplayRefreshRate(gAppState.Ovr, refresh);
+            break;
+    }
 
 	if (!Doom3Quest_useScreenLayer())
 	{
@@ -1965,6 +1974,7 @@ JNIEXPORT jlong JNICALL Java_com_drbeef_doom3quest_GLES3JNILib_onCreate( JNIEnv 
 
 	if (refresh != -1)
 	{
+		//unused at the moment
 		DISPLAY_REFRESH = refresh;
 	}
 
