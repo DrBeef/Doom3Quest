@@ -260,8 +260,7 @@ bool idIK::SolveTwoArmBones( idVec3& startPos, idVec3& endPos, const idVec3& dir
 
 
 	// Koz - if using motion controls and displaying the body, and a controller is reporting a impossible position, restrain the arm length.
-
-	if ( 0 && game->isVR && vr_playerBodyMode.GetInteger() == 0 )
+	if ( vr_playerBodyMode.GetInteger() == 0 )
 	{
 		maxLen = (len0 + len1) * 1.40f;
 		if ( length > maxLen )
@@ -1411,6 +1410,13 @@ void idIK_Reach::Evaluate()
 		// get the axis for the shoulder joint
 		GetBoneAxis( shoulderOrigin, elbowOrigin, shoulderDir, axis );
 
+		if(i == 0) // RIGHT HAND
+		{
+			//common->Printf("IK Right Hand Dir %.2f, %.2f, %.2f \n", localHandDir.x, localHandDir.y, localHandDir.z);
+			//common->Printf("IK Right Hand %.2f, %.2f, %.2f \n", handPos[i].x, handPos[i].y, handPos[i].z);
+			//common->Printf("IK Right Elbow %.2f, %.2f, %.2f \n", elbowPos[i].x, elbowPos[i].y, elbowPos[i].z);
+			common->Printf("IK Right Shoulder %.2f, %.2f, %.2f \n", shoulderPos[i].x, shoulderPos[i].y, shoulderPos[i].z);
+		}
 		if( ik_debug.GetBool() )
 		{
 			if( elbowCanMatchHand )
@@ -1430,7 +1436,6 @@ void idIK_Reach::Evaluate()
 		// roll the shoulder a bit
 		static idMat3 roll;
 		static idMat3 trsp;
-
 
 		if ( i == 0 )
 		{
@@ -1496,106 +1501,59 @@ void idIK_Reach::Evaluate()
 
 		wristMod[i] = idAngles(0.0f, 0.0f, 0.0f).ToMat3();
 
-		if (i == 1) // this is the left hand
+		//Right hand if (crossDiff < 0 ) //elbow joint has flipped so correct it
+		if ( crossDiff > 0 ) // elbow joint has flipped so correct it
 		{
-			if ( crossDiff > 0 ) // elbow joint has flipped so correct it
-			{
-				elbowAxis[i] = rollf[i] * elbowAxis[i];
-			}
-
-			if (commonVr->VR_USE_MOTION_CONTROLS)
-			{
-				commonVr->MotionControlGetHand( i, handP, handQ ); // get the rotation of the hand controller
-
-
-				handOr = handQ.ToMat3() * idAngles( 0.0f, -commonVr->bodyYawOffset, 0.0f ).ToMat3();
-
-				gr = handOr[2]; // axis of the hand controller used for 'roll'
-				ma = -elbowAxis[i][2]; //axis of elbow joint ( forearm ) used to calculate roll difference from gr.
-
-				//project new point np from point 'v' onto the plane defined by handOr[2] and normal elbowAxis[i][1]
-				n = elbowAxis[i][1];
-				v = gr;
-				dist = v * n;
-				np = v - dist * n;
-				np.Normalize();
-
-				// this is the angle of roll.
-				dot = np * ma;
-				angle1 = RAD2DEG(acosf(dot));
-
-				//check to see if angle should be positive or neg, by checking if angle is >90 deg from axis orthogonal to -elbowAxis[i][2]
-				br = elbowAxis[i][0];
-				dot = np * br;
-				angle2 = RAD2DEG(acosf(dot));
-				if (angle2 > 90) angle1 = -angle1;
-
-				// fix the roll a little to better align with the elbow joint.
-
-				angle1 = angle1 - 30.0f;
-				angle1 = idMath::ClampFloat( -66.0f, 66.0f, angle1 );
-
-				angle2 = angle1 * 0.3f; // roll the elbow 1/3 of the total roll.
-				angle1 -= angle2;
-
-				wristMod[i] = idAngles(angle1, 0.0f, 0.0f).ToMat3();
-
-				// roll the elbow a little;
-				idMat3 trsp = idAngles( -angle2, 0.0f, 0.0f).ToMat3();
-				elbowAxis[i] = trsp * elbowAxis[i];
-
-			}
+			elbowAxis[i] = rollf[i] * elbowAxis[i];
 		}
-		else // i == 0 - this is the right hand.
-		{
-			if (crossDiff < 0 ) //elbow joint has flipped so correct it
-			{
-				elbowAxis[i] = rollf[i] * elbowAxis[i];
-			}
+		commonVr->MotionControlGetHand( i, handP, handQ ); // get the rotation of the hand controller
 
-			if (commonVr->VR_USE_MOTION_CONTROLS)
-			{
-				commonVr->MotionControlGetHand( i, handP, handQ ); // get the rotation of the hand controller
+		handOr = handQ.ToMat3() * idAngles( 0.0f, -commonVr->bodyYawOffset, 0.0f ).ToMat3();
 
-				handOr = handQ.ToMat3() * idAngles( 0.0f, -commonVr->bodyYawOffset, 0.0f ).ToMat3();;
+		gr = handOr[2]; // axis of the hand controller used for 'roll'
+		ma = -elbowAxis[i][2]; //axis of elbow joint ( forearm ) used to calculate roll difference from gr.
 
-				gr = handOr[2]; // axis of the hand controller used for 'roll'
-				ma = -elbowAxis[i][2]; //axis of elbow joint ( forearm ) used to calculate roll difference from gr.
+		//project new point np from point 'v' onto the plane defined by handOr[2] and normal elbowAxis[i][1]
+		n = elbowAxis[i][1];
+		v = gr;
+		dist = v * n;
+		np = v - dist * n;
+		np.Normalize();
 
-				//project new point np from point 'v' onto the plane defined by handOr[2] and normal elbowAxis[i][1]
-				n = elbowAxis[i][1];
-				v = gr;
-				dist = v * n;
-				np = v - dist * n;
-				np.Normalize();
+		// this is the angle of roll.
+		dot = np * ma;
+		angle1 = RAD2DEG(acosf(dot));
 
-				// this is the angle of roll.
-				dot = np * ma;
-				angle1 = RAD2DEG(acosf(dot));
+		//check to see if angle should be positive or neg, by checking if angle is >90 deg from axis orthogonal to -elbowAxis[i][2]
+		br = elbowAxis[i][0];
+		//Right Hand: br = -elbowAxis[i][0];
+		dot = np * br;
+		angle2 = RAD2DEG(acosf(dot));
+		if (angle2 > 90) angle1 = -angle1;
 
-				//check to see if angle should be positive or neg, by checking if angle is >90 deg from axis orthogonal to -elbowAxis[i][2]
-				br = -elbowAxis[i][0];
-				dot = np * br;
-				angle2 = RAD2DEG(acosf(dot));
-				if ( angle2 > 90 ) angle1 = -angle1;
+		// fix the roll a little to better align with the elbow joint.
+		//Right Hand: angle1 = angle1 - 20.0f;
+		angle1 = angle1 - 30.0f;
+		angle1 = idMath::ClampFloat( -66.0f, 66.0f, angle1 );
 
-				// fix the roll a little to better align with the elbow joint.
-				angle1 = angle1 - 20.0f;
-				angle1 = idMath::ClampFloat( -66.0f, 66.0f, angle1 );
+		angle2 = angle1 * 0.3f; // roll the elbow 1/3 of the total roll.
+		angle1 -= angle2;
 
-				angle2 = angle1 * 0.3f;  //roll the elbow 1/3 of the total roll.
-				angle1 -= angle2;
+        if(i == 0)
+            wristMod[i] = idAngles(-angle1, 0.0f, 0.0f).ToMat3();
+        else
+            wristMod[i] = idAngles(angle1, 0.0f, 0.0f).ToMat3();
+		//Right Hand:
 
-				wristMod[i] = idAngles(-angle1, 0.0f, 0.0f).ToMat3();
-
-				// roll the elbow a little;
-				idMat3 trsp = idAngles( angle2, 0.0f, 0.0f).ToMat3();
-				elbowAxis[i] = trsp * elbowAxis[i];
-
-			}
-		}
+		// roll the elbow a little;
+		if(i == 0)
+		    trsp = idAngles( angle2, 0.0f, 0.0f).ToMat3();
+        else
+            trsp = idAngles( -angle2, 0.0f, 0.0f).ToMat3();
+		elbowAxis[i] = trsp * elbowAxis[i];
 	}
-
+	//common->Printf("IK Right Elbow (2) %.2f, %.2f, %.2f \n\n", elbowPos[i].x, elbowPos[i].y, elbowPos[i].z);
+	//common->Printf("IK Right Shoulder (2) %.2f, %.2f, %.2f \n\n\n", shoulderAxis[i], shoulderAxis[i].y, shoulderAxis[i].z);
 	for ( i = 0; i < numArms; i++ )
 	{
 		animator->SetJointAxis( elbowJoints[i], JOINTMOD_WORLD_OVERRIDE, elbowAxis[i] );
