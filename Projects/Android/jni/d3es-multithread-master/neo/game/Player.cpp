@@ -8311,7 +8311,6 @@ bool idPlayer::UpdateFocusPDA()
 			{
 				if ( pt.fraction >= 0.94f ) // no longer touching
 				{
-
 					//common->Printf( "Sending mouse off 1 fraction = %f\n",trace.fraction );
 					ev = sys->GenerateMouseButtonEvent( 1, false );
 					SendPDAEvent( &ev );
@@ -8355,7 +8354,6 @@ bool idPlayer::UpdateFocusPDA()
 						SendPDAEvent( &ev );
 
 						//Rumble the controller to let player know they scored a touch.
-
 						// Carl: Should the PDA vibrate/haptic feedback too?
 						hands[fingerHand].SetControllerShake( 0.1f, 12, 0.8f, 12 );
 						hands[pdahand].SetControllerShake( 0.1f, 12, 0.8f, 12 );
@@ -8365,13 +8363,12 @@ bool idPlayer::UpdateFocusPDA()
 				}
 				else
 				{
-					/*
 					//send mouse button up
 					ev = sys->GenerateMouseButtonEvent( 1, false );
 					SendPDAEvent( &ev );
-					//Sys_AddMouseButtonEvent(1, false);
+
+
 					touching = false;
-					 */
 				}
 			}
 		}
@@ -10105,32 +10102,6 @@ void idPlayer::PerformImpulse( int impulse ) {
             break;
         }
 
-        case IMPULSE_34: // comfort turn right
-        {
-            // Koz fixme
-            // this performs comfort turns for key input,
-            // really need to move this to usercmdgen
-            /*
-            static idAngles angles;
-            angles.Set( 0.0f, vr_comfortDelta.GetFloat(), 0.0f );
-            SetDeltaViewAngles( deltaViewAngles - angles );
-            break;
-            */
-        }
-
-        case IMPULSE_35: // comfort turn left
-        {
-            // Koz fixme
-            // this performs comfort turns for key input,
-            // really need to move this to usercmdgen
-            /*
-            static idAngles angles;
-            angles.Set( 0.0f, vr_comfortDelta.GetFloat(), 0.0f );
-            SetDeltaViewAngles( deltaViewAngles + angles );
-            break;
-            */
-        }
-
         case IMPULSE_36: //  Toggle Hud
         {
             ToggleHud();
@@ -11709,7 +11680,8 @@ void idPlayer::Think( void ) {
 
 	//Dr Beef version - maybe minimise
 	//UpdateLaserSight();
-    UpdateVrHud();
+    //his is already done above in UpdateHUD()
+	//UpdateVrHud();
 
 	UpdateDeathSkin( false );
 
