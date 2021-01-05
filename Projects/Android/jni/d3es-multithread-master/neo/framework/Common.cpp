@@ -85,7 +85,6 @@ idCVar vr_msaa( "vr_msaa",  "1", CVAR_FLOAT | CVAR_ARCHIVE, "MSAA" );
 
 idCVar com_version( "si_version", version.string, CVAR_SYSTEM|CVAR_ROM|CVAR_SERVERINFO, "engine version" );
 idCVar com_skipRenderer( "com_skipRenderer", "0", CVAR_BOOL|CVAR_SYSTEM, "skip the renderer completely" );
-idCVar com_machineSpec( "com_machineSpec", "-1", CVAR_INTEGER | CVAR_ARCHIVE | CVAR_SYSTEM, "hardware classification, -1 = not detected, 0 = low quality, 1 = medium quality, 2 = high quality, 3 = ultra quality" );
 idCVar com_purgeAll( "com_purgeAll", "1", CVAR_BOOL | CVAR_ARCHIVE | CVAR_SYSTEM, "purge everything between level loads" );
 idCVar com_memoryMarker( "com_memoryMarker", "-1", CVAR_INTEGER | CVAR_SYSTEM | CVAR_INIT, "used as a marker for memory stats" );
 idCVar com_preciseTic( "com_preciseTic", "1", CVAR_BOOL|CVAR_SYSTEM, "run one game tick every async thread update" );
@@ -198,8 +197,6 @@ public:
 	void						LocalizeGui( const char *fileName, idLangDict &langDict );
 	void						LocalizeMapData( const char *fileName, idLangDict &langDict );
 	void						LocalizeSpecificMapData( const char *fileName, idLangDict &langDict, const idLangDict &replaceArgs );
-
-	void						SetMachineSpec( void );
 
 private:
 	void						InitCommands( void );
@@ -1384,136 +1381,6 @@ void Com_WriteConfig_f( const idCmdArgs &args ) {
 
 /*
 =================
-Com_SetMachineSpecs_f
-=================
-*/
-//Unused on Quest
-/*
-void Com_SetMachineSpec_f( const idCmdArgs &args ) {
-	commonLocal.SetMachineSpec();
-}
-*/
-/*
-=================
-Com_ExecMachineSpecs_f
-=================
-*/
-#ifdef MACOS_X
-void OSX_GetVideoCard( int& outVendorId, int& outDeviceId );
-bool OSX_GetCPUIdentification( int& cpuId, bool& oldArchitecture );
-#endif
-
-//Unused on Quest
-/*
-void Com_ExecMachineSpec_f( const idCmdArgs &args ) {
-	if ( com_machineSpec.GetInteger() == 3 ) {
-		cvarSystem->SetCVarInteger( "image_anisotropy", 1, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_lodbias", 0, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_forceDownSize", 0, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_roundDown", 1, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_preload", 1, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_useAllFormats", 1, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_downSizeSpecular", 0, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_downSizeBump", 0, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_downSizeSpecularLimit", 64, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_downSizeBumpLimit", 256, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_usePrecompressedTextures", 0, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_downsize", 0			, CVAR_ARCHIVE );
-		cvarSystem->SetCVarString( "image_filter", "GL_LINEAR_MIPMAP_LINEAR", CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_anisotropy", 8, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_useCompression", 0, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_ignoreHighQuality", 0, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "s_maxSoundsPerShader", 0, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "r_mode", 5, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_useNormalCompression", 0, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "r_multiSamples", 0, CVAR_ARCHIVE );
-	} else if ( com_machineSpec.GetInteger() == 2 ) {
-		cvarSystem->SetCVarString( "image_filter", "GL_LINEAR_MIPMAP_LINEAR", CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_anisotropy", 1, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_lodbias", 0, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_forceDownSize", 0, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_roundDown", 1, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_preload", 1, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_useAllFormats", 1, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_downSizeSpecular", 0, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_downSizeBump", 0, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_downSizeSpecularLimit", 64, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_downSizeBumpLimit", 256, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_usePrecompressedTextures", 1, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_downsize", 0, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_anisotropy", 8, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_useCompression", 1, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_ignoreHighQuality", 0, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "s_maxSoundsPerShader", 0, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_useNormalCompression", 0, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "r_mode", 4, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "r_multiSamples", 0, CVAR_ARCHIVE );
-	} else if ( com_machineSpec.GetInteger() == 1 ) {
-		cvarSystem->SetCVarString( "image_filter", "GL_LINEAR_MIPMAP_LINEAR", CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_anisotropy", 1, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_lodbias", 0, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_downSize", 0, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_forceDownSize", 0, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_roundDown", 1, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_preload", 1, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_useCompression", 1, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_useAllFormats", 1, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_usePrecompressedTextures", 1, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_downSizeSpecular", 0, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_downSizeBump", 0, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_downSizeSpecularLimit", 64, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_downSizeBumpLimit", 256, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_useNormalCompression", 2, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "r_mode", 3, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "r_multiSamples", 0, CVAR_ARCHIVE );
-	} else {
-		cvarSystem->SetCVarString( "image_filter", "GL_LINEAR_MIPMAP_LINEAR", CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_anisotropy", 1, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_lodbias", 0, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_roundDown", 1, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_preload", 1, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_useAllFormats", 1, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_usePrecompressedTextures", 1, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_downSize", 0, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_anisotropy", 0, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_useCompression", 1, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_ignoreHighQuality", 1, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "s_maxSoundsPerShader", 1, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_downSizeSpecular", 1, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_downSizeBump", 1, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_downSizeSpecularLimit", 64, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_downSizeBumpLimit", 256, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "r_mode", 3	, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "image_useNormalCompression", 2, CVAR_ARCHIVE );
-		cvarSystem->SetCVarInteger( "r_multiSamples", 0, CVAR_ARCHIVE );
-	}
-
-	cvarSystem->SetCVarBool( "com_purgeAll", true, CVAR_ARCHIVE );
-	cvarSystem->SetCVarBool( "r_forceLoadImages", false, CVAR_ARCHIVE );
-
-	cvarSystem->SetCVarBool( "g_decals", true, CVAR_ARCHIVE );
-	//cvarSystem->SetCVarBool( "g_projectileLights", true, CVAR_ARCHIVE );
-	//cvarSystem->SetCVarBool( "g_doubleVision", false, CVAR_ARCHIVE );
-	cvarSystem->SetCVarBool( "g_muzzleFlash", true, CVAR_ARCHIVE );
-
-#if MACOS_X
-	// On low settings, G4 systems & 64MB FX5200/NV34 Systems should default shadows off
-	bool oldArch;
-	int vendorId, deviceId, cpuId;
-	OSX_GetVideoCard( vendorId, deviceId );
-	OSX_GetCPUIdentification( cpuId, oldArch );
-	bool isFX5200 = vendorId == 0x10DE && ( deviceId & 0x0FF0 ) == 0x0320;
-	if ( oldArch && ( com_machineSpec.GetInteger() == 0 ) ) {
-		cvarSystem->SetCVarBool( "r_shadows", false, CVAR_ARCHIVE );
-	} else {
-		cvarSystem->SetCVarBool( "r_shadows", true, CVAR_ARCHIVE );
-	}
-#endif
-}
-*/
-
-/*
-=================
 Com_ReloadEngine_f
 =================
 */
@@ -2302,8 +2169,6 @@ void idCommonLocal::InitCommands( void ) {
 	cmdSystem->AddCommand( "exit", Com_Quit_f, CMD_FL_SYSTEM, "exits the game" );
 	cmdSystem->AddCommand( "writeConfig", Com_WriteConfig_f, CMD_FL_SYSTEM, "writes a config file" );
 	cmdSystem->AddCommand( "reloadEngine", Com_ReloadEngine_f, CMD_FL_SYSTEM, "reloads the engine down to including the file system" );
-//	cmdSystem->AddCommand( "setMachineSpec", Com_SetMachineSpec_f, CMD_FL_SYSTEM, "detects system capabilities and sets com_machineSpec to appropriate value" );
-//	cmdSystem->AddCommand( "execMachineSpec", Com_ExecMachineSpec_f, CMD_FL_SYSTEM, "execs the appropriate config files and sets cvars based on com_machineSpec" );
 
 #if	!defined( ID_DEDICATED ) && !defined( __ANDROID__ )
 	// compilers
@@ -2818,35 +2683,7 @@ bool idCommonLocal::IsInitialized( void ) const {
 	return com_fullyInitialized;
 }
 
-/*
-=================
-idCommonLocal::SetMachineSpec
-=================
-*/
-void idCommonLocal::SetMachineSpec( void ) {
-	int sysRam = Sys_GetSystemRam();
 
-	Printf( "Detected\n\t%i MB of System memory\n\n", sysRam );
-
-#ifdef __ANDROID__
-	Printf( "Forcing to Low quality as default.\n" );
-	com_machineSpec.SetInteger( 0 );
-	return;
-#endif
-	if ( sysRam >= 1024 ) {
-		Printf( "This system qualifies for Ultra quality!\n" );
-		com_machineSpec.SetInteger( 3 );
-	} else if ( sysRam >= 512 ) {
-		Printf( "This system qualifies for High quality!\n" );
-		com_machineSpec.SetInteger( 2 );
-	} else if ( sysRam >= 384 ) {
-		Printf( "This system qualifies for Medium quality.\n" );
-		com_machineSpec.SetInteger( 1 );
-	} else {
-		Printf( "This system qualifies for Low quality.\n" );
-		com_machineSpec.SetInteger( 0 );
-	}
-}
 
 static unsigned int AsyncTimer(unsigned int interval, void *) {
 	common->Async();
@@ -3178,11 +3015,6 @@ void idCommonLocal::InitGame( void ) {
 		fileSystem->CloseFile( file );
 	}
 
-	idCmdArgs args;
-//	if ( sysDetect ) {
-//		SetMachineSpec();
-//		Com_ExecMachineSpec_f( args );
-//	}
 
 	// initialize the renderSystem data structures, but don't start OpenGL yet
 	renderSystem->Init();
@@ -3270,18 +3102,6 @@ void idCommonLocal::InitGame( void ) {
 
 	// init the session
 	session->Init();
-
-	// have to do this twice.. first one sets the correct r_mode for the renderer init
-	// this time around the backend is all setup correct.. a bit fugly but do not want
-	// to mess with all the gl init at this point.. an old vid card will never qualify for
-/*	if ( sysDetect ) {
-		SetMachineSpec();
-		Com_ExecMachineSpec_f( args );
-		cvarSystem->SetCVarInteger( "s_numberOfSpeakers", 6 );
-		cmdSystem->BufferCommandText( CMD_EXEC_NOW, "s_restart\n" );
-		cmdSystem->ExecuteCommandBuffer();
-	}
- */
 }
 
 /*

@@ -174,7 +174,7 @@ void idMultiplayerGame::Reset() {
 	// set this GUI so that our Draw function is still called when it becomes the active/fullscreen GUI
 	mainGui->SetStateBool( "gameDraw", true );
 	mainGui->SetKeyBindingNames();
-	mainGui->SetStateInt( "com_machineSpec", cvarSystem->GetCVarInteger( "com_machineSpec" ) );
+	mainGui->SetStateInt( "com_machineSpec", 0 );
 	SetMenuSkin();
 	msgmodeGui = uiManager->FindGui( "guis/mpmsgmode.gui", true, false, true );
 	msgmodeGui->SetStateBool( "gameDraw", true );
@@ -1640,32 +1640,6 @@ const char* idMultiplayerGame::HandleGuiCommands( const char *_menuCommand ) {
 			if ( args.Argc() - icmd	>= 1 ) {
 				vcmd = args.Argv( icmd++ );
 			}
-
-			//Do nothing for this on Quest
-/*			int	oldSpec	= cvarSystem->GetCVarInteger( "com_machineSpec"	);
-
-			if ( idStr::Icmp( vcmd,	"low" )	== 0 ) {
-				cvarSystem->SetCVarInteger(	"com_machineSpec", 0 );
-			} else if (	idStr::Icmp( vcmd, "medium"	) == 0 ) {
-				cvarSystem->SetCVarInteger(	"com_machineSpec", 1 );
-			} else	if ( idStr::Icmp( vcmd,	"high" ) ==	0 )	{
-				cvarSystem->SetCVarInteger(	"com_machineSpec", 2 );
-			} else	if ( idStr::Icmp( vcmd,	"ultra"	) == 0 ) {
-				cvarSystem->SetCVarInteger(	"com_machineSpec", 3 );
-			} else if (	idStr::Icmp( vcmd, "recommended" ) == 0	) {
-				cmdSystem->BufferCommandText( CMD_EXEC_NOW,	"setMachineSpec\n" );
-			}
-
-			if ( oldSpec !=	cvarSystem->GetCVarInteger(	"com_machineSpec" )	) {
-				currentGui->SetStateInt( "com_machineSpec",	cvarSystem->GetCVarInteger(	"com_machineSpec" )	);
-				currentGui->StateChanged( gameLocal.realClientTime );
-				cmdSystem->BufferCommandText( CMD_EXEC_NOW,	"execMachineSpec\n"	);
-			}
-
-			if ( idStr::Icmp( vcmd,	"restart" )	 ==	0) {
-				cmdSystem->BufferCommandText( CMD_EXEC_APPEND, "vid_restart\n" );
-			}
-*/
 			continue;
 		} else if (	!idStr::Icmp( cmd, "play" )	) {
 			if ( args.Argc() - icmd	>= 1 ) {
