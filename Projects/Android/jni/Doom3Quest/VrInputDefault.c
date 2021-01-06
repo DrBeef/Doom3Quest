@@ -61,15 +61,11 @@ extern bool objectiveSystemActive;
 extern bool inCinematic;
 
 
-void HandleInput_Default( int controlscheme, ovrInputStateTrackedRemote *pDominantTrackedRemoteNew, ovrInputStateTrackedRemote *pDominantTrackedRemoteOld, ovrTracking* pDominantTracking,
+void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrackedRemote *pDominantTrackedRemoteNew, ovrInputStateTrackedRemote *pDominantTrackedRemoteOld, ovrTracking* pDominantTracking,
                           ovrInputStateTrackedRemote *pOffTrackedRemoteNew, ovrInputStateTrackedRemote *pOffTrackedRemoteOld, ovrTracking* pOffTracking,
                           int domButton1, int domButton2, int offButton1, int offButton2 )
 
 {
-	//Ensure handedness is set correctly
-	pVRClientInfo->right_handed = controlscheme < 10 ||
-            controlscheme == 99; // Always right-handed for weapon calibration
-
 	//pVRClientInfo->teleportenabled = vr_teleport != 0;
 
     static bool dominantGripPushed = false;
@@ -79,7 +75,6 @@ void HandleInput_Default( int controlscheme, ovrInputStateTrackedRemote *pDomina
     //Need this for the touch screen
     ovrTracking * pWeapon = pDominantTracking;
     ovrTracking * pOff = pOffTracking;
-
 
     //All this to allow stick and button switching!
     ovrVector2f *pPrimaryJoystick;
@@ -92,26 +87,29 @@ void HandleInput_Default( int controlscheme, ovrInputStateTrackedRemote *pDomina
     int primaryButton2;
     int secondaryButton1;
     int secondaryButton2;
-    if (vr_switch_sticks)
+
+    if(controlscheme == 1) //Left Handed
     {
-        //
-        // This will switch the joystick and A/B/X/Y button functions only
-        // Move, Strafe, Turn, Jump, Crouch, Notepad, HUD mode, Weapon Switch
-        pSecondaryJoystick = &pDominantTrackedRemoteNew->Joystick;
-        pPrimaryJoystick = &pOffTrackedRemoteNew->Joystick;
         secondaryButtonsNew = pDominantTrackedRemoteNew->Buttons;
         secondaryButtonsOld = pDominantTrackedRemoteOld->Buttons;
         primaryButtonsNew = pOffTrackedRemoteNew->Buttons;
         primaryButtonsOld = pOffTrackedRemoteOld->Buttons;
-        primaryButton1 = offButton1;
-        primaryButton2 = offButton2;
         secondaryButton1 = domButton1;
         secondaryButton2 = domButton2;
-    }
-    else
+        primaryButton1 = offButton1;
+        primaryButton2 = offButton2;
+
+        if (switchsticks == 1) //Switch
+        {
+            pPrimaryJoystick = &pDominantTrackedRemoteNew->Joystick;
+            pSecondaryJoystick = &pOffTrackedRemoteNew->Joystick;
+        } else {
+            pSecondaryJoystick = &pDominantTrackedRemoteNew->Joystick;
+            pPrimaryJoystick = &pOffTrackedRemoteNew->Joystick;
+        }
+
+    } else //Right Handed
     {
-        pPrimaryJoystick = &pDominantTrackedRemoteNew->Joystick;
-        pSecondaryJoystick = &pOffTrackedRemoteNew->Joystick;
         primaryButtonsNew = pDominantTrackedRemoteNew->Buttons;
         primaryButtonsOld = pDominantTrackedRemoteOld->Buttons;
         secondaryButtonsNew = pOffTrackedRemoteNew->Buttons;
@@ -120,7 +118,18 @@ void HandleInput_Default( int controlscheme, ovrInputStateTrackedRemote *pDomina
         primaryButton2 = domButton2;
         secondaryButton1 = offButton1;
         secondaryButton2 = offButton2;
+
+        if (switchsticks == 1) //Switch
+        {
+            pSecondaryJoystick = &pDominantTrackedRemoteNew->Joystick;
+            pPrimaryJoystick = &pOffTrackedRemoteNew->Joystick;
+        } else {
+            pPrimaryJoystick = &pDominantTrackedRemoteNew->Joystick;
+            pSecondaryJoystick = &pOffTrackedRemoteNew->Joystick;
+        }
     }
+
+
 
 
 
@@ -131,24 +140,24 @@ void HandleInput_Default( int controlscheme, ovrInputStateTrackedRemote *pDomina
         const ovrQuatf quatLHand = pOff->HeadPose.Pose.Orientation;
         const ovrVector3f positionLHand = pOff->HeadPose.Pose.Position;
 
-        VectorSet(pVRClientInfo->rhandposition, positionRHand.x, positionRHand.y, positionRHand.z);
+        /*VectorSet(pVRClientInfo->rhandposition, positionRHand.x, positionRHand.y, positionRHand.z);
         Vector4Set(pVRClientInfo->rhand_orientation_quat, quatRHand.x, quatRHand.y, quatRHand.z, quatRHand.w);
         VectorSet(pVRClientInfo->lhandposition, positionLHand.x, positionLHand.y, positionLHand.z);
-        Vector4Set(pVRClientInfo->lhand_orientation_quat, quatLHand.x, quatLHand.y, quatLHand.z, quatLHand.w);
+        Vector4Set(pVRClientInfo->lhand_orientation_quat, quatLHand.x, quatLHand.y, quatLHand.z, quatLHand.w);*/
 
         //Right Hand
         //GB - FP Already does this so we end up with backward hands
-        /*if(pVRClientInfo->right_handed) {
-            VectorSet(pVRClientInfo->rhandposition, positionRHand.x, positionRHand.y, positionRHand.z);
-            Vector4Set(pVRClientInfo->rhand_orientation_quat, quatRHand.x, quatRHand.y, quatRHand.z, quatRHand.w);
-            VectorSet(pVRClientInfo->lhandposition, positionLHand.x, positionLHand.y, positionLHand.z);
-            Vector4Set(pVRClientInfo->lhand_orientation_quat, quatLHand.x, quatLHand.y, quatLHand.z, quatLHand.w);
-        } else {
+        if(controlscheme == 1) {//Left Handed
             VectorSet(pVRClientInfo->lhandposition, positionRHand.x, positionRHand.y, positionRHand.z);
             Vector4Set(pVRClientInfo->lhand_orientation_quat, quatRHand.x, quatRHand.y, quatRHand.z, quatRHand.w);
             VectorSet(pVRClientInfo->rhandposition, positionLHand.x, positionLHand.y, positionLHand.z);
             Vector4Set(pVRClientInfo->rhand_orientation_quat, quatLHand.x, quatLHand.y, quatLHand.z, quatLHand.w);
-        }*/
+        } else {
+            VectorSet(pVRClientInfo->rhandposition, positionRHand.x, positionRHand.y, positionRHand.z);
+            Vector4Set(pVRClientInfo->rhand_orientation_quat, quatRHand.x, quatRHand.y, quatRHand.z, quatRHand.w);
+            VectorSet(pVRClientInfo->lhandposition, positionLHand.x, positionLHand.y, positionLHand.z);
+            Vector4Set(pVRClientInfo->lhand_orientation_quat, quatLHand.x, quatLHand.y, quatLHand.z, quatLHand.w);
+        }
 
 
         //Set gun angles - We need to calculate all those we might need (including adjustments) for the client to then take its pick
@@ -419,8 +428,6 @@ void HandleInput_Default( int controlscheme, ovrInputStateTrackedRemote *pDomina
             {
                 handleTrackedControllerButton_AsButton(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld, false, primaryButton2, UB_UP);
             }
-
-
             //Fire Primary
             if ((pDominantTrackedRemoteNew->Buttons & ovrButton_Trigger) !=
                 (pDominantTrackedRemoteOld->Buttons & ovrButton_Trigger)) {

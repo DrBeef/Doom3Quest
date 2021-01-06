@@ -76,7 +76,7 @@ void Doom3Quest_Vibrate(int channel, float low, float high);
 
 bool Doom3Quest_processMessageQueue();
 
-void Doom3Quest_FrameSetup(int controlscheme, int refresh);
+void Doom3Quest_FrameSetup(int controlscheme, int switch_sticks, int refresh);
 
 void Doom3Quest_setUseScreenLayer(int screen);
 
@@ -84,7 +84,7 @@ void Doom3Quest_processHaptics();
 
 void Doom3Quest_getHMDOrientation();
 
-void Doom3Quest_getTrackedRemotesOrientation(int controlscheme);
+void Doom3Quest_getTrackedRemotesOrientation(int controlscheme, int switch_sticks);
 
 void Doom3Quest_prepareEyeBuffer();
 

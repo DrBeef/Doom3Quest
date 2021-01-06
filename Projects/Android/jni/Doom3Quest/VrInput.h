@@ -33,7 +33,7 @@ void sendButtonActionSimple(const char* action);
 
 void acquireTrackedRemotesData(ovrMobile *Ovr, double displayTime);
 
-void HandleInput_Default( int controlscheme, ovrInputStateTrackedRemote *pDominantTrackedRemoteNew, ovrInputStateTrackedRemote *pDominantTrackedRemoteOld, ovrTracking* pDominantTracking,
+void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrackedRemote *pDominantTrackedRemoteNew, ovrInputStateTrackedRemote *pDominantTrackedRemoteOld, ovrTracking* pDominantTracking,
                           ovrInputStateTrackedRemote *pOffTrackedRemoteNew, ovrInputStateTrackedRemote *pOffTrackedRemoteOld, ovrTracking* pOffTracking,
                           int domButton1, int domButton2, int offButton1, int offButton2 );
 

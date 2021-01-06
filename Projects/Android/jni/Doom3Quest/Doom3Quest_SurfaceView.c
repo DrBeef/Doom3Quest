@@ -50,7 +50,6 @@ float playerYaw;
 float vrFOV = 0.0f;
 bool vr_moveuseoffhand;
 float vr_snapturn_angle;
-bool vr_switchsticks;
 bool vr_secondarybuttonmappings;
 bool vr_twohandedweapons;
 bool shutdown;
@@ -1631,7 +1630,7 @@ void * AppThreadFunction(void * parm ) {
 }
 
 //All the stuff we want to do each frame
-void Doom3Quest_FrameSetup(int controlscheme, int refresh)
+void Doom3Quest_FrameSetup(int controlscheme, int switch_sticks, int refresh)
 {
     ALOGV("Refresh = %i", refresh);
 
@@ -1657,7 +1656,7 @@ void Doom3Quest_FrameSetup(int controlscheme, int refresh)
 
     Doom3Quest_processHaptics();
     Doom3Quest_getHMDOrientation();
-    Doom3Quest_getTrackedRemotesOrientation(controlscheme);
+    Doom3Quest_getTrackedRemotesOrientation(controlscheme, switch_sticks);
 }
 
 /*void Doom3Quest_processHaptics() {//Handle haptics
@@ -1767,21 +1766,21 @@ void Doom3Quest_getHMDOrientation() {
     updateHMDOrientation();
 }
 
-void Doom3Quest_getTrackedRemotesOrientation(int controlscheme) {
+void Doom3Quest_getTrackedRemotesOrientation(int controlscheme, int switch_sticks) {
 
     //Get info for tracked remotes
     acquireTrackedRemotesData(gAppState.Ovr, gAppState.DisplayTime[gAppState.MainThreadFrameIndex % MAX_TRACKING_SAMPLES]);
 
     //Call additional control schemes here
     if (controlscheme == RIGHT_HANDED_DEFAULT) {
-		HandleInput_Default(controlscheme, &rightTrackedRemoteState_new,
+		HandleInput_Default(controlscheme, switch_sticks, &rightTrackedRemoteState_new,
 							&rightTrackedRemoteState_old, &rightRemoteTracking_new,
 							&leftTrackedRemoteState_new, &leftTrackedRemoteState_old,
 							&leftRemoteTracking_new,
 							ovrButton_A, ovrButton_B, ovrButton_X, ovrButton_Y);
 	} else {
 		//Left handed
-		HandleInput_Default(controlscheme, &leftTrackedRemoteState_new, &leftTrackedRemoteState_old,
+		HandleInput_Default(controlscheme, switch_sticks, &leftTrackedRemoteState_new, &leftTrackedRemoteState_old,
 							&leftRemoteTracking_new,
 							&rightTrackedRemoteState_new, &rightTrackedRemoteState_old,
 							&rightRemoteTracking_new,

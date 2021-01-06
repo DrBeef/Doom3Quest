@@ -346,6 +346,7 @@ idCVar net_serverDlTable(			"net_serverDlTable",		"",				CVAR_GAME | CVAR_ARCHIV
 
 //In Menu - needs testing
 idCVar vr_weaponHand( "vr_weaponHand", "0", CVAR_INTEGER | CVAR_ARCHIVE | CVAR_GAME, "Which hand holds weapon.\n 0 = Right hand\n 1 = Left Hand\n", 0, 1 );
+idCVar vr_switchSticks( "vr_switchSticks", "0", CVAR_INTEGER | CVAR_ARCHIVE | CVAR_GAME, "Switch joysticks.\n 0 = No\n 1 = Yes\n", 0, 1 );
 idCVar vr_ipd(						"vr_ipd",					"0.065",		CVAR_GAME | CVAR_FLOAT | CVAR_ARCHIVE, "VR IPD" );
 idCVar vr_worldscale(				"vr_worldscale",			"43.0",			CVAR_GAME | CVAR_FLOAT | CVAR_ARCHIVE, "VR World Scale" );
 idCVar vr_heightoffset(				"vr_heightoffset",			"0.0",			CVAR_GAME | CVAR_FLOAT | CVAR_ARCHIVE, "VR Height Offset" );
