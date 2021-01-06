@@ -66,8 +66,6 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrac
                           int domButton1, int domButton2, int offButton1, int offButton2 )
 
 {
-	//pVRClientInfo->teleportenabled = vr_teleport != 0;
-
     static bool dominantGripPushed = false;
 	static float dominantGripPushTime = 0.0f;
 
@@ -88,28 +86,21 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrac
     int secondaryButton1;
     int secondaryButton2;
 
-    if(controlscheme == 1) //Left Handed
+    if (switchsticks == 1) //Switch sticks and AB/XY buttons (to allow run and jump at the same time)
     {
+        pSecondaryJoystick = &pDominantTrackedRemoteNew->Joystick;
+        pPrimaryJoystick = &pOffTrackedRemoteNew->Joystick;
         secondaryButtonsNew = pDominantTrackedRemoteNew->Buttons;
         secondaryButtonsOld = pDominantTrackedRemoteOld->Buttons;
         primaryButtonsNew = pOffTrackedRemoteNew->Buttons;
         primaryButtonsOld = pOffTrackedRemoteOld->Buttons;
-        secondaryButton1 = domButton1;
-        secondaryButton2 = domButton2;
         primaryButton1 = offButton1;
         primaryButton2 = offButton2;
-
-        if (switchsticks == 1) //Switch
-        {
-            pPrimaryJoystick = &pDominantTrackedRemoteNew->Joystick;
-            pSecondaryJoystick = &pOffTrackedRemoteNew->Joystick;
-        } else {
-            pSecondaryJoystick = &pDominantTrackedRemoteNew->Joystick;
-            pPrimaryJoystick = &pOffTrackedRemoteNew->Joystick;
-        }
-
-    } else //Right Handed
-    {
+        secondaryButton1 = domButton1;
+        secondaryButton2 = domButton2;
+    } else {
+        pPrimaryJoystick = &pDominantTrackedRemoteNew->Joystick;
+        pSecondaryJoystick = &pOffTrackedRemoteNew->Joystick;
         primaryButtonsNew = pDominantTrackedRemoteNew->Buttons;
         primaryButtonsOld = pDominantTrackedRemoteOld->Buttons;
         secondaryButtonsNew = pOffTrackedRemoteNew->Buttons;
@@ -118,15 +109,6 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrac
         primaryButton2 = domButton2;
         secondaryButton1 = offButton1;
         secondaryButton2 = offButton2;
-
-        if (switchsticks == 1) //Switch
-        {
-            pSecondaryJoystick = &pDominantTrackedRemoteNew->Joystick;
-            pPrimaryJoystick = &pOffTrackedRemoteNew->Joystick;
-        } else {
-            pPrimaryJoystick = &pDominantTrackedRemoteNew->Joystick;
-            pSecondaryJoystick = &pOffTrackedRemoteNew->Joystick;
-        }
     }
 
 
@@ -189,16 +171,6 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrac
         handleTrackedControllerButton_AsButton(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld, true, ovrButton_Trigger, 1);
     }
 
-    /*if ( objectiveSystemActive )
-    {
-        controlMouse(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld);
-        handleTrackedControllerButton_AsButton(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld, true, ovrButton_Trigger, 1);
-        if (((pOffTrackedRemoteNew->Buttons & offButton1) != (pOffTrackedRemoteOld->Buttons & offButton1)) && (pOffTrackedRemoteNew->Buttons & offButton1))
-        {
-            Android_SetImpulse(UB_IMPULSE19);
-        }
-    }*/
-
     if ( !inCinematic && !inMenu )
     {
         static bool canUseQuickSave = false;
@@ -206,8 +178,6 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrac
             canUseQuickSave = false;
         }
         else if (!canUseQuickSave) {
-            int channel = (controlscheme >= 10) ? 1 : 0;
-            //Doom3Quest_Vibrate(channel, 0.5,0.5); // vibrate to let user know they can switch
             canUseQuickSave = true;
         }
 
