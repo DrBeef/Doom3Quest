@@ -622,7 +622,7 @@ void idWeapon::Restore( idRestoreGame *savefile ) {
         savefile->ReadMat3(weaponHandDefaultAxis[i]);
     }
     // gui for stats device on player wrist in VR.
-    rvrStatGui = uiManager->FindGui( "guis/weapons/rvrstatgui.gui", true, false, true );
+    //rvrStatGui = uiManager->FindGui( "guis/weapons/rvrstatgui.gui", true, false, true );
     lvrStatGui = uiManager->FindGui( "guis/weapons/lvrstatgui.gui", true, false, true );
 
     //scale = 1.0f; // koz code to scale weapon models in the world borks the viewmodel when loading quick or autosaves, so make sure scale is correct here.
@@ -1138,7 +1138,7 @@ void idWeapon::GetWeaponDef( const char *objectname, int ammoinclip ) {
 	}
 
     // Koz begin - gui for stats device on player wrist in VR.
-    rvrStatGui = uiManager->FindGui("guis/weapons/rvrstatgui.gui", true, false, true);
+    //rvrStatGui = uiManager->FindGui("guis/weapons/rvrstatgui.gui", true, false, true);
     lvrStatGui = uiManager->FindGui("guis/weapons/lvrstatgui.gui", true, false, true);
     // Koz end
 
