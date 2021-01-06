@@ -1038,7 +1038,7 @@ bool idInventory::Give( idPlayer *owner, const idDict &spawnArgs, const char *st
 						*idealWeapon = i;
 					}
 					if ( owner->hud && updateHud && lastGiveTime + 1000 < gameLocal.time ) {
-						owner->hud->SetStateInt( "newWeapon", i );
+						owner->hud->SetStateInt( "newWeapon", i-1 );
 						owner->hud->HandleNamedEvent( "newWeapon" );
 						lastGiveTime = gameLocal.time;
 					}
@@ -9747,9 +9747,9 @@ void idPlayer::TogglePDA( int hand  ) {
 			}
 		}
 
-		for ( j = 0; j < MAX_WEAPONS; j++ ) {
+		for ( j = 1; j < MAX_WEAPONS; j++ ) {
 			const char *weapnum = va( "def_weapon%d", j );
-			const char *hudWeap = va( "weapon%d", j );
+			const char *hudWeap = va( "weapon%d", j-1 );
 			int weapstate = 0;
 			if ( inventory.weapons & ( 1 << j ) ) {
 				const char *weap = spawnArgs.GetString( weapnum );
