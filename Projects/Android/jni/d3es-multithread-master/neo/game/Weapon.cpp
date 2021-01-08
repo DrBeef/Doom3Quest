@@ -50,7 +50,7 @@ idClipModel* PDAclipModel; // Koz fixme pda more crappy globals.
 idCVar vr_guiH( "vr_guiH", "100", CVAR_INTEGER, "" );
 idCVar vr_guiA( "vr_guiA", "100", CVAR_INTEGER, "" );
 
-idCVar vr_throwPower( "vr_throwPower", "4.0", CVAR_FLOAT | CVAR_GAME | CVAR_ARCHIVE, "Throw power" );
+idCVar vr_throwPower( "vr_throwPower", "3.4", CVAR_FLOAT | CVAR_GAME | CVAR_ARCHIVE, "Throw power" );
 // Koz end
 
 /***********************************************************************
