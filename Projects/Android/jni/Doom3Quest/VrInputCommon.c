@@ -144,13 +144,14 @@ float clamp(float _min, float _val, float _max)
     return max(min(_val, _max), _min);
 }
 
-
+extern float SS_MULTIPLIER;
 void controlMouse(ovrInputStateTrackedRemote *newState, ovrInputStateTrackedRemote *oldState) {
     static int cursorX = 0;
     static int cursorY = 0;
 
-    cursorX = (float)(pVRClientInfo->weaponangles_delta_temp[YAW] * 18.0f);
-    cursorY = (float)(-pVRClientInfo->weaponangles_delta_temp[PITCH] * 18.0f);
+    //Adjust the mouse speed by the SS_MULTIPLIER otherwise it gets a little wild
+    cursorX = (float)(pVRClientInfo->weaponangles_delta_temp[YAW] * (18.0f / SS_MULTIPLIER));
+    cursorY = (float)(-pVRClientInfo->weaponangles_delta_temp[PITCH] * (18.0f / SS_MULTIPLIER));
 
     Sys_AddMouseMoveEvent(cursorX, cursorY);
 }
