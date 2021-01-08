@@ -413,11 +413,23 @@ void idPlayerView::CalculateShake() {
 	shakeAng[1] = gameLocal.random.CRandomFloat() * shakeVolume * vr_shakeamplitude.GetFloat();
 	shakeAng[2] = gameLocal.random.CRandomFloat() * shakeVolume * vr_shakeamplitude.GetFloat();
 
-	/*if (shakeVolume > 0.1) {
+	if (shakeVolume > 0.1) {
         //Shake controllers!
-        common->Vibrate(50, 0, idMath::ClampFloat(0.1, 1.0, shakeVolume*2.0f + 0.1f));
-        common->Vibrate(50, 1, idMath::ClampFloat(0.1, 1.0, shakeVolume*2.0f + 0.1f));
-    }*/
+        //common->Vibrate(50, 0, idMath::ClampFloat(0.1, 1.0, shakeVolume*2.0f + 0.1f));
+        //common->Vibrate(50, 1, idMath::ClampFloat(0.1, 1.0, shakeVolume*2.0f + 0.1f));
+
+        // shakeScale
+        float shakeScale = 1.0f - idMath::ClampFloat( 0.0f, 1.0f, ( shakeVolume * ( 1.0f / 4000.0f ) ) + 0.25f );		// 0...4000 -> max...min rumble
+
+        // determine rumble
+        float highMag = shakeScale;
+        int highDuration = idMath::Ftoi( 300.0f * shakeScale );
+        float lowMag = shakeScale * 0.75f;
+        int lowDuration = idMath::Ftoi( 500.0f * shakeScale );
+
+        player->hands[HAND_RIGHT].SetControllerShake( highMag, highDuration, lowMag, lowDuration );
+        player->hands[HAND_LEFT].SetControllerShake( highMag, highDuration, lowMag, lowDuration );
+    }
 }
 
 /*
@@ -496,10 +508,10 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
     gameSoundWorld->PlaceListener( view->vieworg, view->viewaxis, player->entityNumber + 1, gameLocal.time, hud ? hud->State().GetString( "location" ) : "Undefined" );
 
 	// hack the shake in at the very last moment, so it can't cause any consistency problems
-	renderView_t	hackedView = *view;
-	hackedView.viewaxis = hackedView.viewaxis * ShakeAxis();
+	//renderView_t	hackedView = *view;
+	//hackedView.viewaxis = hackedView.viewaxis * ShakeAxis();
 
-	gameRenderWorld->RenderScene( &hackedView );
+	gameRenderWorld->RenderScene( view );
 
 	if ( player->spectating ) {
 		return;
