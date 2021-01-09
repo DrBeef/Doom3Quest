@@ -140,16 +140,15 @@ import static android.system.Os.setenv;
 		checkPermissionsAndInitialize();
 	}
 
-	private boolean isPackageInstalled(String packageName, PackageManager packageManager) {
-		try {
-			packageManager.getPackageGids(packageName);
-			return true;
-		} catch (PackageManager.NameNotFoundException e) {
-			return false;
-		}
-	}
-
 	public void create() {
+
+		boolean exitAfterCopy = false;
+
+		//If this is first run on clean system, or user hasn't copied anything yet, just exit after we have copied
+		if (!(new File("/sdcard/Doom3Quest/base/pak000.pk4").exists()))
+		{
+			exitAfterCopy = true;
+		}
 
 		copy_asset("/sdcard/Doom3Quest", "commandline.txt", false);
 
@@ -163,11 +162,17 @@ import static android.system.Os.setenv;
 		copy_asset("/sdcard/Doom3Quest/config/base", "quest1_default.cfg", true);
 		copy_asset("/sdcard/Doom3Quest/config/base", "quest2_default.cfg", true);
 
+		if (exitAfterCopy)
+		{
+			finish();
+			System.exit(0);
+		}
+
 		//Read these from a file and pass through
 		commandLineParams = new String("doom3quest");
 
 		//See if user is trying to use command line params
-		if(new File("/sdcard/Doom3Quest/commandline.txt").exists()) // should exist!
+		if(new File("/sdcard/Doom3Quest/commandline.txt").exists()) // should exist now!
 		{
 			BufferedReader br;
 			try {
