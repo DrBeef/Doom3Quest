@@ -3909,24 +3909,33 @@ void idPlayer::UpdateVrHud()
             hudPitch = vr_hudType.GetInteger() == VR_HUD_LOOK_DOWN ? vr_hudPosAngle.GetFloat() : 10.0f;
 
             //Fixed HUD, but make it take a short time to catch up with the player's yaw
-            if (resetHUDYaw)
+            if( gameLocal.inCinematic )
+            {
+                hud_yaw_x = cosf(DEG2RAD(commonVr->lastHMDViewAxis.ToAngles().yaw));
+                hud_yaw_y = sinf(DEG2RAD(commonVr->lastHMDViewAxis.ToAngles().yaw));
+                hudOrigin = commonVr->lastHMDViewOrigin;
+            }
+            else if (resetHUDYaw)
             {
                 hud_yaw_x = cosf(DEG2RAD(viewAngles.yaw));
                 hud_yaw_y = sinf(DEG2RAD(viewAngles.yaw));
                 resetHUDYaw = false;
+                GetViewPos( hudOrigin, hudAxis );
             }
             else
             {
                 hud_yaw_x = 0.97f * hud_yaw_x + 0.03f * cosf(DEG2RAD(viewAngles.yaw));
                 hud_yaw_y = 0.97f * hud_yaw_y + 0.03f * sinf(DEG2RAD(viewAngles.yaw));
+                GetViewPos( hudOrigin, hudAxis );
             }
-
-            GetViewPos( hudOrigin, hudAxis );
             hudAxis = idAngles( 10.0f, RAD2DEG(atan2(hud_yaw_y, hud_yaw_x)), 0.0f ).ToMat3();
-            hudOrigin += hudAxis[0] * 24.0f;
-            hudOrigin.z += 4.0f;
-            hudOrigin += hudAxis[1] * -8.5f;
+			hudOrigin += hudAxis[0] * vr_hudPosDis.GetFloat();
+			hudOrigin += hudAxis[1] * vr_hudPosHor.GetFloat();
+			hudOrigin.z += vr_hudPosVer.GetFloat();
 
+            /*hudOrigin += hudAxis[0] * vr_hudPosDis.GetFloat();
+            hudOrigin += hudAxis[1] * vr_hudPosHor.GetFloat();
+            hudOrigin.z += vr_hudPosVer.GetFloat();*/
 
             /*float yaw;
             if( gameLocal.inCinematic )
