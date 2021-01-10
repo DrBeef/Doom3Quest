@@ -461,9 +461,11 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrac
                      (secondaryButtonsOld & secondaryButton2)) &&
                     (secondaryButtonsNew & secondaryButton2)) {
 
+#ifdef DEBUG
                     if (dominantGripPushed) {
                         Android_SetCommand("give all");
                     }
+#endif
                 }
             }
 
