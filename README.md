@@ -10,8 +10,7 @@ After we had ported the original Doom 3 to the Quest, we realised that a lot of 
 
 This is built solely for the Oculus Quest 1 and 2 VR HMDs and will **not** run on any other device.
 
-The easiest way to install this on your Quest is using SideQuest, a Desktop app designed to simplify sideloading apps and games ( even beat saber songs on quest ) on Standalone Android Headsets like Oculus Quest and Oculus Go. It supports drag and drop for installing APK files!
-
+The easiest way to install this on your Quest is using SideQuest, a Desktop app designed to simplify sideloading apps and games on the Oculus Quest and Oculus Quest 2.
 Download SideQuest here:
 https://github.com/the-expanse/SideQuest/releases
 
