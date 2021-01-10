@@ -467,6 +467,11 @@ public:
     qhandle_t				hudHandle;
     bool					hudActive;
 
+    bool resetHUDYaw;
+    float hud_yaw_x = 0.0f;
+    float hud_yaw_y = 0.0f;
+
+
     const idDeclSkin*		skinCrosshairDot;
     const idDeclSkin*		skinCrosshairCircleDot;
     const idDeclSkin*		skinCrosshairCross;

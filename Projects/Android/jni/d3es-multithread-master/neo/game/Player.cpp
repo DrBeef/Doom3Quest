@@ -3909,13 +3909,20 @@ void idPlayer::UpdateVrHud()
             hudPitch = vr_hudType.GetInteger() == VR_HUD_LOOK_DOWN ? vr_hudPosAngle.GetFloat() : 10.0f;
 
             //Fixed HUD, but make it take a short time to catch up with the player's yaw
-            static float yaw_x = 0.0f;
-            static float yaw_y = 1.0f;
-            yaw_x = 0.97f * yaw_x + 0.03f * cosf(DEG2RAD(viewAngles.yaw));
-            yaw_y = 0.97f * yaw_y + 0.03f * sinf(DEG2RAD(viewAngles.yaw));
+            if (resetHUDYaw)
+            {
+                hud_yaw_x = cosf(DEG2RAD(viewAngles.yaw));
+                hud_yaw_y = sinf(DEG2RAD(viewAngles.yaw));
+                resetHUDYaw = false;
+            }
+            else
+            {
+                hud_yaw_x = 0.97f * hud_yaw_x + 0.03f * cosf(DEG2RAD(viewAngles.yaw));
+                hud_yaw_y = 0.97f * hud_yaw_y + 0.03f * sinf(DEG2RAD(viewAngles.yaw));
+            }
 
             GetViewPos( hudOrigin, hudAxis );
-            hudAxis = idAngles( 10.0f, RAD2DEG(atan2(yaw_y, yaw_x)), 0.0f ).ToMat3();
+            hudAxis = idAngles( 10.0f, RAD2DEG(atan2(hud_yaw_y, hud_yaw_x)), 0.0f ).ToMat3();
             hudOrigin += hudAxis[0] * 24.0f;
             hudOrigin.z += 4.0f;
             hudOrigin += hudAxis[1] * -8.5f;
