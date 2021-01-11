@@ -476,11 +476,15 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrac
                      (secondaryButtonsOld & secondaryButton2)) &&
                     (secondaryButtonsNew & secondaryButton2)) {
 
-#ifdef DEBUG
+
                     if (dominantGripPushed) {
+#ifdef DEBUG
                         Android_SetCommand("give all");
-                    }
 #endif
+                        //Recenter Body
+                        Android_SetImpulse(UB_IMPULSE32);
+                    }
+
                 }
             }
 
@@ -490,6 +494,10 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrac
 
                 //Turn on Flashlight
                 Android_SetImpulse(UB_IMPULSE16);
+
+
+                //Recenter Body
+                //Android_SetImpulse(UB_IMPULSE32);
             }
 
 
