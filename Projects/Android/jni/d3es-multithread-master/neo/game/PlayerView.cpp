@@ -484,7 +484,6 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
 
     renderSystem->DirectFrameBufferStart();
 
-
 	if ( player->objectiveSystemOpen ) {
 		cvarSystem->SetCVarBool("draw_pda", true);
 		renderSystem->CropRenderSize( 1024, 1024, true );
@@ -494,15 +493,15 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
 		//globalImages->pdaImage->Resize( rendertarget.w, rendertarget.h );
 		cvarSystem->SetCVarBool("draw_pda", false);
 	} else {
+		renderSystem->CropRenderSize( 1024, 1024, true );
 		renderSystem->SetHudOpacity(player->GetHudAlpha());
         player->DrawHUD(hud);
 		renderSystem->SetHudOpacity(1.0f);
         renderSystem->CaptureRenderToImage( "_hudImage" );
+		renderSystem->UnCrop();
     }
 
-
 	renderSystem->DirectFrameBufferEnd();
-
 
     // place the sound origin for the player
     gameSoundWorld->PlaceListener( view->vieworg, view->viewaxis, player->entityNumber + 1, gameLocal.time, hud ? hud->State().GetString( "location" ) : "Undefined" );

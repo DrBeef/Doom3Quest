@@ -64,9 +64,9 @@ idCVar vr_guiMode( "vr_guiMode", "2", CVAR_INTEGER | CVAR_GAME | CVAR_ARCHIVE, "
 //In menu - test
 idCVar vr_hudScale( "vr_hudScale", "1.3", CVAR_FLOAT | CVAR_GAME | CVAR_ARCHIVE, "Hud scale", 0.1f, 2.0f );
 
-idCVar vr_hudPosHor( "vr_hudPosHor", "-8.5", CVAR_FLOAT | CVAR_GAME | CVAR_ARCHIVE, "Hud Horizontal offset in inches" );
-idCVar vr_hudPosVer( "vr_hudPosVer", "4", CVAR_FLOAT | CVAR_GAME | CVAR_ARCHIVE, "Hud Vertical offset in inches" );
-idCVar vr_hudPosDis( "vr_hudPosDis", "24", CVAR_FLOAT | CVAR_GAME | CVAR_ARCHIVE, "Hud Distance from view in inches" );
+idCVar vr_hudPosHorz( "vr_hudPosHorz", "0", CVAR_FLOAT | CVAR_GAME | CVAR_ARCHIVE, "Hud Horizontal offset in inches" );
+idCVar vr_hudPosVert( "vr_hudPosVert", "4", CVAR_FLOAT | CVAR_GAME | CVAR_ARCHIVE, "Hud Vertical offset in inches" );
+idCVar vr_hudPosDist( "vr_hudPosDist", "24", CVAR_FLOAT | CVAR_GAME | CVAR_ARCHIVE, "Hud Distance from view in inches" );
 idCVar vr_hudPosAngle( "vr_hudPosAngle", "30", CVAR_FLOAT | CVAR_GAME | CVAR_ARCHIVE, "Hud View Angle" );
 
 //In Menu - working

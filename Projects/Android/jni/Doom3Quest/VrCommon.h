@@ -46,23 +46,19 @@ void rotateAboutOrigin(float v1, float v2, float rotation, vec2_t out);
 
 void QuatToYawPitchRoll(ovrQuatf q, vec3_t rotation, vec3_t out);
 
-void handleTrackedControllerButton_AsButton(ovrInputStateTrackedRemote *trackedRemoteState,
-                                   ovrInputStateTrackedRemote *prevTrackedRemoteState,
+void handleTrackedControllerButton_AsButton(uint32_t buttonsNew, uint32_t buttonsOld,
                                    bool mouse, uint32_t button, int key);
 
-void handleTrackedControllerButton_AsKey(ovrInputStateTrackedRemote *trackedRemoteState,
-                                   ovrInputStateTrackedRemote *prevTrackedRemoteState,
+void handleTrackedControllerButton_AsKey(uint32_t buttonsNew, uint32_t buttonsOld,
                                    uint32_t button, int key);
 
-void handleTrackedControllerButton_AsToggleButton(ovrInputStateTrackedRemote *trackedRemoteState,
-                                   ovrInputStateTrackedRemote *prevTrackedRemoteState,
+void handleTrackedControllerButton_AsToggleButton(uint32_t buttonsNew, uint32_t buttonsOld,
                                    uint32_t button, int key);
 
-void handleTrackedControllerButton_AsImpulse(ovrInputStateTrackedRemote * trackedRemoteState,
-        ovrInputStateTrackedRemote * prevTrackedRemoteState, uint32_t button, int key);
+void handleTrackedControllerButton_AsImpulse(uint32_t buttonsNew, uint32_t buttonsOld, uint32_t button, int key);
 
 
-void controlMouse(ovrInputStateTrackedRemote *newState, ovrInputStateTrackedRemote *oldState);
+void controlMouse(bool reset, ovrInputStateTrackedRemote *newState, ovrInputStateTrackedRemote *oldState);
 
 
 //Called from engine code

@@ -86,7 +86,8 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrac
     int secondaryButton1;
     int secondaryButton2;
 
-    if (switchsticks == 1) //Switch sticks and AB/XY buttons (to allow run and jump at the same time)
+    if ((controlscheme == 0 &&switchsticks == 1) ||
+       (controlscheme == 1 &&switchsticks == 0))
     {
         pSecondaryJoystick = &pDominantTrackedRemoteNew->Joystick;
         pPrimaryJoystick = &pOffTrackedRemoteNew->Joystick;
@@ -110,10 +111,6 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrac
         secondaryButton1 = offButton1;
         secondaryButton2 = offButton2;
     }
-
-
-
-
 
     {
         //Store original values
@@ -163,12 +160,13 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrac
     }
 
     //Menu button - can be used in all modes
-    handleTrackedControllerButton_AsKey(&leftTrackedRemoteState_new, &leftTrackedRemoteState_old, ovrButton_Enter, K_ESCAPE);
+    handleTrackedControllerButton_AsKey(leftTrackedRemoteState_new.Buttons, leftTrackedRemoteState_old.Buttons, ovrButton_Enter, K_ESCAPE);
+
+    controlMouse(!inMenu, pDominantTrackedRemoteNew, pDominantTrackedRemoteOld);
 
     if ( inMenu || inCinematic ) // Specific cases where we need to interact using mouse etc
     {
-        controlMouse(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld);
-        handleTrackedControllerButton_AsButton(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld, true, ovrButton_Trigger, 1);
+        handleTrackedControllerButton_AsButton(pDominantTrackedRemoteNew->Buttons, pDominantTrackedRemoteOld->Buttons, true, ovrButton_Trigger, 1);
     }
 
     if ( !inCinematic && !inMenu )
@@ -183,30 +181,30 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrac
 
         if (canUseQuickSave)
         {
-            if (((pOffTrackedRemoteNew->Buttons & offButton1) !=
-                 (pOffTrackedRemoteOld->Buttons & offButton1)) &&
-                (pOffTrackedRemoteNew->Buttons & offButton1)) {
+            if (((secondaryButtonsNew & secondaryButton1) !=
+                 (secondaryButtonsOld & secondaryButton1)) &&
+                (secondaryButtonsNew & secondaryButton1)) {
                 Android_SetCommand("savegame quick");
             }
 
-            if (((pOffTrackedRemoteNew->Buttons & offButton2) !=
-                 (pOffTrackedRemoteOld->Buttons & offButton2)) &&
-                (pOffTrackedRemoteNew->Buttons & offButton2)) {
+            if (((secondaryButtonsNew & secondaryButton2) !=
+                 (secondaryButtonsOld & secondaryButton2)) &&
+                (secondaryButtonsNew & secondaryButton2)) {
                 Android_SetCommand("loadgame quick");
             }
         } else
         {
             //PDA
-            if (((pOffTrackedRemoteNew->Buttons & offButton1) !=
-                 (pOffTrackedRemoteOld->Buttons & offButton1)) &&
-                (pOffTrackedRemoteNew->Buttons & offButton1)) {
+            if (((secondaryButtonsNew & secondaryButton1) !=
+                 (secondaryButtonsOld & secondaryButton1)) &&
+                (secondaryButtonsNew & secondaryButton1)) {
                 Android_SetImpulse(UB_IMPULSE19);
             }
 
             //Toggle LaserSight
-            if (((pOffTrackedRemoteNew->Buttons & offButton2) !=
-                 (pOffTrackedRemoteOld->Buttons & offButton2)) &&
-                (pOffTrackedRemoteNew->Buttons & offButton2)) {
+            if (((secondaryButtonsNew & secondaryButton2) !=
+                 (secondaryButtonsOld & secondaryButton2)) &&
+                (secondaryButtonsNew & secondaryButton2)) {
                 Android_SetImpulse(UB_IMPULSE33);
             }
         }
@@ -408,25 +406,26 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrac
                 Android_SetImpulse(UB_IMPULSE34);
             }
 
-            //Jump (B Button)
-            if ((primaryButtonsNew & primaryButton2) != (primaryButtonsOld & primaryButton2))
-            {
-                handleTrackedControllerButton_AsButton(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld, false, primaryButton2, UB_UP);
-            }
             //Fire Primary
             if ((pDominantTrackedRemoteNew->Buttons & ovrButton_Trigger) !=
                 (pDominantTrackedRemoteOld->Buttons & ovrButton_Trigger)) {
 
                 ALOGV("**WEAPON EVENT**  Not Grip Pushed %sattack", (pDominantTrackedRemoteNew->Buttons & ovrButton_Trigger) ? "+" : "-");
 
-                handleTrackedControllerButton_AsButton(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld, false, ovrButton_Trigger, UB_ATTACK);
+                handleTrackedControllerButton_AsButton(pDominantTrackedRemoteNew->Buttons, pDominantTrackedRemoteOld->Buttons, false, ovrButton_Trigger, UB_ATTACK);
             }
 
             //Duck
             if ((primaryButtonsNew & primaryButton1) !=
                 (primaryButtonsOld & primaryButton1)) {
 
-                handleTrackedControllerButton_AsToggleButton(pDominantTrackedRemoteNew, pDominantTrackedRemoteOld, primaryButton1, UB_DOWN);
+                handleTrackedControllerButton_AsToggleButton(primaryButtonsNew, primaryButtonsOld, primaryButton1, UB_DOWN);
+            }
+
+            //Jump
+            if ((primaryButtonsNew & primaryButton2) != (primaryButtonsOld & primaryButton2))
+            {
+                handleTrackedControllerButton_AsButton(primaryButtonsNew, primaryButtonsOld, false, primaryButton2, UB_UP);
             }
 
 			//Weapon Chooser
@@ -504,7 +503,7 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrac
 
             //We need to record if we have started firing primary so that releasing trigger will stop definitely firing, if user has pushed grip
             //in meantime, then it wouldn't stop the gun firing and it would get stuck
-            handleTrackedControllerButton_AsButton(pOffTrackedRemoteNew, pOffTrackedRemoteOld, false, ovrButton_Trigger, UB_SPEED);
+            handleTrackedControllerButton_AsButton(pOffTrackedRemoteNew->Buttons, pOffTrackedRemoteOld->Buttons, false, ovrButton_Trigger, UB_SPEED);
 
             int vr_turn_mode = Android_GetCVarInteger("vr_turnmode");
             float vr_turn_angle = Android_GetCVarInteger("vr_turnangle");

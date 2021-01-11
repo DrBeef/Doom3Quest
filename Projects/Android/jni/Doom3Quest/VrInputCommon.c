@@ -22,32 +22,33 @@ void Sys_AddKeyEvent(int key, bool pressed);
 void Android_ButtonChange(int key, int state);
 int Android_GetButton(int key);
 
-void handleTrackedControllerButton_AsButton(ovrInputStateTrackedRemote * trackedRemoteState, ovrInputStateTrackedRemote * prevTrackedRemoteState, bool mouse, uint32_t button, int key)
+void handleTrackedControllerButton_AsButton(uint32_t buttonsNew, uint32_t buttonsOld, bool mouse, uint32_t button, int key)
 {
-    if ((trackedRemoteState->Buttons & button) != (prevTrackedRemoteState->Buttons & button))
+    if ((buttonsNew & button) != (buttonsOld & button))
     {
         if (mouse)
         {
-            Sys_AddMouseButtonEvent(key, (trackedRemoteState->Buttons & button) != 0);
+            Sys_AddMouseButtonEvent(key, (buttonsNew & button) != 0);
         }
         else
         {
-            Android_ButtonChange(key, ((trackedRemoteState->Buttons & button) != 0) ? 1 : 0);
+            Android_ButtonChange(key, ((buttonsNew & button) != 0) ? 1 : 0);
         }
     }
 }
 
-void handleTrackedControllerButton_AsKey(ovrInputStateTrackedRemote * trackedRemoteState, ovrInputStateTrackedRemote * prevTrackedRemoteState, uint32_t button, int key)
+void handleTrackedControllerButton_AsKey(uint32_t buttonsNew, uint32_t buttonsOld, uint32_t button, int key)
 {
-    if ((trackedRemoteState->Buttons & button) != (prevTrackedRemoteState->Buttons & button))
+    if ((buttonsNew & button) != (buttonsOld & button))
     {
-        Sys_AddKeyEvent(key, (trackedRemoteState->Buttons & button) != 0);
+        Sys_AddKeyEvent(key, (buttonsNew & button) != 0);
     }
 }
 
-void handleTrackedControllerButton_AsToggleButton(ovrInputStateTrackedRemote * trackedRemoteState, ovrInputStateTrackedRemote * prevTrackedRemoteState, uint32_t button, int key)
+void
+handleTrackedControllerButton_AsToggleButton(uint32_t buttonsNew, uint32_t buttonsOld, uint32_t button, int key)
 {
-    if ((trackedRemoteState->Buttons & button) != (prevTrackedRemoteState->Buttons & button))
+    if ((buttonsNew & button) != (buttonsOld & button))
     {
         Android_ButtonChange(key, Android_GetButton(key) ? 0 : 1);
     }
@@ -144,14 +145,31 @@ float clamp(float _min, float _val, float _max)
     return max(min(_val, _max), _min);
 }
 
+void Doom3Quest_GetScreenRes(int *width, int *height);
+
 extern float SS_MULTIPLIER;
-void controlMouse(ovrInputStateTrackedRemote *newState, ovrInputStateTrackedRemote *oldState) {
+void controlMouse(bool reset, ovrInputStateTrackedRemote *newState, ovrInputStateTrackedRemote *oldState) {
     static int cursorX = 0;
     static int cursorY = 0;
+    static bool firstTime = true;
 
-    //Adjust the mouse speed by the SS_MULTIPLIER otherwise it gets a little wild
-    cursorX = (float)(pVRClientInfo->weaponangles_delta_temp[YAW] * (18.0f / SS_MULTIPLIER));
-    cursorY = (float)(-pVRClientInfo->weaponangles_delta_temp[PITCH] * (18.0f / SS_MULTIPLIER));
+    int height = 0;
+    int width = 0;
+    Doom3Quest_GetScreenRes(&width, &height);
 
+    if (reset || firstTime)
+    {
+        cursorX = 0;
+        Sys_AddMouseMoveEvent(-10000, -10000);
+        Sys_AddMouseMoveEvent((width / 2.0F), (height / 2.0F));
+        firstTime = false;
+        return;
+    }
+
+    //cursorX = (float)((-(pVRClientInfo->weaponangles_temp[YAW]-yaw) * width) / 60.0F) + (width / 2.0F);
+    cursorX = (float)(pVRClientInfo->weaponangles_delta_temp[YAW] * 18.0f);
+    cursorY = (float)(((pVRClientInfo->weaponangles_temp[PITCH]-30) * height) / 70.0F) + (height / 2.0F);
+
+    Sys_AddMouseMoveEvent(0, -10000); // reset cursor pitch position
     Sys_AddMouseMoveEvent(cursorX, cursorY);
 }
