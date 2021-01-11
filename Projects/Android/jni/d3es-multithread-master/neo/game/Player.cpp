@@ -3929,7 +3929,7 @@ void idPlayer::UpdateVrHud()
                 GetViewPos( hudOrigin, hudAxis );
             }
             hudAxis = idAngles( 10.0f, RAD2DEG(atan2(hud_yaw_y, hud_yaw_x)), 0.0f ).ToMat3();
-			hudOrigin += hudAxis[0] * vr_hudPosVert.GetFloat();
+			hudOrigin += hudAxis[0] * vr_hudPosDist.GetFloat();
 			hudOrigin += hudAxis[1] * vr_hudPosHorz.GetFloat();
 			hudOrigin.z += vr_hudPosVert.GetFloat();
 
