@@ -500,7 +500,6 @@ extern idCVar	vr_pdaPitch;
 extern idCVar	vr_movePoint;
 extern idCVar	vr_moveClick;
 extern idCVar	vr_playerBodyMode;
-extern idCVar	vr_bodyToMove;
 extern idCVar	vr_moveThirdPerson;
 
 extern idCVar	vr_teleportSkipHandrails;

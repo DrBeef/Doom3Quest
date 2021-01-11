@@ -152,9 +152,6 @@ idCVar vr_moveClick( "vr_moveClick", "0", CVAR_INTEGER | CVAR_ARCHIVE, " 0 = Nor
 //In Menu - working
 idCVar vr_playerBodyMode( "vr_playerBodyMode", "0", CVAR_INTEGER | CVAR_GAME | CVAR_ARCHIVE, "Player body mode:\n0 = Display full body\n1 = Just Hands \n2 = Weapons only\n" );
 
-//GB This is active in FP, and seems to only move body when pushing forward!
-idCVar vr_bodyToMove( "vr_bodyToMove", "1", CVAR_BOOL | CVAR_GAME | CVAR_ARCHIVE, "Lock body orientaion to movement direction." );
-
 idCVar vr_moveThirdPerson( "vr_moveThirdPerson", "1", CVAR_BOOL | CVAR_GAME | CVAR_ARCHIVE, "Artifical movement will user 3rd person perspective." );
 //needs to be added to menu - cant be bothered now
 idCVar vr_crouchMode( "vr_crouchMode", "0", CVAR_INTEGER | CVAR_GAME | CVAR_ARCHIVE, "Crouch Mode:\n 0 = Full motion crouch (In game matches real life)\n 1 = Crouch anim triggered by smaller movement." );

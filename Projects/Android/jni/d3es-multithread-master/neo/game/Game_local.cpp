@@ -1180,7 +1180,7 @@ void idGameLocal::EvaluateVRMoveMode(idVec3 &viewangles, usercmd_t &cmd, int but
 		return;
 	}
 
-	if (commonVr->VR_USE_MOTION_CONTROLS && !commonVr->thirdPersonMovement && (vr_movePoint.GetInteger() == 1 || vr_movePoint.GetInteger() > 2) &&
+	if (!commonVr->thirdPersonMovement && (vr_movePoint.GetInteger() == 1 || vr_movePoint.GetInteger() > 2) &&
 		(abs(cmd.forwardmove) >= .1 || abs(cmd.rightmove) >= .1) || vr_teleportMode.GetInteger() == 2) // body will follow motion from move vector
 	{
 		static idAngles controllerAng;
@@ -1207,7 +1207,7 @@ void idGameLocal::EvaluateVRMoveMode(idVec3 &viewangles, usercmd_t &cmd, int but
 	}
 	else if ( !commonVr->VR_USE_MOTION_CONTROLS || vr_movePoint.GetInteger() == 2 ) // body will follow view
 	{
-		viewangles[YAW] += commonVr->poseHmdAngles.yaw - commonVr->bodyMoveAng;
+		viewangles[YAW] += commonVr->poseHmdAngles.yaw - commonVr->bodyYawOffset;
 		commonVr->bodyMoveAng = commonVr->poseHmdAngles.yaw;
 		commonVr->bodyYawOffset = commonVr->poseHmdAngles.yaw;
 	}
