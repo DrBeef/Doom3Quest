@@ -10117,6 +10117,17 @@ void idPlayer::PerformImpulse( int impulse ) {
             break;
         }
 
+        case IMPULSE_34: // toggle body on/off.
+        {
+            if(vr_playerBodyMode.GetInteger() == 0) {
+                vr_playerBodyMode.SetInteger(1);
+            }
+            else if(vr_playerBodyMode.GetInteger() == 1) {
+                vr_playerBodyMode.SetInteger(0);
+            }
+            break;
+        }
+
         case IMPULSE_36: //  Toggle Hud
         {
             ToggleHud();

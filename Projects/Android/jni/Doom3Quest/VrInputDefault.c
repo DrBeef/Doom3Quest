@@ -202,6 +202,13 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrac
                 (pOffTrackedRemoteNew->Buttons & offButton1)) {
                 Android_SetImpulse(UB_IMPULSE19);
             }
+
+            //Toggle LaserSight
+            if (((pOffTrackedRemoteNew->Buttons & offButton2) !=
+                 (pOffTrackedRemoteOld->Buttons & offButton2)) &&
+                (pOffTrackedRemoteNew->Buttons & offButton2)) {
+                Android_SetImpulse(UB_IMPULSE33);
+            }
         }
 
         float distance = sqrtf(powf(pOff->HeadPose.Pose.Position.x - pWeapon->HeadPose.Pose.Position.x, 2) +
@@ -393,6 +400,14 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrac
             positional_movementForward = v[1];
              */
 
+            if (((pDominantTrackedRemoteNew->Buttons & ovrButton_Joystick) !=
+                 (pDominantTrackedRemoteOld->Buttons & ovrButton_Joystick)) &&
+                (pDominantTrackedRemoteOld->Buttons & ovrButton_Joystick)) {
+
+                //Toggle Body
+                Android_SetImpulse(UB_IMPULSE34);
+            }
+
             //Jump (B Button)
             if ((primaryButtonsNew & primaryButton2) != (primaryButtonsOld & primaryButton2))
             {
@@ -473,11 +488,11 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrac
                 (pOffTrackedRemoteOld->Buttons & ovrButton_Joystick)) &&
                     (pOffTrackedRemoteOld->Buttons & ovrButton_Joystick)) {
 
-                //forceVirtualScreen = !forceVirtualScreen;
-                pVRClientInfo->visible_hud = !pVRClientInfo->visible_hud;
                 //Turn on Flashlight
                 Android_SetImpulse(UB_IMPULSE16);
             }
+
+
 
             //We need to record if we have started firing primary so that releasing trigger will stop definitely firing, if user has pushed grip
             //in meantime, then it wouldn't stop the gun firing and it would get stuck
