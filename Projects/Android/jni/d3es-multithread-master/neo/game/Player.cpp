@@ -10130,6 +10130,17 @@ void idPlayer::PerformImpulse( int impulse ) {
             break;
         }
 
+        case IMPULSE_35: // toggle flashlight modes
+        {
+            if(vr_flashlightMode.GetInteger() < 3) {
+                vr_flashlightMode.SetInteger(vr_flashlightMode.GetInteger() + 1);
+            }
+            else if(vr_flashlightMode.GetInteger() == 3) {
+                vr_flashlightMode.SetInteger(0);
+            }
+            break;
+        }
+
         case IMPULSE_36: //  Toggle Hud
         {
             ToggleHud();

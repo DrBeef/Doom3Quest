@@ -2542,6 +2542,9 @@ void RB_GLSL_FogAllLights(void) {
 	// Skip Cases
 	//////////////
 
+	//GB Never do this on Doom3Quest
+	return;
+
 	if (r_skipFogLights.GetBool() || backEnd.viewDef->isXraySubview /* dont fog in xray mode*/ ) {
 		return;
 	}
