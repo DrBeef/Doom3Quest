@@ -2929,6 +2929,7 @@ ammo_t idWeapon::GetAmmoNumForName( const char *ammoname ) {
 
 	ammoDict = gameLocal.FindEntityDefDict( "ammo_types", false );
 	if ( !ammoDict ) {
+		return 0;
 		gameLocal.Error( "Could not find entity definition for 'ammo_types'\n" );
 	}
 

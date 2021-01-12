@@ -902,7 +902,8 @@ idInventory::AmmoIndexForWeaponClass
 ammo_t idInventory::AmmoIndexForWeaponClass( const char *weapon_classname, int *ammoRequired ) {
 	const idDeclEntityDef *decl = gameLocal.FindEntityDef( weapon_classname, false );
 	if ( !decl ) {
-		gameLocal.Error( "Unknown weapon in decl '%s'", weapon_classname );
+	    return 0;
+		//gameLocal.Error( "Unknown weapon in decl '%s'", weapon_classname );
 	}
 	if ( ammoRequired ) {
 		*ammoRequired = decl->dict.GetInt( "ammoRequired" );
@@ -1087,7 +1088,8 @@ void idInventory::Drop( const idDict &spawnArgs, const char *weapon_classname, i
 	assert( weapon_index != -1 || weapon_classname );
 	if ( weapon_index == -1 ) {
 		for( weapon_index = 0; weapon_index < MAX_WEAPONS; weapon_index++ ) {
-			if ( !idStr::Icmp( weapon_classname, spawnArgs.GetString( va( "def_weapon%d", weapon_index ) ) ) ) {
+		    const char * spawnWeaponarg = spawnArgs.GetString( va( "def_weapon%d", weapon_index ) );
+			if ( !idStr::Icmp( weapon_classname, spawnWeaponarg ) ) {
 				break;
 			}
 		}
