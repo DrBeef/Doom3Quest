@@ -152,6 +152,7 @@ void controlMouse(bool reset, ovrInputStateTrackedRemote *newState, ovrInputStat
     static int cursorX = 0;
     static int cursorY = 0;
     static bool firstTime = true;
+    static float yaw;
 
     int height = 0;
     int width = 0;
@@ -159,17 +160,25 @@ void controlMouse(bool reset, ovrInputStateTrackedRemote *newState, ovrInputStat
 
     if (reset || firstTime)
     {
-        cursorX = 0;
+        cursorX = (float)(((pVRClientInfo->weaponangles_temp[YAW]-yaw) * width) / 60.0F);
+        cursorY = (float)((pVRClientInfo->weaponangles_temp[PITCH] * height) / 70.0F);
+        yaw = pVRClientInfo->weaponangles_temp[YAW];
+
         Sys_AddMouseMoveEvent(-10000, -10000);
         Sys_AddMouseMoveEvent((width / 2.0F), (height / 2.0F));
-        firstTime = false;
+
+        if (firstTime && between(-5, (pVRClientInfo->weaponangles_temp[PITCH]-30), 5)) {
+            firstTime = false;
+        }
+
         return;
     }
 
-    //cursorX = (float)((-(pVRClientInfo->weaponangles_temp[YAW]-yaw) * width) / 60.0F) + (width / 2.0F);
-    cursorX = (float)(pVRClientInfo->weaponangles_delta_temp[YAW] * 18.0f);
-    cursorY = (float)(((pVRClientInfo->weaponangles_temp[PITCH]-30) * height) / 70.0F) + (height / 2.0F);
+    int newCursorX = (float)((-(pVRClientInfo->weaponangles_temp[YAW]-yaw) * width) / 70.0F);
+    int newCursorY = (float)((pVRClientInfo->weaponangles_temp[PITCH] * height) / 70.0F);
 
-    Sys_AddMouseMoveEvent(0, -10000); // reset cursor pitch position
-    Sys_AddMouseMoveEvent(cursorX, cursorY);
+    Sys_AddMouseMoveEvent(newCursorX - cursorX, newCursorY - cursorY);
+
+    cursorY = newCursorY;
+    cursorX = newCursorX;
 }
