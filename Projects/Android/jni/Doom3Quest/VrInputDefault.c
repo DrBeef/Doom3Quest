@@ -19,7 +19,7 @@ Authors		:	Simon Brown
 
 #include "doomkeys.h"
 
-float	vr_reloadtimeoutms = 200.0f;
+float	vr_reloadtimeoutms = 300.0f;
 float	vr_walkdirection = 0;
 float	vr_weapon_pitchadjust = -30.0f;
 float	vr_teleport;
@@ -398,13 +398,7 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrac
             positional_movementForward = v[1];
              */
 
-            if (((pDominantTrackedRemoteNew->Buttons & ovrButton_Joystick) !=
-                 (pDominantTrackedRemoteOld->Buttons & ovrButton_Joystick)) &&
-                (pDominantTrackedRemoteOld->Buttons & ovrButton_Joystick)) {
 
-                //Toggle Body
-                Android_SetImpulse(UB_IMPULSE34);
-            }
 
             //Fire Primary
             if ((pDominantTrackedRemoteNew->Buttons & ovrButton_Trigger) !=
@@ -470,34 +464,43 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrac
             remote_movementSideways = v[0] *  vr_movement_multiplier;
             remote_movementForward = v[1] *  vr_movement_multiplier;
 
-            if (!canUseQuickSave) {
-                if (((secondaryButtonsNew & secondaryButton2) !=
-                     (secondaryButtonsOld & secondaryButton2)) &&
-                    (secondaryButtonsNew & secondaryButton2)) {
 
-
-                    if (dominantGripPushed) {
+            if (dominantGripPushed) {
+                if (((secondaryButtonsNew & ovrButton_Joystick) !=
+                     (secondaryButtonsOld & ovrButton_Joystick)) &&
+                    (secondaryButtonsNew & ovrButton_Joystick)) {
 #ifdef DEBUG
-                        Android_SetCommand("give all");
+                        //Android_SetCommand("give all");
 #endif
                         //Recenter Body
                         Android_SetImpulse(UB_IMPULSE32);
-                    }
+                }
 
+                if (((primaryButtonsNew & ovrButton_Joystick) !=
+                     (primaryButtonsOld & ovrButton_Joystick)) &&
+                    (primaryButtonsNew & ovrButton_Joystick)) {
+                    //Toggle Torch Mode
+                    Android_SetImpulse(UB_IMPULSE35);
+                }
+            } else {
+                if (((primaryButtonsNew & ovrButton_Joystick) !=
+                     (primaryButtonsOld & ovrButton_Joystick)) &&
+                    (primaryButtonsNew & ovrButton_Joystick)) {
+
+                    //Toggle Body
+                    Android_SetImpulse(UB_IMPULSE34);
+                }
+
+                if (((secondaryButtonsNew & ovrButton_Joystick) !=
+                     (secondaryButtonsOld & ovrButton_Joystick)) &&
+                    (secondaryButtonsNew & ovrButton_Joystick)) {
+
+                    //Turn on Flashlight
+                    Android_SetImpulse(UB_IMPULSE16);
                 }
             }
 
-            if (((pOffTrackedRemoteNew->Buttons & ovrButton_Joystick) !=
-                (pOffTrackedRemoteOld->Buttons & ovrButton_Joystick)) &&
-                    (pOffTrackedRemoteOld->Buttons & ovrButton_Joystick)) {
 
-                //Turn on Flashlight
-                Android_SetImpulse(UB_IMPULSE16);
-
-
-                //Recenter Body
-                //Android_SetImpulse(UB_IMPULSE32);
-            }
 
 
 
