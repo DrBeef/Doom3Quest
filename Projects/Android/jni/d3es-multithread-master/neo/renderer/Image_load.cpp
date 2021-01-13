@@ -214,7 +214,8 @@ void idImage::GetDownsize( int &scaled_width, int &scaled_height ) const {
 	int size = 0;
 
 	// perform optional picmip operation to save texture memory
-	if ( depth == TD_SPECULAR && globalImages->image_downSizeSpecular.GetInteger() ) {
+	//GB Forced specular downsizing in code
+	if ( depth == TD_SPECULAR && (globalImages->image_downSizeSpecular.GetInteger() || 1)) {
 		size = globalImages->image_downSizeSpecularLimit.GetInteger();
 		if ( size == 0 ) {
 			size = 64;

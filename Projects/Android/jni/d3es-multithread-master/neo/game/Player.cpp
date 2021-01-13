@@ -1039,7 +1039,7 @@ bool idInventory::Give( idPlayer *owner, const idDict &spawnArgs, const char *st
 						*idealWeapon = i;
 					}
 					if ( owner->hud && updateHud && lastGiveTime + 1000 < gameLocal.time ) {
-						owner->hud->SetStateInt( "newWeapon", i-1 );
+						owner->hud->SetStateInt( "newWeapon", owner->MapWeaponHudId(i) );
 						owner->hud->HandleNamedEvent( "newWeapon" );
 						lastGiveTime = gameLocal.time;
 					}
@@ -9732,6 +9732,38 @@ void idPlayer::UpdatePDAInfo( bool updatePDASel ) {
 	objectiveSystem->StateChanged( gameLocal.time );
 }
 
+int idPlayer::MapWeaponHudId(int fpNumber)
+{
+	if(fpNumber == 1) //Chainsaw
+		return 10;
+	if(fpNumber == 2 || fpNumber == 3) // Pistol / Shotgun
+		return fpNumber - 1;
+	if(fpNumber >= 5 && fpNumber <= 10)
+		return fpNumber - 2;
+	if(fpNumber == 12) //Soul Cube
+		return 9;
+	if(fpNumber == 16) //Flashlight
+		return 11;
+	if(fpNumber == 17) //Flashlight New
+		return 11;
+	if(fpNumber == 18) //PDA
+		return 12;
+	return fpNumber;
+    /*else if(fpNumber == 5) //Machine Gun
+		return 3;
+	else if(fpNumber == 6) //Chain Gun
+		return 4;
+	else if(fpNumber == 7) //Hand grenade
+		return 5;
+	else if(fpNumber == 8) //Plasma Gun
+		return 6;
+	else if(fpNumber == 9) //Rocket Launch
+		return 7;
+	else if(fpNumber == 10) //BFG
+		return 8;*/
+
+}
+
 /*
 ==============
 idPlayer::TogglePDA
@@ -9782,7 +9814,7 @@ void idPlayer::TogglePDA( int hand  ) {
 
 		for ( j = 1; j < MAX_WEAPONS; j++ ) {
 			const char *weapnum = va( "def_weapon%d", j );
-			const char *hudWeap = va( "weapon%d", j-1 );
+			const char *hudWeap = va( "weapon%d", MapWeaponHudId(j));
 			int weapstate = 0;
 			if ( inventory.weapons & ( 1 << j ) ) {
 				const char *weap = spawnArgs.GetString( weapnum );
@@ -12781,7 +12813,7 @@ idVec3	idPlayer::GunAcceleratingOffset( void ) {
 idPlayer::UpdateLaserSight
 ==============
 */
-idCVar	g_laserSightWidth( "g_laserSightWidth", "0.5", CVAR_FLOAT | CVAR_ARCHIVE, "laser sight beam width" ); // Koz default was 2, IMO too big in VR.
+idCVar	g_laserSightWidth( "g_laserSightWidth", "0.3", CVAR_FLOAT | CVAR_ARCHIVE, "laser sight beam width" ); // Koz default was 2, IMO too big in VR.
 idCVar	g_laserSightLength( "g_laserSightLength", "1000", CVAR_FLOAT | CVAR_ARCHIVE, "laser sight beam length" ); // Koz default was 250, but was to short in VR.  Length will be clipped if object is hit, this is max length for the hit trace.
 void idPlayer::UpdateLaserSight( int hand )
 {

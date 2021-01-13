@@ -911,7 +911,8 @@ public:
 
 	void					PerformImpulse( int impulse );
 	void					Spectate( bool spectate );
-    void					TogglePDA( int hand );
+	int 					MapWeaponHudId( int inGame );
+	void					TogglePDA( int hand );
 	void					ToggleScoreboard( void );
 	void					RouteGuiMouse( idUserInterface *gui );
 	void					UpdateHud( void );

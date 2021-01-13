@@ -24,6 +24,7 @@ float	vr_walkdirection = 0;
 float	vr_weapon_pitchadjust = -30.0f;
 float	vr_teleport;
 float	vr_switch_sticks = 0;
+int     give_weapon_count = 1;
 
 extern bool forceVirtualScreen;
 
@@ -470,7 +471,51 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrac
                      (secondaryButtonsOld & ovrButton_Joystick)) &&
                     (secondaryButtonsNew & ovrButton_Joystick)) {
 #ifdef DEBUG
-                        Android_SetCommand("give all");
+                        //Android_SetCommand("give all");
+                    if(give_weapon_count == 1){
+                        Android_SetCommand("give weapon_pistol");
+                        give_weapon_count = give_weapon_count + 1;
+                    }
+                    else if(give_weapon_count == 2){
+                        Android_SetCommand("give weapon_shotgun");
+                        give_weapon_count = give_weapon_count + 1;
+                    }
+                    else if(give_weapon_count == 3){
+                        Android_SetCommand("give weapon_shotgun");
+                        give_weapon_count = give_weapon_count + 1;
+                    }
+                    else if(give_weapon_count == 4){
+                        Android_SetCommand("give weapon_machinegun");
+                        give_weapon_count = give_weapon_count + 1;
+                    }
+                    else if(give_weapon_count == 5){
+                        Android_SetCommand("give weapon_chaingun");
+                        give_weapon_count = give_weapon_count + 1;
+                    }
+                    else if(give_weapon_count == 6){
+                        Android_SetCommand("give weapon_rocketlauncher");
+                        give_weapon_count = give_weapon_count + 1;
+                    }
+                    else if(give_weapon_count == 7){
+                        Android_SetCommand("give weapon_plasmagun");
+                        give_weapon_count = give_weapon_count + 1;
+                    }
+                    else if(give_weapon_count == 8){
+                        Android_SetCommand("give weapon_chainsaw");
+                        give_weapon_count = give_weapon_count + 1;
+                    }
+                    else if(give_weapon_count == 9){
+                        Android_SetCommand("give weapon_soulcube");
+                        give_weapon_count = give_weapon_count + 1;
+                    }
+                    else if(give_weapon_count == 10){
+                        Android_SetCommand("give weapon_bfg");
+                        give_weapon_count = give_weapon_count + 1;
+                    }
+                    else if(give_weapon_count == 11){
+                        Android_SetCommand("give ammo_grenade_small");
+                        give_weapon_count = 1;
+                    }
 #endif
                         //Recenter Body
                         Android_SetImpulse(UB_IMPULSE32);
