@@ -5833,6 +5833,8 @@ void idPlayerHand::SelectWeapon( int num, bool force, bool specific )
         commonVr->currentFlashlightPosition = commonVr->currentFlashlightMode;
     }
 
+    //GB No one cares about toggle weapons
+    /*
     //Is the weapon a toggle weapon (eg, fists/chainsaw/grabber, or shotgun/super-shotgun, or artifact/soulcube)
     WeaponToggle_t* weaponToggle;
     if( !specific && owner->weaponToggles.Get( va( "weapontoggle%d", num ), &weaponToggle ) )
@@ -5907,7 +5909,7 @@ void idPlayerHand::SelectWeapon( int num, bool force, bool specific )
         }
         weaponToggle->lastUsed = weaponToggleIndex;
         num = weaponToggle->toggleList[weaponToggleIndex];
-    }
+    }*/
 
     // Is there an actual weapon for this weapon slot?
     weap = owner->spawnArgs.GetString( va( "def_weapon%d", num ) );

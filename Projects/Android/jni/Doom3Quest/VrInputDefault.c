@@ -470,7 +470,7 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrac
                      (secondaryButtonsOld & ovrButton_Joystick)) &&
                     (secondaryButtonsNew & ovrButton_Joystick)) {
 #ifdef DEBUG
-                        //Android_SetCommand("give all");
+                        Android_SetCommand("give all");
 #endif
                         //Recenter Body
                         Android_SetImpulse(UB_IMPULSE32);
