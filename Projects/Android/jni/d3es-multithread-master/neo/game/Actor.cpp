@@ -2466,7 +2466,20 @@ int idActor::GetDamageForLocation( int damage, int location, bool headMultiplier
 		{
 			if ( damageScale[location] > 1.0f )
 			{
-				damageAmt *= vr_headshotMultiplier.GetFloat();
+				if(g_skill.GetInteger() == 0)
+				{
+					damageAmt *= 2.5f;
+				}
+				else if(g_skill.GetInteger() == 1)
+				{
+					damageAmt *= 1.75f;
+				}
+				else if(g_skill.GetInteger() == 2)
+				{
+					damageAmt *= 1.25f;
+				}
+				//damageAmt *= vr_headshotMultiplier.GetFloat();
+
 				//common->Printf( "Head damage group detected, adding additional damage scale. New damage = %f\n", damageAmt );
 			}
 		}
