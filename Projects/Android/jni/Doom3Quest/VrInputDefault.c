@@ -82,10 +82,19 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrac
     uint32_t primaryButtonsOld;
     uint32_t secondaryButtonsNew;
     uint32_t secondaryButtonsOld;
+    uint32_t weaponButtonsNew;
+    uint32_t weaponButtonsOld;
+    uint32_t offhandButtonsNew;
+    uint32_t offhandButtonsOld;
     int primaryButton1;
     int primaryButton2;
     int secondaryButton1;
     int secondaryButton2;
+
+    weaponButtonsNew = pDominantTrackedRemoteNew->Buttons;
+    weaponButtonsOld = pDominantTrackedRemoteOld->Buttons;
+    offhandButtonsNew = pOffTrackedRemoteNew->Buttons;
+    offhandButtonsOld = pOffTrackedRemoteOld->Buttons;
 
     if ((controlscheme == 0 &&switchsticks == 1) ||
        (controlscheme == 1 &&switchsticks == 0))
@@ -467,9 +476,9 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrac
 
 
             if (dominantGripPushed) {
-                if (((secondaryButtonsNew & ovrButton_Joystick) !=
-                     (secondaryButtonsOld & ovrButton_Joystick)) &&
-                    (secondaryButtonsNew & ovrButton_Joystick)) {
+                if (((offhandButtonsNew & ovrButton_Joystick) !=
+                     (offhandButtonsOld & ovrButton_Joystick)) &&
+                    (offhandButtonsNew & ovrButton_Joystick)) {
 #ifdef DEBUG
                         //Android_SetCommand("give all");
                     if(give_weapon_count == 1){
@@ -521,33 +530,29 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrac
                         Android_SetImpulse(UB_IMPULSE32);
                 }
 
-                if (((primaryButtonsNew & ovrButton_Joystick) !=
-                     (primaryButtonsOld & ovrButton_Joystick)) &&
-                    (primaryButtonsNew & ovrButton_Joystick)) {
+                if (((weaponButtonsNew & ovrButton_Joystick) !=
+                     (weaponButtonsOld & ovrButton_Joystick)) &&
+                    (weaponButtonsNew & ovrButton_Joystick)) {
                     //Toggle Torch Mode
                     Android_SetImpulse(UB_IMPULSE35);
                 }
             } else {
-                if (((primaryButtonsNew & ovrButton_Joystick) !=
-                     (primaryButtonsOld & ovrButton_Joystick)) &&
-                    (primaryButtonsNew & ovrButton_Joystick)) {
+                if (((weaponButtonsNew & ovrButton_Joystick) !=
+                     (weaponButtonsOld & ovrButton_Joystick)) &&
+                    (weaponButtonsNew & ovrButton_Joystick)) {
 
                     //Toggle Body
                     Android_SetImpulse(UB_IMPULSE34);
                 }
 
-                if (((secondaryButtonsNew & ovrButton_Joystick) !=
-                     (secondaryButtonsOld & ovrButton_Joystick)) &&
-                    (secondaryButtonsNew & ovrButton_Joystick)) {
+                if (((offhandButtonsNew & ovrButton_Joystick) !=
+                     (offhandButtonsOld & ovrButton_Joystick)) &&
+                    (offhandButtonsNew & ovrButton_Joystick)) {
 
                     //Turn on Flashlight
                     Android_SetImpulse(UB_IMPULSE16);
                 }
             }
-
-
-
-
 
             //We need to record if we have started firing primary so that releasing trigger will stop definitely firing, if user has pushed grip
             //in meantime, then it wouldn't stop the gun firing and it would get stuck
