@@ -148,17 +148,22 @@ float clamp(float _min, float _val, float _max)
 void Doom3Quest_GetScreenRes(int *width, int *height);
 
 extern float SS_MULTIPLIER;
-void controlMouse(bool reset, ovrInputStateTrackedRemote *newState, ovrInputStateTrackedRemote *oldState) {
+void controlMouse(bool showingMenu, ovrInputStateTrackedRemote *newState, ovrInputStateTrackedRemote *oldState) {
     static int cursorX = 0;
     static int cursorY = 0;
-    static bool firstTime = true;
+    static bool waitForLevelController = true;
+    static bool previousShowingMenu = true;
     static float yaw;
+
+    //Has menu been toggled?
+    bool toggledMenuOn = !previousShowingMenu && showingMenu;
+    previousShowingMenu = showingMenu;
 
     int height = 0;
     int width = 0;
     Doom3Quest_GetScreenRes(&width, &height);
 
-    if (reset || firstTime)
+    if (toggledMenuOn || waitForLevelController)
     {
         cursorX = (float)(((pVRClientInfo->weaponangles_temp[YAW]-yaw) * width) / 60.0F);
         cursorY = (float)((pVRClientInfo->weaponangles_temp[PITCH] * height) / 70.0F);
@@ -167,10 +172,19 @@ void controlMouse(bool reset, ovrInputStateTrackedRemote *newState, ovrInputStat
         Sys_AddMouseMoveEvent(-10000, -10000);
         Sys_AddMouseMoveEvent((width / 2.0F), (height / 2.0F));
 
-        if (firstTime && between(-5, (pVRClientInfo->weaponangles_temp[PITCH]-30), 5)) {
-            firstTime = false;
-        }
+        waitForLevelController = true;
+    }
 
+    if (!showingMenu)
+    {
+        return;
+    }
+
+    //Should we carry on waiting for the controller to be pointing forwards before we start sending mouse input?
+    if (waitForLevelController) {
+        if (between(-5, (pVRClientInfo->weaponangles_temp[PITCH]-30), 5)) {
+            waitForLevelController = false;
+        }
         return;
     }
 

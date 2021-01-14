@@ -163,7 +163,7 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrac
     //Menu button - can be used in all modes
     handleTrackedControllerButton_AsKey(leftTrackedRemoteState_new.Buttons, leftTrackedRemoteState_old.Buttons, ovrButton_Enter, K_ESCAPE);
 
-    controlMouse(!inMenu, pDominantTrackedRemoteNew, pDominantTrackedRemoteOld);
+    controlMouse(inMenu, pDominantTrackedRemoteNew, pDominantTrackedRemoteOld);
 
     if ( inMenu || inCinematic ) // Specific cases where we need to interact using mouse etc
     {
