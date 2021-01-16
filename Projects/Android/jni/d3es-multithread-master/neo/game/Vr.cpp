@@ -103,6 +103,9 @@ idCVar	vr_motionFlashPitchAdj( "vr_motionFlashPitchAdj", "40", CVAR_FLOAT | CVAR
 idCVar	vr_nodalX( "vr_nodalX", "-3", CVAR_FLOAT | CVAR_ARCHIVE, "Forward offset from eyes to neck" );
 idCVar	vr_nodalZ( "vr_nodalZ", "-6", CVAR_FLOAT | CVAR_ARCHIVE, "Vertical offset from neck to eye height" );
 
+idCVar vr_controllerOffsetX( "vr_controllerOffsetX", "-1.4", CVAR_FLOAT | CVAR_ARCHIVE, "Controller X offset to handle center" ); // these values work for steam
+idCVar vr_controllerOffsetY( "vr_controllerOffsetY", "-1.32", CVAR_FLOAT | CVAR_ARCHIVE, "Controller Y offset to handle center" );
+idCVar vr_controllerOffsetZ( "vr_controllerOffsetZ", "-0.9", CVAR_FLOAT | CVAR_ARCHIVE, "Controller Z offset to handle center" );
 idCVar vr_vcx( "vr_vcx", "0", CVAR_FLOAT | CVAR_ARCHIVE, "Controller X offset to handle center" ); // these values work for steam
 idCVar vr_vcy( "vr_vcy", "0", CVAR_FLOAT | CVAR_ARCHIVE, "Controller Y offset to handle center" );
 idCVar vr_vcz( "vr_vcz", "0", CVAR_FLOAT | CVAR_ARCHIVE, "Controller Z offset to handle center" );
@@ -188,6 +191,10 @@ idCVar vr_cinematics("vr_cinematics", "0", CVAR_INTEGER | CVAR_ARCHIVE, "Cinemat
 idCVar vr_instantAccel( "vr_instantAccel", "1", CVAR_BOOL | CVAR_ARCHIVE, "Instant Movement Acceleration. 0 = Disabled 1 = Enabled" );
 idCVar vr_shotgunChoke( "vr_shotgunChoke", "60", CVAR_FLOAT | CVAR_ARCHIVE, "% To choke shotgun. 0 = None, 100 = Full Choke\n" );
 idCVar vr_headshotMultiplier( "vr_headshotMultiplier", "2.5", CVAR_FLOAT | CVAR_ARCHIVE, "Damage multiplier for headshots when using Fists,Pistol,Shotgun,Chaingun or Plasmagun.", 1, 5 );
+idCVar vr_headshotMultiplierRecruit( "vr_headshotMultiplierRecruit", "2.0", CVAR_FLOAT | CVAR_ARCHIVE, "Recruit Level Damage multiplier for headshots when using Fists,Pistol,Shotgun,Chaingun or Plasmagun.", 1, 5 );
+idCVar vr_headshotMultiplierNormal( "vr_headshotMultiplierNormal", "1.5", CVAR_FLOAT | CVAR_ARCHIVE, "Normal Level Damage multiplier for headshots when using Fists,Pistol,Shotgun,Chaingun or Plasmagun.", 1, 5 );
+idCVar vr_headshotMultiplierHard( "vr_headshotMultiplierHard", "1.25", CVAR_FLOAT | CVAR_ARCHIVE, "Hard Level Damage multiplier for headshots when using Fists,Pistol,Shotgun,Chaingun or Plasmagun.", 1, 5 );
+idCVar vr_headshotMultiplierNightmare( "vr_headshotMultiplierNightmare", "1.0", CVAR_FLOAT | CVAR_ARCHIVE, "Nightmare Level Damage multiplier for headshots when using Fists,Pistol,Shotgun,Chaingun or Plasmagun.", 1, 5 );
 
 // Carl
 idCVar vr_weaponCycleMode( "vr_weaponCycleMode", "0", CVAR_INTEGER | CVAR_GAME | CVAR_ARCHIVE, "When cycling through weapons\n0 = skip holstered weapons, 1 = include holstered weapons, 2 = flashlight but not holstered, 3 = holstered+flashlight, 4 = holstered+flashlight+pda" );
@@ -933,13 +940,13 @@ void iVr::MotionControlGetHand( int hand, idVec3 &motionPosition, idQuat &motion
     if ( hand == vr_weaponHand.GetInteger() && vr_mountedWeaponController.GetBool() )
     {
         idVec3 controlToHand = idVec3( vr_mountx.GetFloat() / vr_scale.GetFloat(), vr_mounty.GetFloat() / vr_scale.GetFloat(), vr_mountz.GetFloat()  / vr_scale.GetFloat() );
-        idVec3 controlCenter = idVec3( vr_vcx.GetFloat() / vr_scale.GetFloat(), vr_vcy.GetFloat() / vr_scale.GetFloat(), vr_vcz.GetFloat()  / vr_scale.GetFloat() );
+        idVec3 controlCenter = idVec3( vr_controllerOffsetX.GetFloat() / vr_scale.GetFloat(), vr_controllerOffsetY.GetFloat() / vr_scale.GetFloat(), vr_controllerOffsetZ.GetFloat()  / vr_scale.GetFloat() );
 
         motionPosition += ( controlToHand - controlCenter ) * motionRotation; // pivot around the new point
     }
     else
     {
-        motionPosition += idVec3( vr_vcx.GetFloat()  / vr_scale.GetFloat(), vr_vcy.GetFloat() / vr_scale.GetFloat(), vr_vcz.GetFloat() / vr_scale.GetFloat() ) * motionRotation;
+        motionPosition += idVec3( vr_controllerOffsetX.GetFloat()  / vr_scale.GetFloat(), vr_controllerOffsetY.GetFloat() / vr_scale.GetFloat(), vr_controllerOffsetZ.GetFloat() / vr_scale.GetFloat() ) * motionRotation;
     }
 }
 

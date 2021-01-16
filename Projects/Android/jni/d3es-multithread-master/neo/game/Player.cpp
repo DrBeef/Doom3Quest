@@ -513,6 +513,13 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 		}
 	}
 
+	//Restore the clip data
+	for( i = 0; i < MAX_WEAPONS; i++ )
+	{
+		clip[i] = dict.GetInt( va( "clip%i", i ), "-1" );
+		clipDuplicate[i] = dict.GetInt( va( "clipDuplicate%i", i ), "-1" );
+	}
+
 	// items
 	num = dict.GetInt( "items" );
 	items.SetNum( num );
@@ -610,6 +617,7 @@ void idInventory::Save( idSaveGame *savefile ) const {
 	}
 	for( i = 0; i < MAX_WEAPONS; i++ ) {
 		savefile->WriteInt( clip[ i ] );
+		//savefile->WriteInt( clip[i] + clipDuplicate[ i ]);
 	}
 	for( i = 0; i < MAX_POWERUPS; i++ ) {
 		savefile->WriteInt( powerupEndTime[ i ] );
@@ -11806,15 +11814,7 @@ void idPlayer::Think( void ) {
 		}
 		else
 		{
-			if ( vr_playerBodyMode.GetInteger() != 0 ) // not showing the body
-			{
-				headRenderEnt->allowSurfaceInViewID = -1; // hide the head, even in mirror views.
-			}
-			else
-			{
-				//headRenderEnt->suppressSurfaceInViewID = entityNumber + 1;
-				headRenderEnt->allowSurfaceInViewID = 0; // show the head.
-			}
+			headRenderEnt->allowSurfaceInViewID = 0; // GB show the head in mirrors.
 		}
 	}
 
@@ -11827,15 +11827,7 @@ void idPlayer::Think( void ) {
 		renderEntity.suppressShadowInViewID	= entityNumber+1;
 		if( headRenderEnt )
 		{
-			// Koz begin
-			if ( game->isVR && vr_playerBodyMode.GetInteger() == 0 ) // show the head shadow
-			{
-				headRenderEnt->suppressShadowInViewID = 0;
-			}
-			else
-			{
-				headRenderEnt->suppressShadowInViewID = entityNumber + 1;
-			}
+			headRenderEnt->suppressShadowInViewID = 0;
 			// Koz end
 		}
 	}

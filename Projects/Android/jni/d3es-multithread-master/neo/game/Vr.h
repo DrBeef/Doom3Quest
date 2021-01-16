@@ -440,6 +440,9 @@ extern idCVar	vr_weaponPivotOffsetHorizontal;
 extern idCVar	vr_weaponPivotOffsetVertical;
 extern idCVar	vr_weaponPivotForearmLength;
 
+extern idCVar	vr_controllerOffsetX;
+extern idCVar	vr_controllerOffsetY;
+extern idCVar	vr_controllerOffsetZ;
 
 extern idCVar	vr_guiScale;
 extern idCVar	vr_guiSeparation;
@@ -529,6 +532,10 @@ extern idCVar vr_instantAccel;
 extern idCVar vr_shotgunChoke;
 
 extern idCVar vr_headshotMultiplier;
+extern idCVar vr_headshotMultiplierRecruit;
+extern idCVar vr_headshotMultiplierNormal;
+extern idCVar vr_headshotMultiplierHard;
+extern idCVar vr_headshotMultiplierNightmare;
 
 extern idCVar vr_weaponCycleMode;
 extern idCVar vr_gripMode;

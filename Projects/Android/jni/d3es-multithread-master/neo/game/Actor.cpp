@@ -2458,6 +2458,7 @@ int idActor::GetDamageForLocation( int damage, int location, bool headMultiplier
 	//only applies if head damage group is already scaled to take > 1.0x damage.
 	//limited by calling function to fists, pitsol,shotgun,machinegun,chaingun and plasmagun.
 	float damageAmt = damage *= damageScale[location];
+	//common->Printf("Damage Taken at: %s",damageGroups[location].c_str());
 	if ( headMultiplier )
 	{
 		//GBTODO check what the local actor is
@@ -2468,15 +2469,19 @@ int idActor::GetDamageForLocation( int damage, int location, bool headMultiplier
 			{
 				if(g_skill.GetInteger() == 0)
 				{
-					damageAmt *= 2.5f;
+					damageAmt *= vr_headshotMultiplierRecruit.GetFloat();
 				}
 				else if(g_skill.GetInteger() == 1)
 				{
-					damageAmt *= 1.75f;
+					damageAmt *= vr_headshotMultiplierNormal.GetFloat();
 				}
 				else if(g_skill.GetInteger() == 2)
 				{
-					damageAmt *= 1.25f;
+					damageAmt *= vr_headshotMultiplierHard.GetFloat();
+				}
+				else if(g_skill.GetInteger() == 3)
+				{
+					damageAmt *= vr_headshotMultiplierNightmare.GetFloat();
 				}
 				//damageAmt *= vr_headshotMultiplier.GetFloat();
 

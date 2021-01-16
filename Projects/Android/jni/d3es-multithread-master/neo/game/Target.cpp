@@ -1649,9 +1649,9 @@ void idTarget_RemoveWeapons::Event_Activate( idEntity *activator ) {
 		if ( gameLocal.entities[ i ] ) {
 			idPlayer *player = static_cast< idPlayer* >( gameLocal.entities[i] );
 
-			int wIndex[11] = {0, 1, 2, 3, 5, 6, 7, 8, 9, 10, 12};
+			int wIndex[10] = {0, 1, 2, 3, 5, 6, 7, 8, 9, 10};
 			int index = 0;
-			for ( index = 0; index < 11; index++ ) {
+			for ( index = 0; index < 10; index++ ) {
 				player->RemoveWeapon( va( "def_weapon%d", wIndex[index] ) );
 			}
 
