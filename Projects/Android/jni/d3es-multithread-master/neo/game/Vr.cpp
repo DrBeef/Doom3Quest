@@ -159,7 +159,7 @@ idCVar vr_moveThirdPerson( "vr_moveThirdPerson", "1", CVAR_BOOL | CVAR_GAME | CV
 //needs to be added to menu - cant be bothered now
 idCVar vr_crouchMode( "vr_crouchMode", "0", CVAR_INTEGER | CVAR_GAME | CVAR_ARCHIVE, "Crouch Mode:\n 0 = Full motion crouch (In game matches real life)\n 1 = Crouch anim triggered by smaller movement." );
 idCVar vr_crouchTriggerDist( "vr_crouchTriggerDist", "7", CVAR_FLOAT | CVAR_ARCHIVE, " Distance ( in real-world inches ) player must crouch in real life to toggle crouch\n" );
-idCVar vr_crouchHideBody( "vr_crouchHideBody", "0", CVAR_FLOAT | CVAR_ARCHIVE, "Hide body ( if displayed )  when crouching. 0 = Dont hide, 1 = hide." );
+idCVar vr_crouchHideBody( "vr_crouchHideBody", "1", CVAR_FLOAT | CVAR_ARCHIVE, "Hide body ( if displayed )  when crouching. 0 = Dont hide, 1 = hide." );
 
 idCVar vr_frameCheck( "vr_frameCheck", "1", CVAR_INTEGER | CVAR_ARCHIVE, "0 = bypass frame check" );
 
