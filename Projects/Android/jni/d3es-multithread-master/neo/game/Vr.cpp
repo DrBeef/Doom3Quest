@@ -18,12 +18,15 @@
 #include "gamesys/SysCvar.h"
 #include "../cm/CollisionModel.h"
 #include "../../../../../../../../VrApi/Include/VrApi_Types.h"
-
+#include "../framework/Licensee.h"
 
 //#include "libs\LibOVR\Include\OVR_CAPI_GL.h"
 //#include "../renderer/Framebuffer.h"
 
 #define RADIANS_TO_DEGREES(rad) ((float) rad * (float) (180.0 / idMath::PI))
+
+idCVar vr_d3qversion( "vr_d3qversion", ENGINE_VERSION, CVAR_ROM | CVAR_GUI, "Version" );
+
 
 // *** Oculus HMD Variables
 idCVar vr_scale( "vr_scale", "1.0", CVAR_FLOAT | CVAR_ARCHIVE | CVAR_GAME, "World scale. Everything virtual is this times as big." );
