@@ -228,56 +228,56 @@ R_ShowTriMemory_f
 */
 void R_ShowTriSurfMemory_f( const idCmdArgs &args ) {
 	common->Printf( "%6zd kB in %d triangle surfaces\n",
-	                ( srfTrianglesAllocator.GetAllocCount() * sizeof( srfTriangles_t ) ) >> 10,
-	                srfTrianglesAllocator.GetAllocCount() );
+					( srfTrianglesAllocator.GetAllocCount() * sizeof( srfTriangles_t ) ) >> 10,
+					srfTrianglesAllocator.GetAllocCount() );
 
 	common->Printf( "%6d kB vertex memory (%d kB free in %d blocks, %d empty base blocks)\n",
-	                triVertexAllocator.GetBaseBlockMemory() >> 10, triVertexAllocator.GetFreeBlockMemory() >> 10,
-	                triVertexAllocator.GetNumFreeBlocks(), triVertexAllocator.GetNumEmptyBaseBlocks() );
+					triVertexAllocator.GetBaseBlockMemory() >> 10, triVertexAllocator.GetFreeBlockMemory() >> 10,
+					triVertexAllocator.GetNumFreeBlocks(), triVertexAllocator.GetNumEmptyBaseBlocks() );
 
 	common->Printf( "%6d kB index memory (%d kB free in %d blocks, %d empty base blocks)\n",
-	                triIndexAllocator.GetBaseBlockMemory() >> 10, triIndexAllocator.GetFreeBlockMemory() >> 10,
-	                triIndexAllocator.GetNumFreeBlocks(), triIndexAllocator.GetNumEmptyBaseBlocks() );
+					triIndexAllocator.GetBaseBlockMemory() >> 10, triIndexAllocator.GetFreeBlockMemory() >> 10,
+					triIndexAllocator.GetNumFreeBlocks(), triIndexAllocator.GetNumEmptyBaseBlocks() );
 
 	common->Printf( "%6d kB shadow vert memory (%d kB free in %d blocks, %d empty base blocks)\n",
-	                triShadowVertexAllocator.GetBaseBlockMemory() >> 10, triShadowVertexAllocator.GetFreeBlockMemory() >> 10,
-	                triShadowVertexAllocator.GetNumFreeBlocks(), triShadowVertexAllocator.GetNumEmptyBaseBlocks() );
+					triShadowVertexAllocator.GetBaseBlockMemory() >> 10, triShadowVertexAllocator.GetFreeBlockMemory() >> 10,
+					triShadowVertexAllocator.GetNumFreeBlocks(), triShadowVertexAllocator.GetNumEmptyBaseBlocks() );
 
 	common->Printf( "%6d kB tri plane memory (%d kB free in %d blocks, %d empty base blocks)\n",
-	                triPlaneAllocator.GetBaseBlockMemory() >> 10, triPlaneAllocator.GetFreeBlockMemory() >> 10,
-	                triPlaneAllocator.GetNumFreeBlocks(), triPlaneAllocator.GetNumEmptyBaseBlocks() );
+					triPlaneAllocator.GetBaseBlockMemory() >> 10, triPlaneAllocator.GetFreeBlockMemory() >> 10,
+					triPlaneAllocator.GetNumFreeBlocks(), triPlaneAllocator.GetNumEmptyBaseBlocks() );
 
 	common->Printf( "%6d kB sil index memory (%d kB free in %d blocks, %d empty base blocks)\n",
-	                triSilIndexAllocator.GetBaseBlockMemory() >> 10, triSilIndexAllocator.GetFreeBlockMemory() >> 10,
-	                triSilIndexAllocator.GetNumFreeBlocks(), triSilIndexAllocator.GetNumEmptyBaseBlocks() );
+					triSilIndexAllocator.GetBaseBlockMemory() >> 10, triSilIndexAllocator.GetFreeBlockMemory() >> 10,
+					triSilIndexAllocator.GetNumFreeBlocks(), triSilIndexAllocator.GetNumEmptyBaseBlocks() );
 
 	common->Printf( "%6d kB sil edge memory (%d kB free in %d blocks, %d empty base blocks)\n",
-	                triSilEdgeAllocator.GetBaseBlockMemory() >> 10, triSilEdgeAllocator.GetFreeBlockMemory() >> 10,
-	                triSilEdgeAllocator.GetNumFreeBlocks(), triSilEdgeAllocator.GetNumEmptyBaseBlocks() );
+					triSilEdgeAllocator.GetBaseBlockMemory() >> 10, triSilEdgeAllocator.GetFreeBlockMemory() >> 10,
+					triSilEdgeAllocator.GetNumFreeBlocks(), triSilEdgeAllocator.GetNumEmptyBaseBlocks() );
 
 	common->Printf( "%6d kB dominant tri memory (%d kB free in %d blocks, %d empty base blocks)\n",
-	                triDominantTrisAllocator.GetBaseBlockMemory() >> 10, triDominantTrisAllocator.GetFreeBlockMemory() >> 10,
-	                triDominantTrisAllocator.GetNumFreeBlocks(), triDominantTrisAllocator.GetNumEmptyBaseBlocks() );
+					triDominantTrisAllocator.GetBaseBlockMemory() >> 10, triDominantTrisAllocator.GetFreeBlockMemory() >> 10,
+					triDominantTrisAllocator.GetNumFreeBlocks(), triDominantTrisAllocator.GetNumEmptyBaseBlocks() );
 
 	common->Printf( "%6d kB mirror vert memory (%d kB free in %d blocks, %d empty base blocks)\n",
-	                triMirroredVertAllocator.GetBaseBlockMemory() >> 10, triMirroredVertAllocator.GetFreeBlockMemory() >> 10,
-	                triMirroredVertAllocator.GetNumFreeBlocks(), triMirroredVertAllocator.GetNumEmptyBaseBlocks() );
+					triMirroredVertAllocator.GetBaseBlockMemory() >> 10, triMirroredVertAllocator.GetFreeBlockMemory() >> 10,
+					triMirroredVertAllocator.GetNumFreeBlocks(), triMirroredVertAllocator.GetNumEmptyBaseBlocks() );
 
 	common->Printf( "%6d kB dup vert memory (%d kB free in %d blocks, %d empty base blocks)\n",
-	                triDupVertAllocator.GetBaseBlockMemory() >> 10, triDupVertAllocator.GetFreeBlockMemory() >> 10,
-	                triDupVertAllocator.GetNumFreeBlocks(), triDupVertAllocator.GetNumEmptyBaseBlocks() );
+					triDupVertAllocator.GetBaseBlockMemory() >> 10, triDupVertAllocator.GetFreeBlockMemory() >> 10,
+					triDupVertAllocator.GetNumFreeBlocks(), triDupVertAllocator.GetNumEmptyBaseBlocks() );
 
 	common->Printf( "%6zu kB total triangle memory\n",
-	                ( srfTrianglesAllocator.GetAllocCount() * sizeof( srfTriangles_t ) +
-	                  triVertexAllocator.GetBaseBlockMemory() +
-	                  triIndexAllocator.GetBaseBlockMemory() +
-	                  triShadowVertexAllocator.GetBaseBlockMemory() +
-	                  triPlaneAllocator.GetBaseBlockMemory() +
-	                  triSilIndexAllocator.GetBaseBlockMemory() +
-	                  triSilEdgeAllocator.GetBaseBlockMemory() +
-	                  triDominantTrisAllocator.GetBaseBlockMemory() +
-	                  triMirroredVertAllocator.GetBaseBlockMemory() +
-	                  triDupVertAllocator.GetBaseBlockMemory() ) >> 10 );
+					( srfTrianglesAllocator.GetAllocCount() * sizeof( srfTriangles_t ) +
+					  triVertexAllocator.GetBaseBlockMemory() +
+					  triIndexAllocator.GetBaseBlockMemory() +
+					  triShadowVertexAllocator.GetBaseBlockMemory() +
+					  triPlaneAllocator.GetBaseBlockMemory() +
+					  triSilIndexAllocator.GetBaseBlockMemory() +
+					  triSilEdgeAllocator.GetBaseBlockMemory() +
+					  triDominantTrisAllocator.GetBaseBlockMemory() +
+					  triMirroredVertAllocator.GetBaseBlockMemory() +
+					  triDupVertAllocator.GetBaseBlockMemory() ) >> 10 );
 }
 
 /*
@@ -341,23 +341,20 @@ R_FreeStaticTriSurfVertexCaches
 ==============
 */
 void R_FreeStaticTriSurfVertexCaches( srfTriangles_t *tri ) {
-	// We must only free private caches, not those that may be shared with a parent
-
-	// If there is no ambient(ie. parent) surface, then we are sure the cache is private
 	if ( tri->ambientSurface == NULL ) {
 		// this is a real model surface
-		if (tri->ambientCache) {
-			vertexCache.Free(tri->ambientCache);
-			tri->ambientCache = NULL;
-		}
+		vertexCache.Free( tri->ambientCache );
+		tri->ambientCache = NULL;
+	} else {
+		// this is a light interaction surface that references
+		// a different ambient model surface
+		vertexCache.Free( tri->lightingCache );
+		tri->lightingCache = NULL;
 	}
-
-	if (tri->indexCache) {
+	if ( tri->indexCache ) {
 		vertexCache.Free( tri->indexCache );
 		tri->indexCache = NULL;
 	}
-
-	// shadowCache is private if there is vertexes in the tri, otherwise it is shared
 	if ( tri->shadowCache && ( tri->shadowVertexes != NULL || tri->verts != NULL ) ) {
 		// if we don't have tri->shadowVertexes, these are a reference to a
 		// shadowCache on the original surface, which a vertex program
@@ -740,8 +737,8 @@ static int *R_CreateSilRemap( const srfTriangles_t *tri ) {
 		for ( j = hash.First( hashKey ); j >= 0; j = hash.Next( j ) ) {
 			v2 = &tri->verts[j];
 			if ( v2->xyz[0] == v1->xyz[0]
-			        && v2->xyz[1] == v1->xyz[1]
-			        && v2->xyz[2] == v1->xyz[2] ) {
+				 && v2->xyz[1] == v1->xyz[1]
+				 && v2->xyz[2] == v1->xyz[2] ) {
 				c_removed++;
 				remap[i] = j;
 				break;
@@ -806,7 +803,18 @@ void R_CreateDupVerts( srfTriangles_t *tri ) {
 	}
 
 	// create duplicate vertex index based on the vertex remap
-	int * tempDupVerts = (int *) _alloca16( tri->numVerts * 2 * sizeof( tempDupVerts[0] ) );
+	//GB Also protecting this as I think it has got too big
+	// DG: windows only has a 1MB stack and it could happen that we try to allocate >1MB here
+	//     (in lost mission mod, game/le_hell map), causing a stack overflow
+	//     to prevent that, use heap allocation if it's >600KB
+	int * tempDupVerts;
+	size_t allocaSize = tri->numVerts * 2 * sizeof( tempDupVerts[0] );
+	if(allocaSize < 600000)
+		tempDupVerts = (int *) _alloca16( allocaSize );
+	else
+		tempDupVerts = (int *) Mem_Alloc16( allocaSize );
+
+	//int * tempDupVerts = (int *) _alloca16( tri->numVerts * 2 * sizeof( tempDupVerts[0] ) );
 	tri->numDupVerts = 0;
 	for ( i = 0; i < tri->numVerts; i++ ) {
 		if ( remap[i] != i ) {
@@ -818,6 +826,9 @@ void R_CreateDupVerts( srfTriangles_t *tri ) {
 
 	tri->dupVerts = triDupVertAllocator.Alloc( tri->numDupVerts * 2 );
 	memcpy( tri->dupVerts, tempDupVerts, tri->numDupVerts * 2 * sizeof( tri->dupVerts[0] ) );
+
+	if(allocaSize >= 600000)
+		Mem_Free16( tempDupVerts );
 }
 
 /*
@@ -943,7 +954,7 @@ static void R_DefineEdge( int v1, int v2, int planeNum ) {
 			continue;
 		}
 		if ( silEdges[i].v2 == v1 && silEdges[i].v1 == v2 ) {
-			if ( silEdges[i].p2 != numPlanes ) {
+			if ( silEdges[i].p2 != numPlanes )  {
 				c_tripledEdges++;
 				// allow it to still create a new edge
 				continue;
@@ -1274,7 +1285,16 @@ static void	R_DuplicateMirroredVertexes( srfTriangles_t *tri ) {
 	int				totalVerts;
 	int				numMirror;
 
-	tverts = (tangentVert_t *)_alloca16( tri->numVerts * sizeof( *tverts ) );
+	//GB Also protecting this as I think it has got too big
+	// DG: windows only has a 1MB stack and it could happen that we try to allocate >1MB here
+	//     (in lost mission mod, game/le_hell map), causing a stack overflow
+	//     to prevent that, use heap allocation if it's >600KB
+	size_t allocaSize = tri->numVerts * sizeof( *tverts );
+	if(allocaSize < 600000)
+		tverts = (tangentVert_t *)_alloca16( allocaSize  );
+	else
+		tverts = (tangentVert_t *)Mem_Alloc16( allocaSize  );
+	//tverts = (tangentVert_t *)_alloca16( tri->numVerts * sizeof( *tverts ) );
 	memset( tverts, 0, tri->numVerts * sizeof( *tverts ) );
 
 	// determine texture polarity of each surface
@@ -1333,12 +1353,15 @@ static void	R_DuplicateMirroredVertexes( srfTriangles_t *tri ) {
 	// change the indexes
 	for ( i = 0 ; i < tri->numIndexes ; i++ ) {
 		if ( tverts[tri->indexes[i]].negativeRemap &&
-		        R_FaceNegativePolarity( tri, 3*(i/3) ) ) {
+			 R_FaceNegativePolarity( tri, 3*(i/3) ) ) {
 			tri->indexes[i] = tverts[tri->indexes[i]].negativeRemap;
 		}
 	}
 
 	tri->numVerts = totalVerts;
+
+	if(allocaSize >= 600000)
+		Mem_Free16( tverts );
 }
 
 /*
@@ -1389,6 +1412,7 @@ void R_DeriveTangentsWithoutNormals( srfTriangles_t *tri ) {
 		faceTangents = (faceTangents_t *)_alloca16( allocaSize );
 	else
 		faceTangents = (faceTangents_t *)Mem_Alloc16( allocaSize );
+
 
 	R_DeriveFaceTangents( tri, faceTangents );
 

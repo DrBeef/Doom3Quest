@@ -82,8 +82,8 @@ void idRenderModelStatic::Print() const {
 	common->Printf( "%s\n", name.c_str() );
 	common->Printf( "Static model.\n" );
 	common->Printf( "bounds: (%f %f %f) to (%f %f %f)\n",
-	                bounds[0][0], bounds[0][1], bounds[0][2],
-	                bounds[1][0], bounds[1][1], bounds[1][2] );
+					bounds[0][0], bounds[0][1], bounds[0][2],
+					bounds[1][0], bounds[1][1], bounds[1][2] );
 
 	common->Printf( "    verts  tris material\n" );
 	for ( int i = 0 ; i < NumSurfaces() ; i++ ) {
@@ -669,7 +669,7 @@ void idRenderModelStatic::FinishSurfaces() {
 
 		for ( int j = 0 ; j < tri->numIndexes ; j += 3 ) {
 			float	area = idWinding::TriangleArea( tri->verts[tri->indexes[j]].xyz,
-			                                        tri->verts[tri->indexes[j+1]].xyz,  tri->verts[tri->indexes[j+2]].xyz );
+													 tri->verts[tri->indexes[j+1]].xyz,  tri->verts[tri->indexes[j+2]].xyz );
 			const_cast<idMaterial *>(surf->shader)->AddToSurfaceArea( area );
 		}
 	}
@@ -1977,8 +1977,8 @@ bool idRenderModelStatic::LoadFLT( const char *fileName ) {
 	for ( int i = 0 ; i < len/4 ; i++ ) {
 		float v = ( data[i] - min ) / ( max - min );
 		image_p[0] =
-		    image_p[1] =
-		        image_p[2] = v * 255;
+		image_p[1] =
+		image_p[2] = v * 255;
 		image_p[3] = 255;
 		image_p += 4;
 	}
@@ -2136,16 +2136,9 @@ void idRenderModelStatic::FreeVertexCache( void ) {
 		if ( !tri ) {
 			continue;
 		}
-
-		// Free the vertex caches
-		// NB: these are always private, so we can free them without worrying
 		if ( tri->ambientCache ) {
 			vertexCache.Free( tri->ambientCache );
 			tri->ambientCache = NULL;
-		}
-		if ( tri->indexCache ) {
-			vertexCache.Free( tri->indexCache );
-			tri->indexCache = NULL;
 		}
 		// static shadows may be present
 		if ( tri->shadowCache ) {
