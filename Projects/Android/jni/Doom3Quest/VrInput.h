@@ -19,6 +19,9 @@ ovrInputStateTrackedRemote rightTrackedRemoteState_old;
 ovrInputStateTrackedRemote rightTrackedRemoteState_new;
 ovrTracking rightRemoteTracking_new;
 
+ovrInputStateGamepad footTrackedRemoteState_old;
+ovrInputStateGamepad footTrackedRemoteState_new;
+
 ovrDeviceID controllerIDs[2];
 
 float remote_movementSideways;
@@ -33,7 +36,7 @@ void sendButtonActionSimple(const char* action);
 
 void acquireTrackedRemotesData(ovrMobile *Ovr, double displayTime);
 
-void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrackedRemote *pDominantTrackedRemoteNew, ovrInputStateTrackedRemote *pDominantTrackedRemoteOld, ovrTracking* pDominantTracking,
+void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGamepad *pFootTrackingNew, ovrInputStateGamepad *pFootTrackingOld, ovrInputStateTrackedRemote *pDominantTrackedRemoteNew, ovrInputStateTrackedRemote *pDominantTrackedRemoteOld, ovrTracking* pDominantTracking,
                           ovrInputStateTrackedRemote *pOffTrackedRemoteNew, ovrInputStateTrackedRemote *pOffTrackedRemoteOld, ovrTracking* pOffTracking,
                           int domButton1, int domButton2, int offButton1, int offButton2 );
 

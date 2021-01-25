@@ -62,7 +62,8 @@ extern bool objectiveSystemActive;
 extern bool inCinematic;
 
 
-void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrackedRemote *pDominantTrackedRemoteNew, ovrInputStateTrackedRemote *pDominantTrackedRemoteOld, ovrTracking* pDominantTracking,
+
+void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGamepad *pFootTrackingNew, ovrInputStateGamepad *pFootTrackingOld, ovrInputStateTrackedRemote *pDominantTrackedRemoteNew, ovrInputStateTrackedRemote *pDominantTrackedRemoteOld, ovrTracking* pDominantTracking,
                           ovrInputStateTrackedRemote *pOffTrackedRemoteNew, ovrInputStateTrackedRemote *pOffTrackedRemoteOld, ovrTracking* pOffTracking,
                           int domButton1, int domButton2, int offButton1, int offButton2 )
 
@@ -458,10 +459,10 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateTrac
 
         {
             //Apply a filter and quadratic scaler so small movements are easier to make
-            float dist = length(pSecondaryJoystick->x, pSecondaryJoystick->y);
+            float dist = length(pSecondaryJoystick->x - (pFootTrackingNew->LeftJoystick.x * 2), pSecondaryJoystick->y - (pFootTrackingNew->LeftJoystick.y * 2));
             float nlf = nonLinearFilter(dist);
-            float x = nlf * pSecondaryJoystick->x;
-            float y = nlf * pSecondaryJoystick->y;
+            float x = nlf * (pSecondaryJoystick->x - (pFootTrackingNew->LeftJoystick.x * 2));
+            float y = nlf * (pSecondaryJoystick->y - (pFootTrackingNew->LeftJoystick.y * 2));
 
             pVRClientInfo->player_moving = (fabs(x) + fabs(y)) > 0.05f;
 

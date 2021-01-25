@@ -1544,6 +1544,9 @@ void * AppThreadFunction(void * parm ) {
 	ovrApp_Clear(&gAppState);
 	gAppState.Java = java;
 
+	// This app will handle android gamepad events itself.
+	vrapi_SetPropertyInt(&gAppState.Java, VRAPI_EAT_NATIVE_GAMEPAD_EVENTS, 0);
+
 	gAppState.CpuLevel = CPU_LEVEL;
 	gAppState.GpuLevel = GPU_LEVEL;
 	gAppState.MainThreadTid = gettid();
@@ -1773,14 +1776,18 @@ void Doom3Quest_getTrackedRemotesOrientation(int controlscheme, int switch_stick
 
     //Call additional control schemes here
     if (controlscheme == RIGHT_HANDED_DEFAULT) {
-		HandleInput_Default(controlscheme, switch_sticks, &rightTrackedRemoteState_new,
-							&rightTrackedRemoteState_old, &rightRemoteTracking_new,
+		HandleInput_Default(controlscheme, switch_sticks,
+							&footTrackedRemoteState_new, &footTrackedRemoteState_old,
+							&rightTrackedRemoteState_new, &rightTrackedRemoteState_old,
+							&rightRemoteTracking_new,
 							&leftTrackedRemoteState_new, &leftTrackedRemoteState_old,
 							&leftRemoteTracking_new,
 							ovrButton_A, ovrButton_B, ovrButton_X, ovrButton_Y);
 	} else {
 		//Left handed
-		HandleInput_Default(controlscheme, switch_sticks, &leftTrackedRemoteState_new, &leftTrackedRemoteState_old,
+		HandleInput_Default(controlscheme, switch_sticks,
+							&footTrackedRemoteState_new, &footTrackedRemoteState_old,
+							&leftTrackedRemoteState_new, &leftTrackedRemoteState_old,
 							&leftRemoteTracking_new,
 							&rightTrackedRemoteState_new, &rightTrackedRemoteState_old,
 							&rightRemoteTracking_new,
