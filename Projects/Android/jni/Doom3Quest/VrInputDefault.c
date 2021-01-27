@@ -459,10 +459,10 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
 
         {
             //Apply a filter and quadratic scaler so small movements are easier to make
-            float dist = length(pSecondaryJoystick->x + (pFootTrackingNew->LeftJoystick.x), pSecondaryJoystick->y - (pFootTrackingNew->LeftJoystick.y));
+            float dist = length(pSecondaryJoystick->x, pSecondaryJoystick->y);
             float nlf = nonLinearFilter(dist);
-            float x = nlf * (pSecondaryJoystick->x + (pFootTrackingNew->LeftJoystick.x));
-            float y = nlf * (pSecondaryJoystick->y - (pFootTrackingNew->LeftJoystick.y));
+            float x = (nlf * pSecondaryJoystick->x) + pFootTrackingNew->LeftJoystick.x;
+            float y = (nlf * pSecondaryJoystick->y) - pFootTrackingNew->LeftJoystick.y;
 
             pVRClientInfo->player_moving = (fabs(x) + fabs(y)) > 0.05f;
 
