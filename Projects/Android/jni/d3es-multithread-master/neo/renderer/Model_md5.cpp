@@ -235,13 +235,27 @@ void idMD5Mesh::ParseMesh( idLexer &parser, int numJoints, const idJointMat *joi
 	// build the information that will be common to all animations of this mesh:
 	// silhouette edge connectivity and normal / tangent generation information
 	//
-	idDrawVert *verts = (idDrawVert *) _alloca16( texCoords.Num() * sizeof( idDrawVert ) );
+    //GB Check there are not too many verts
+    // DG: windows only has a 1MB stack and it could happen that we try to allocate >1MB here
+    //     (in lost mission mod, game/le_hell map), causing a stack overflow
+    //     to prevent that, use heap allocation if it's >600KB
+    size_t allocaSize = texCoords.Num() * sizeof( idDrawVert );
+    idDrawVert *verts;
+	if(allocaSize < 600000)
+        verts = (idDrawVert *) _alloca16( allocaSize );
+
+    else
+        verts = (idDrawVert *) Mem_Alloc16( allocaSize );
+
 	for ( i = 0; i < texCoords.Num(); i++ ) {
 		verts[i].Clear();
 		verts[i].st = texCoords[i];
 	}
 	TransformVerts( verts, joints );
 	deformInfo = R_BuildDeformInfo( texCoords.Num(), verts, tris.Num(), tris.Ptr(), shader->UseUnsmoothedTangents() );
+
+	if(allocaSize >= 600000)
+        Mem_Free16( verts );
 }
 
 /*
@@ -352,12 +366,20 @@ idMD5Mesh::CalcBounds
 */
 idBounds idMD5Mesh::CalcBounds( const idJointMat *entJoints ) {
 	idBounds	bounds;
-	idDrawVert *verts = (idDrawVert *) _alloca16( texCoords.Num() * sizeof( idDrawVert ) );
+
+	idDrawVert *verts;
+	size_t allocaSize = texCoords.Num() * sizeof( idDrawVert );
+	if(allocaSize < 600000)
+		verts = (idDrawVert *) _alloca16( allocaSize );
+	else
+		verts = (idDrawVert *) Mem_Alloc16( allocaSize );
 
 	TransformVerts( verts, entJoints );
 
 	SIMDProcessor->MinMax( bounds[0], bounds[1], verts, texCoords.Num() );
 
+	if(allocaSize >= 600000)
+		Mem_Free16( verts );
 	return bounds;
 }
 
