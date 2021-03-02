@@ -61,7 +61,7 @@ extern bool inGameGuiActive;
 extern bool objectiveSystemActive;
 extern bool inCinematic;
 
-void Doom3Quest_HapticEvent(const char* event, int intensity, float angle, float yHeight );
+void Doom3Quest_HapticEvent(const char* event, int position, int intensity, float angle, float yHeight );
 
 void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGamepad *pFootTrackingNew, ovrInputStateGamepad *pFootTrackingOld, ovrInputStateTrackedRemote *pDominantTrackedRemoteNew, ovrInputStateTrackedRemote *pDominantTrackedRemoteOld, ovrTracking* pDominantTracking,
                           ovrInputStateTrackedRemote *pOffTrackedRemoteNew, ovrInputStateTrackedRemote *pOffTrackedRemoteOld, ovrTracking* pOffTracking,
@@ -284,7 +284,14 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
 
                     if (velocityTriggeredAttack)
                     {
-                        Doom3Quest_HapticEvent(controlscheme == 0 ? "punchR" : "punchL", 100, 0, 0 );
+                        if (controlscheme == 0) {
+                            Doom3Quest_HapticEvent("punchR", 2, 100, 0,
+                                                   0);
+                        }
+                        else{
+                            Doom3Quest_HapticEvent("punchL", 1, 100, 0,
+                                                   0);
+                        }
                     }
                 }
             }
@@ -317,7 +324,14 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
 
                     if (velocityTriggeredAttack)
                     {
-                        Doom3Quest_HapticEvent(controlscheme == 1 ? "punchR" : "punchL", 100, 0, 0 );
+                        if (controlscheme == 1) {
+                            Doom3Quest_HapticEvent("punchR", 2, 100, 0,
+                                                   0);
+                        }
+                        else{
+                            Doom3Quest_HapticEvent("punchL", 1, 100, 0,
+                                                   0);
+                        }
                     }
                 }
             }

@@ -220,7 +220,7 @@ public:
 
 								//Haptic Feedback
 	virtual void 				Vibrate(int channel, float low, float high ) = 0;
-	virtual void 				HapticEvent(const char* event, int intensity, float angle, float yHeight ) = 0;
+	virtual void 				HapticEvent(const char* event, int position, int intensity, float angle, float yHeight ) = 0;
 	virtual void 				HapticStopAll() = 0;
 	virtual void 				HapticStopEvent(const char* event) = 0;
 	virtual void 				HapticEnable() = 0;

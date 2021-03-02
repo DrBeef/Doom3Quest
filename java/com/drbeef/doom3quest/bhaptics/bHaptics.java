@@ -29,22 +29,33 @@ import java.util.Vector;
 
 
 public class bHaptics {
+
+    public static enum HapticType {
+        Vest,
+        Tactosy_Left,
+        Tactosy_Right
+    };
     
     public static class Haptic
     {
-        Haptic(String key, String altKey) {
+        Haptic(HapticType type, String key, String altKey, float intensity, float duration) {
+            this.type = type;
             this.key = key;
             this.altKey = altKey;
+            this.intensity = intensity;
+            this.duration = duration;
         }
+
         public final String key;
         public final String altKey;
+        public final float intensity;
+        public final float duration;
+        public final HapticType type;
     };
     
     private static final String TAG = "Doom3Quest.bHaptics";
 
     private static Random rand = new Random();
-
-    private static String currentEffect = "";
 
     private static boolean hasPairedDevice = false;
 
@@ -74,154 +85,139 @@ public class bHaptics {
         /*
             DAMAGE
         */
-        Vector<Haptic> heartBeat = new Vector<>();
-        heartBeat.add(registerFromAsset(context, "bHaptics/Damage/Body_Heartbeat.tact", "heartbeat", "heartbeat"));
-        eventToEffectKeyMap.put("heartbeat", heartBeat);
-
-        Vector<Haptic> damageMelee = new Vector<>();
-        damageMelee.add(registerFromAsset(context, "bHaptics/Damage/Body_DMG_Melee1.tact", "melee1", "damage"));
-        damageMelee.add(registerFromAsset(context, "bHaptics/Damage/Body_DMG_Melee2.tact", "melee2", "damage"));
-        eventToEffectKeyMap.put("melee", damageMelee);
-
-        Vector<Haptic> damageFireball = new Vector<>();
-        damageFireball.add(registerFromAsset(context, "bHaptics/Damage/Body_DMG_Fireball.tact", "fireball", "damage"));
-        eventToEffectKeyMap.put("fireball", damageFireball);
-
-        Vector<Haptic> damageBullet = new Vector<>();
-        damageBullet.add(registerFromAsset(context, "bHaptics/Damage/Body_DMG_Bullet.tact", "bullet", "damage"));
-        eventToEffectKeyMap.put("bullet", damageBullet);
-
-        Vector<Haptic> damageShotgun = new Vector<>();
-        damageShotgun.add(registerFromAsset(context, "bHaptics/Damage/Body_DMG_Shotgun.tact", "shotgun", "damage"));
-        eventToEffectKeyMap.put("shotgun", damageShotgun);
-
-        Vector<Haptic> damageFire = new Vector<>();
-        damageFire.add(registerFromAsset(context, "bHaptics/Damage/Body_DMG_Fire.tact", "fire", "damage"));
-        eventToEffectKeyMap.put("fire", damageFire);
-
-        Vector<Haptic> damageFall = new Vector<>();
-        damageFall.add(registerFromAsset(context, "bHaptics/Damage/Body_DMG_Falling.tact", "fall", "damage"));
-        eventToEffectKeyMap.put("fall", damageFall);
-
-        Vector<Haptic> shieldBreak = new Vector<>();
-        shieldBreak.add(registerFromAsset(context, "bHaptics/Damage/Body_Shield_Break.tact", "shield_break", "damage"));
-        eventToEffectKeyMap.put("shield_break", shieldBreak);
+        registerFromAsset(context, "bHaptics/Damage/Body_Heartbeat.tact", "heartbeat", "heartbeat");
+        registerFromAsset(context, "bHaptics/Damage/Body_DMG_Melee1.tact", "melee_left", "damage");
+        registerFromAsset(context, "bHaptics/Damage/Body_DMG_Melee2.tact", "melee_right", "damage");
+        registerFromAsset(context, "bHaptics/Damage/Body_DMG_Fireball.tact", "fireball", "damage");
+        registerFromAsset(context, "bHaptics/Damage/Body_DMG_Bullet.tact", "bullet", "damage");
+        registerFromAsset(context, "bHaptics/Damage/Body_DMG_Shotgun.tact", "shotgun", "damage");
+        registerFromAsset(context, "bHaptics/Damage/Body_DMG_Fire.tact", "fire", "damage");
+        registerFromAsset(context, "bHaptics/Damage/Body_DMG_Falling.tact", "fall", "damage");
+        registerFromAsset(context, "bHaptics/Damage/Body_Shield_Break.tact", "shield_break", "damage");
 
 
         /*
             INTERACTIONS
          */
-        Vector<Haptic> pickupShield = new Vector<>();
-        pickupShield.add(registerFromAsset(context, "bHaptics/Interaction/Body_Shield_Get.tact", "pickup_shield", "pickup"));
-        eventToEffectKeyMap.put("pickup_shield", pickupShield);
+        registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Shield_Get.tact", "pickup_shield", "pickup");
+        registerFromAsset(context, "bHaptics/Interaction/Arms/Pickup_L.tact", HapticType.Tactosy_Left, "pickup_shield", "pickup");
+        registerFromAsset(context, "bHaptics/Interaction/Arms/Pickup_R.tact", HapticType.Tactosy_Right, "pickup_shield", "pickup");
 
-        //Need a tact file for this
-//        Vector<KeyPair> pickup_weapon = new Vector<>();
-//        pickup_weapon.add(registerFromAsset(context, "bHaptics/Interaction/Body_Weapon_Get.tact", "pickup_weapon", "pickup"));
-//        eventToEffectKeyMap.put("pickup_weapon", pickup_weapon);
+        registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Weapon_Get.tact", "pickup_weapon", "pickup");
+        registerFromAsset(context, "bHaptics/Interaction/Arms/Pickup_L.tact", HapticType.Tactosy_Left, "pickup_weapon", "pickup");
+        registerFromAsset(context, "bHaptics/Interaction/Arms/Pickup_R.tact", HapticType.Tactosy_Right, "pickup_weapon", "pickup");
 
-//        Vector<KeyPair> pickup_ammo = new Vector<>();
-//        pickup_ammo.add(registerFromAsset(context, "bHaptics/Interaction/Body_Ammo_Get.tact", "pickup_ammo", "pickup"));
-//        eventToEffectKeyMap.put("pickup_ammo", pickup_ammo);
+        registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Ammo_Get.tact", "pickup_ammo", "pickup");
+        registerFromAsset(context, "bHaptics/Interaction/Arms/Ammo_L.tact", HapticType.Tactosy_Left, "pickup_ammo", "pickup");
+        registerFromAsset(context, "bHaptics/Interaction/Arms/Ammo_R.tact", HapticType.Tactosy_Right, "pickup_ammo", "pickup");
 
-        Vector<Haptic> healstation = new Vector<>();
-        healstation.add(registerFromAsset(context, "bHaptics/Interaction/Body_Healstation.tact", "healstation", "pickup"));
-        eventToEffectKeyMap.put("healstation", healstation);
+        registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Healstation.tact", "healstation", "pickup");
+        registerFromAsset(context, "bHaptics/Interaction/Arms/Healthstation_L.tact", HapticType.Tactosy_Left, "healstation", "pickup");
+        registerFromAsset(context, "bHaptics/Interaction/Arms/Healthstation_R.tact", HapticType.Tactosy_Right, "healstation", "pickup");
 
-        Vector<Haptic> doorOpen = new Vector<>();
-        doorOpen.add(registerFromAsset(context, "bHaptics/Interaction/Body_Door_Open.tact", "dooropen", "door"));
-        eventToEffectKeyMap.put("dooropen", doorOpen);
+        registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Door_Open.tact", "dooropen", "door");
+        registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Door_Close.tact", "doorclose", "door");
+        registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Scan.tact", HapticType.Vest, "scan", "environment", 1.0f, 1.2f);
+        registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Rumble.tact", "rumble", "rumble");
+        registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Chamber_Up.tact", "liftup", "environment");
+        registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Chamber_Down.tact", "liftdown", "environment");
+        registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Machine.tact", "machine", "environment");
 
-        Vector<Haptic> doorClose = new Vector<>();
-        doorClose.add(registerFromAsset(context, "bHaptics/Interaction/Body_Door_Close.tact", "doorclose", "door"));
-        eventToEffectKeyMap.put("doorclose", doorClose);
-
-        Vector<Haptic> scan = new Vector<>();
-        scan.add(registerFromAsset(context, "bHaptics/Interaction/Body_Scan.tact", "scan", "environment"));
-        eventToEffectKeyMap.put("scan", scan);
-
-        Vector<Haptic> rumble = new Vector<>();
-        rumble.add(registerFromAsset(context, "bHaptics/Interaction/Body_Rumble.tact", "rumble", "environment"));
-        eventToEffectKeyMap.put("rumble", rumble);
-
-        Vector<Haptic> liftup = new Vector<>();
-        liftup.add(registerFromAsset(context, "bHaptics/Interaction/Body_Chamber_Up.tact", "liftup", "environment"));
-        eventToEffectKeyMap.put("liftup", liftup);
-
-        Vector<Haptic> liftdown = new Vector<>();
-        liftdown.add(registerFromAsset(context, "bHaptics/Interaction/Body_Chamber_Down.tact", "liftdown", "environment"));
-        eventToEffectKeyMap.put("liftdown", liftdown);
-
-        Vector<Haptic> machine = new Vector<>();
-        machine.add(registerFromAsset(context, "bHaptics/Interaction/Body_Machine.tact", "machine", "environment"));
-        eventToEffectKeyMap.put("machine", machine);
+        registerFromAsset(context, "bHaptics/Interaction/Vest/Body_PDA_Open.tact", "pda_open", "pda");
+        registerFromAsset(context, "bHaptics/Interaction/Vest/Body_PDA_Open.tact", "pda_close", "pda");
+        registerFromAsset(context, "bHaptics/Interaction/Vest/Body_PDA_Alarm.tact", "pda_alarm", "pda");
+        registerFromAsset(context, "bHaptics/Interaction/Vest/Body_PDA_Touch.tact", "pda_touch", "pda");
 
 
         /*
             WEAPONS
          */
 
-        Vector<Haptic> weaponSwitch = new Vector<>();
-        weaponSwitch.add(registerFromAsset(context, "bHaptics/Weapon/Body_Swap.tact", "weapon_switch", "weapon"));
-        eventToEffectKeyMap.put("weapon_switch", weaponSwitch);
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Swap.tact", "weapon_switch", "weapon");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Swap_L.tact", HapticType.Tactosy_Left, "weapon_switch", "weapon");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Swap_R.tact", HapticType.Tactosy_Right, "weapon_switch", "weapon");
 
-        Vector<Haptic> weaponReload = new Vector<>();
-        weaponReload.add(registerFromAsset(context, "bHaptics/Weapon/Body_Reload.tact", "weapon_reload", "weapon"));
-        eventToEffectKeyMap.put("weapon_reload", weaponReload);
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Reload.tact", "weapon_reload", "weapon");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Reload_L.tact", HapticType.Tactosy_Left, "weapon_reload", "weapon");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Reload_R.tact", HapticType.Tactosy_Right, "weapon_reload", "weapon");
 
-        Vector<Haptic> punchL = new Vector<>();
-        punchL.add(registerFromAsset(context, "bHaptics/Weapon/Body_Punch_L.tact", "punchL", "weapon"));
-        eventToEffectKeyMap.put("punchL", punchL);
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Punch_L.tact", "punchL", "weapon");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Melee_L.tact", HapticType.Tactosy_Left, "punchL", "weapon");
 
-        Vector<Haptic> punchR = new Vector<>();
-        punchR.add(registerFromAsset(context, "bHaptics/Weapon/Body_Punch_R.tact", "punchR", "weapon"));
-        eventToEffectKeyMap.put("punchR", punchR);
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Punch_R.tact", "punchR", "weapon");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Melee_R.tact", HapticType.Tactosy_Right, "punchR", "weapon");
 
-        Vector<Haptic> weaponPistolFire = new Vector<>();
-        weaponPistolFire.add(registerFromAsset(context, "bHaptics/Weapon/Body_Pistol.tact", "pistol_fire", "weapon_fire"));
-        eventToEffectKeyMap.put("pistol_fire", weaponPistolFire);
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Pistol.tact", "pistol_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Pistol_L.tact", HapticType.Tactosy_Left, "pistol_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Pistol_R.tact", HapticType.Tactosy_Right, "pistol_fire", "weapon_fire");
 
-        Vector<Haptic> weaponShotgunFire = new Vector<>();
-        weaponShotgunFire.add(registerFromAsset(context, "bHaptics/Weapon/Body_Shotgun.tact", "shotgun_fire", "weapon_fire"));
-        eventToEffectKeyMap.put("shotgun_fire", weaponShotgunFire);
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Shotgun.tact", "shotgun_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Shotgun_L.tact", HapticType.Tactosy_Left, "shotgun_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Shotgun_R.tact", HapticType.Tactosy_Right, "shotgun_fire", "weapon_fire");
 
-        Vector<Haptic> weaponPlasmaFire = new Vector<>();
-        weaponPlasmaFire.add(registerFromAsset(context, "bHaptics/Weapon/Body_Plasmagun.tact", "plasmagun_fire", "weapon_fire"));
-        eventToEffectKeyMap.put("plasmagun_fire", weaponPlasmaFire);
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Plasmagun.tact", "plasmagun_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/ShootDefault_L.tact", HapticType.Tactosy_Left, "plasmagun_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/ShootDefault_R.tact", HapticType.Tactosy_Right, "plasmagun_fire", "weapon_fire");
 
-        Vector<Haptic> weaponHandGrenadeInit = new Vector<>();
-        weaponHandGrenadeInit.add(registerFromAsset(context, "bHaptics/Weapon/Body_Grenade_Init.tact", "handgrenade_init", "weapon_init"));
-        eventToEffectKeyMap.put("handgrenade_init", weaponHandGrenadeInit);
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Grenade_Init.tact", "handgrenade_init", "weapon_init");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Grenade_Throw.tact", "handgrenade_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Grenade_L.tact", HapticType.Tactosy_Left, "handgrenade_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Armd/Grenade_R.tact", HapticType.Tactosy_Right, "handgrenade_fire", "weapon_fire");
 
-        Vector<Haptic> weaponHandGrenadeFire = new Vector<>();
-        weaponHandGrenadeFire.add(registerFromAsset(context, "bHaptics/Weapon/Body_Grenade_Throw.tact", "handgrenade_fire", "weapon_fire"));
-        eventToEffectKeyMap.put("handgrenade_fire", weaponHandGrenadeFire);
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Machinegun.tact", "machinegun_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/SMG_L.tact", HapticType.Tactosy_Left, "machinegun_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/SMG_R.tact", HapticType.Tactosy_Right, "machinegun_fire", "weapon_fire");
 
-        Vector<Haptic> weaponMachinegunFire = new Vector<>();
-        weaponMachinegunFire.add(registerFromAsset(context, "bHaptics/Weapon/Body_Machinegun.tact", "machinegun_fire", "weapon_fire"));
-        eventToEffectKeyMap.put("machinegun_fire", weaponMachinegunFire);
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Chaingun_Init.tact", "chaingun_init", "weapon_init");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Chaingun_Fire.tact", "chaingun_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Assault_L.tact", HapticType.Tactosy_Left, "chaingun_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Assault_R.tact", HapticType.Tactosy_Right, "chaingun_fire", "weapon_fire");
 
-        Vector<Haptic> weaponChaingunInit = new Vector<>();
-        weaponChaingunInit.add(registerFromAsset(context, "bHaptics/Weapon/Body_Chaingun_Init.tact", "chaingun_init", "weapon_init"));
-        eventToEffectKeyMap.put("chaingun_init", weaponChaingunInit);
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_BFG9000_Init.tact", "bfg_init", "weapon_init");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_BFG9000_Fire.tact", "bfg_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/ShootDefault_L.tact", HapticType.Tactosy_Left, "bfg_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/ShootDefault_R.tact", HapticType.Tactosy_Right, "bfg_fire", "weapon_fire");
 
-        Vector<Haptic> weaponChaingunFire = new Vector<>();
-        weaponChaingunFire.add(registerFromAsset(context, "bHaptics/Weapon/Body_Chaingun_Fire.tact", "chaingun_fire", "weapon_fire"));
-        eventToEffectKeyMap.put("chaingun_fire", weaponChaingunFire);
-
-        Vector<Haptic> weaponBFGInit = new Vector<>();
-        weaponBFGInit.add(registerFromAsset(context, "bHaptics/Weapon/Body_BFG9000_Init.tact", "bfg_init", "weapon_init"));
-        eventToEffectKeyMap.put("bfg_init", weaponBFGInit);
-
-        Vector<Haptic> weaponBFGFire = new Vector<>();
-        weaponBFGFire.add(registerFromAsset(context, "bHaptics/Weapon/Body_BFG9000_Fire.tact", "bfg_fire", "weapon_fire"));
-        eventToEffectKeyMap.put("bfg_fire", weaponBFGFire);
-
-        Vector<Haptic> weaponRocketFire = new Vector<>();
-        weaponRocketFire.add(registerFromAsset(context, "bHaptics/Weapon/Body_RocketLauncher.tact", "rocket_fire", "weapon_fire"));
-        eventToEffectKeyMap.put("rocket_fire", weaponRocketFire);
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_RocketLauncher.tact", "rocket_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/ShootDefault_L.tact", HapticType.Tactosy_Left, "rocket_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/ShootDefault_R.tact", HapticType.Tactosy_Right, "rocket_fire", "weapon_fire");
 
         initialised = true;
+    }
+
+    public static void registerFromAsset(Context context, String filename, HapticType type, String key, String group, float intensity, float duration)
+    {
+        String content = read(context, filename);
+        if (content != null) {
+
+            String hapticKey = key + "_" + type.name();
+            player.registerProject(hapticKey, content);
+
+            Haptic haptic = new Haptic(type, hapticKey, group, intensity, duration);
+
+            Vector<Haptic> haptics;
+            if (!eventToEffectKeyMap.containsKey(key))
+            {
+                haptics = new Vector<>();
+                haptics.add(haptic);
+                eventToEffectKeyMap.put(key, haptics);
+            }
+            else
+            {
+                haptics = eventToEffectKeyMap.get(key);
+                haptics.add(haptic);
+            }
+        }
+    }
+
+    public static void registerFromAsset(Context context, String filename, String key, String group)
+    {
+        registerFromAsset(context, filename, HapticType.Vest, key, group, 1.0f, 1.0f);
+    }
+
+    public static void registerFromAsset(Context context, String filename, HapticType type, String key, String group)
+    {
+        registerFromAsset(context, filename, type, key, group, 1.0f, 1.0f);
     }
 
     public static void destroy()
@@ -278,7 +274,7 @@ public class bHaptics {
         enabled = false;
     }
 
-    public static void playHaptic(String event, float intensity, float angle, float yHeight)
+    public static void playHaptic(String event, int position, float intensity, float angle, float yHeight)
     {
         if (enabled && hasPairedDevice) {
             String key = getHapticEventKey(event);
@@ -288,34 +284,53 @@ public class bHaptics {
             if (eventToEffectKeyMap.containsKey(key)) {
                 Vector<Haptic> haptics = eventToEffectKeyMap.get(key);
 
-                Haptic haptic = haptics.get(rand.nextInt(haptics.size()));
-
-                //If another haptic of this group is playing then
-                if (player.isPlaying(haptic.altKey)) {
-                    //we can't interrupt it
+                //Don't allow a haptic to interrupt itself if it is already playing
+                if (player.isPlaying(haptics.get(0).key)) {
                     return;
                 }
 
-                //The following groups play at full intensity
-                if (haptic.altKey.compareTo("environment") == 0)
-                {
-                    intensity = 100;
-                }
+                for (Haptic haptic : haptics) {
 
-                if (haptic != null) {
-                    float flIntensity = (intensity / 100.0F);
-                    player.submitRegistered(haptic.key, haptic.altKey, flIntensity, 1.0f, angle, yHeight);
+                    //The following groups play at full intensity
+                    if (haptic.altKey.compareTo("environment") == 0) {
+                        intensity = 100;
+                    }
 
-                    currentEffect = key;
+                    if (position > 0)
+                    {
+                        //If playing left position and haptic type is right, don;t play that one
+                        if (position == 1 && haptic.type == HapticType.Tactosy_Right)
+                        {
+                            continue;
+                        }
+
+                        //If playing right position and haptic type is left, don;t play that one
+                        if (position == 2 && haptic.type == HapticType.Tactosy_Left)
+                        {
+                            continue;
+                        }
+                    }
+
+                    if (haptic != null) {
+                        float flIntensity = ((intensity / 100.0F) * haptic.intensity);
+                        player.submitRegistered(haptic.key, haptic.altKey, flIntensity, haptic.duration, angle, yHeight);
+                    }
                 }
             }
         }
     }
 
     private static String getHapticEventKey(String event) {
-        String key = event;
+        String key = event.toLowerCase();
         if (event.contains("melee")) {
-            key = "melee";
+            if (event.contains("right"))
+            {
+                key = "melee_right";
+            }
+            else
+            {
+                key = "melee_left";
+            }
         } else if (event.contains("damage") && event.contains("bullet")) {
             key = "bullet";
         } else if (event.contains("damage") && event.contains("fireball")) {
@@ -366,21 +381,12 @@ public class bHaptics {
         if (hasPairedDevice) {
 
             String key = getHapticEventKey(event);
-            if (currentEffect.compareTo(key) == 0) {
+            {
                 player.turnOff(key);
             }
         }
     }
 
-    public static Haptic registerFromAsset(Context context, String filename, String key, String group)
-    {
-        String content = read(context, filename);
-        if (content != null) {
-            player.registerProject(key, content);
-            return new Haptic(key, group);
-        }
-        return null;
-    }
 
     public static String read(Context context, String fileName) {
         try {
@@ -413,34 +419,6 @@ public class bHaptics {
         }
 
         if (hasPairedDevice) {
-
-            manager.addBhapticsManageCallback(new BhapticsManagerCallback() {
-                @Override
-                public void onDeviceUpdate(List<BhapticsDevice> list) {
-
-                }
-
-                @Override
-                public void onScanStatusChange(boolean b) {
-
-                }
-
-                @Override
-                public void onChangeResponse() {
-
-                }
-
-                @Override
-                public void onConnect(String s) {
-                    manager.ping(s);
-                }
-
-                @Override
-                public void onDisconnect(String s) {
-
-                }
-            });
-
             manager.scan();
         }
     }

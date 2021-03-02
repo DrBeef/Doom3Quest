@@ -1,0 +1,210 @@
+{
+	"project": {
+		"createdAt": 1588695017725,
+		"description": "",
+		"layout": {
+			"layouts": {
+				"ForearmL": [
+					{
+						"index": 0,
+						"x": 0,
+						"y": 0
+					},
+					{
+						"index": 1,
+						"x": 0.5,
+						"y": 0
+					},
+					{
+						"index": 2,
+						"x": 1,
+						"y": 0
+					},
+					{
+						"index": 3,
+						"x": 0,
+						"y": 1
+					},
+					{
+						"index": 4,
+						"x": 0.5,
+						"y": 1
+					},
+					{
+						"index": 5,
+						"x": 1,
+						"y": 1
+					}
+				],
+				"ForearmR": [
+					{
+						"index": 0,
+						"x": 0,
+						"y": 0
+					},
+					{
+						"index": 1,
+						"x": 0.5,
+						"y": 0
+					},
+					{
+						"index": 2,
+						"x": 1,
+						"y": 0
+					},
+					{
+						"index": 3,
+						"x": 0,
+						"y": 1
+					},
+					{
+						"index": 4,
+						"x": 0.5,
+						"y": 1
+					},
+					{
+						"index": 5,
+						"x": 1,
+						"y": 1
+					}
+				]
+			},
+			"name": "Tactosy2",
+			"type": "Tactosy2"
+		},
+		"mediaFileDuration": 1,
+		"name": "ShootDefault_R",
+		"tracks": [
+			{
+				"effects": [
+					{
+						"modes": {
+							"ForearmL": {
+								"dotMode": {
+									"dotConnected": false,
+									"feedback": [
+										{
+											"endTime": 300,
+											"playbackType": "NONE",
+											"startTime": 0,
+											"pointList": []
+										}
+									]
+								},
+								"mode": "PATH_MODE",
+								"pathMode": {
+									"feedback": []
+								}
+							},
+							"ForearmR": {
+								"dotMode": {
+									"dotConnected": false,
+									"feedback": [
+										{
+											"endTime": 300,
+											"playbackType": "NONE",
+											"startTime": 0,
+											"pointList": []
+										}
+									]
+								},
+								"mode": "PATH_MODE",
+								"pathMode": {
+									"feedback": [
+										{
+											"movingPattern": "CONST_SPEED",
+											"playbackType": "FADE_IN",
+											"pointList": [
+												{
+													"intensity": 0.5,
+													"time": 0,
+													"x": 0.4,
+													"y": 0
+												},
+												{
+													"intensity": 0.5,
+													"time": 127,
+													"x": 0.39,
+													"y": 0.48
+												},
+												{
+													"intensity": 0.5,
+													"time": 300,
+													"x": 0,
+													"y": 1
+												}
+											],
+											"visible": true
+										},
+										{
+											"movingPattern": "CONST_SPEED",
+											"playbackType": "NONE",
+											"pointList": [
+												{
+													"intensity": 0.5,
+													"time": 0,
+													"x": 0.51,
+													"y": 0
+												},
+												{
+													"intensity": 0.5,
+													"time": 144,
+													"x": 0.5,
+													"y": 0.48
+												},
+												{
+													"intensity": 0.5,
+													"time": 300,
+													"x": 0.5,
+													"y": 1
+												}
+											],
+											"visible": true
+										},
+										{
+											"movingPattern": "CONST_SPEED",
+											"playbackType": "FADE_IN",
+											"pointList": [
+												{
+													"intensity": 0.5,
+													"time": 0,
+													"x": 0.62,
+													"y": 0.01
+												},
+												{
+													"intensity": 0.5,
+													"time": 129,
+													"x": 0.6,
+													"y": 0.49
+												},
+												{
+													"intensity": 0.5,
+													"time": 300,
+													"x": 0.98,
+													"y": 1
+												}
+											],
+											"visible": true
+										}
+									]
+								}
+							}
+						},
+						"name": "Effect 1",
+						"offsetTime": 300,
+						"startTime": 0
+					}
+				],
+				"enable": true
+			},
+			{
+				"enable": true,
+				"effects": []
+			}
+		],
+		"updatedAt": 1588695033727
+	},
+	"durationMillis": 0,
+	"intervalMillis": 20,
+	"size": 20
+}
