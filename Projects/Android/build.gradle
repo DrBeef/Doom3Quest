@@ -47,6 +47,7 @@ android {
 dependencies {
     implementation "com.android.support:support-compat:24.2.0"
     implementation "com.android.support:support-core-utils:24.2.0"
+    implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
 }
 
 repositories {

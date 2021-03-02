@@ -988,6 +988,9 @@ bool idInventory::Give( idPlayer *owner, const idDict &spawnArgs, const char *st
 			if ( armor > maxarmor ) {
 				armor = maxarmor;
 			}
+
+			common->HapticEvent("pickup_shield", amount * 5, 0, 0);
+
 			nextArmorDepleteTime = 0;
 			armorPulse = true;
 		}
@@ -996,6 +999,8 @@ bool idInventory::Give( idPlayer *owner, const idDict &spawnArgs, const char *st
 		if ( i != -1 ) {
 			// set, don't add. not going over the clip size limit.
 			clip[ i ] = atoi( value );
+
+			common->HapticEvent("pickup_ammo", 100, 0, 0);
 		}
 	} else if ( !idStr::Icmp( statname, "berserk" ) ) {
 		GivePowerUp( owner, BERSERK, SEC2MS( atof( value ) ) );
@@ -1041,6 +1046,8 @@ bool idInventory::Give( idPlayer *owner, const idDict &spawnArgs, const char *st
 			if ( !gameLocal.world->spawnArgs.GetBool( "no_Weapons" ) || ( weaponName == "weapon_fists" ) || ( weaponName == "weapon_soulcube" ) ) {
 				if ( ( weapons & ( 1 << i ) ) == 0 || ( duplicateWeapons & ( 1 << i ) ) == 0 || gameLocal.isMultiplayer ) {
 					tookWeapon = true;
+
+					common->HapticEvent("pickup_weapon", 100, 0, 0);
 
 					if ( owner->GetUserInfo()->GetBool( "ui_autoSwitch" ) && idealWeapon ) {
 						assert( !gameLocal.isClient );
@@ -4636,6 +4643,11 @@ bool idPlayer::GiveItem( idItem *item ) {
 		// frame no matter what
 		UpdateHudWeapon( false );
 		hud->HandleNamedEvent( "weaponPulse" );
+
+		if (gave)
+		{
+			common->HapticEvent("pickup_weapon", 100, 0, 0);
+		}
 	}
 
 	// display the pickup feedback on the hud
@@ -5281,6 +5293,8 @@ idPlayer::NextBestWeapon
 */
 void idPlayer::NextBestWeapon( void ) {
     hands[ vr_weaponHand.GetInteger() ].NextBestWeapon();
+
+    common->HapticEvent("weapon_switch", 100, 0, 0);
 }
 
 /*
@@ -5290,6 +5304,8 @@ idPlayer::NextWeapon
 */
 void idPlayer::NextWeapon( void ) {
     hands[ vr_weaponHand.GetInteger() ].NextWeapon();
+
+    common->HapticEvent("weapon_switch", 100, 0, 0);
 }
 
 /*
@@ -5299,6 +5315,8 @@ idPlayer::PrevWeapon
 */
 void idPlayer::PrevWeapon( void ) {
     hands[ vr_weaponHand.GetInteger() ].PrevWeapon();
+
+    common->HapticEvent("weapon_switch", 100, 0, 0);
 }
 
 /*
@@ -5311,6 +5329,8 @@ void idPlayer::SelectWeapon( int num, bool force, bool specific ) {
         hands[vr_weaponHand.GetInteger()].SelectWeapon( num, force, specific );
     else
         hands[1 - vr_weaponHand.GetInteger()].SelectWeapon( num, force, specific );
+
+    common->HapticEvent("weapon_switch", 100, 0, 0);
 }
 
 /*
@@ -7474,6 +7494,10 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 			entityGui->spawnArgs.SetInt( "gui_parm1", _health );
 			if ( entityGui->GetRenderEntity() && entityGui->GetRenderEntity()->gui[ 0 ] ) {
 				entityGui->GetRenderEntity()->gui[ 0 ]->SetStateInt( "gui_parm1", _health );
+			}
+			if (health < 100)
+			{
+				common->HapticEvent("healstation", 100, 0, 0);
 			}
 			health += amt;
 			if ( health > 100 ) {
@@ -11757,6 +11781,11 @@ void idPlayer::Think( void ) {
 
 	UpdatePowerUps();
 
+	if (health < 20)
+	{
+		common->HapticEvent("heartbeat", 100, 0, 0);
+	}
+
 	//UpdateFlashlightHolster();
 
 	//Dr Beef version - maybe minimise
@@ -12465,6 +12494,13 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 	if ( armorSave ) {
 		inventory.armor -= armorSave;
 
+		if (inventory.armor == 0)
+		{
+			if ( IsType( idPlayer::Type ) ) {
+				common->HapticEvent("shield_break", 100, 0, 0);
+			}
+		}
+
 		if ( gameLocal.time > lastArmorPulse + 200 ) {
 			StartSound( "snd_hitArmor", SND_CHANNEL_ITEM, 0, false, NULL );
 		}
@@ -12473,6 +12509,11 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 
 	if ( damageDef->dict.GetBool( "burn" ) ) {
 		StartSound( "snd_burn", SND_CHANNEL_BODY3, 0, false, NULL );
+
+		if ( IsType( idPlayer::Type ) ) {
+			common->HapticEvent("fire", damage * 4, 0, 0);
+		}
+
 	} else if ( damageDef->dict.GetBool( "no_air" ) ) {
 		if ( !armorSave && health > 0 ) {
 			StartSound( "snd_airGasp", SND_CHANNEL_ITEM, 0, false, NULL );
@@ -12555,6 +12596,11 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 			// physics is turned off by calling af.Rest()
 			BecomeActive( TH_PHYSICS );
 		}
+	}
+
+	if ( IsType( idPlayer::Type ) ) {
+		//TODO: Sort angle and height
+		common->HapticEvent(damageDefName, damage * 4, 0, 0);
 	}
 
 	lastDamageDef = damageDef->Index();

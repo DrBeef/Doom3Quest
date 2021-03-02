@@ -61,7 +61,7 @@ extern bool inGameGuiActive;
 extern bool objectiveSystemActive;
 extern bool inCinematic;
 
-
+void Doom3Quest_HapticEvent(const char* event, int intensity, float angle, float yHeight );
 
 void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGamepad *pFootTrackingNew, ovrInputStateGamepad *pFootTrackingOld, ovrInputStateTrackedRemote *pDominantTrackedRemoteNew, ovrInputStateTrackedRemote *pDominantTrackedRemoteOld, ovrTracking* pDominantTracking,
                           ovrInputStateTrackedRemote *pOffTrackedRemoteNew, ovrInputStateTrackedRemote *pOffTrackedRemoteOld, ovrTracking* pOffTracking,
@@ -281,6 +281,11 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
                     ALOGV("**WEAPON EVENT** velocity triggered %s", velocityTriggeredAttack ? "+attack" : "-attack");
                     Android_ButtonChange(UB_ATTACK, velocityTriggeredAttack ? 1 : 0);
                     fired = velocityTriggeredAttack;
+
+                    if (velocityTriggeredAttack)
+                    {
+                        Doom3Quest_HapticEvent(controlscheme == 0 ? "punchR" : "punchL", 100, 0, 0 );
+                    }
                 }
             }
             else if (velocityTriggeredAttack)
@@ -309,6 +314,11 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
                     //Android_SetImpulse(UB_IMPULSE37);
                     pVRClientInfo->velocitytriggeredoffhandstate = true;
                     firedOffHand = velocityTriggeredAttackOffHand;
+
+                    if (velocityTriggeredAttack)
+                    {
+                        Doom3Quest_HapticEvent(controlscheme == 1 ? "punchR" : "punchL", 100, 0, 0 );
+                    }
                 }
             }
             else //GB This actually nevers gets run currently as we are always returning true for pVRClientInfo->velocitytriggeredoffhand (but we might not in the future when weapons are sorted)

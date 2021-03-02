@@ -171,8 +171,14 @@ public:
 	virtual int					GetFrameNumber();
 
 	virtual void 				Vibrate(int channel, float low, float high );
+	virtual void				HapticEvent(const char* event, int intensity, float angle, float yHeight );
+	virtual void 				HapticStopAll();
+	virtual void 				HapticStopEvent(const char* event);
+    virtual void                HapticEnable();
+    virtual void                HapticDisable();
 
-    // DG: hack to allow adding callbacks and exporting additional functions without breaking the game ABI
+
+	// DG: hack to allow adding callbacks and exporting additional functions without breaking the game ABI
 	//     see Common.h for longer explanation...
 
 	// returns true if setting the callback was successful, else false
@@ -2270,12 +2276,41 @@ void idCommonLocal::InitSIMD( void ) {
 
 extern "C" void Doom3Quest_FrameSetup(int controlscheme, int switch_sticks, int refresh);
 extern "C" void Doom3Quest_Vibrate(int channel, float low, float high );
+extern "C" void Doom3Quest_HapticEvent(const char* event, int intensity, float angle, float yHeight );
+extern "C" void Doom3Quest_HapticStopAll();
+extern "C" void Doom3Quest_HapticStopEvent(const char* event);
+extern "C" void Doom3Quest_HapticEnable();
+extern "C" void Doom3Quest_HapticDisable();
 
 void idCommonLocal::Vibrate(int channel, float low, float high)
 {
     Doom3Quest_Vibrate(channel, low, high);
 }
 
+void idCommonLocal::HapticEvent(const char* event, int intensity, float angle, float yHeight )
+{
+	Doom3Quest_HapticEvent(event, intensity, angle, yHeight);
+}
+
+void idCommonLocal::HapticStopAll( )
+{
+	Doom3Quest_HapticStopAll();
+}
+
+void idCommonLocal::HapticStopEvent(const char* event)
+{
+	Doom3Quest_HapticStopEvent(event);
+}
+
+void idCommonLocal::HapticEnable()
+{
+	Doom3Quest_HapticEnable();
+}
+
+void idCommonLocal::HapticDisable()
+{
+	Doom3Quest_HapticDisable();
+}
 
 /*
 =================

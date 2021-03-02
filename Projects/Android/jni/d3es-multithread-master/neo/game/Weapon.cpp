@@ -1938,6 +1938,8 @@ void idWeapon::Reload( void ) {
 	if ( isLinked ) {
 		WEAPON_RELOAD = true;
 	}
+
+	common->HapticEvent("weapon_reload", 100, 0,0);
 }
 
 /*
@@ -2079,6 +2081,25 @@ void idWeapon::BeginAttack( void ) {
 		}
 	}
 	WEAPON_ATTACK = true;
+
+    weapon_t currentWeapon = WEAPON_NONE;
+    currentWeapon = IdentifyWeapon();
+    if (currentWeapon == WEAPON_HANDGRENADE)
+    {
+        common->HapticEvent("handgrenade_init", 100, 0, 0);
+    }
+    if (currentWeapon == WEAPON_CHAINGUN)
+    {
+        common->HapticEvent("chaingun_init", 100, 0, 0);
+    }
+    if (currentWeapon == WEAPON_BFG)
+    {
+        common->HapticEvent("bfg_init", 100, 0, 0);
+    }
+    if (currentWeapon == WEAPON_HANDGRENADE)
+    {
+        common->HapticEvent("grenade_init", 100, 0, 0);
+    }
 }
 
 /*
@@ -4011,6 +4032,40 @@ void idWeapon::Event_LaunchProjectiles( int num_projectiles, float spread, float
 
 			// Normal launch
 			proj->Launch( muzzle_pos, dir, pushVelocity, fuseOffset, launchPower, dmgPower, speed );
+
+			if (currentWeap == WEAPON_PISTOL)
+            {
+			    common->HapticEvent("pistol_fire", 100, 0, 0);
+            }
+			if (currentWeap == WEAPON_SHOTGUN)
+            {
+			    common->HapticEvent("shotgun_fire", 100, 0, 0);
+            }
+			if (currentWeap == WEAPON_PLASMAGUN)
+            {
+			    common->HapticEvent("plasmagun_fire", 100, 0, 0);
+            }
+			if (currentWeap == WEAPON_HANDGRENADE)
+            {
+			    common->HapticEvent("handgrenade_fire", 100, 0, 0);
+            }
+			if (currentWeap == WEAPON_MACHINEGUN)
+            {
+			    common->HapticEvent("machinegun_fire", 100, 0, 0);
+            }
+			if (currentWeap == WEAPON_CHAINGUN)
+            {
+			    common->HapticEvent("chaingun_fire", 100, 0, 0);
+            }
+			if (currentWeap == WEAPON_BFG)
+            {
+			    common->HapticEvent("bfg_fire", 100, 0, 0);
+            }
+			if (currentWeap == WEAPON_ROCKETLAUNCHER)
+            {
+			    common->HapticEvent("rocket_fire", 100, 0, 0);
+            }
+
 		}
 
 		// toss the brass

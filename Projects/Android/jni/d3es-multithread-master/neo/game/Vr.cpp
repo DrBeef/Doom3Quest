@@ -27,6 +27,8 @@
 
 idCVar vr_d3qversion( "vr_d3qversion", ENGINE_VERSION, CVAR_ROM | CVAR_GUI, "Version" );
 
+// *** bHaptics ***
+idCVar vr_bhaptics( "vr_bhaptics", "1", CVAR_BOOL | CVAR_ARCHIVE | CVAR_GAME, "Whether full-body haptics are enabled (only works with bHaptics Vests + Tactosy)" );
 
 // *** Oculus HMD Variables
 idCVar vr_scale( "vr_scale", "1.0", CVAR_FLOAT | CVAR_ARCHIVE | CVAR_GAME, "World scale. Everything virtual is this times as big." );

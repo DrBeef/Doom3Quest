@@ -813,6 +813,13 @@ void idGameLocal::SetLocalClient( int clientNum ) {
 void idGameLocal::SetVRClientInfo(vrClientInfo *pVR)
 {
 	pVRClientInfo = pVR;
+
+	//FOr want of somewhere better to put this..
+	if (vr_bhaptics.GetBool()) {
+		common->HapticEnable();
+	} else {
+		common->HapticDisable();
+	}
 }
 
 /*
