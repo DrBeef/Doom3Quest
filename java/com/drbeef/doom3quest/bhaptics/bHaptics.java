@@ -73,6 +73,8 @@ public class bHaptics {
     {
         if (initialised)
         {
+            //Already initialised, but might need to rescan
+            scanIfNeeded();
             return;
         }
 
@@ -85,7 +87,8 @@ public class bHaptics {
         /*
             DAMAGE
         */
-        registerFromAsset(context, "bHaptics/Damage/Body_Heartbeat.tact", "heartbeat", "heartbeat");
+        registerFromAsset(context, "bHaptics/Damage/Body_Heartbeat.tact", HapticType.Vest, "heartbeat", "damage", 1.0f, 1.2f);
+
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Melee1.tact", "melee_left", "damage");
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Melee2.tact", "melee_right", "damage");
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Fireball.tact", "fireball", "damage");
@@ -117,7 +120,7 @@ public class bHaptics {
 
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Door_Open.tact", "dooropen", "door");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Door_Close.tact", "doorclose", "door");
-        registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Scan.tact", HapticType.Vest, "scan", "environment", 1.0f, 1.2f);
+        registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Scan.tact", HapticType.Vest, "scan", "environment", 1.0f, 1.1f);
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Rumble.tact", "rumble", "rumble");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Chamber_Up.tact", "liftup", "environment");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Chamber_Down.tact", "liftdown", "environment");
@@ -420,8 +423,20 @@ public class bHaptics {
 
         if (hasPairedDevice) {
             manager.scan();
+
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep(2000);
+                        manager.pingAll();
+                    }
+                    catch (Throwable e) {
+                    }
+                }
+            });
+            t.start();
+
         }
     }
-
-
 }

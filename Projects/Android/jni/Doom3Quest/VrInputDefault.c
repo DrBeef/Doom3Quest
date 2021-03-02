@@ -285,11 +285,11 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
                     if (velocityTriggeredAttack)
                     {
                         if (controlscheme == 0) {
-                            Doom3Quest_HapticEvent("punchR", 2, 100, 0,
+                            Doom3Quest_HapticEvent("punchR", 0, 100, 0,
                                                    0);
                         }
                         else{
-                            Doom3Quest_HapticEvent("punchL", 1, 100, 0,
+                            Doom3Quest_HapticEvent("punchL", 0, 100, 0,
                                                    0);
                         }
                     }
@@ -325,11 +325,11 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
                     if (velocityTriggeredAttack)
                     {
                         if (controlscheme == 1) {
-                            Doom3Quest_HapticEvent("punchR", 2, 100, 0,
+                            Doom3Quest_HapticEvent("punchR", 0, 100, 0,
                                                    0);
                         }
                         else{
-                            Doom3Quest_HapticEvent("punchL", 1, 100, 0,
+                            Doom3Quest_HapticEvent("punchL", 0, 100, 0,
                                                    0);
                         }
                     }
