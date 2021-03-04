@@ -5298,8 +5298,6 @@ idPlayer::NextBestWeapon
 */
 void idPlayer::NextBestWeapon( void ) {
     hands[ vr_weaponHand.GetInteger() ].NextBestWeapon();
-
-    common->HapticEvent("weapon_switch", 0, 100, 0, 0);
 }
 
 /*
@@ -5309,8 +5307,6 @@ idPlayer::NextWeapon
 */
 void idPlayer::NextWeapon( void ) {
     hands[ vr_weaponHand.GetInteger() ].NextWeapon();
-
-    common->HapticEvent("weapon_switch", 0, 100, 0, 0);
 }
 
 /*
@@ -5320,8 +5316,6 @@ idPlayer::PrevWeapon
 */
 void idPlayer::PrevWeapon( void ) {
     hands[ vr_weaponHand.GetInteger() ].PrevWeapon();
-
-    common->HapticEvent("weapon_switch", 0, 100, 0, 0);
 }
 
 /*
@@ -5334,8 +5328,6 @@ void idPlayer::SelectWeapon( int num, bool force, bool specific ) {
         hands[vr_weaponHand.GetInteger()].SelectWeapon( num, force, specific );
     else
         hands[1 - vr_weaponHand.GetInteger()].SelectWeapon( num, force, specific );
-
-    common->HapticEvent("weapon_switch", 0, 100, 0, 0);
 }
 
 /*
@@ -5578,6 +5570,8 @@ void idPlayerHand::NextBestWeapon()
         common->Printf( "After NextBestWeapon():\n" );
         debugPrint();
     }
+
+	common->HapticEvent("weapon_switch", 0, 100, 0, 0);
 }
 
 /*
@@ -5752,6 +5746,8 @@ void idPlayerHand::NextWeapon( int dir )
         owner->UpdateHudWeapon( whichHand );
         if( vr_debugHands.GetBool() )
             common->Printf( "Changing weapon\n" );
+
+		common->HapticEvent("weapon_switch", 0, 100, 0, 0);
     }
     if( vr_debugHands.GetBool() )
     {
@@ -6010,6 +6006,8 @@ void idPlayerHand::SelectWeapon( int num, bool force, bool specific )
         // If we made it all this way, we want weapon "num" and we can switch to it
         idealWeapon = num;
         owner->UpdateHudWeapon( whichHand );
+
+		common->HapticEvent("weapon_switch", 0, 100, 0, 0);
     }
 
 	common->Printf( "After SelectWeapon(%d):\n", idealWeapon);
@@ -8431,6 +8429,8 @@ bool idPlayer::UpdateFocusPDA()
 						// Carl: Should the PDA vibrate/haptic feedback too?
 						hands[fingerHand].SetControllerShake( 0.1f, 12, 0.8f, 12 );
 						hands[pdahand].SetControllerShake( 0.1f, 12, 0.8f, 12 );
+
+                        common->HapticEvent("pda_touch", 0, 100, 0, 0);
 					}
 					commonVr->scanningPDA = false;
 					return true;
@@ -11794,9 +11794,10 @@ void idPlayer::Think( void ) {
 
 	UpdatePowerUps();
 
-	if (health < 40)
+	if (health > 0 && health < 40)
 	{
-		common->HapticEvent("heartbeat", 0, 100, 0, 0);
+		//heartbeat is a special case that uses intensity for a different purpose
+		common->HapticEvent("heartbeat", 0, health, 0, 0);
 	}
 
 	//UpdateFlashlightHolster();
@@ -12612,8 +12613,20 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 	}
 
 	if ( IsType( idPlayer::Type ) ) {
-		//TODO: Sort angle and height
-		common->HapticEvent(damageDefName, 0, damage * 4, 0, 0);
+
+		idVec3 bodyOrigin = vec3_zero;
+		idMat3 bodyAxis;
+		GetViewPos( bodyOrigin, bodyAxis );
+		idAngles bodyAng = bodyAxis.ToAngles();
+
+		float yHeight = damage_from.ToPitch() / 45.0f;
+		float damageYaw = 180 + (damage_from.ToYaw() - bodyAng.yaw);
+		if (damageYaw < 0.0f)
+			damageYaw += 360.0f;
+		if (damageYaw >= 360.0f)
+			damageYaw -= 360.0f;
+		common->Printf("Damage Name: %s, Damage Points: %g, Yaw: %g, Pitch: %g", damageDefName, damage, damageYaw, damage_from.ToPitch());
+		common->HapticEvent(damageDefName, 0, damage * 4, damageYaw, idMath::ClampFloat(-0.5f, 0.5f, yHeight));
 	}
 
 	lastDamageDef = damageDef->Index();

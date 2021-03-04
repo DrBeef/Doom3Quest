@@ -12,14 +12,19 @@ import com.bhaptics.bhapticsmanger.BhapticsModule;
 import com.bhaptics.bhapticsmanger.HapticPlayer;
 import com.bhaptics.commons.PermissionUtils;
 import com.bhaptics.commons.model.BhapticsDevice;
+import com.bhaptics.commons.model.DotPoint;
+import com.bhaptics.commons.model.PositionType;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.lang.reflect.Array;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,7 +92,7 @@ public class bHaptics {
         /*
             DAMAGE
         */
-        registerFromAsset(context, "bHaptics/Damage/Body_Heartbeat.tact", HapticType.Vest, "heartbeat", "damage", 1.0f, 1.2f);
+        registerFromAsset(context, "bHaptics/Damage/Body_Heartbeat.tact", HapticType.Vest, "heartbeat", "health", 1.0f, 1.2f);
 
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Melee1.tact", "melee_left", "damage");
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Melee2.tact", "melee_right", "damage");
@@ -95,6 +100,7 @@ public class bHaptics {
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Bullet.tact", "bullet", "damage");
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Shotgun.tact", "shotgun", "damage");
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Fire.tact", "fire", "damage");
+        registerFromAsset(context, "bHaptics/Damage/Body_DMG_Fire.tact", "noair", "damage"); // reuse
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Falling.tact", "fall", "damage");
         registerFromAsset(context, "bHaptics/Damage/Body_Shield_Break.tact", "shield_break", "damage");
 
@@ -121,7 +127,7 @@ public class bHaptics {
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Door_Open.tact", "dooropen", "door");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Door_Close.tact", "doorclose", "door");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Scan.tact", HapticType.Vest, "scan", "environment", 1.0f, 1.1f);
-        registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Rumble.tact", "rumble", "rumble");
+//        registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Rumble.tact", "rumble", "rumble");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Chamber_Up.tact", "liftup", "environment");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Chamber_Down.tact", "liftdown", "environment");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Machine.tact", "machine", "environment");
@@ -144,11 +150,11 @@ public class bHaptics {
         registerFromAsset(context, "bHaptics/Weapon/Arms/Reload_L.tact", HapticType.Tactosy_Left, "weapon_reload", "weapon");
         registerFromAsset(context, "bHaptics/Weapon/Arms/Reload_R.tact", HapticType.Tactosy_Right, "weapon_reload", "weapon");
 
-        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Punch_L.tact", "punchL", "weapon");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Melee_L.tact", HapticType.Tactosy_Left, "punchL", "weapon");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Punch_L.tact", "punchl", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Melee_L.tact", HapticType.Tactosy_Left, "punchl", "weapon_fire");
 
-        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Punch_R.tact", "punchR", "weapon");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Melee_R.tact", HapticType.Tactosy_Right, "punchR", "weapon");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Punch_R.tact", "punchr", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Melee_R.tact", HapticType.Tactosy_Right, "punchr", "weapon_fire");
 
         registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Pistol.tact", "pistol_fire", "weapon_fire");
         registerFromAsset(context, "bHaptics/Weapon/Arms/Pistol_L.tact", HapticType.Tactosy_Left, "pistol_fire", "weapon_fire");
@@ -284,11 +290,24 @@ public class bHaptics {
 
             Log.v(TAG, event);
 
-            if (eventToEffectKeyMap.containsKey(key)) {
+            if (key.compareTo("rumble") == 0)
+            {
+                float highDuration = angle;
+
+                List<DotPoint> vector = new Vector<>();
+                for (int d = 0; d < 20; ++d)
+                {
+                    vector.add(new DotPoint(d, (int)intensity));
+                }
+
+                player.submitDot("rumble_front", PositionType.VestFront, vector, (int)highDuration);
+                player.submitDot("rumble_back", PositionType.VestBack, vector, (int)highDuration);
+            }
+            else if (eventToEffectKeyMap.containsKey(key)) {
                 Vector<Haptic> haptics = eventToEffectKeyMap.get(key);
 
                 //Don't allow a haptic to interrupt itself if it is already playing
-                if (player.isPlaying(haptics.get(0).key)) {
+                if (player.isPlaying(haptics.get(0).altKey)) {
                     return;
                 }
 
@@ -316,7 +335,18 @@ public class bHaptics {
 
                     if (haptic != null) {
                         float flIntensity = ((intensity / 100.0F) * haptic.intensity);
-                        player.submitRegistered(haptic.key, haptic.altKey, flIntensity, haptic.duration, angle, yHeight);
+                        float duration = haptic.duration;
+
+                        //Special hack for heartbeat
+                        if (haptic.altKey.compareTo("health") == 0)
+                        {
+                            //The worse condition we are in, the faster the heart beats!
+                            float health = intensity;
+                            duration = 1.0f - (0.4f * ((40 - health) / 40));
+                            flIntensity = 1.0f;
+                        }
+
+                        player.submitRegistered(haptic.key, haptic.altKey, flIntensity, duration, angle, yHeight);
                     }
                 }
             }
@@ -338,6 +368,8 @@ public class bHaptics {
             key = "bullet";
         } else if (event.contains("damage") && event.contains("fireball")) {
             key = "fireball";
+        } else if (event.contains("damage") && event.contains("noair")) {
+            key = "noair";
         } else if (event.contains("damage") && event.contains("shotgun")) {
             key = "shotgun";
         } else if (event.contains("damage") && event.contains("fall")) {
@@ -424,18 +456,40 @@ public class bHaptics {
         if (hasPairedDevice) {
             manager.scan();
 
-            Thread t = new Thread(new Runnable() {
+            manager.addBhapticsManageCallback(new BhapticsManagerCallback() {
                 @Override
-                public void run() {
-                    try {
-                        Thread.sleep(2000);
-                        manager.pingAll();
-                    }
-                    catch (Throwable e) {
-                    }
+                public void onDeviceUpdate(List<BhapticsDevice> list) {
+
+                }
+
+                @Override
+                public void onScanStatusChange(boolean b) {
+
+                }
+
+                @Override
+                public void onChangeResponse() {
+
+                }
+
+                @Override
+                public void onConnect(String s) {
+                    Thread t = new Thread(() -> {
+                        try {
+                            Thread.sleep(1000);
+                            manager.ping(s);
+                        }
+                        catch (Throwable e) {
+                        }
+                    });
+                    t.start();
+                }
+
+                @Override
+                public void onDisconnect(String s) {
+
                 }
             });
-            t.start();
 
         }
     }
