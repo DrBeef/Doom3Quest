@@ -2,6 +2,22 @@
 package com.drbeef.doom3quest;
 
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
+import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.util.Log;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.view.WindowManager;
+
+import com.bhaptics.commons.PermissionUtils;
+import com.drbeef.doom3quest.bhaptics.bHaptics;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -9,39 +25,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.Reader;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
-
-import android.Manifest;
-import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.content.Context;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
-
-import android.media.AudioRecord;
-import android.media.AudioTrack;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
-import android.view.WindowManager;
-
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-
-
-import com.bhaptics.bhapticsmanger.BhapticsModule;
-import com.bhaptics.bhapticsmanger.HapticPlayer;
-import com.bhaptics.commons.PermissionUtils;
-import com.drbeef.doom3quest.bhaptics.bHaptics;
-
 
 import static android.system.Os.setenv;
 

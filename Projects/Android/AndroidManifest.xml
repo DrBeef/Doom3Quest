@@ -10,9 +10,7 @@
 	<uses-feature android:name="android.hardware.vr.headtracking" android:version="1"
 				  android:required="true" />
 
-	<!-- Network access needed for OVRMonitor -->
 	<uses-permission android:name="android.permission.INTERNET" />
-	<!-- Volume Control -->
 	<uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.BLUETOOTH" />

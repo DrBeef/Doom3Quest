@@ -12619,14 +12619,20 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 		GetViewPos( bodyOrigin, bodyAxis );
 		idAngles bodyAng = bodyAxis.ToAngles();
 
-		float yHeight = damage_from.ToPitch() / 45.0f;
+		float yHeight = idMath::ClampFloat(-0.5f, 0.5f, damage_from.ToPitch() / 45.0f);
 		float damageYaw = 180 + (damage_from.ToYaw() - bodyAng.yaw);
 		if (damageYaw < 0.0f)
 			damageYaw += 360.0f;
 		if (damageYaw >= 360.0f)
 			damageYaw -= 360.0f;
-		common->Printf("Damage Name: %s, Damage Points: %g, Yaw: %g, Pitch: %g", damageDefName, damage, damageYaw, damage_from.ToPitch());
-		common->HapticEvent(damageDefName, 0, damage * 4, damageYaw, idMath::ClampFloat(-0.5f, 0.5f, yHeight));
+
+		//Indicate head damage if appropriate
+		if ( location >= 0 && location < damageGroups.Size() &&
+				strstr( damageGroups[location].c_str(), "head" ) ) {
+			common->HapticEvent(damageDefName, 3, damage * 4, 0, 0);
+		}
+
+		common->HapticEvent(damageDefName, 0, damage * 4, damageYaw, yHeight);
 	}
 
 	lastDamageDef = damageDef->Index();

@@ -12,6 +12,7 @@ import com.bhaptics.bhapticsmanger.BhapticsModule;
 import com.bhaptics.bhapticsmanger.HapticPlayer;
 import com.bhaptics.commons.PermissionUtils;
 import com.bhaptics.commons.model.BhapticsDevice;
+import com.bhaptics.commons.model.ConnectionStatus;
 import com.bhaptics.commons.model.DotPoint;
 import com.bhaptics.commons.model.PositionType;
 
@@ -20,11 +21,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.lang.reflect.Array;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,16 +32,10 @@ import java.util.Vector;
 
 
 public class bHaptics {
-
-    public static enum HapticType {
-        Vest,
-        Tactosy_Left,
-        Tactosy_Right
-    };
     
     public static class Haptic
     {
-        Haptic(HapticType type, String key, String altKey, float intensity, float duration) {
+        Haptic(PositionType type, String key, String altKey, float intensity, float duration) {
             this.type = type;
             this.key = key;
             this.altKey = altKey;
@@ -55,7 +47,7 @@ public class bHaptics {
         public final String altKey;
         public final float intensity;
         public final float duration;
-        public final HapticType type;
+        public final PositionType type;
     };
     
     private static final String TAG = "Doom3Quest.bHaptics";
@@ -63,6 +55,7 @@ public class bHaptics {
     private static Random rand = new Random();
 
     private static boolean hasPairedDevice = false;
+    private static boolean hasConnectedHeadDevice = false;
 
     private static boolean enabled = false;
     private static boolean requestingPermission = false;
@@ -92,42 +85,50 @@ public class bHaptics {
         /*
             DAMAGE
         */
-        registerFromAsset(context, "bHaptics/Damage/Body_Heartbeat.tact", HapticType.Vest, "heartbeat", "health", 1.0f, 1.2f);
+        registerFromAsset(context, "bHaptics/Damage/Body_Heartbeat.tact", PositionType.Vest, "heartbeat", "health", 1.0f, 1.2f);
 
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Melee1.tact", "melee_left", "damage");
+        registerFromAsset(context, "bHaptics/Damage/Head_DMG_Default.tact", PositionType.Head, "melee_left", "damage");
+
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Melee2.tact", "melee_right", "damage");
+        registerFromAsset(context, "bHaptics/Damage/Head_DMG_Default.tact", PositionType.Head, "melee_right", "damage");
+
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Fireball.tact", "fireball", "damage");
+        registerFromAsset(context, "bHaptics/Damage/Head_DMG_Default.tact", PositionType.Head, "fireball", "damage");
+
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Bullet.tact", "bullet", "damage");
+        registerFromAsset(context, "bHaptics/Damage/Head_DMG_Default.tact", PositionType.Head, "bullet", "damage");
+
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Shotgun.tact", "shotgun", "damage");
+        registerFromAsset(context, "bHaptics/Damage/Head_DMG_Default.tact", PositionType.Head, "shotgun", "damage");
+
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Fire.tact", "fire", "damage");
-        registerFromAsset(context, "bHaptics/Damage/Body_DMG_Fire.tact", "noair", "damage"); // reuse
+        registerFromAsset(context, "bHaptics/Damage/Body_DMG_Fire.tact", "noair", "damage");
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Falling.tact", "fall", "damage");
         registerFromAsset(context, "bHaptics/Damage/Body_Shield_Break.tact", "shield_break", "damage");
 
-
-        /*
+         /*
             INTERACTIONS
          */
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Shield_Get.tact", "pickup_shield", "pickup");
-        registerFromAsset(context, "bHaptics/Interaction/Arms/Pickup_L.tact", HapticType.Tactosy_Left, "pickup_shield", "pickup");
-        registerFromAsset(context, "bHaptics/Interaction/Arms/Pickup_R.tact", HapticType.Tactosy_Right, "pickup_shield", "pickup");
+        registerFromAsset(context, "bHaptics/Interaction/Arms/Pickup_L.tact", PositionType.ForearmL, "pickup_shield", "pickup");
+        registerFromAsset(context, "bHaptics/Interaction/Arms/Pickup_R.tact", PositionType.ForearmR, "pickup_shield", "pickup");
 
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Weapon_Get.tact", "pickup_weapon", "pickup");
-        registerFromAsset(context, "bHaptics/Interaction/Arms/Pickup_L.tact", HapticType.Tactosy_Left, "pickup_weapon", "pickup");
-        registerFromAsset(context, "bHaptics/Interaction/Arms/Pickup_R.tact", HapticType.Tactosy_Right, "pickup_weapon", "pickup");
+        registerFromAsset(context, "bHaptics/Interaction/Arms/Pickup_L.tact", PositionType.ForearmL, "pickup_weapon", "pickup");
+        registerFromAsset(context, "bHaptics/Interaction/Arms/Pickup_R.tact", PositionType.ForearmR, "pickup_weapon", "pickup");
 
-        registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Ammo_Get.tact", "pickup_ammo", "pickup");
-        registerFromAsset(context, "bHaptics/Interaction/Arms/Ammo_L.tact", HapticType.Tactosy_Left, "pickup_ammo", "pickup");
-        registerFromAsset(context, "bHaptics/Interaction/Arms/Ammo_R.tact", HapticType.Tactosy_Right, "pickup_ammo", "pickup");
+        //registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Ammo_Get.tact", "pickup_ammo", "pickup");
+        registerFromAsset(context, "bHaptics/Interaction/Arms/Ammo_L.tact", PositionType.ForearmL, "pickup_ammo", "pickup");
+        registerFromAsset(context, "bHaptics/Interaction/Arms/Ammo_R.tact", PositionType.ForearmR, "pickup_ammo", "pickup");
 
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Healstation.tact", "healstation", "pickup");
-        registerFromAsset(context, "bHaptics/Interaction/Arms/Healthstation_L.tact", HapticType.Tactosy_Left, "healstation", "pickup");
-        registerFromAsset(context, "bHaptics/Interaction/Arms/Healthstation_R.tact", HapticType.Tactosy_Right, "healstation", "pickup");
+        registerFromAsset(context, "bHaptics/Interaction/Arms/Healthstation_L.tact", PositionType.ForearmL, "healstation", "pickup");
+        registerFromAsset(context, "bHaptics/Interaction/Arms/Healthstation_R.tact", PositionType.ForearmR, "healstation", "pickup");
 
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Door_Open.tact", "dooropen", "door");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Door_Close.tact", "doorclose", "door");
-        registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Scan.tact", HapticType.Vest, "scan", "environment", 1.0f, 1.1f);
-//        registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Rumble.tact", "rumble", "rumble");
+        registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Scan.tact", PositionType.Vest, "scan", "environment", 1.0f, 1.15f);
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Chamber_Up.tact", "liftup", "environment");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Chamber_Down.tact", "liftdown", "environment");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Machine.tact", "machine", "environment");
@@ -143,58 +144,58 @@ public class bHaptics {
          */
 
         registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Swap.tact", "weapon_switch", "weapon");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Swap_L.tact", HapticType.Tactosy_Left, "weapon_switch", "weapon");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Swap_R.tact", HapticType.Tactosy_Right, "weapon_switch", "weapon");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Swap_L.tact", PositionType.ForearmL, "weapon_switch", "weapon");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Swap_R.tact", PositionType.ForearmR, "weapon_switch", "weapon");
 
         registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Reload.tact", "weapon_reload", "weapon");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Reload_L.tact", HapticType.Tactosy_Left, "weapon_reload", "weapon");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Reload_R.tact", HapticType.Tactosy_Right, "weapon_reload", "weapon");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Reload_L.tact", PositionType.ForearmL, "weapon_reload", "weapon");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Reload_R.tact", PositionType.ForearmR, "weapon_reload", "weapon");
 
-        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Punch_L.tact", "punchl", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Melee_L.tact", HapticType.Tactosy_Left, "punchl", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Punch_L.tact", "punch_left", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Melee_L.tact", PositionType.ForearmL, "punch_left", "weapon_fire");
 
-        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Punch_R.tact", "punchr", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Melee_R.tact", HapticType.Tactosy_Right, "punchr", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Punch_R.tact", "punch_right", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Melee_R.tact", PositionType.ForearmR, "punch_right", "weapon_fire");
 
         registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Pistol.tact", "pistol_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Pistol_L.tact", HapticType.Tactosy_Left, "pistol_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Pistol_R.tact", HapticType.Tactosy_Right, "pistol_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Pistol_L.tact", PositionType.ForearmL, "pistol_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Pistol_R.tact", PositionType.ForearmR, "pistol_fire", "weapon_fire");
 
         registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Shotgun.tact", "shotgun_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Shotgun_L.tact", HapticType.Tactosy_Left, "shotgun_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Shotgun_R.tact", HapticType.Tactosy_Right, "shotgun_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Shotgun_L.tact", PositionType.ForearmL, "shotgun_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Shotgun_R.tact", PositionType.ForearmR, "shotgun_fire", "weapon_fire");
 
         registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Plasmagun.tact", "plasmagun_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/ShootDefault_L.tact", HapticType.Tactosy_Left, "plasmagun_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/ShootDefault_R.tact", HapticType.Tactosy_Right, "plasmagun_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Assault_L.tact", PositionType.ForearmL, "plasmagun_fire", "weapon_fire", 0.8f, 0.5f);
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Assault_R.tact", PositionType.ForearmR, "plasmagun_fire", "weapon_fire", 0.8f, 0.5f);
 
         registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Grenade_Init.tact", "handgrenade_init", "weapon_init");
         registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Grenade_Throw.tact", "handgrenade_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Grenade_L.tact", HapticType.Tactosy_Left, "handgrenade_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Armd/Grenade_R.tact", HapticType.Tactosy_Right, "handgrenade_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Grenade_L.tact", PositionType.ForearmL, "handgrenade_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Grenade_R.tact", PositionType.ForearmR, "handgrenade_fire", "weapon_fire");
 
         registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Machinegun.tact", "machinegun_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/SMG_L.tact", HapticType.Tactosy_Left, "machinegun_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/SMG_R.tact", HapticType.Tactosy_Right, "machinegun_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/SMG_L.tact", PositionType.ForearmL, "machinegun_fire", "weapon_fire", 0.9f, 0.8f);
+        registerFromAsset(context, "bHaptics/Weapon/Arms/SMG_R.tact", PositionType.ForearmR, "machinegun_fire", "weapon_fire", 0.9f, 0.8f);
 
         registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Chaingun_Init.tact", "chaingun_init", "weapon_init");
         registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Chaingun_Fire.tact", "chaingun_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Assault_L.tact", HapticType.Tactosy_Left, "chaingun_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Assault_R.tact", HapticType.Tactosy_Right, "chaingun_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/SMG_L.tact", PositionType.ForearmL, "chaingun_fire", "weapon_fire", 1.4f, 0.8f);
+        registerFromAsset(context, "bHaptics/Weapon/Arms/SMG_R.tact", PositionType.ForearmR, "chaingun_fire", "weapon_fire", 1.4f, 0.8f);
 
         registerFromAsset(context, "bHaptics/Weapon/Vest/Body_BFG9000_Init.tact", "bfg_init", "weapon_init");
         registerFromAsset(context, "bHaptics/Weapon/Vest/Body_BFG9000_Fire.tact", "bfg_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/ShootDefault_L.tact", HapticType.Tactosy_Left, "bfg_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/ShootDefault_R.tact", HapticType.Tactosy_Right, "bfg_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/ShootDefault_L.tact", PositionType.ForearmL, "bfg_fire", "weapon_fire", 2.0f, 2.0f);
+        registerFromAsset(context, "bHaptics/Weapon/Arms/ShootDefault_R.tact", PositionType.ForearmR, "bfg_fire", "weapon_fire", 2.0f, 2.0f);
 
         registerFromAsset(context, "bHaptics/Weapon/Vest/Body_RocketLauncher.tact", "rocket_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/ShootDefault_L.tact", HapticType.Tactosy_Left, "rocket_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/ShootDefault_R.tact", HapticType.Tactosy_Right, "rocket_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/ShootDefault_L.tact", PositionType.ForearmL, "rocket_fire", "weapon_fire", 2.0f, 1.0f);
+        registerFromAsset(context, "bHaptics/Weapon/Arms/ShootDefault_R.tact", PositionType.ForearmR, "rocket_fire", "weapon_fire", 2.0f, 1.0f);
 
         initialised = true;
     }
 
-    public static void registerFromAsset(Context context, String filename, HapticType type, String key, String group, float intensity, float duration)
+    public static void registerFromAsset(Context context, String filename, PositionType type, String key, String group, float intensity, float duration)
     {
         String content = read(context, filename);
         if (content != null) {
@@ -221,10 +222,10 @@ public class bHaptics {
 
     public static void registerFromAsset(Context context, String filename, String key, String group)
     {
-        registerFromAsset(context, filename, HapticType.Vest, key, group, 1.0f, 1.0f);
+        registerFromAsset(context, filename, PositionType.Vest, key, group, 1.0f, 1.0f);
     }
 
-    public static void registerFromAsset(Context context, String filename, HapticType type, String key, String group)
+    public static void registerFromAsset(Context context, String filename, PositionType type, String key, String group)
     {
         registerFromAsset(context, filename, type, key, group, 1.0f, 1.0f);
     }
@@ -290,18 +291,25 @@ public class bHaptics {
 
             Log.v(TAG, event);
 
+            //Special rumble effect that changes intensity per frame
             if (key.compareTo("rumble") == 0)
             {
-                float highDuration = angle;
+                //Allow all other haptics to take precedence, only rumble if no other haptics is playing
+                if (!player.isAnythingPlaying()) {
+                    float highDuration = angle;
 
-                List<DotPoint> vector = new Vector<>();
-                for (int d = 0; d < 20; ++d)
-                {
-                    vector.add(new DotPoint(d, (int)intensity));
+                    List<DotPoint> vector = new Vector<>();
+                    int flipflop = 0;
+                    for (int d = 0; d < 20; d += 4) // Only select every other dot
+                    {
+                        vector.add(new DotPoint(d + flipflop, (int) intensity));
+                        vector.add(new DotPoint(d + 2 + flipflop, (int) intensity));
+                        flipflop = 1 - flipflop;
+                    }
+
+                    player.submitDot("rumble_front", PositionType.VestFront, vector, (int) highDuration);
+                    player.submitDot("rumble_back", PositionType.VestBack, vector, (int) highDuration);
                 }
-
-                player.submitDot("rumble_front", PositionType.VestFront, vector, (int)highDuration);
-                player.submitDot("rumble_back", PositionType.VestBack, vector, (int)highDuration);
             }
             else if (eventToEffectKeyMap.containsKey(key)) {
                 Vector<Haptic> haptics = eventToEffectKeyMap.get(key);
@@ -321,13 +329,24 @@ public class bHaptics {
                     if (position > 0)
                     {
                         //If playing left position and haptic type is right, don;t play that one
-                        if (position == 1 && haptic.type == HapticType.Tactosy_Right)
+                        if (position == 1 && haptic.type == PositionType.ForearmR)
                         {
                             continue;
                         }
 
                         //If playing right position and haptic type is left, don;t play that one
-                        if (position == 2 && haptic.type == HapticType.Tactosy_Left)
+                        if (position == 2 && haptic.type == PositionType.ForearmL)
+                        {
+                            continue;
+                        }
+
+                        if (position == 3 &&
+                                (haptic.type != PositionType.Head || !hasConnectedHeadDevice))
+                        {
+                            continue;
+                        }
+
+                        if (position != 3 && haptic.type == PositionType.Head)
                         {
                             continue;
                         }
@@ -459,7 +478,14 @@ public class bHaptics {
             manager.addBhapticsManageCallback(new BhapticsManagerCallback() {
                 @Override
                 public void onDeviceUpdate(List<BhapticsDevice> list) {
-
+                    for (BhapticsDevice device : deviceList) {
+                        if (device.isPaired() &&
+                            device.getPosition() == PositionType.Head &&
+                            device.getConnectionStatus() == ConnectionStatus.Connected) {
+                            hasConnectedHeadDevice = true;
+                            break;
+                        }
+                    }
                 }
 
                 @Override
