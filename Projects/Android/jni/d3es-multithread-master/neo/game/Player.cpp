@@ -989,7 +989,7 @@ bool idInventory::Give( idPlayer *owner, const idDict &spawnArgs, const char *st
 				armor = maxarmor;
 			}
 
-			common->HapticEvent("pickup_shield", 0, amount * 5, 0, 0);
+			common->HapticEvent("pickup_shield", 0, 0, amount * 5, 0, 0);
 
 			nextArmorDepleteTime = 0;
 			armorPulse = true;
@@ -1000,7 +1000,7 @@ bool idInventory::Give( idPlayer *owner, const idDict &spawnArgs, const char *st
 			// set, don't add. not going over the clip size limit.
 			clip[ i ] = atoi( value );
 
-			common->HapticEvent("pickup_ammo", 0, 100, 0, 0);
+			common->HapticEvent("pickup_ammo", 0, 0, 100, 0, 0);
 		}
 	} else if ( !idStr::Icmp( statname, "berserk" ) ) {
 		GivePowerUp( owner, BERSERK, SEC2MS( atof( value ) ) );
@@ -1047,7 +1047,7 @@ bool idInventory::Give( idPlayer *owner, const idDict &spawnArgs, const char *st
 				if ( ( weapons & ( 1 << i ) ) == 0 || ( duplicateWeapons & ( 1 << i ) ) == 0 || gameLocal.isMultiplayer ) {
 					tookWeapon = true;
 
-					common->HapticEvent("pickup_weapon", 0, 100, 0, 0);
+					common->HapticEvent("pickup_weapon", 0, 0, 100, 0, 0);
 
 					if ( owner->GetUserInfo()->GetBool( "ui_autoSwitch" ) && idealWeapon ) {
 						assert( !gameLocal.isClient );
@@ -4646,7 +4646,7 @@ bool idPlayer::GiveItem( idItem *item ) {
 
 		if (gave)
 		{
-			common->HapticEvent("pickup_weapon", 0, 100, 0, 0);
+			common->HapticEvent("pickup_weapon", 0, 0, 100, 0, 0);
 		}
 	}
 
@@ -5089,7 +5089,7 @@ void idPlayer::GiveSecurity( const char *security ) {
 		hud->HandleNamedEvent( "securityPickup" );
 	}
 
-	common->HapticEvent("pda_alarm", 0, 100, 0, 0);
+	common->HapticEvent("pda_alarm", 0, 0, 100, 0, 0);
 }
 
 /*
@@ -5110,7 +5110,7 @@ void idPlayer::GiveEmail( const char *emailName ) {
 		hud->HandleNamedEvent( "emailPickup" );
 	}
 
-	common->HapticEvent("pda_alarm", 0, 100, 0, 0);
+	common->HapticEvent("pda_alarm", 0, 0, 100, 0, 0);
 }
 
 
@@ -5571,7 +5571,7 @@ void idPlayerHand::NextBestWeapon()
         debugPrint();
     }
 
-	common->HapticEvent("weapon_switch", 0, 100, 0, 0);
+	common->HapticEvent("weapon_switch", 0, 0, 100, 0, 0);
 }
 
 /*
@@ -5747,7 +5747,7 @@ void idPlayerHand::NextWeapon( int dir )
         if( vr_debugHands.GetBool() )
             common->Printf( "Changing weapon\n" );
 
-		common->HapticEvent("weapon_switch", 0, 100, 0, 0);
+		common->HapticEvent("weapon_switch", 0, 0, 100, 0, 0);
     }
     if( vr_debugHands.GetBool() )
     {
@@ -6007,7 +6007,7 @@ void idPlayerHand::SelectWeapon( int num, bool force, bool specific )
         idealWeapon = num;
         owner->UpdateHudWeapon( whichHand );
 
-		common->HapticEvent("weapon_switch", 0, 100, 0, 0);
+		common->HapticEvent("weapon_switch", 0, 0, 100, 0, 0);
     }
 
 	common->Printf( "After SelectWeapon(%d):\n", idealWeapon);
@@ -7502,7 +7502,7 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 			{
 				//Ass health increases, play the effect higher up the body
 				float yHeight = -0.5f + ((float)(health+amt) / 100.0f);
-				common->HapticEvent("healstation", 0, 100, 0, yHeight);
+				common->HapticEvent("healstation", 0, 0, 100, 0, yHeight);
 			}
 			health += amt;
 			if ( health > 100 ) {
@@ -8216,7 +8216,7 @@ void idPlayer::UpdateFocus( void ) {
 								//Rumble the controller to let player know they scored a touch.
 								hands[fingerHand].SetControllerShake( 0.1f, 12, 0.8f, 12 );
 
-								common->HapticEvent("pda_touch", 0, 100, 0, 0);
+								common->HapticEvent("pda_touch", 0, 0, 100, 0, 0);
 
 								focusTime = gameLocal.time + FOCUS_GUI_TIME;
 								break;
@@ -8430,7 +8430,7 @@ bool idPlayer::UpdateFocusPDA()
 						hands[fingerHand].SetControllerShake( 0.1f, 12, 0.8f, 12 );
 						hands[pdahand].SetControllerShake( 0.1f, 12, 0.8f, 12 );
 
-                        common->HapticEvent("pda_touch", 0, 100, 0, 0);
+                        common->HapticEvent("pda_touch", 0, 0, 100, 0, 0);
 					}
 					commonVr->scanningPDA = false;
 					return true;
@@ -9876,7 +9876,7 @@ void idPlayer::TogglePDA( int hand  ) {
 		hud->HandleNamedEvent( "pdaPickupHide" );
 		hud->HandleNamedEvent( "videoPickupHide" );
 
-		common->HapticEvent("pda_open", 0, 100, 0, 0);
+		common->HapticEvent("pda_open", 0, 0, 100, 0, 0);
 	} else {
 		inventory.selPDA = objectiveSystem->State().GetInt( "listPDA_sel_0" );
 		inventory.selVideo = objectiveSystem->State().GetInt( "listPDAVideo_sel_0" );
@@ -9884,7 +9884,7 @@ void idPlayer::TogglePDA( int hand  ) {
 		inventory.selEMail = objectiveSystem->State().GetInt( "listPDAEmail_sel_0" );
 		objectiveSystem->Activate( false, gameLocal.time );
 
-		common->HapticEvent("pda_close", 0, 100, 0, 0);
+		common->HapticEvent("pda_close", 0, 0, 100, 0, 0);
 	}
 	//objectiveSystemOpen ^= 1;
 	objectiveSystemOpen = !objectiveSystemOpen;
@@ -11797,7 +11797,7 @@ void idPlayer::Think( void ) {
 	if (health > 0 && health < 40)
 	{
 		//heartbeat is a special case that uses intensity for a different purpose
-		common->HapticEvent("heartbeat", 0, health, 0, 0);
+		common->HapticEvent("heartbeat", 0, 0, health, 0, 0);
 	}
 
 	//UpdateFlashlightHolster();
@@ -12511,7 +12511,7 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 		if (inventory.armor == 0)
 		{
 			if ( IsType( idPlayer::Type ) ) {
-				common->HapticEvent("shield_break", 0, 100, 0, 0);
+				common->HapticEvent("shield_break", 0, 0, 100, 0, 0);
 			}
 		}
 
@@ -12525,7 +12525,7 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 		StartSound( "snd_burn", SND_CHANNEL_BODY3, 0, false, NULL );
 
 		if ( IsType( idPlayer::Type ) ) {
-			common->HapticEvent("fire", 0, damage * 4, 0, 0);
+			common->HapticEvent("fire", 0, 0, damage * 4, 0, 0);
 		}
 
 	} else if ( damageDef->dict.GetBool( "no_air" ) ) {
@@ -12629,10 +12629,10 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 		//Indicate head damage if appropriate
 		if ( location >= 0 && location < damageGroups.Size() &&
 				strstr( damageGroups[location].c_str(), "head" ) ) {
-			common->HapticEvent(damageDefName, 3, damage * 4, 0, 0);
+			common->HapticEvent(damageDefName, 3, 0, damage * 4, 0, 0);
 		}
 
-		common->HapticEvent(damageDefName, 0, damage * 4, damageYaw, yHeight);
+		common->HapticEvent(damageDefName, 0, 0, damage * 4, damageYaw, yHeight);
 	}
 
 	lastDamageDef = damageDef->Index();

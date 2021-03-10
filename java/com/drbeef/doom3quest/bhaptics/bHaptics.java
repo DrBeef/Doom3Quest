@@ -12,7 +12,6 @@ import com.bhaptics.bhapticsmanger.BhapticsModule;
 import com.bhaptics.bhapticsmanger.HapticPlayer;
 import com.bhaptics.commons.PermissionUtils;
 import com.bhaptics.commons.model.BhapticsDevice;
-import com.bhaptics.commons.model.ConnectionStatus;
 import com.bhaptics.commons.model.DotPoint;
 import com.bhaptics.commons.model.PositionType;
 
@@ -27,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 import java.util.Vector;
 
 
@@ -35,16 +35,18 @@ public class bHaptics {
     
     public static class Haptic
     {
-        Haptic(PositionType type, String key, String altKey, float intensity, float duration) {
+        Haptic(PositionType type, String key, String altKey, String group, float intensity, float duration) {
             this.type = type;
             this.key = key;
             this.altKey = altKey;
+            this.group = group;
             this.intensity = intensity;
             this.duration = duration;
         }
 
         public final String key;
         public final String altKey;
+        public final String group;
         public final float intensity;
         public final float duration;
         public final PositionType type;
@@ -55,7 +57,6 @@ public class bHaptics {
     private static Random rand = new Random();
 
     private static boolean hasPairedDevice = false;
-    private static boolean hasConnectedHeadDevice = false;
 
     private static boolean enabled = false;
     private static boolean requestingPermission = false;
@@ -66,6 +67,8 @@ public class bHaptics {
     private static Context context;
 
     private static Map<String, Vector<Haptic>> eventToEffectKeyMap = new HashMap<>();
+
+    private static  Map<String, Haptic> repeatingHaptics = new HashMap<>();
 
     public static void initialise()
     {
@@ -203,7 +206,8 @@ public class bHaptics {
             String hapticKey = key + "_" + type.name();
             player.registerProject(hapticKey, content);
 
-            Haptic haptic = new Haptic(type, hapticKey, group, intensity, duration);
+            UUID uuid = UUID.randomUUID();
+            Haptic haptic = new Haptic(type, hapticKey, uuid.toString(), group, intensity, duration);
 
             Vector<Haptic> haptics;
             if (!eventToEffectKeyMap.containsKey(key))
@@ -284,7 +288,45 @@ public class bHaptics {
         enabled = false;
     }
 
-    public static void playHaptic(String event, int position, float intensity, float angle, float yHeight)
+    public static void beginFrame()
+    {
+        if (enabled && hasPairedDevice) {
+            repeatingHaptics.forEach((key, haptic) -> {
+                //If a repeating haptic isn't playing, start it again
+                if (!player.isPlaying(haptic.altKey)) {
+                    player.submitRegistered(haptic.key, haptic.altKey, 100, 1.0f, 0, 0);
+                }
+            });
+        }
+        else
+        {
+            repeatingHaptics.clear();
+        }
+    }
+
+    public static void endFrame() {}
+
+    /*
+       position values:
+           0 - Will play on both arms if tactosy tact files present for both
+           1 - Will play on left arm only if tactosy tact files present for left
+           2 - Will play on right arm only if tactosy tact files present for right
+           3 - Will play on head only (if present)
+
+       flag values:
+           0 - No flags set
+           1 - Indicate this is a looping effect that should play repeatedly until stopped
+
+       intensity:
+           0 - 100
+
+       angle:
+           0 - 360
+
+       yHeight:
+           -0.5 - 0.5
+    */
+    public static void playHaptic(String event, int position, int flags, float intensity, float angle, float yHeight)
     {
         if (enabled && hasPairedDevice) {
             String key = getHapticEventKey(event);
@@ -294,8 +336,7 @@ public class bHaptics {
             //Special rumble effect that changes intensity per frame
             if (key.compareTo("rumble") == 0)
             {
-                //Allow all other haptics to take precedence, only rumble if no other haptics is playing
-                if (!player.isAnythingPlaying()) {
+                {
                     float highDuration = angle;
 
                     List<DotPoint> vector = new Vector<>();
@@ -313,21 +354,22 @@ public class bHaptics {
             }
             else if (eventToEffectKeyMap.containsKey(key)) {
                 Vector<Haptic> haptics = eventToEffectKeyMap.get(key);
-
-                //Don't allow a haptic to interrupt itself if it is already playing
-                if (player.isPlaying(haptics.get(0).altKey)) {
-                    return;
-                }
-
                 for (Haptic haptic : haptics) {
 
+                    //Don't allow a haptic to interrupt itself if it is already playing
+                    if (player.isPlaying(haptics.get(0).altKey)) {
+                        return;
+                    }
+
                     //The following groups play at full intensity
-                    if (haptic.altKey.compareTo("environment") == 0) {
+                    if (haptic.group.compareTo("environment") == 0) {
                         intensity = 100;
                     }
 
                     if (position > 0)
                     {
+                        BhapticsManager manager = BhapticsModule.getBhapticsManager();
+
                         //If playing left position and haptic type is right, don;t play that one
                         if (position == 1 && haptic.type == PositionType.ForearmR)
                         {
@@ -340,8 +382,9 @@ public class bHaptics {
                             continue;
                         }
 
+
                         if (position == 3 &&
-                                (haptic.type != PositionType.Head || !hasConnectedHeadDevice))
+                                (haptic.type != PositionType.Head || !manager.isDeviceConnected(BhapticsManager.DeviceType.Head)))
                         {
                             continue;
                         }
@@ -357,7 +400,7 @@ public class bHaptics {
                         float duration = haptic.duration;
 
                         //Special hack for heartbeat
-                        if (haptic.altKey.compareTo("health") == 0)
+                        if (haptic.group.compareTo("health") == 0)
                         {
                             //The worse condition we are in, the faster the heart beats!
                             float health = intensity;
@@ -365,7 +408,14 @@ public class bHaptics {
                             flIntensity = 1.0f;
                         }
 
-                        player.submitRegistered(haptic.key, haptic.altKey, flIntensity, duration, angle, yHeight);
+                        //If this is a repeating event, then add to the set to play in begin frame
+                        if (flags == 1)
+                        {
+                            repeatingHaptics.put(key, haptic);
+                        }
+                        else {
+                            player.submitRegistered(haptic.key, haptic.altKey, flIntensity, duration, angle, yHeight);
+                        }
                     }
                 }
             }
@@ -423,20 +473,17 @@ public class bHaptics {
         return key;
     }
 
-    public static void stopAll() {
-
-        if (hasPairedDevice) {
-            player.turnOffAll();
-        }
-    }
-
     public static void stopHaptic(String event) {
 
-        if (hasPairedDevice) {
+        if (enabled && hasPairedDevice) {
 
             String key = getHapticEventKey(event);
+
+            if (repeatingHaptics.containsKey(key))
             {
                 player.turnOff(key);
+
+                repeatingHaptics.remove(key);
             }
         }
     }
@@ -478,14 +525,7 @@ public class bHaptics {
             manager.addBhapticsManageCallback(new BhapticsManagerCallback() {
                 @Override
                 public void onDeviceUpdate(List<BhapticsDevice> list) {
-                    for (BhapticsDevice device : deviceList) {
-                        if (device.isPaired() &&
-                            device.getPosition() == PositionType.Head &&
-                            device.getConnectionStatus() == ConnectionStatus.Connected) {
-                            hasConnectedHeadDevice = true;
-                            break;
-                        }
-                    }
+
                 }
 
                 @Override

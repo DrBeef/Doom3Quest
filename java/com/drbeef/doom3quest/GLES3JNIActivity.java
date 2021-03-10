@@ -53,15 +53,9 @@ import static android.system.Os.setenv;
 	}
 
 
-	/*
-		position is used for weapon based haptics:
-			0 - Will play on both arms if tactosy tact files present for both
-			1 - Will play on left arm only if tactosy tact files present for left
-			2 - Will play on right arm only if tactosy tact files present for right
-	 */
-	public void haptic_event(String event, int position, int intensity, float angle, float yHeight) {
+	public void haptic_event(String event, int position, int flags, int intensity, float angle, float yHeight) {
 
-		bHaptics.playHaptic(event, position, intensity, angle, yHeight);
+		bHaptics.playHaptic(event, position, flags, intensity, angle, yHeight);
 	}
 
 	public void haptic_stopevent(String event) {
@@ -69,8 +63,12 @@ import static android.system.Os.setenv;
 		bHaptics.stopHaptic(event);
 	}
 
-	public void haptic_stopall() {
-		bHaptics.stopAll();
+	public void haptic_beginframe() {
+		bHaptics.beginFrame();
+	}
+
+	public void haptic_endframe() {
+		bHaptics.endFrame();
 	}
 
 	public void haptic_enable() {

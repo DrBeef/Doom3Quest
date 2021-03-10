@@ -1627,8 +1627,10 @@ bool idEntity::StartSoundShader( const idSoundShader *shader, const s_channelTyp
 		idVec3 entityOrigin = GetPhysics()->GetOrigin(0);
 		float distance = (playerOrigin - entityOrigin).Length();
 		if (distance <= 200.0F) {
+			bool repeat = (shader->GetParms()->soundShaderFlags & SSF_LOOPING) != 0;
+
 			//Pass sound on in case it can trigger a haptic event (like doors)
-			common->HapticEvent(shader->GetName(), 0, (int)(200.0f - distance), 0, 0);
+			common->HapticEvent(shader->GetName(), 0, repeat ? 1 : 0, (int)(200.0f - distance), 0, 0);
 		}
 	}
 

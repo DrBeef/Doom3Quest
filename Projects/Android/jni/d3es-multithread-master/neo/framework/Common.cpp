@@ -171,8 +171,7 @@ public:
 	virtual int					GetFrameNumber();
 
 	virtual void 				Vibrate(int channel, float low, float high );
-	virtual void				HapticEvent(const char* event, int position, int intensity, float angle, float yHeight );
-	virtual void 				HapticStopAll();
+	virtual void				HapticEvent(const char* event, int position, int flags, int intensity, float angle, float yHeight );
 	virtual void 				HapticStopEvent(const char* event);
     virtual void                HapticEnable();
     virtual void                HapticDisable();
@@ -2276,8 +2275,7 @@ void idCommonLocal::InitSIMD( void ) {
 
 extern "C" void Doom3Quest_FrameSetup(int controlscheme, int switch_sticks, int refresh);
 extern "C" void Doom3Quest_Vibrate(int channel, float low, float high );
-extern "C" void Doom3Quest_HapticEvent(const char* event, int position, int intensity, float angle, float yHeight );
-extern "C" void Doom3Quest_HapticStopAll();
+extern "C" void Doom3Quest_HapticEvent(const char* event, int position, int flags, int intensity, float angle, float yHeight );
 extern "C" void Doom3Quest_HapticStopEvent(const char* event);
 extern "C" void Doom3Quest_HapticEnable();
 extern "C" void Doom3Quest_HapticDisable();
@@ -2287,14 +2285,9 @@ void idCommonLocal::Vibrate(int channel, float low, float high)
     Doom3Quest_Vibrate(channel, low, high);
 }
 
-void idCommonLocal::HapticEvent(const char* event, int position, int intensity, float angle, float yHeight )
+void idCommonLocal::HapticEvent(const char* event, int position, int flags, int intensity, float angle, float yHeight )
 {
-	Doom3Quest_HapticEvent(event, position, intensity, angle, yHeight);
-}
-
-void idCommonLocal::HapticStopAll( )
-{
-	Doom3Quest_HapticStopAll();
+	Doom3Quest_HapticEvent(event, position, flags, intensity, angle, yHeight);
 }
 
 void idCommonLocal::HapticStopEvent(const char* event)

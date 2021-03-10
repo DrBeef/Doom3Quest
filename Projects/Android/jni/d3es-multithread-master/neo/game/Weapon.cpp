@@ -1939,7 +1939,7 @@ void idWeapon::Reload( void ) {
 		WEAPON_RELOAD = true;
 	}
 
-	common->HapticEvent("weapon_reload", vr_weaponHand.GetInteger() ? 1 : 2, 100, 0,0);
+	common->HapticEvent("weapon_reload", vr_weaponHand.GetInteger() ? 1 : 2, 0, 100, 0,0);
 }
 
 /*
@@ -2088,19 +2088,19 @@ void idWeapon::BeginAttack( void ) {
     currentWeapon = IdentifyWeapon();
     if (currentWeapon == WEAPON_HANDGRENADE)
     {
-        common->HapticEvent("handgrenade_init", position, 100, 0, 0);
+        common->HapticEvent("handgrenade_init", position, 0, 100, 0, 0);
     }
     if (currentWeapon == WEAPON_CHAINGUN)
     {
-        common->HapticEvent("chaingun_init", position, 100, 0, 0);
+        common->HapticEvent("chaingun_init", position, 0, 100, 0, 0);
     }
     if (currentWeapon == WEAPON_BFG)
     {
-        common->HapticEvent("bfg_init", position, 100, 0, 0);
+        common->HapticEvent("bfg_init", position, 0, 100, 0, 0);
     }
     if (currentWeapon == WEAPON_HANDGRENADE)
     {
-        common->HapticEvent("grenade_init", position, 100, 0, 0);
+        common->HapticEvent("grenade_init", position, 0, 100, 0, 0);
     }
 }
 
@@ -4039,35 +4039,35 @@ void idWeapon::Event_LaunchProjectiles( int num_projectiles, float spread, float
 
 			if (currentWeap == WEAPON_PISTOL)
             {
-			    common->HapticEvent("pistol_fire", position, 100, 0, 0);
+			    common->HapticEvent("pistol_fire", position, 0, 100, 0, 0);
             }
 			if (currentWeap == WEAPON_SHOTGUN)
             {
-			    common->HapticEvent("shotgun_fire",  position, 100, 0, 0);
+			    common->HapticEvent("shotgun_fire",  position, 0, 100, 0, 0);
             }
 			if (currentWeap == WEAPON_PLASMAGUN)
             {
-			    common->HapticEvent("plasmagun_fire",  position, 100, 0, 0);
+			    common->HapticEvent("plasmagun_fire",  position, 0, 100, 0, 0);
             }
 			if (currentWeap == WEAPON_HANDGRENADE)
             {
-			    common->HapticEvent("handgrenade_fire",  position, 100, 0, 0);
+			    common->HapticEvent("handgrenade_fire",  position, 0, 100, 0, 0);
             }
 			if (currentWeap == WEAPON_MACHINEGUN)
             {
-			    common->HapticEvent("machinegun_fire",  position, 100, 0, 0);
+			    common->HapticEvent("machinegun_fire",  position, 0, 100, 0, 0);
             }
 			if (currentWeap == WEAPON_CHAINGUN)
             {
-			    common->HapticEvent("chaingun_fire",  position, 100, 0, 0);
+			    common->HapticEvent("chaingun_fire",  position, 0, 100, 0, 0);
             }
 			if (currentWeap == WEAPON_BFG)
             {
-			    common->HapticEvent("bfg_fire",  position, 100, 0, 0);
+			    common->HapticEvent("bfg_fire",  position, 0, 100, 0, 0);
             }
 			if (currentWeap == WEAPON_ROCKETLAUNCHER)
             {
-			    common->HapticEvent("rocket_fire",  position, 100, 0, 0);
+			    common->HapticEvent("rocket_fire",  position, 0, 100, 0, 0);
             }
 
 		}

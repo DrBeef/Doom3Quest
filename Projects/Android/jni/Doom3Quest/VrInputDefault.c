@@ -61,7 +61,7 @@ extern bool inGameGuiActive;
 extern bool objectiveSystemActive;
 extern bool inCinematic;
 
-void Doom3Quest_HapticEvent(const char* event, int position, int intensity, float angle, float yHeight );
+void Doom3Quest_HapticEvent(const char* event, int position, int flags, int intensity, float angle, float yHeight );
 
 void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGamepad *pFootTrackingNew, ovrInputStateGamepad *pFootTrackingOld, ovrInputStateTrackedRemote *pDominantTrackedRemoteNew, ovrInputStateTrackedRemote *pDominantTrackedRemoteOld, ovrTracking* pDominantTracking,
                           ovrInputStateTrackedRemote *pOffTrackedRemoteNew, ovrInputStateTrackedRemote *pOffTrackedRemoteOld, ovrTracking* pOffTracking,
@@ -285,11 +285,11 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
                     if (velocityTriggeredAttack)
                     {
                         if (controlscheme == 0) {
-                            Doom3Quest_HapticEvent("punch_right", 0, 100, 0,
+                            Doom3Quest_HapticEvent("punch_right", 0, 0, 100, 0,
                                                    0);
                         }
                         else{
-                            Doom3Quest_HapticEvent("punch_left", 0, 100, 0,
+                            Doom3Quest_HapticEvent("punch_left", 0, 0, 100, 0,
                                                    0);
                         }
                     }
@@ -325,11 +325,11 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
                     if (velocityTriggeredAttack)
                     {
                         if (controlscheme == 1) {
-                            Doom3Quest_HapticEvent("punch_right", 0, 100, 0,
+                            Doom3Quest_HapticEvent("punch_right", 0, 0, 100, 0,
                                                    0);
                         }
                         else{
-                            Doom3Quest_HapticEvent("punch_left", 0, 100, 0,
+                            Doom3Quest_HapticEvent("punch_left", 0, 0, 100, 0,
                                                    0);
                         }
                     }
