@@ -2287,7 +2287,9 @@ void idCommonLocal::Vibrate(int channel, float low, float high)
 
 void idCommonLocal::HapticEvent(const char* event, int position, int flags, int intensity, float angle, float yHeight )
 {
-	Doom3Quest_HapticEvent(event, position, flags, intensity, angle, yHeight);
+	if (cvarSystem->GetCVarBool("vr_bhaptics")) {
+		Doom3Quest_HapticEvent(event, position, flags, intensity, angle, yHeight);
+	}
 }
 
 void idCommonLocal::HapticStopEvent(const char* event)
