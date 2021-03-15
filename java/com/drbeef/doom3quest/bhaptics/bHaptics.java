@@ -437,6 +437,8 @@ public class bHaptics {
             key = "bullet";
         } else if (event.contains("damage") && event.contains("fireball")) {
             key = "fireball";
+        } else if (event.contains("damage") && event.contains("rocket")) {
+            key = "fireball"; // Just re-use this one
         } else if (event.contains("damage") && event.contains("noair")) {
             key = "noair";
         } else if (event.contains("damage") && event.contains("shotgun")) {
