@@ -172,6 +172,7 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
 
     //Menu button - can be used in all modes
     handleTrackedControllerButton_AsKey(leftTrackedRemoteState_new.Buttons, leftTrackedRemoteState_old.Buttons, ovrButton_Enter, K_ESCAPE);
+    handleTrackedControllerButton_AsKey(rightTrackedRemoteState_new.Buttons, rightTrackedRemoteState_old.Buttons, ovrButton_Enter, K_ESCAPE); // in case user has switched menu/home buttons
 
     controlMouse(inMenu, pDominantTrackedRemoteNew, pDominantTrackedRemoteOld);
 
