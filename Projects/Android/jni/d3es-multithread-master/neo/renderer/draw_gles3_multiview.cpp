@@ -611,7 +611,9 @@ GLuint RB_CalculateProjection(const drawSurf_t * const surf) {
 	GLuint result = NORMAL_PROJECTION;
 	if ( surf->space->weaponDepthHack ) {
 		result = WEAPON_PROJECTION;
-	} else if ( surf->space->modelDepthHack != 0.0 ) {
+	} else if ( cvarSystem->GetCVarBool("r_modelDepthHack") &&
+	        surf->space->modelDepthHack > 0.0 &&
+			surf->space->modelDepthHack <= 1.0) {
 		result = DEPTH_HACK_PROJECTION + (GLuint)(surf->space->modelDepthHack * (float)NUM_DEPTH_HACK_PROJECTIONS);
 	} else if (
 	        //Is this set up as an orthographic projection?

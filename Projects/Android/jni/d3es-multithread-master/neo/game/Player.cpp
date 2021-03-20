@@ -12626,6 +12626,10 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 		if (damageYaw >= 360.0f)
 			damageYaw -= 360.0f;
 
+		//Use a min value of 40, otherwise things like SMG bullets barely make a blip
+		float hapticDamage = damage * 5;
+        hapticDamage = Max(40.0F, hapticDamage);
+
 		//Indicate head damage if appropriate
 		if ( location >= 0 && location < damageGroups.Size() &&
 				strstr( damageGroups[location].c_str(), "head" ) ) {
