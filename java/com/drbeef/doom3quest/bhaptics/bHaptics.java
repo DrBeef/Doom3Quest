@@ -424,8 +424,8 @@ public class bHaptics {
 
     private static String getHapticEventKey(String event) {
         String key = event.toLowerCase();
-        if (event.contains("melee")) {
-            if (event.contains("right"))
+        if (key.contains("melee")) {
+            if (key.contains("right"))
             {
                 key = "melee_right";
             }
@@ -433,42 +433,45 @@ public class bHaptics {
             {
                 key = "melee_left";
             }
-        } else if (event.contains("damage") && event.contains("bullet")) {
+        } else if (key.contains("damage") && key.contains("bullet")) {
             key = "bullet";
-        } else if (event.contains("damage") && event.contains("fireball")) {
-            key = "fireball";
-        } else if (event.contains("damage") && event.contains("rocket")) {
+        } else if (key.contains("damage") && key.contains("splash")) {
+            key = "bullet"; // damage from a nearby exploding projectile, just use simple bullet pattern for now
+        } else if (key.contains("damage") &&
+                (key.contains("fireball") ||
+                key.contains("rocket") ||
+                key.contains("explode"))) {
             key = "fireball"; // Just re-use this one
-        } else if (event.contains("damage") && event.contains("noair")) {
+        } else if (key.contains("damage") && key.contains("noair")) {
             key = "noair";
-        } else if (event.contains("damage") && event.contains("shotgun")) {
+        } else if (key.contains("damage") && key.contains("shotgun")) {
             key = "shotgun";
-        } else if (event.contains("damage") && event.contains("fall")) {
+        } else if (key.contains("damage") && key.contains("fall")) {
             key = "fall";
-        } else if (event.contains("door") || event.contains("panel"))
+        } else if (key.contains("door") || key.contains("panel"))
         {
-            if (event.contains("close"))
+            if (key.contains("close"))
             {
                 key = "doorclose";
             }
-            else if (event.contains("open"))
+            else if (key.contains("open"))
             {
                 key = "dooropen";
             }
-        } else if (event.contains("lift"))
+        } else if (key.contains("lift"))
         {
-            if (event.contains("up"))
+            if (key.contains("up"))
             {
                 key = "liftup";
             }
-            else if (event.contains("down"))
+            else if (key.contains("down"))
             {
                 key = "liftdown";
             }
-        } else if (event.contains("elevator"))
+        } else if (key.contains("elevator"))
         {
             key = "machine";
-        }  else if (event.contains("entrance_scanner") || event.contains("scanner_rot1s"))
+        }  else if (key.contains("entrance_scanner") || key.contains("scanner_rot1s"))
         {
             key = "scan";
         }

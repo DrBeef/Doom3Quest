@@ -12525,7 +12525,7 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 		StartSound( "snd_burn", SND_CHANNEL_BODY3, 0, false, NULL );
 
 		if ( IsType( idPlayer::Type ) ) {
-			common->HapticEvent("fire", 0, 0, damage * 4, 0, 0);
+			common->HapticEvent("fire", 0, 0, 50, 0, 0);
 		}
 
 	} else if ( damageDef->dict.GetBool( "no_air" ) ) {
