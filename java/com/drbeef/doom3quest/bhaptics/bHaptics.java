@@ -331,7 +331,7 @@ public class bHaptics {
         if (enabled && hasPairedDevice) {
             String key = getHapticEventKey(event);
 
-            Log.v(TAG, event);
+            //Log.v(TAG, event);
 
             //Special rumble effect that changes intensity per frame
             if (key.compareTo("rumble") == 0)
@@ -419,6 +419,10 @@ public class bHaptics {
                     }
                 }
             }
+            else
+            {
+                //Log.v(TAG, "Unknown Event: " + event);
+            }
         }
     }
 
@@ -433,21 +437,22 @@ public class bHaptics {
             {
                 key = "melee_left";
             }
-        } else if (key.contains("damage") && key.contains("bullet")) {
-            key = "bullet";
-        } else if (key.contains("damage") && key.contains("splash")) {
-            key = "bullet"; // damage from a nearby exploding projectile, just use simple bullet pattern for now
-        } else if (key.contains("damage") &&
-                (key.contains("fireball") ||
-                key.contains("rocket") ||
-                key.contains("explode"))) {
-            key = "fireball"; // Just re-use this one
-        } else if (key.contains("damage") && key.contains("noair")) {
-            key = "noair";
-        } else if (key.contains("damage") && key.contains("shotgun")) {
-            key = "shotgun";
-        } else if (key.contains("damage") && key.contains("fall")) {
-            key = "fall";
+        } else if (key.contains("damage")) {
+            if (key.contains("bullet") ||
+                    key.contains("splash") ||
+                    key.contains("cgun")) {
+                key = "bullet";
+            } else if (key.contains("fireball") ||
+                            key.contains("rocket") ||
+                            key.contains("explode")) {
+                key = "fireball"; // Just re-use this one
+            } else if (key.contains("noair")) {
+                key = "noair";
+            } else if (key.contains("shotgun")) {
+                key = "shotgun";
+            } else if (key.contains("fall")) {
+                key = "fall";
+            }
         } else if (key.contains("door") || key.contains("panel"))
         {
             if (key.contains("close"))
