@@ -988,6 +988,9 @@ bool idInventory::Give( idPlayer *owner, const idDict &spawnArgs, const char *st
 			if ( armor > maxarmor ) {
 				armor = maxarmor;
 			}
+
+			common->HapticEvent("pickup_shield", 0, 0, amount * 5, 0, 0);
+
 			nextArmorDepleteTime = 0;
 			armorPulse = true;
 		}
@@ -996,6 +999,8 @@ bool idInventory::Give( idPlayer *owner, const idDict &spawnArgs, const char *st
 		if ( i != -1 ) {
 			// set, don't add. not going over the clip size limit.
 			clip[ i ] = atoi( value );
+
+			common->HapticEvent("pickup_ammo", 0, 0, 100, 0, 0);
 		}
 	} else if ( !idStr::Icmp( statname, "berserk" ) ) {
 		GivePowerUp( owner, BERSERK, SEC2MS( atof( value ) ) );
@@ -1041,6 +1046,8 @@ bool idInventory::Give( idPlayer *owner, const idDict &spawnArgs, const char *st
 			if ( !gameLocal.world->spawnArgs.GetBool( "no_Weapons" ) || ( weaponName == "weapon_fists" ) || ( weaponName == "weapon_soulcube" ) ) {
 				if ( ( weapons & ( 1 << i ) ) == 0 || ( duplicateWeapons & ( 1 << i ) ) == 0 || gameLocal.isMultiplayer ) {
 					tookWeapon = true;
+
+					common->HapticEvent("pickup_weapon", 0, 0, 100, 0, 0);
 
 					if ( owner->GetUserInfo()->GetBool( "ui_autoSwitch" ) && idealWeapon ) {
 						assert( !gameLocal.isClient );
@@ -3871,7 +3878,7 @@ void idPlayer::UpdateVrHud()
 
                     idAngles a(0, viewAngles.yaw - pVRClientInfo->hmdorientation[YAW], 0);
                     offpos *= a.ToMat3();
-                    offpos *= ((100.0f / 2.54f) * vr_scale.GetFloat());
+                    offpos *= vr_worldscale.GetFloat();
 
                     {
                         hudOrigin = viewOrigin + offpos;
@@ -4636,6 +4643,11 @@ bool idPlayer::GiveItem( idItem *item ) {
 		// frame no matter what
 		UpdateHudWeapon( false );
 		hud->HandleNamedEvent( "weaponPulse" );
+
+		if (gave)
+		{
+			common->HapticEvent("pickup_weapon", 0, 0, 100, 0, 0);
+		}
 	}
 
 	// display the pickup feedback on the hud
@@ -5076,6 +5088,8 @@ void idPlayer::GiveSecurity( const char *security ) {
 		hud->SetStateString( "pda_security", "1" );
 		hud->HandleNamedEvent( "securityPickup" );
 	}
+
+	common->HapticEvent("pda_alarm", 0, 0, 100, 0, 0);
 }
 
 /*
@@ -5095,7 +5109,10 @@ void idPlayer::GiveEmail( const char *emailName ) {
 	if ( hud ) {
 		hud->HandleNamedEvent( "emailPickup" );
 	}
+
+	common->HapticEvent("pda_alarm", 0, 0, 100, 0, 0);
 }
+
 
 /*
 ===============
@@ -5553,6 +5570,8 @@ void idPlayerHand::NextBestWeapon()
         common->Printf( "After NextBestWeapon():\n" );
         debugPrint();
     }
+
+	common->HapticEvent("weapon_switch", 0, 0, 100, 0, 0);
 }
 
 /*
@@ -5728,6 +5747,7 @@ void idPlayerHand::NextWeapon( int dir )
         if( vr_debugHands.GetBool() )
             common->Printf( "Changing weapon\n" );
 
+		common->HapticEvent("weapon_switch", 0, 0, 100, 0, 0);
     }
     if( vr_debugHands.GetBool() )
     {
@@ -5986,6 +6006,8 @@ void idPlayerHand::SelectWeapon( int num, bool force, bool specific )
         // If we made it all this way, we want weapon "num" and we can switch to it
         idealWeapon = num;
         owner->UpdateHudWeapon( whichHand );
+
+		common->HapticEvent("weapon_switch", 0, 0, 100, 0, 0);
     }
 
 	common->Printf( "After SelectWeapon(%d):\n", idealWeapon);
@@ -7476,6 +7498,12 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 			if ( entityGui->GetRenderEntity() && entityGui->GetRenderEntity()->gui[ 0 ] ) {
 				entityGui->GetRenderEntity()->gui[ 0 ]->SetStateInt( "gui_parm1", _health );
 			}
+			if (health < 100)
+			{
+				//Ass health increases, play the effect higher up the body
+				float yHeight = -0.5f + ((float)(health+amt) / 100.0f);
+				common->HapticEvent("healstation", 0, 0, 100, 0, yHeight);
+			}
 			health += amt;
 			if ( health > 100 ) {
 				health = 100;
@@ -8188,6 +8216,8 @@ void idPlayer::UpdateFocus( void ) {
 								//Rumble the controller to let player know they scored a touch.
 								hands[fingerHand].SetControllerShake( 0.1f, 12, 0.8f, 12 );
 
+								common->HapticEvent("pda_touch", 0, 0, 100, 0, 0);
+
 								focusTime = gameLocal.time + FOCUS_GUI_TIME;
 								break;
 
@@ -8399,6 +8429,8 @@ bool idPlayer::UpdateFocusPDA()
 						// Carl: Should the PDA vibrate/haptic feedback too?
 						hands[fingerHand].SetControllerShake( 0.1f, 12, 0.8f, 12 );
 						hands[pdahand].SetControllerShake( 0.1f, 12, 0.8f, 12 );
+
+                        common->HapticEvent("pda_touch", 0, 0, 100, 0, 0);
 					}
 					commonVr->scanningPDA = false;
 					return true;
@@ -9843,12 +9875,16 @@ void idPlayer::TogglePDA( int hand  ) {
 		objectiveSystem->Activate( true, gameLocal.time );
 		hud->HandleNamedEvent( "pdaPickupHide" );
 		hud->HandleNamedEvent( "videoPickupHide" );
+
+		common->HapticEvent("pda_open", 0, 0, 100, 0, 0);
 	} else {
 		inventory.selPDA = objectiveSystem->State().GetInt( "listPDA_sel_0" );
 		inventory.selVideo = objectiveSystem->State().GetInt( "listPDAVideo_sel_0" );
 		inventory.selAudio = objectiveSystem->State().GetInt( "listPDAAudio_sel_0" );
 		inventory.selEMail = objectiveSystem->State().GetInt( "listPDAEmail_sel_0" );
 		objectiveSystem->Activate( false, gameLocal.time );
+
+		common->HapticEvent("pda_close", 0, 0, 100, 0, 0);
 	}
 	//objectiveSystemOpen ^= 1;
 	objectiveSystemOpen = !objectiveSystemOpen;
@@ -11535,7 +11571,7 @@ void idPlayer::UpdateFlashlightHolster()
 
 		idAngles a(0, viewAngles.yaw - pVRClientInfo->hmdorientation[YAW], 0);
 		holsterOffset *= a.ToMat3();
-        holsterOffset *= ((100.0f / 2.54f) * vr_scale.GetFloat());
+        holsterOffset *= vr_worldscale.GetFloat();
         flashlightRenderEntity.origin = firstPersonViewOrigin + holsterOffset;
 
         flashlightRenderEntity.entityNum = ENTITYNUM_NONE;
@@ -11600,16 +11636,14 @@ void idPlayer::Think( void ) {
         else {
             pVRClientInfo->weaponid = -1;
         }
-
+        cvarSystem->SetCVarBool("vr_weapon_stabilised", pVRClientInfo->weapon_stabilised);
         int _currentWeapon = GetCurrentWeaponId();
         if(_currentWeapon == WEAPON_FLASHLIGHT || _currentWeapon == WEAPON_FISTS)
         	pVRClientInfo->velocitytriggered = true;
 		else
 			pVRClientInfo->velocitytriggered = false;
 		pVRClientInfo->velocitytriggeredoffhand = true;
-
-        pVRClientInfo->oneHandOnly = (_currentWeapon == WEAPON_FISTS) ||
-			(_currentWeapon == weapon_handgrenade);
+        pVRClientInfo->pistol = GetCurrentWeaponId() == WEAPON_PISTOL;
     }
 
     // clear the ik before we do anything else so the skeleton doesn't get updated twice
@@ -11759,6 +11793,12 @@ void idPlayer::Think( void ) {
 	UpdateHud();
 
 	UpdatePowerUps();
+
+	if (health > 0 && health < 40)
+	{
+		//heartbeat is a special case that uses intensity for a different purpose
+		common->HapticEvent("heartbeat", 0, 0, health, 0, 0);
+	}
 
 	//UpdateFlashlightHolster();
 
@@ -12468,6 +12508,13 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 	if ( armorSave ) {
 		inventory.armor -= armorSave;
 
+		if (inventory.armor == 0)
+		{
+			if ( IsType( idPlayer::Type ) ) {
+				common->HapticEvent("shield_break", 0, 0, 100, 0, 0);
+			}
+		}
+
 		if ( gameLocal.time > lastArmorPulse + 200 ) {
 			StartSound( "snd_hitArmor", SND_CHANNEL_ITEM, 0, false, NULL );
 		}
@@ -12476,6 +12523,11 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 
 	if ( damageDef->dict.GetBool( "burn" ) ) {
 		StartSound( "snd_burn", SND_CHANNEL_BODY3, 0, false, NULL );
+
+		if ( IsType( idPlayer::Type ) ) {
+			common->HapticEvent("fire", 0, 0, 50, 0, 0);
+		}
+
 	} else if ( damageDef->dict.GetBool( "no_air" ) ) {
 		if ( !armorSave && health > 0 ) {
 			StartSound( "snd_airGasp", SND_CHANNEL_ITEM, 0, false, NULL );
@@ -12558,6 +12610,33 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 			// physics is turned off by calling af.Rest()
 			BecomeActive( TH_PHYSICS );
 		}
+	}
+
+	if ( IsType( idPlayer::Type ) &&
+	    //Save the effort of going through this code if bhaptics isn't enabled
+	    vr_bhaptics.GetBool()) {
+		idVec3 bodyOrigin = vec3_zero;
+		idMat3 bodyAxis;
+		GetViewPos( bodyOrigin, bodyAxis );
+		idAngles bodyAng = bodyAxis.ToAngles();
+
+		float yHeight = idMath::ClampFloat(-0.5f, 0.5f, damage_from.ToPitch() / 45.0f);
+		float damageYaw = 180 + (damage_from.ToYaw() - bodyAng.yaw);
+		if (damageYaw < 0.0f)
+			damageYaw += 360.0f;
+		if (damageYaw >= 360.0f)
+			damageYaw -= 360.0f;
+
+		//Ensure a decent level of haptic feedback for any damage
+		float hapticLevel = 80 + Min<float>(damage * 4, 120.0);
+
+		//Indicate head damage if appropriate
+		if ( location >= 0 && location < damageGroups.Size() &&
+				strstr( damageGroups[location].c_str(), "head" ) ) {
+			common->HapticEvent(damageDefName, 4, 0, hapticLevel, damageYaw, yHeight);
+		} else {
+            common->HapticEvent(damageDefName, 0, 0, hapticLevel, damageYaw, yHeight);
+        }
 	}
 
 	lastDamageDef = damageDef->Index();
@@ -13168,7 +13247,7 @@ void idPlayer::CalculateViewWeaponPos( int hand, idVec3& origin, idMat3& axis )
 
         idAngles a(0, viewAngles.yaw - pVRClientInfo->hmdorientation[YAW], 0);
         gunpos *= a.ToMat3();
-        gunpos *= ((100.0f / 2.54f) * vr_scale.GetFloat());
+        gunpos *= cvarSystem->GetCVarFloat( "vr_worldscale" );
 
         if (GetCurrentWeaponId( == WEAPON_FLASHLIGHT) // Flashlight adjustment
         {
@@ -13389,11 +13468,8 @@ void idPlayer::CalculateViewWeaponPosVR( int hand, idVec3 &origin, idMat3 &axis 
 
 	commonVr->MotionControlGetHand( hand, hands[ hand ].motionPosition, hands[ hand ].motionRotation );
 
-	if (!commonVr->GetWeaponStabilised())
-	{
-		weaponPitch = idAngles( vr_motionWeaponPitchAdj.GetFloat(), 0.0f, 0.0f ).ToQuat();
-		hands[hand].motionRotation = weaponPitch * hands[hand].motionRotation;
-	}
+	weaponPitch = idAngles( vr_motionWeaponPitchAdj.GetFloat(), 0.0f, 0.0f ).ToQuat();
+	hands[ hand ].motionRotation = weaponPitch * hands[ hand ].motionRotation;
 
 	GetViewPos( weapOrigin, weapAxis );
 
@@ -13665,10 +13741,6 @@ void idPlayer::CalculateViewFlashlightPos( idVec3 &origin, idMat3 &axis, idVec3 
     axis = idAngles( 0.0, viewAngles.yaw - commonVr->bodyYawOffset, 0.0f ).ToMat3();
 
     int flashlightMode = commonVr->GetCurrentFlashlightMode();
-    if (commonVr->GetWeaponStabilised() && flashlightMode == FLASHLIGHT_HAND )
-	{
-		flashlightMode = FLASHLIGHT_GUN;
-	}
 
     setLeftHand = false;
     //move the flashlight to alternate location for items with no mount
@@ -13952,7 +14024,7 @@ idVec3 idPlayer::GetEyePosition( void ) const {
 	if (pVRClientInfo)
     {
 		float eyeHeight = 0;
-		float vrEyeHeight = (-(pVRClientInfo->hmdposition[1] +  vr_heightoffset.GetFloat()) * ((100.0f / 2.54f) * vr_scale.GetFloat()));
+		float vrEyeHeight = (-(pVRClientInfo->hmdposition[1] +  vr_heightoffset.GetFloat()) * vr_worldscale.GetFloat());
 
 		//Add special handling for physical crouching at some point
 		if (physicsObj.IsCrouching() && PHYSICAL_CROUCH) {

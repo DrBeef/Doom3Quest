@@ -132,6 +132,7 @@ public class bHaptics {
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Door_Open.tact", "dooropen", "door");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Door_Close.tact", "doorclose", "door");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Scan.tact", PositionType.Vest, "scan", "environment", 1.0f, 1.15f);
+        registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Scan.tact", PositionType.Vest, "decontaminate", "environment", 0.5f, 0.65f);
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Chamber_Up.tact", "liftup", "environment");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Chamber_Down.tact", "liftdown", "environment");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Machine.tact", "machine", "environment");
@@ -308,10 +309,11 @@ public class bHaptics {
 
     /*
        position values:
-           0 - Will play on both arms if tactosy tact files present for both
-           1 - Will play on left arm only if tactosy tact files present for left
-           2 - Will play on right arm only if tactosy tact files present for right
+           0 - Will play on vest and both arms if tactosy tact files present for both
+           1 - Will play on vest and on left arm only if tactosy tact files present for left
+           2 - Will play on vest and on right arm only if tactosy tact files present for right
            3 - Will play on head only (if present)
+           4 - Will play on all devices (that have a pattern defined for them)
 
        flag values:
            0 - No flags set
@@ -366,46 +368,52 @@ public class bHaptics {
                         intensity = 100;
                     }
 
-                    if (position > 0)
                     {
-                        BhapticsManager manager = BhapticsModule.getBhapticsManager();
-
-                        //If playing left position and haptic type is right, don;t play that one
-                        if (position == 1 && haptic.type == PositionType.ForearmR)
-                        {
-                            continue;
-                        }
-
-                        //If playing right position and haptic type is left, don;t play that one
-                        if (position == 2 && haptic.type == PositionType.ForearmL)
-                        {
-                            continue;
-                        }
-
-
-                        if (position == 3 &&
-                                (haptic.type != PositionType.Head || !manager.isDeviceConnected(BhapticsManager.DeviceType.Head)))
-                        {
-                            continue;
-                        }
-
-                        if (position != 3 && haptic.type == PositionType.Head)
-                        {
-                            continue;
-                        }
-                    }
-
-                    if (haptic != null) {
                         float flIntensity = ((intensity / 100.0F) * haptic.intensity);
-                        float duration = haptic.duration;
+                        float flAngle = angle;
+                        float flDuration = haptic.duration;
 
-                        //Special hack for heartbeat
+                        if (position > 0)
+                        {
+                            BhapticsManager manager = BhapticsModule.getBhapticsManager();
+
+                            //If playing left position and haptic type is right, don;t play that one
+                            if (position == 1 && haptic.type == PositionType.ForearmR)
+                            {
+                                continue;
+                            }
+
+                            //If playing right position and haptic type is left, don;t play that one
+                            if (position == 2 && haptic.type == PositionType.ForearmL)
+                            {
+                                continue;
+                            }
+
+
+                            if (position == 3 &&
+                                    (haptic.type != PositionType.Head || !manager.isDeviceConnected(BhapticsManager.DeviceType.Head)))
+                            {
+                                continue;
+                            }
+
+                            if (haptic.type == PositionType.Head) {
+                                if (position < 3) {
+                                    continue;
+                                }
+
+                                //Zero angle for head
+                                flAngle = 0;
+                            }
+                        }
+
+                        //Special values for heartbeat
                         if (haptic.group.compareTo("health") == 0)
                         {
                             //The worse condition we are in, the faster the heart beats!
                             float health = intensity;
-                            duration = 1.0f - (0.4f * ((40 - health) / 40));
+                            flDuration = 1.0f - (0.4f * ((40 - health) / 40));
                             flIntensity = 1.0f;
+                            flAngle = 0;
                         }
 
                         //If this is a repeating event, then add to the set to play in begin frame
@@ -414,7 +422,7 @@ public class bHaptics {
                             repeatingHaptics.put(key, haptic);
                         }
                         else {
-                            player.submitRegistered(haptic.key, haptic.altKey, flIntensity, duration, angle, yHeight);
+                            player.submitRegistered(haptic.key, haptic.altKey, flIntensity, flDuration, flAngle, yHeight);
                         }
                     }
                 }
@@ -479,6 +487,9 @@ public class bHaptics {
         }  else if (key.contains("entrance_scanner") || key.contains("scanner_rot1s"))
         {
             key = "scan";
+        }  else if (key.contains("decon_started"))
+        {
+            key = "decontaminate";
         }
         return key;
     }
