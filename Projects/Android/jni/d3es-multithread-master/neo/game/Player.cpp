@@ -12612,8 +12612,9 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 		}
 	}
 
-	if ( IsType( idPlayer::Type ) ) {
-
+	if ( IsType( idPlayer::Type ) &&
+	    //Save the effort of going through this code if bhaptics isn't enabled
+	    vr_bhaptics.GetBool()) {
 		idVec3 bodyOrigin = vec3_zero;
 		idMat3 bodyAxis;
 		GetViewPos( bodyOrigin, bodyAxis );
@@ -12626,17 +12627,16 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 		if (damageYaw >= 360.0f)
 			damageYaw -= 360.0f;
 
-		//Use a min value of 40, otherwise things like SMG bullets barely make a blip
-		float hapticDamage = damage * 5;
-        hapticDamage = Max(40.0F, hapticDamage);
+		//Ensure a decent level of haptic feedback for any damage
+		float hapticLevel = 80 + Min<float>(damage * 4, 120.0);
 
 		//Indicate head damage if appropriate
 		if ( location >= 0 && location < damageGroups.Size() &&
 				strstr( damageGroups[location].c_str(), "head" ) ) {
-			common->HapticEvent(damageDefName, 3, 0, damage * 4, 0, 0);
-		}
-
-		common->HapticEvent(damageDefName, 0, 0, damage * 4, damageYaw, yHeight);
+			common->HapticEvent(damageDefName, 4, 0, hapticLevel, damageYaw, yHeight);
+		} else {
+            common->HapticEvent(damageDefName, 0, 0, hapticLevel, damageYaw, yHeight);
+        }
 	}
 
 	lastDamageDef = damageDef->Index();
