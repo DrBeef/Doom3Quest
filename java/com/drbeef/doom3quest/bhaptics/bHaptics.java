@@ -9,6 +9,7 @@ import android.util.Log;
 import com.bhaptics.bhapticsmanger.BhapticsManager;
 import com.bhaptics.bhapticsmanger.BhapticsManagerCallback;
 import com.bhaptics.bhapticsmanger.BhapticsModule;
+import com.bhaptics.bhapticsmanger.HapticStreamer;
 import com.bhaptics.bhapticsmanger.HapticPlayer;
 import com.bhaptics.commons.PermissionUtils;
 import com.bhaptics.commons.model.BhapticsDevice;
@@ -63,6 +64,7 @@ public class bHaptics {
     private static boolean initialised = false;
 
     private static HapticPlayer player;
+    private HapticStreamer hapticStreamer;
 
     private static Context context;
 
@@ -287,6 +289,43 @@ public class bHaptics {
     public static void disable()
     {
         enabled = false;
+    }
+
+    public static void startStreaming() {
+        if (hapticStreamer == null) {
+            hapticStreamer = new DefaultHapticStreamer();
+            hapticStreamer.setCallback(new HapticStreamer.HapticStreamerCallback() {
+                @Override
+                public void onDiscover(String host) {
+                    Log.i(TAG, "onDiscover: " + host);
+                    if (defaultConnect) {
+                        hapticStreamer.connect(host);
+                    }
+                }
+
+                @Override
+                public void onConnect(String host) {
+
+                }
+
+                @Override
+                public void onDisconnect(String host) {
+
+                }
+            });
+            hapticStreamer.refreshCandidateIps();
+        }
+    }
+
+    public static void stopStreaming() {
+        hapticStreamer.dispose();
+        hapticStreamer = null;
+    }
+
+    public static void refreshIp() {
+        if (hapticStreamer != null) {
+            hapticStreamer.refreshCandidateIps();
+        }
     }
 
     public static void beginFrame()
