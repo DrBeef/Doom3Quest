@@ -93,19 +93,19 @@ public class bHaptics {
         registerFromAsset(context, "bHaptics/Damage/Body_Heartbeat.tact", PositionType.Vest, "heartbeat", "health", 1.0f, 1.2f);
 
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Melee1.tact", "melee_left", "damage");
-        registerFromAsset(context, "bHaptics/Damage/Head_DMG_Default.tact", PositionType.Head, "melee_left", "damage");
+        registerFromAsset(context, "bHaptics/Damage/Head/DMG_Melee1.tact", PositionType.Head, "melee_left", "damage");
 
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Melee2.tact", "melee_right", "damage");
-        registerFromAsset(context, "bHaptics/Damage/Head_DMG_Default.tact", PositionType.Head, "melee_right", "damage");
+        registerFromAsset(context, "bHaptics/Damage/Head/DMG_Melee2.tact", PositionType.Head, "melee_right", "damage");
 
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Fireball.tact", "fireball", "damage");
-        registerFromAsset(context, "bHaptics/Damage/Head_DMG_Default.tact", PositionType.Head, "fireball", "damage");
+        registerFromAsset(context, "bHaptics/Damage/Head/DMG_Explosion.tact", PositionType.Head, "fireball", "damage");
 
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Bullet.tact", "bullet", "damage");
         registerFromAsset(context, "bHaptics/Damage/Head_DMG_Default.tact", PositionType.Head, "bullet", "damage");
 
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Shotgun.tact", "shotgun", "damage");
-        registerFromAsset(context, "bHaptics/Damage/Head_DMG_Default.tact", PositionType.Head, "shotgun", "damage");
+        registerFromAsset(context, "bHaptics/Damage/Head/DMG_Explosion.tact", PositionType.Head, "shotgun", "damage");
 
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Fire.tact", "fire", "damage");
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Fire.tact", "noair", "damage");
@@ -143,6 +143,10 @@ public class bHaptics {
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_PDA_Open.tact", "pda_close", "pda");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_PDA_Alarm.tact", "pda_alarm", "pda");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_PDA_Touch.tact", "pda_touch", "pda");
+
+
+        registerFromAsset(context, "bHaptics/Interaction/Vest/PlayerJump.tact", "jump_start", "player");
+        registerFromAsset(context, "bHaptics/Interaction/Vest/PlayerLanding.tact", "jump_landing", "player");
 
 
         /*
