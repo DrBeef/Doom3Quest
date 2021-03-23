@@ -88,7 +88,7 @@ public class bHaptics {
         /*
             DAMAGE
         */
-        registerFromAsset(context, "bHaptics/Damage/Body_Heartbeat.tact", PositionType.Vest, "heartbeat", "health", 1.0f, 1.2f);
+        registerFromAsset(context, "bHaptics/Damage/Body_Heartbeat.tact", PositionType.Vest, "heartbeat", "health", 1.0f, 1.0f);
 
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Melee1.tact", "melee_left", "damage");
         registerFromAsset(context, "bHaptics/Damage/Head_DMG_Default.tact", PositionType.Head, "melee_left", "damage");
@@ -128,6 +128,10 @@ public class bHaptics {
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Healstation.tact", "healstation", "pickup");
         registerFromAsset(context, "bHaptics/Interaction/Arms/Healthstation_L.tact", PositionType.ForearmL, "healstation", "pickup");
         registerFromAsset(context, "bHaptics/Interaction/Arms/Healthstation_R.tact", PositionType.ForearmR, "healstation", "pickup");
+
+        //These are when the game plays the heartbeat pulse sound, which is not triggered by low health
+        registerFromAsset(context, "bHaptics/Damage/Body_Heartbeat.tact", PositionType.Vest, "heartbeat_pulse_loop", "heart_sound1", 0.6f, 1.4f);
+        registerFromAsset(context, "bHaptics/Damage/Body_Heartbeat.tact", PositionType.Vest, "heartbeat4", "heart_sound2", 0.6f, 1.4f);
 
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Door_Open.tact", "dooropen", "door");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Door_Close.tact", "doorclose", "door");
