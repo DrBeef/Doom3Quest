@@ -1938,8 +1938,6 @@ void idWeapon::Reload( void ) {
 	if ( isLinked ) {
 		WEAPON_RELOAD = true;
 	}
-
-	common->HapticEvent("weapon_reload", vr_weaponHand.GetInteger() ? 1 : 2, 0, 100, 0,0);
 }
 
 /*
@@ -2117,6 +2115,13 @@ void idWeapon::EndAttack( void ) {
 		WEAPON_ATTACK = false;
 		if( sndHum && grabberState == -1 )  {	// _D3XP :: don't stop grabber hum
 			StartSoundShader( sndHum, SND_CHANNEL_BODY, 0, false, NULL );
+		}
+
+		weapon_t currentWeapon = WEAPON_NONE;
+		currentWeapon = IdentifyWeapon();
+		if (currentWeapon == WEAPON_CHAINSAW)
+		{
+			common->HapticEvent("chainsaw_idle", vr_weaponHand.GetInteger() ? 1 : 2, 1, 100, 0, 0);
 		}
 	}
 }
@@ -3279,8 +3284,10 @@ void idWeapon::Event_WeaponState( const char *statename, int blendFrames ) {
 
 	idealState = statename;
 
+	weapon_t currentWeap = IdentifyWeapon();
 	if ( !idealState.Icmp( "Fire" ) ) {
 		isFiring = true;
+
 	} else {
 		isFiring = false;
 	}
@@ -3352,14 +3359,18 @@ idWeapon::Event_WeaponReady
 ===============
 */
 void idWeapon::Event_WeaponReady( void ) {
-	status = WP_READY;
+    if (status == WP_RELOAD) {
+        common->HapticEvent("weapon_reload_finish", vr_weaponHand.GetInteger() ? 1 : 2, 0, 100, 0,
+                            0);
+    }
+
+    status = WP_READY;
 	if ( isLinked ) {
 		WEAPON_RAISEWEAPON = false;
 	}
 	if ( sndHum ) {
 		StartSoundShader( sndHum, SND_CHANNEL_BODY, 0, false, NULL );
 	}
-
 }
 
 /*
@@ -3381,6 +3392,8 @@ idWeapon::Event_WeaponReloading
 */
 void idWeapon::Event_WeaponReloading( void ) {
 	status = WP_RELOAD;
+
+    common->HapticEvent("weapon_reload", vr_weaponHand.GetInteger() ? 1 : 2, 0, 100, 0,0);
 }
 
 /*
@@ -4225,6 +4238,17 @@ void idWeapon::Event_Melee( void ) {
 
 	if ( !meleeDef ) {
 		gameLocal.Error( "No meleeDef on '%s'", weaponDef->dict.GetString( "classname" ) );
+	}
+
+	weapon_t currentWeapon = IdentifyWeapon();
+	if (currentWeapon == WEAPON_FISTS)
+	{
+		common->HapticEvent("punch", 2 - GetHand(), 0, 100, 0, 0);
+	}
+	if (currentWeapon == WEAPON_CHAINSAW)
+	{
+		common->HapticStopEvent("chainsaw_idle");
+		common->HapticEvent("chainsaw_fire", vr_weaponHand.GetInteger() ? 1 : 2, 0, 100, 0, 0);
 	}
 
 	if ( !gameLocal.isClient ) {

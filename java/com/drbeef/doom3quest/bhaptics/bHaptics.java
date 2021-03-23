@@ -9,6 +9,7 @@ import android.util.Log;
 import com.bhaptics.bhapticsmanger.BhapticsManager;
 import com.bhaptics.bhapticsmanger.BhapticsManagerCallback;
 import com.bhaptics.bhapticsmanger.BhapticsModule;
+import com.bhaptics.bhapticsmanger.DefaultHapticStreamer;
 import com.bhaptics.bhapticsmanger.HapticStreamer;
 import com.bhaptics.bhapticsmanger.HapticPlayer;
 import com.bhaptics.commons.PermissionUtils;
@@ -64,7 +65,7 @@ public class bHaptics {
     private static boolean initialised = false;
 
     private static HapticPlayer player;
-    private HapticStreamer hapticStreamer;
+    private static HapticStreamer hapticStreamer;
 
     private static Context context;
 
@@ -93,16 +94,16 @@ public class bHaptics {
         registerFromAsset(context, "bHaptics/Damage/Body_Heartbeat.tact", PositionType.Vest, "heartbeat", "health", 1.0f, 1.0f);
 
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Melee1.tact", "melee_left", "damage");
-        registerFromAsset(context, "bHaptics/Damage/Head/DMG_Melee1.tact", PositionType.Head, "melee_left", "damage");
+        registerFromAsset(context, "bHaptics/Damage/Head/DMG_Melee1.tact", "melee_left", "damage"); // always play melee on the head too
 
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Melee2.tact", "melee_right", "damage");
-        registerFromAsset(context, "bHaptics/Damage/Head/DMG_Melee2.tact", PositionType.Head, "melee_right", "damage");
+        registerFromAsset(context, "bHaptics/Damage/Head/DMG_Melee2.tact", "melee_right", "damage"); // always play melee on the head too
 
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Fireball.tact", "fireball", "damage");
-        registerFromAsset(context, "bHaptics/Damage/Head/DMG_Explosion.tact", PositionType.Head, "fireball", "damage");
+        registerFromAsset(context, "bHaptics/Damage/Head/DMG_Explosion.tact", "fireball", "damage"); // always play fireball on the head too
 
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Bullet.tact", "bullet", "damage");
-        registerFromAsset(context, "bHaptics/Damage/Head_DMG_Default.tact", PositionType.Head, "bullet", "damage");
+        registerFromAsset(context, "bHaptics/Damage/Head/DMG_HeadShot.tact", PositionType.Head, "bullet", "damage");
 
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Shotgun.tact", "shotgun", "damage");
         registerFromAsset(context, "bHaptics/Damage/Head/DMG_Explosion.tact", PositionType.Head, "shotgun", "damage");
@@ -120,8 +121,8 @@ public class bHaptics {
         registerFromAsset(context, "bHaptics/Interaction/Arms/Pickup_R.tact", PositionType.ForearmR, "pickup_shield", "pickup");
 
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Weapon_Get.tact", "pickup_weapon", "pickup");
-        registerFromAsset(context, "bHaptics/Interaction/Arms/Pickup_L.tact", PositionType.ForearmL, "pickup_weapon", "pickup");
-        registerFromAsset(context, "bHaptics/Interaction/Arms/Pickup_R.tact", PositionType.ForearmR, "pickup_weapon", "pickup");
+        registerFromAsset(context, "bHaptics/Interaction/Arms/ItemPickup_Mirror.tact", PositionType.ForearmL, "pickup_weapon", "pickup");
+        registerFromAsset(context, "bHaptics/Interaction/Arms/ItemPickup.tact", PositionType.ForearmR, "pickup_weapon", "pickup");
 
         //registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Ammo_Get.tact", "pickup_ammo", "pickup");
         registerFromAsset(context, "bHaptics/Interaction/Arms/Ammo_L.tact", PositionType.ForearmL, "pickup_ammo", "pickup");
@@ -131,22 +132,21 @@ public class bHaptics {
         registerFromAsset(context, "bHaptics/Interaction/Arms/Healthstation_L.tact", PositionType.ForearmL, "healstation", "pickup");
         registerFromAsset(context, "bHaptics/Interaction/Arms/Healthstation_R.tact", PositionType.ForearmR, "healstation", "pickup");
 
-        //These are when the game plays the heartbeat pulse sound, which is not triggered by low health
-        registerFromAsset(context, "bHaptics/Damage/Body_Heartbeat.tact", PositionType.Vest, "heartbeat_pulse_loop", "heart_sound1", 0.6f, 1.4f);
-        registerFromAsset(context, "bHaptics/Damage/Body_Heartbeat.tact", PositionType.Vest, "heartbeat4", "heart_sound2", 0.6f, 1.4f);
-
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Door_Open.tact", "dooropen", "door");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Door_Close.tact", "doorclose", "door");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Scan.tact", PositionType.Vest, "scan", "environment", 1.0f, 1.15f);
-        registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Scan.tact", PositionType.Vest, "decontaminate", "environment", 0.5f, 0.65f);
+        registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Scan.tact", PositionType.Vest, "decontaminate", "environment", 0.5f, 0.75f);
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Chamber_Up.tact", "liftup", "environment");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Chamber_Down.tact", "liftdown", "environment");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Machine.tact", "machine", "environment");
+        registerFromAsset(context, "bHaptics/Interaction/Vest/Spark.tact", "spark", "environment");
 
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_PDA_Open.tact", "pda_open", "pda");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_PDA_Open.tact", "pda_close", "pda");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_PDA_Alarm.tact", "pda_alarm", "pda");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_PDA_Touch.tact", "pda_touch", "pda");
+        registerFromAsset(context, "bHaptics/Interaction/Arms/PDA_Click_Mirror.tact", PositionType.ForearmL, "pda_touch", "pda");
+        registerFromAsset(context, "bHaptics/Interaction/Arms/PDA_Click.tact", PositionType.ForearmR, "pda_touch", "pda");
 
 
         registerFromAsset(context, "bHaptics/Interaction/Vest/PlayerJump.tact", "jump_start", "player");
@@ -157,54 +157,95 @@ public class bHaptics {
             WEAPONS
          */
 
-        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Swap.tact", "weapon_switch", "weapon");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Swap_L.tact", PositionType.ForearmL, "weapon_switch", "weapon");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/WeaponSwap.tact", PositionType.Right, "weapon_switch", "weapon");
         registerFromAsset(context, "bHaptics/Weapon/Arms/Swap_R.tact", PositionType.ForearmR, "weapon_switch", "weapon");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/WeaponSwap_Mirror.tact", PositionType.Left, "weapon_switch", "weapon");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Swap_L.tact", PositionType.ForearmL, "weapon_switch", "weapon");
 
+        //Reload Start
         registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Reload.tact", "weapon_reload", "weapon");
         registerFromAsset(context, "bHaptics/Weapon/Arms/Reload_L.tact", PositionType.ForearmL, "weapon_reload", "weapon");
         registerFromAsset(context, "bHaptics/Weapon/Arms/Reload_R.tact", PositionType.ForearmR, "weapon_reload", "weapon");
 
-        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Punch_L.tact", "punch_left", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Melee_L.tact", PositionType.ForearmL, "punch_left", "weapon_fire");
+        //Reload Finish
+        registerFromAsset(context, "bHaptics/Weapon/Vest/ReloadFinish.tact", PositionType.Right, "weapon_reload_finish", "weapon");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/ReloadFinish.tact", PositionType.ForearmR, "weapon_reload_finish", "weapon");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/ReloadFinish_Mirror.tact", PositionType.Left, "weapon_reload_finish", "weapon");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/ReloadFinish_Mirror.tact", PositionType.ForearmL, "weapon_reload_finish", "weapon");
 
-        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Punch_R.tact", "punch_right", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Melee_R.tact", PositionType.ForearmR, "punch_right", "weapon_fire");
+        //Chainsaw Idle
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Chainsaw_LV1.tact", PositionType.Right, "chainsaw_idle", "weapon");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Chainsaw_LV1.tact", PositionType.ForearmR, "chainsaw_idle", "weapon");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Chainsaw_LV1_Mirror.tact", PositionType.Left, "chainsaw_idle", "weapon");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Chainsaw_LV1_Mirror.tact", PositionType.ForearmL, "chainsaw_idle", "weapon");
 
-        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Pistol.tact", "pistol_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Pistol_L.tact", PositionType.ForearmL, "pistol_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Pistol_R.tact", PositionType.ForearmR, "pistol_fire", "weapon_fire");
+        //Chainsaw Fire
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Chainsaw_LV2.tact", PositionType.Right, "chainsaw_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Chainsaw_LV2.tact", PositionType.ForearmR, "chainsaw_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Chainsaw_LV2_Mirror.tact", PositionType.Left, "chainsaw_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Chainsaw_LV2_Mirror.tact", PositionType.ForearmL, "chainsaw_fire", "weapon_fire");
 
-        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Shotgun.tact", "shotgun_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Shotgun_L.tact", PositionType.ForearmL, "shotgun_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Shotgun_R.tact", PositionType.ForearmR, "shotgun_fire", "weapon_fire");
+        //Fist
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Fist_Mirror.tact", PositionType.Left, "punch", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Fist_Mirror.tact", PositionType.ForearmL, "punch", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Fist.tact", PositionType.Right, "punch", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Fist.tact", PositionType.ForearmR, "punch", "weapon_fire");
 
-        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Plasmagun.tact", "plasmagun_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Assault_L.tact", PositionType.ForearmL, "plasmagun_fire", "weapon_fire", 0.8f, 0.5f);
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Assault_R.tact", PositionType.ForearmR, "plasmagun_fire", "weapon_fire", 0.8f, 0.5f);
+        //Pistol
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Recoil_LV2_Mirror.tact", PositionType.Left, "pistol_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Recoil_LV2_Mirror.tact", PositionType.ForearmL, "pistol_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Recoil_LV2.tact", PositionType.Right, "pistol_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Recoil_LV2.tact", PositionType.ForearmR, "pistol_fire", "weapon_fire");
 
+        //Shotgun
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Recoil_LV3_Mirror.tact", PositionType.Left, "shotgun_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Recoil_LV3_Mirror.tact", PositionType.ForearmL, "shotgun_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Recoil_LV3.tact", PositionType.Right, "shotgun_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Recoil_LV3.tact", PositionType.ForearmR, "shotgun_fire", "weapon_fire");
+
+        //Plasma Gun
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Recoil_LV1_Mirror.tact", PositionType.Left, "plasmagun_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Recoil_LV1_Mirror.tact", PositionType.ForearmL, "plasmagun_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Recoil_LV1.tact", PositionType.Right, "plasmagun_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Recoil_LV1.tact", PositionType.ForearmR, "plasmagun_fire", "weapon_fire");
+
+        //Grenade
         registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Grenade_Init.tact", "handgrenade_init", "weapon_init");
         registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Grenade_Throw.tact", "handgrenade_fire", "weapon_fire");
         registerFromAsset(context, "bHaptics/Weapon/Arms/Grenade_L.tact", PositionType.ForearmL, "handgrenade_fire", "weapon_fire");
         registerFromAsset(context, "bHaptics/Weapon/Arms/Grenade_R.tact", PositionType.ForearmR, "handgrenade_fire", "weapon_fire");
 
-        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Machinegun.tact", "machinegun_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/SMG_L.tact", PositionType.ForearmL, "machinegun_fire", "weapon_fire", 0.9f, 0.8f);
-        registerFromAsset(context, "bHaptics/Weapon/Arms/SMG_R.tact", PositionType.ForearmR, "machinegun_fire", "weapon_fire", 0.9f, 0.8f);
+        //SMG
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Recoil_LV1_Mirror.tact", PositionType.Left, "machinegun_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Recoil_LV1_Mirror.tact", PositionType.ForearmL, "machinegun_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Recoil_LV1.tact", PositionType.Right, "machinegun_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Recoil_LV1.tact", PositionType.ForearmR, "machinegun_fire", "weapon_fire");
 
+        //Chaingun
         registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Chaingun_Init.tact", "chaingun_init", "weapon_init");
-        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_Chaingun_Fire.tact", "chaingun_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/SMG_L.tact", PositionType.ForearmL, "chaingun_fire", "weapon_fire", 1.4f, 0.8f);
-        registerFromAsset(context, "bHaptics/Weapon/Arms/SMG_R.tact", PositionType.ForearmR, "chaingun_fire", "weapon_fire", 1.4f, 0.8f);
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Recoil_LV2_Mirror.tact", PositionType.Left, "chaingun_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Recoil_LV2_Mirror.tact", PositionType.ForearmL, "chaingun_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Recoil_LV2.tact", PositionType.Right, "chaingun_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Recoil_LV2.tact", PositionType.ForearmR, "chaingun_fire", "weapon_fire");
 
+        //BFG9000
         registerFromAsset(context, "bHaptics/Weapon/Vest/Body_BFG9000_Init.tact", "bfg_init", "weapon_init");
-        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_BFG9000_Fire.tact", "bfg_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/ShootDefault_L.tact", PositionType.ForearmL, "bfg_fire", "weapon_fire", 2.0f, 2.0f);
-        registerFromAsset(context, "bHaptics/Weapon/Arms/ShootDefault_R.tact", PositionType.ForearmR, "bfg_fire", "weapon_fire", 2.0f, 2.0f);
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Recoil_LV5_Mirror.tact", PositionType.Left, "bfg_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Recoil_LV5_Mirror.tact", PositionType.ForearmL, "bfg_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Recoil_LV5.tact", PositionType.Right, "bfg_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Recoil_LV5.tact", PositionType.ForearmR, "bfg_fire", "weapon_fire");
 
-        registerFromAsset(context, "bHaptics/Weapon/Vest/Body_RocketLauncher.tact", "rocket_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/ShootDefault_L.tact", PositionType.ForearmL, "rocket_fire", "weapon_fire", 2.0f, 1.0f);
-        registerFromAsset(context, "bHaptics/Weapon/Arms/ShootDefault_R.tact", PositionType.ForearmR, "rocket_fire", "weapon_fire", 2.0f, 1.0f);
+        //Rocket Launcher
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Recoil_LV4_Mirror.tact", PositionType.Left, "rocket_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Recoil_LV4_Mirror.tact", PositionType.ForearmL, "rocket_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Recoil_LV4.tact", PositionType.Right, "rocket_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Recoil_LV4.tact", PositionType.ForearmR, "rocket_fire", "weapon_fire");
+
+        //Soul Cube
+        registerFromAsset(context, "bHaptics/Weapon/Vest/SoulCube.tact", PositionType.Right, "soul_cube_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/SoulCube.tact", PositionType.ForearmR, "soul_cube_fire", "weapon_fire", 2.0f, 1.0f);
+        registerFromAsset(context, "bHaptics/Weapon/Vest/SoulCube_Mirror.tact", PositionType.Left, "soul_cube_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/SoulCube_Mirror.tact", PositionType.ForearmL, "soul_cube_fire", "weapon_fire", 2.0f, 1.0f);
 
         initialised = true;
     }
@@ -297,6 +338,7 @@ public class bHaptics {
     public static void disable()
     {
         enabled = false;
+        stopStreaming();
     }
 
     public static void startStreaming() {
@@ -306,9 +348,8 @@ public class bHaptics {
                 @Override
                 public void onDiscover(String host) {
                     Log.i(TAG, "onDiscover: " + host);
-                    if (defaultConnect) {
-                        hapticStreamer.connect(host);
-                    }
+
+                    hapticStreamer.connect(host);
                 }
 
                 @Override
@@ -326,8 +367,10 @@ public class bHaptics {
     }
 
     public static void stopStreaming() {
-        hapticStreamer.dispose();
-        hapticStreamer = null;
+        if (hapticStreamer != null) {
+            hapticStreamer.dispose();
+            hapticStreamer = null;
+        }
     }
 
     public static void refreshIp() {
@@ -357,8 +400,8 @@ public class bHaptics {
     /*
        position values:
            0 - Will play on vest and both arms if tactosy tact files present for both
-           1 - Will play on vest and on left arm only if tactosy tact files present for left
-           2 - Will play on vest and on right arm only if tactosy tact files present for right
+           1 - Will play on (left) vest and on left arm only if tactosy tact files present for left
+           2 - Will play on (right) vest and on right arm only if tactosy tact files present for right
            3 - Will play on head only (if present)
            4 - Will play on all devices (that have a pattern defined for them)
 
@@ -380,7 +423,7 @@ public class bHaptics {
         if (enabled && hasPairedDevice) {
             String key = getHapticEventKey(event);
 
-            //Log.v(TAG, event);
+            Log.v(TAG, event);
 
             //Special rumble effect that changes intensity per frame
             if (key.compareTo("rumble") == 0)
@@ -425,18 +468,24 @@ public class bHaptics {
                             BhapticsManager manager = BhapticsModule.getBhapticsManager();
 
                             //If playing left position and haptic type is right, don;t play that one
-                            if (position == 1 && haptic.type == PositionType.ForearmR)
+                            if (position == 1)
                             {
-                                continue;
+                                if (haptic.type == PositionType.ForearmR ||
+                                        haptic.type == PositionType.Right) {
+                                    continue;
+                                }
                             }
 
                             //If playing right position and haptic type is left, don;t play that one
-                            if (position == 2 && haptic.type == PositionType.ForearmL)
+                            if (position == 2)
                             {
-                                continue;
+                                if (haptic.type == PositionType.ForearmL ||
+                                        haptic.type == PositionType.Left) {
+                                    continue;
+                                }
                             }
 
-
+                            //Are we playing a "head only" pattern?
                             if (position == 3 &&
                                     (haptic.type != PositionType.Head || !manager.isDeviceConnected(BhapticsManager.DeviceType.Head)))
                             {
@@ -444,6 +493,7 @@ public class bHaptics {
                             }
 
                             if (haptic.type == PositionType.Head) {
+                                //Is this a "don't play on head" effect?
                                 if (position < 3) {
                                     continue;
                                 }
@@ -492,23 +542,29 @@ public class bHaptics {
             {
                 key = "melee_left";
             }
-        } else if (key.contains("damage")) {
+        }
+        else if (key.contains("damage")) {
             if (key.contains("bullet") ||
                     key.contains("splash") ||
                     key.contains("cgun")) {
                 key = "bullet";
-            } else if (key.contains("fireball") ||
+            }
+            else if (key.contains("fireball") ||
                             key.contains("rocket") ||
                             key.contains("explode")) {
                 key = "fireball"; // Just re-use this one
-            } else if (key.contains("noair")) {
+            }
+            else if (key.contains("noair")) {
                 key = "noair";
-            } else if (key.contains("shotgun")) {
+            }
+            else if (key.contains("shotgun")) {
                 key = "shotgun";
-            } else if (key.contains("fall")) {
+            }
+            else if (key.contains("fall")) {
                 key = "fall";
             }
-        } else if (key.contains("door") || key.contains("panel"))
+        }
+        else if (key.contains("door") || key.contains("panel"))
         {
             if (key.contains("close"))
             {
@@ -518,7 +574,8 @@ public class bHaptics {
             {
                 key = "dooropen";
             }
-        } else if (key.contains("lift"))
+        }
+        else if (key.contains("lift"))
         {
             if (key.contains("up"))
             {
@@ -528,16 +585,32 @@ public class bHaptics {
             {
                 key = "liftdown";
             }
-        } else if (key.contains("elevator"))
+        }
+        else if (key.contains("elevator"))
         {
             key = "machine";
-        }  else if (key.contains("entrance_scanner") || key.contains("scanner_rot1s"))
+        }
+        else if (key.contains("entrance_scanner") || key.contains("scanner_rot1s"))
         {
             key = "scan";
-        }  else if (key.contains("decon_started"))
+        }
+        else if (key.contains("decon_started"))
         {
             key = "decontaminate";
         }
+        else if (key.contains("spark"))
+        {
+            key = "spark";
+        }
+        else if (key.contains("player") && key.contains("jump"))
+        {
+            key = "jump_start";
+        }
+        else if (key.contains("player") && key.contains("land"))
+        {
+            key = "jump_landing";
+        }
+
         return key;
     }
 
@@ -549,7 +622,8 @@ public class bHaptics {
 
             if (repeatingHaptics.containsKey(key))
             {
-                player.turnOff(key);
+                Haptic haptic = repeatingHaptics.get(key);
+                player.turnOff(haptic.altKey);
 
                 repeatingHaptics.remove(key);
             }
@@ -626,5 +700,7 @@ public class bHaptics {
             });
 
         }
+
+        startStreaming();
     }
 }

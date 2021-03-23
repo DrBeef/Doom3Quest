@@ -282,18 +282,6 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
                     ALOGV("**WEAPON EVENT** velocity triggered %s", velocityTriggeredAttack ? "+attack" : "-attack");
                     Android_ButtonChange(UB_ATTACK, velocityTriggeredAttack ? 1 : 0);
                     fired = velocityTriggeredAttack;
-
-                    if (velocityTriggeredAttack)
-                    {
-                        if (controlscheme == 0) {
-                            Doom3Quest_HapticEvent("punch_right", 0, 0, 100, 0,
-                                                   0);
-                        }
-                        else{
-                            Doom3Quest_HapticEvent("punch_left", 0, 0, 100, 0,
-                                                   0);
-                        }
-                    }
                 }
             }
             else if (velocityTriggeredAttack)
@@ -322,18 +310,6 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
                     //Android_SetImpulse(UB_IMPULSE37);
                     pVRClientInfo->velocitytriggeredoffhandstate = true;
                     firedOffHand = velocityTriggeredAttackOffHand;
-
-                    if (velocityTriggeredAttack)
-                    {
-                        if (controlscheme == 1) {
-                            Doom3Quest_HapticEvent("punch_right", 0, 0, 100, 0,
-                                                   0);
-                        }
-                        else{
-                            Doom3Quest_HapticEvent("punch_left", 0, 0, 100, 0,
-                                                   0);
-                        }
-                    }
                 }
             }
             else //GB This actually nevers gets run currently as we are always returning true for pVRClientInfo->velocitytriggeredoffhand (but we might not in the future when weapons are sorted)
