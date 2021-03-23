@@ -2079,6 +2079,27 @@ void idWeapon::BeginAttack( void ) {
 		}
 	}
 	WEAPON_ATTACK = true;
+
+	int position = vr_weaponHand.GetInteger() ? 1 : 2;
+
+    weapon_t currentWeapon = WEAPON_NONE;
+    currentWeapon = IdentifyWeapon();
+    if (currentWeapon == WEAPON_HANDGRENADE)
+    {
+        common->HapticEvent("handgrenade_init", position, 0, 100, 0, 0);
+    }
+    if (currentWeapon == WEAPON_CHAINGUN)
+    {
+        common->HapticEvent("chaingun_init", position, 0, 100, 0, 0);
+    }
+    if (currentWeapon == WEAPON_BFG)
+    {
+        common->HapticEvent("bfg_init", position, 0, 100, 0, 0);
+    }
+    if (currentWeapon == WEAPON_HANDGRENADE)
+    {
+        common->HapticEvent("grenade_init", position, 0, 100, 0, 0);
+    }
 }
 
 /*
@@ -2094,6 +2115,13 @@ void idWeapon::EndAttack( void ) {
 		WEAPON_ATTACK = false;
 		if( sndHum && grabberState == -1 )  {	// _D3XP :: don't stop grabber hum
 			StartSoundShader( sndHum, SND_CHANNEL_BODY, 0, false, NULL );
+		}
+
+		weapon_t currentWeapon = WEAPON_NONE;
+		currentWeapon = IdentifyWeapon();
+		if (currentWeapon == WEAPON_CHAINSAW)
+		{
+			common->HapticEvent("chainsaw_idle", vr_weaponHand.GetInteger() ? 1 : 2, 1, 100, 0, 0);
 		}
 	}
 }
@@ -3256,8 +3284,10 @@ void idWeapon::Event_WeaponState( const char *statename, int blendFrames ) {
 
 	idealState = statename;
 
+	weapon_t currentWeap = IdentifyWeapon();
 	if ( !idealState.Icmp( "Fire" ) ) {
 		isFiring = true;
+
 	} else {
 		isFiring = false;
 	}
@@ -3329,14 +3359,18 @@ idWeapon::Event_WeaponReady
 ===============
 */
 void idWeapon::Event_WeaponReady( void ) {
-	status = WP_READY;
+    if (status == WP_RELOAD) {
+        common->HapticEvent("weapon_reload_finish", vr_weaponHand.GetInteger() ? 1 : 2, 0, 100, 0,
+                            0);
+    }
+
+    status = WP_READY;
 	if ( isLinked ) {
 		WEAPON_RAISEWEAPON = false;
 	}
 	if ( sndHum ) {
 		StartSoundShader( sndHum, SND_CHANNEL_BODY, 0, false, NULL );
 	}
-
 }
 
 /*
@@ -3358,6 +3392,8 @@ idWeapon::Event_WeaponReloading
 */
 void idWeapon::Event_WeaponReloading( void ) {
 	status = WP_RELOAD;
+
+    common->HapticEvent("weapon_reload", vr_weaponHand.GetInteger() ? 1 : 2, 0, 100, 0,0);
 }
 
 /*
@@ -4011,6 +4047,42 @@ void idWeapon::Event_LaunchProjectiles( int num_projectiles, float spread, float
 
 			// Normal launch
 			proj->Launch( muzzle_pos, dir, pushVelocity, fuseOffset, launchPower, dmgPower, speed );
+
+			int position = vr_weaponHand.GetInteger() ? 1 : 2;
+
+			if (currentWeap == WEAPON_PISTOL)
+            {
+			    common->HapticEvent("pistol_fire", position, 0, 100, 0, 0);
+            }
+			if (currentWeap == WEAPON_SHOTGUN)
+            {
+			    common->HapticEvent("shotgun_fire",  position, 0, 100, 0, 0);
+            }
+			if (currentWeap == WEAPON_PLASMAGUN)
+            {
+			    common->HapticEvent("plasmagun_fire",  position, 0, 100, 0, 0);
+            }
+			if (currentWeap == WEAPON_HANDGRENADE)
+            {
+			    common->HapticEvent("handgrenade_fire",  position, 0, 100, 0, 0);
+            }
+			if (currentWeap == WEAPON_MACHINEGUN)
+            {
+			    common->HapticEvent("machinegun_fire",  position, 0, 100, 0, 0);
+            }
+			if (currentWeap == WEAPON_CHAINGUN)
+            {
+			    common->HapticEvent("chaingun_fire",  position, 0, 100, 0, 0);
+            }
+			if (currentWeap == WEAPON_BFG)
+            {
+			    common->HapticEvent("bfg_fire",  position, 0, 100, 0, 0);
+            }
+			if (currentWeap == WEAPON_ROCKETLAUNCHER)
+            {
+			    common->HapticEvent("rocket_fire",  position, 0, 100, 0, 0);
+            }
+
 		}
 
 		// toss the brass
@@ -4064,7 +4136,7 @@ void idWeapon::Event_LaunchProjectiles( int num_projectiles, float spread, float
 										 pVRClientInfo->throw_origin[1]);
 				idAngles a(0, owner->viewAngles.yaw - pVRClientInfo->hmdorientation[YAW], 0);
 				releaseOffset *= a.ToMat3();
-				releaseOffset *= ((100.0f / 2.54f) * vr_scale.GetFloat());
+				releaseOffset *= cvarSystem->GetCVarFloat( "vr_worldscale" );
 				muzzle_pos = owner->firstPersonViewOrigin + releaseOffset;
 
 				idVec3	throw_direction( -pVRClientInfo->throw_trajectory[2],
@@ -4168,6 +4240,16 @@ void idWeapon::Event_Melee( void ) {
 		gameLocal.Error( "No meleeDef on '%s'", weaponDef->dict.GetString( "classname" ) );
 	}
 
+	weapon_t currentWeapon = IdentifyWeapon();
+	if (currentWeapon == WEAPON_FISTS)
+	{
+		common->HapticEvent("punch", 2 - GetHand(), 0, 100, 0, 0);
+	}
+	if (currentWeapon == WEAPON_CHAINSAW)
+	{
+		common->HapticStopEvent("chainsaw_idle");
+		common->HapticEvent("chainsaw_fire", vr_weaponHand.GetInteger() ? 1 : 2, 0, 100, 0, 0);
+	}
 
 	if ( !gameLocal.isClient ) {
 		idVec3 start = viewWeaponOrigin;

@@ -61,7 +61,7 @@ extern bool inGameGuiActive;
 extern bool objectiveSystemActive;
 extern bool inCinematic;
 
-
+void Doom3Quest_HapticEvent(const char* event, int position, int flags, int intensity, float angle, float yHeight );
 
 void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGamepad *pFootTrackingNew, ovrInputStateGamepad *pFootTrackingOld, ovrInputStateTrackedRemote *pDominantTrackedRemoteNew, ovrInputStateTrackedRemote *pDominantTrackedRemoteOld, ovrTracking* pDominantTracking,
                           ovrInputStateTrackedRemote *pOffTrackedRemoteNew, ovrInputStateTrackedRemote *pOffTrackedRemoteOld, ovrTracking* pOffTracking,
@@ -172,6 +172,7 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
 
     //Menu button - can be used in all modes
     handleTrackedControllerButton_AsKey(leftTrackedRemoteState_new.Buttons, leftTrackedRemoteState_old.Buttons, ovrButton_Enter, K_ESCAPE);
+    handleTrackedControllerButton_AsKey(rightTrackedRemoteState_new.Buttons, rightTrackedRemoteState_old.Buttons, ovrButton_Enter, K_ESCAPE); // in case user has switched menu/home buttons
 
     controlMouse(inMenu, pDominantTrackedRemoteNew, pDominantTrackedRemoteOld);
 
@@ -226,7 +227,7 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
 
         //Turn on weapon stabilisation?
         bool stabilised = false;
-        if (!pVRClientInfo->oneHandOnly &&
+        if (!pVRClientInfo->pistol && // Don't stabilise pistols
             (pOffTrackedRemoteNew->Buttons & ovrButton_GripTrigger) && (distance < STABILISATION_DISTANCE))
         {
             stabilised = true;
@@ -234,26 +235,53 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
 
         pVRClientInfo->weapon_stabilised = stabilised;
 
+        //dominant hand stuff first
         {
-            //Does weapon velocity trigger attack and is it fast enough
+            //Record recent weapon position for trajectory based stuff
+            /*
+            for (int i = (NUM_WEAPON_SAMPLES-1); i != 0; --i)
+            {
+                VectorCopy(pVRClientInfo->weaponoffset_history[i-1], pVRClientInfo->weaponoffset_history[i]);
+                pVRClientInfo->weaponoffset_history_timestamp[i] = pVRClientInfo->weaponoffset_history_timestamp[i-1];
+            }
+            VectorCopy(pVRClientInfo->current_weaponoffset, pVRClientInfo->weaponoffset_history[0]);
+            pVRClientInfo->weaponoffset_history_timestamp[0] = pVRClientInfo->current_weaponoffset_timestamp;
+
+			///Weapon location relative to view
+            pVRClientInfo->current_weaponoffset[0] = pWeapon->HeadPose.Pose.Position.x - pVRClientInfo->hmdposition[0];
+            pVRClientInfo->current_weaponoffset[1] = pWeapon->HeadPose.Pose.Position.y - pVRClientInfo->hmdposition[1];
+            pVRClientInfo->current_weaponoffset[2] = pWeapon->HeadPose.Pose.Position.z - pVRClientInfo->hmdposition[2];
+            pVRClientInfo->current_weaponoffset_timestamp = Sys_Milliseconds( );
+
+            {
+                //Caclulate speed between two historic controller position readings
+                float distance = VectorDistance(pVRClientInfo->weaponoffset_history[NEWER_READING], pVRClientInfo->weaponoffset_history[OLDER_READING]);
+                float t = pVRClientInfo->weaponoffset_history_timestamp[NEWER_READING] - pVRClientInfo->weaponoffset_history_timestamp[OLDER_READING];
+                pVRClientInfo->throw_power = distance / (t/(float)1000.0);
+
+                //Calculate trajectory
+                VectorSubtract(pVRClientInfo->weaponoffset_history[NEWER_READING], pVRClientInfo->weaponoffset_history[OLDER_READING], pVRClientInfo->throw_trajectory);
+                VectorNormalize( pVRClientInfo->throw_trajectory );
+
+                //Set origin to the newer reading offset
+                VectorCopy(pVRClientInfo->weaponoffset_history[NEWER_READING], pVRClientInfo->throw_origin);
+            }*/
+
+            //Does weapon velocity trigger attack (knife) and is it fast enough
             static bool velocityTriggeredAttack = false;
             if (pVRClientInfo->velocitytriggered)
             {
-                //velocity trigger only available if weapon is not stabilised with off-hand
-                if (!pVRClientInfo->weapon_stabilised) {
-                    static bool fired = false;
-                    float velocity = sqrtf(powf(pWeapon->HeadPose.LinearVelocity.x, 2) +
-                                           powf(pWeapon->HeadPose.LinearVelocity.y, 2) +
-                                           powf(pWeapon->HeadPose.LinearVelocity.z, 2));
+                static bool fired = false;
+                float velocity = sqrtf(powf(pWeapon->HeadPose.LinearVelocity.x, 2) +
+                                       powf(pWeapon->HeadPose.LinearVelocity.y, 2) +
+                                       powf(pWeapon->HeadPose.LinearVelocity.z, 2));
 
-                    velocityTriggeredAttack = (velocity > VELOCITY_TRIGGER);
+                velocityTriggeredAttack = (velocity > VELOCITY_TRIGGER);
 
-                    if (fired != velocityTriggeredAttack) {
-                        ALOGV("**WEAPON EVENT** velocity triggered %s",
-                              velocityTriggeredAttack ? "+attack" : "-attack");
-                        Android_ButtonChange(UB_ATTACK, velocityTriggeredAttack ? 1 : 0);
-                        fired = velocityTriggeredAttack;
-                    }
+                if (fired != velocityTriggeredAttack) {
+                    ALOGV("**WEAPON EVENT** velocity triggered %s", velocityTriggeredAttack ? "+attack" : "-attack");
+                    Android_ButtonChange(UB_ATTACK, velocityTriggeredAttack ? 1 : 0);
+                    fired = velocityTriggeredAttack;
                 }
             }
             else if (velocityTriggeredAttack)
@@ -264,30 +292,24 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
                 Android_ButtonChange(UB_ATTACK, velocityTriggeredAttack ? 1 : 0);
             }
 
+            //Does weapon velocity trigger attack (knife) and is it fast enough
             static bool velocityTriggeredAttackOffHand = false;
             pVRClientInfo->velocitytriggeredoffhandstate = false;
             if (pVRClientInfo->velocitytriggeredoffhand)
             {
                 static bool firedOffHand = false;
-                //velocity trigger only available if weapon is not stabilised with off-hand
-                if (!pVRClientInfo->weapon_stabilised) {
-                    float velocity = sqrtf(powf(pOff->HeadPose.LinearVelocity.x, 2) +
-                                           powf(pOff->HeadPose.LinearVelocity.y, 2) +
-                                           powf(pOff->HeadPose.LinearVelocity.z, 2));
+                float velocity = sqrtf(powf(pOff->HeadPose.LinearVelocity.x, 2) +
+                                       powf(pOff->HeadPose.LinearVelocity.y, 2) +
+                                       powf(pOff->HeadPose.LinearVelocity.z, 2));
 
-                    velocityTriggeredAttackOffHand = (velocity > VELOCITY_TRIGGER);
+                velocityTriggeredAttackOffHand = (velocity > VELOCITY_TRIGGER);
 
-                    if (firedOffHand != velocityTriggeredAttackOffHand) {
-                        ALOGV("**WEAPON EVENT** velocity triggered (offhand) %s",
-                              velocityTriggeredAttackOffHand ? "+attack" : "-attack");
-                        //Android_ButtonChange(UB_IMPULSE37, velocityTriggeredAttackOffHand ? 1 : 0);
-                        //Android_SetImpulse(UB_IMPULSE37);
-                        pVRClientInfo->velocitytriggeredoffhandstate = firedOffHand;
-                        firedOffHand = velocityTriggeredAttackOffHand;
-                    }
-                }
-                else {
-                    firedOffHand = false;
+                if (firedOffHand != velocityTriggeredAttackOffHand) {
+                    ALOGV("**WEAPON EVENT** velocity triggered (offhand) %s", velocityTriggeredAttackOffHand ? "+attack" : "-attack");
+                    //Android_ButtonChange(UB_IMPULSE37, velocityTriggeredAttackOffHand ? 1 : 0);
+                    //Android_SetImpulse(UB_IMPULSE37);
+                    pVRClientInfo->velocitytriggeredoffhandstate = true;
+                    firedOffHand = velocityTriggeredAttackOffHand;
                 }
             }
             else //GB This actually nevers gets run currently as we are always returning true for pVRClientInfo->velocitytriggeredoffhand (but we might not in the future when weapons are sorted)
@@ -298,24 +320,43 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
                 //Android_ButtonChange(UB_IMPULSE37, velocityTriggeredAttackOffHand ? 1 : 0);
                 pVRClientInfo->velocitytriggeredoffhandstate = false;
             }
-        }
 
-        dominantGripPushed = (pDominantTrackedRemoteNew->Buttons &
-                              ovrButton_GripTrigger) != 0;
+            /*if (pVRClientInfo->weapon_stabilised)
+            {
+                {
+                    float x = pOff->HeadPose.Pose.Position.x - pWeapon->HeadPose.Pose.Position.x;
+                    float y = pOff->HeadPose.Pose.Position.y - pWeapon->HeadPose.Pose.Position.y;
+                    float z = pOff->HeadPose.Pose.Position.z - pWeapon->HeadPose.Pose.Position.z;
+                    float zxDist = length(x, z);
 
-        if (dominantGripPushed) {
-            if (dominantGripPushTime == 0) {
-                dominantGripPushTime = GetTimeInMilliSeconds();
+                    if (zxDist != 0.0f && z != 0.0f) {
+                        {
+                            VectorSet(pVRClientInfo->weaponangles, -degrees(atanf(y / zxDist)),
+                                      -degrees(atan2f(x, -z)), pVRClientInfo->weaponangles[ROLL] / 2.0f); //Dampen roll on stabilised weapon
+                        }
+                    }
+                }
+            }*/
+
+
+
+            dominantGripPushed = (pDominantTrackedRemoteNew->Buttons &
+                                  ovrButton_GripTrigger) != 0;
+
+            if (dominantGripPushed) {
+                if (dominantGripPushTime == 0) {
+                    dominantGripPushTime = GetTimeInMilliSeconds();
+                }
             }
-        }
-        else
-        {
-            if ((GetTimeInMilliSeconds() - dominantGripPushTime) < vr_reloadtimeoutms) {
-                //Reload
-                Android_SetImpulse(UB_IMPULSE13);
-            }
+            else
+            {
+                if ((GetTimeInMilliSeconds() - dominantGripPushTime) < vr_reloadtimeoutms) {
+                    //Reload
+                    Android_SetImpulse(UB_IMPULSE13);
+                }
 
-            dominantGripPushTime = 0;
+                dominantGripPushTime = 0;
+            }
         }
 
         float controllerYawHeading = 0.0f;
@@ -442,7 +483,6 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
                     (offhandButtonsNew & ovrButton_Joystick)) {
 #ifdef DEBUG
                         //Android_SetCommand("give all");
-
                     if(give_weapon_count == 1){
                         Android_SetCommand("give weapon_pistol");
                         give_weapon_count = give_weapon_count + 1;

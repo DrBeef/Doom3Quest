@@ -5748,7 +5748,17 @@ void idPlayerHand::NextWeapon( int dir )
             common->Printf( "Changing weapon\n" );
 
 		common->HapticEvent("weapon_switch", 0, 0, 100, 0, 0);
+
+        if (idealWeapon == WEAPON_CHAINSAW)
+        {
+            common->HapticEvent("chainsaw_idle", vr_weaponHand.GetInteger() ? 1 : 2, 1, 100, 0, 0);
+        }
+		else
+        {
+            common->HapticStopEvent("chainsaw_idle");
+        }
     }
+
     if( vr_debugHands.GetBool() )
     {
         if( dir > 0 )
