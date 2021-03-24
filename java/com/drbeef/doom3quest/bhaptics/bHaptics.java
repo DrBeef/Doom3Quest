@@ -94,13 +94,13 @@ public class bHaptics {
         registerFromAsset(context, "bHaptics/Damage/Body_Heartbeat.tact", PositionType.Vest, "heartbeat", "health", 1.0f, 1.0f);
 
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Melee1.tact", "melee_left", "damage");
-        registerFromAsset(context, "bHaptics/Damage/Head/DMG_Melee1.tact", "melee_left", "damage"); // always play melee on the head too
+        registerFromAsset(context, "bHaptics/Damage/Head/DMG_Melee1.tact", PositionType.Head, "melee_left", "damage"); // always play melee on the head too
 
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Melee2.tact", "melee_right", "damage");
-        registerFromAsset(context, "bHaptics/Damage/Head/DMG_Melee2.tact", "melee_right", "damage"); // always play melee on the head too
+        registerFromAsset(context, "bHaptics/Damage/Head/DMG_Melee2.tact", PositionType.Head, "melee_right", "damage"); // always play melee on the head too
 
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Fireball.tact", "fireball", "damage");
-        registerFromAsset(context, "bHaptics/Damage/Head/DMG_Explosion.tact", "fireball", "damage"); // always play fireball on the head too
+        registerFromAsset(context, "bHaptics/Damage/Head/DMG_Explosion.tact", PositionType.Head, "fireball", "damage"); // always play fireball on the head too
 
         registerFromAsset(context, "bHaptics/Damage/Body_DMG_Bullet.tact", "bullet", "damage");
         registerFromAsset(context, "bHaptics/Damage/Head/DMG_HeadShot.tact", PositionType.Head, "bullet", "damage");
