@@ -132,14 +132,15 @@ public class bHaptics {
         registerFromAsset(context, "bHaptics/Interaction/Arms/Healthstation_L.tact", PositionType.ForearmL, "healstation", "pickup");
         registerFromAsset(context, "bHaptics/Interaction/Arms/Healthstation_R.tact", PositionType.ForearmR, "healstation", "pickup");
 
-        registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Door_Open.tact", "dooropen", "door");
-        registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Door_Close.tact", "doorclose", "door");
+        registerFromAsset(context, "bHaptics/Interaction/Vest/DoorSlide.tact", "dooropen", "door");
+        registerFromAsset(context, "bHaptics/Interaction/Vest/DoorSlide.tact", "doorclose", "door");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Scan.tact", PositionType.Vest, "scan", "environment", 1.0f, 1.15f);
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Scan.tact", PositionType.Vest, "decontaminate", "environment", 0.5f, 0.75f);
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Chamber_Up.tact", "liftup", "environment");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Chamber_Down.tact", "liftdown", "environment");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Machine.tact", "machine", "environment");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Spark.tact", "spark", "environment");
+        registerFromAsset(context, "bHaptics/Interaction/Head/Spark.tact", "spark", "environment");
 
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_PDA_Open.tact", "pda_open", "pda");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_PDA_Open.tact", "pda_close", "pda");
