@@ -1621,6 +1621,37 @@ bool idEntity::StartSoundShader( const idSoundShader *shader, const s_channelTyp
 		*length = len;
 	}
 
+	idPlayer *player = gameLocal.GetLocalPlayer();
+	if (vr_bhaptics.GetBool() &&
+            player != NULL) {
+		idVec3 playerOrigin = gameLocal.GetLocalPlayer()->GetPlayerPhysics()->GetOrigin(0);
+		idVec3 entityOrigin = GetPhysics()->GetOrigin(0);
+        idVec3 direction = playerOrigin - entityOrigin;
+
+        float distance = direction.Length();
+
+		if (distance <= 150.0F) {
+			bool repeat = (shader->GetParms()->soundShaderFlags & SSF_LOOPING) != 0;
+
+            direction.Normalize();
+            idVec3 bodyOrigin = vec3_zero;
+            idMat3 bodyAxis;
+            player->GetViewPos( bodyOrigin, bodyAxis );
+            idAngles bodyAng = bodyAxis.ToAngles();
+
+/*            float pitch = direction.ToPitch();
+            if (pitch > 180)
+                pitch -= 360;
+            float yHeight = idMath::ClampFloat(-0.5f, 0.45f, -pitch / 90.0f);*/
+            idAngles directionYaw(0, 180 + (direction.ToYaw() - bodyAng.yaw), 0);
+            directionYaw.Normalize360();
+
+            //Pass sound on in case it can trigger a haptic event (like doors)
+			float intensity = 40 + Min<float>((int)(150.0f - distance), 80);
+			common->HapticEvent(shader->GetName(), 4, repeat ? 1 : 0, intensity, directionYaw.yaw, 0);
+		}
+	}
+
 	// set reference to the sound for shader synced effects
 	renderEntity.referenceSound = refSound.referenceSound;
 
@@ -1649,6 +1680,10 @@ void idEntity::StopSound( const s_channelType channel, bool broadcast ) {
 
 	if ( refSound.referenceSound ) {
 		refSound.referenceSound->StopSound( channel );
+
+		if (refSound.shader) {
+			common->HapticStopEvent(refSound.shader->GetName());
+		}
 	}
 }
 

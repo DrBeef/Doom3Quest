@@ -12630,12 +12630,12 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 		GetViewPos( bodyOrigin, bodyAxis );
 		idAngles bodyAng = bodyAxis.ToAngles();
 
-		float yHeight = idMath::ClampFloat(-0.5f, 0.5f, damage_from.ToPitch() / 45.0f);
-		float damageYaw = 180 + (damage_from.ToYaw() - bodyAng.yaw);
-		if (damageYaw < 0.0f)
-			damageYaw += 360.0f;
-		if (damageYaw >= 360.0f)
-			damageYaw -= 360.0f;
+		float pitch = damage_from.ToPitch();
+		if (pitch > 180)
+			pitch -= 360;
+		float yHeight = idMath::ClampFloat(-0.4f, 0.4f, -pitch / 90.0f);
+        idAngles damageYaw(0, 180 + (damage_from.ToYaw() - bodyAng.yaw), 0);
+        damageYaw.Normalize360();
 
 		//Ensure a decent level of haptic feedback for any damage
 		float hapticLevel = 80 + Min<float>(damage * 4, 120.0);
@@ -12643,9 +12643,9 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 		//Indicate head damage if appropriate
 		if ( location >= 0 && location < damageGroups.Size() &&
 				strstr( damageGroups[location].c_str(), "head" ) ) {
-			common->HapticEvent(damageDefName, 4, 0, hapticLevel, damageYaw, yHeight);
+			common->HapticEvent(damageDefName, 4, 0, hapticLevel, damageYaw.yaw, yHeight);
 		} else {
-            common->HapticEvent(damageDefName, 0, 0, hapticLevel, damageYaw, yHeight);
+            common->HapticEvent(damageDefName, 0, 0, hapticLevel, damageYaw.yaw, yHeight);
         }
 	}
 
