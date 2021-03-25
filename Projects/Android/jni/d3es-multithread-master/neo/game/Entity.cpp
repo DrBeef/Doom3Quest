@@ -1643,7 +1643,7 @@ bool idEntity::StartSoundShader( const idSoundShader *shader, const s_channelTyp
             directionYaw.Normalize360();
 
             //Pass sound on in case it can trigger a haptic event (like doors)
-			float intensity = looping ? (100.0f - distance) :
+			float intensity = looping ? ((distance * 100)/ 150.0f) :
 					40 + Min<float>((int)(150.0f - distance), 80);
 
             common->HapticEvent(shader->GetName(), 4, looping ? 1 : 0, intensity,
