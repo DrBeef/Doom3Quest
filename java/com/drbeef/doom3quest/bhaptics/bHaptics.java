@@ -42,16 +42,37 @@ public class bHaptics {
             this.key = key;
             this.altKey = altKey;
             this.group = group;
+            this.directional = false;
             this.intensity = intensity;
             this.duration = duration;
+            this.rotation = 0;
+            this.level = 100;
+        }
+
+        public Haptic(Haptic haptic) {
+            this.type = haptic.type;
+            this.key = haptic.key;
+            this.altKey = haptic.altKey;
+            this.group = haptic.group;
+            this.directional = haptic.directional;
+            this.intensity = haptic.intensity;
+            this.duration = haptic.duration;
+            this.rotation = 0;
+            this.level = 100;
         }
 
         public final String key;
         public final String altKey;
         public final String group;
-        public final float intensity;
+
+        public boolean directional; // can be changed for specific repeating patterns
         public final float duration;
         public final PositionType type;
+        public final float intensity;
+
+        //These two values can be changed over time when playing a looping effect
+        public float rotation;
+        public float level;
     };
     
     private static final String TAG = "Doom3Quest.bHaptics";
@@ -132,14 +153,20 @@ public class bHaptics {
         registerFromAsset(context, "bHaptics/Interaction/Arms/Healthstation_L.tact", PositionType.ForearmL, "healstation", "pickup");
         registerFromAsset(context, "bHaptics/Interaction/Arms/Healthstation_R.tact", PositionType.ForearmR, "healstation", "pickup");
 
-        registerFromAsset(context, "bHaptics/Interaction/Vest/DoorSlide.tact", "doorslide", "door");
+        registerFromAsset(context, "bHaptics/Interaction/Vest/DoorSlide.tact", PositionType.Vest, "doorslide", "door", 1.0f, 0.5f);
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Scan.tact", PositionType.Vest, "scan", "environment", 1.0f, 1.15f);
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Scan.tact", PositionType.Vest, "decontaminate", "environment", 0.5f, 0.75f);
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Chamber_Up.tact", "liftup", "environment");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Chamber_Down.tact", "liftdown", "environment");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_Machine.tact", "machine", "environment");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Spark.tact", "spark", "environment");
-        registerFromAsset(context, "bHaptics/Interaction/Head/Spark.tact", PositionType.Head, "spark", "environment");
+        registerFromAsset(context, "bHaptics/Interaction/Head/Spark.tact", PositionType.Head, "spark", "environment", 0.5f, 0.5f);
+
+        //Directional based place holder for looping steam pattern
+        registerFromAsset(context, "bHaptics/Interaction/Vest/Spark.tact", PositionType.Vest, "steam_loop", "environment", 0.5f, 0.25f);
+        eventToEffectKeyMap.get("steam_loop").elementAt(0).directional = true;
+
+        registerFromAsset(context, "bHaptics/Interaction/Vest/Spark.tact", "steam_blast", "environment");
 
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_PDA_Open.tact", "pda_open", "pda");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_PDA_Open.tact", "pda_close", "pda");
@@ -174,16 +201,16 @@ public class bHaptics {
         registerFromAsset(context, "bHaptics/Weapon/Arms/ReloadFinish_Mirror.tact", PositionType.ForearmL, "weapon_reload_finish", "weapon");
 
         //Chainsaw Idle
-        registerFromAsset(context, "bHaptics/Weapon/Vest/Chainsaw_LV1.tact", PositionType.Right, "chainsaw_idle", "weapon");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Chainsaw_LV1.tact", PositionType.ForearmR, "chainsaw_idle", "weapon");
-        registerFromAsset(context, "bHaptics/Weapon/Vest/Chainsaw_LV1_Mirror.tact", PositionType.Left, "chainsaw_idle", "weapon");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Chainsaw_LV1_Mirror.tact", PositionType.ForearmL, "chainsaw_idle", "weapon");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Chainsaw_LV2.tact", PositionType.Right, "chainsaw_idle", "weapon");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Chainsaw_LV2.tact", PositionType.ForearmR, "chainsaw_idle", "weapon");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Chainsaw_LV2_Mirror.tact", PositionType.Left, "chainsaw_idle", "weapon");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Chainsaw_LV2_Mirror.tact", PositionType.ForearmL, "chainsaw_idle", "weapon");
 
         //Chainsaw Fire
-        registerFromAsset(context, "bHaptics/Weapon/Vest/Chainsaw_LV2.tact", PositionType.Right, "chainsaw_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Chainsaw_LV2.tact", PositionType.ForearmR, "chainsaw_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Vest/Chainsaw_LV2_Mirror.tact", PositionType.Left, "chainsaw_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Chainsaw_LV2_Mirror.tact", PositionType.ForearmL, "chainsaw_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Chainsaw_LV1.tact", PositionType.Right, "chainsaw_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Chainsaw_LV1.tact", PositionType.ForearmR, "chainsaw_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Chainsaw_LV1_Mirror.tact", PositionType.Left, "chainsaw_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Chainsaw_LV1_Mirror.tact", PositionType.ForearmL, "chainsaw_fire", "weapon_fire");
 
         //Fist
         registerFromAsset(context, "bHaptics/Weapon/Vest/Fist_Mirror.tact", PositionType.Left, "punch", "weapon_fire");
@@ -192,16 +219,16 @@ public class bHaptics {
         registerFromAsset(context, "bHaptics/Weapon/Arms/Fist.tact", PositionType.ForearmR, "punch", "weapon_fire");
 
         //Pistol
-        registerFromAsset(context, "bHaptics/Weapon/Vest/Recoil_LV2_Mirror.tact", PositionType.Left, "pistol_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Recoil_LV2_Mirror.tact", PositionType.ForearmL, "pistol_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Vest/Recoil_LV2.tact", PositionType.Right, "pistol_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Recoil_LV2.tact", PositionType.ForearmR, "pistol_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Recoil_LV3_Mirror.tact", PositionType.Left, "pistol_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Recoil_LV3_Mirror.tact", PositionType.ForearmL, "pistol_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Recoil_LV3.tact", PositionType.Right, "pistol_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Recoil_LV3.tact", PositionType.ForearmR, "pistol_fire", "weapon_fire");
 
         //Shotgun
-        registerFromAsset(context, "bHaptics/Weapon/Vest/Recoil_LV3_Mirror.tact", PositionType.Left, "shotgun_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Recoil_LV3_Mirror.tact", PositionType.ForearmL, "shotgun_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Vest/Recoil_LV3.tact", PositionType.Right, "shotgun_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Arms/Recoil_LV3.tact", PositionType.ForearmR, "shotgun_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Recoil_LV2_Mirror.tact", PositionType.Left, "shotgun_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Recoil_LV2_Mirror.tact", PositionType.ForearmL, "shotgun_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Recoil_LV2.tact", PositionType.Right, "shotgun_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Arms/Recoil_LV2.tact", PositionType.ForearmR, "shotgun_fire", "weapon_fire");
 
         //Plasma Gun
         registerFromAsset(context, "bHaptics/Weapon/Vest/Recoil_LV1_Mirror.tact", PositionType.Left, "plasmagun_fire", "weapon_fire");
@@ -381,11 +408,19 @@ public class bHaptics {
 
     public static void beginFrame()
     {
+        Vector<String> toRemove = new Vector<>();
         if (enabled && hasPairedDevice) {
             repeatingHaptics.forEach((key, haptic) -> {
-                //If a repeating haptic isn't playing, start it again
-                if (!player.isPlaying(haptic.altKey)) {
-                    player.submitRegistered(haptic.key, haptic.altKey, 100, 1.0f, 0, 0);
+                if (haptic.level == 0) {
+                    if (player.isPlaying(haptic.altKey))
+                    {
+                        player.turnOff(haptic.altKey);
+                    }
+                }
+                else if (!player.isPlaying(haptic.altKey)) {
+                    //If a repeating haptic isn't playing, start it again with last known values
+                    float flIntensity = ((haptic.level / 100.0F) * haptic.intensity);
+                    player.submitRegistered(haptic.key, haptic.altKey, flIntensity, haptic.duration, haptic.rotation, 0);
                 }
             });
         }
@@ -516,7 +551,14 @@ public class bHaptics {
                         //If this is a repeating event, then add to the set to play in begin frame
                         if (flags == 1)
                         {
-                            repeatingHaptics.put(key, haptic);
+                            Haptic repeatingHaptic = new Haptic(haptic);
+
+                            if (haptic.directional) {
+                                repeatingHaptic.rotation = flAngle;
+                            }
+
+                            repeatingHaptic.level = intensity;
+                            repeatingHaptics.put(key, repeatingHaptic);
                         }
                         else {
                             player.submitRegistered(haptic.key, haptic.altKey, flIntensity, flDuration, flAngle, yHeight);
@@ -554,7 +596,7 @@ public class bHaptics {
                             key.contains("explode")) {
                 key = "fireball"; // Just re-use this one
             }
-            else if (key.contains("noair")) {
+            else if (key.contains("noair") || key.contains("gasp")) {
                 key = "noair";
             }
             else if (key.contains("shotgun")) {
@@ -595,6 +637,16 @@ public class bHaptics {
         {
             key = "spark";
         }
+        else if (key.contains("steam"))
+        {
+            if (key.contains("blast") || key.contains("shot") || key.contains("chuff")) {
+                key = "steam_blast";
+            }
+            else
+            {
+                key = "steam_loop";
+            }
+        }
         else if (key.contains("player") && key.contains("jump"))
         {
             key = "jump_start";
@@ -623,6 +675,23 @@ public class bHaptics {
         }
     }
 
+    public static void updateRepeatingHaptic(String event, float intensity, float angle) {
+
+        if (enabled && hasPairedDevice) {
+
+            String key = getHapticEventKey(event);
+
+            if (repeatingHaptics.containsKey(key))
+            {
+                Haptic haptic = repeatingHaptics.get(key);
+                if (haptic.directional) {
+                    haptic.rotation = angle;
+                }
+
+                haptic.level = intensity;
+            }
+        }
+    }
 
     public static String read(Context context, String fileName) {
         try {

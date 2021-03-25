@@ -26,12 +26,16 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
+#include <d3es-multithread-master/neo/framework/Game.h>
 #include "sys/platform.h"
 #include "framework/FileSystem.h"
 #include "framework/Session.h"
 #include "renderer/RenderWorld.h"
 
 #include "sound/snd_local.h"
+
+//Haptic Stuff
+extern "C" void Doom3Quest_HapticUpdateEvent(const char* event, int intensity, float angle );
 
 /*
 ==================
@@ -1589,6 +1593,8 @@ void idSoundWorldLocal::CalcEars( int numSpeakers, idVec3 spatializedOrigin, idV
 	}
 }
 
+extern idGame *					game;
+
 /*
 ===============
 idSoundWorldLocal::AddChannelContribution
@@ -1754,6 +1760,27 @@ void idSoundWorldLocal::AddChannelContribution( idSoundEmitterLocal *sound, idSo
 	int offset = current44kHz - chan->trigger44kHzTime;
 	float inputSamples[MIXBUFFER_SAMPLES*2+16];
 	float *alignedInputSamples = (float *) ( ( ( (intptr_t)inputSamples ) + 15 ) & ~15 );
+
+	if (cvarSystem->GetCVarBool("vr_bhaptics") &&
+		looping &&
+			game != NULL)
+	{
+		idVec3 direction = (listenerPos / DOOM_TO_METERS) - sound->origin;
+
+		float distance = direction.Length();
+
+		if (distance <= 100.0F) {
+			direction.Normalize();
+			idAngles bodyAng = listenerAxis.ToAngles();
+			idAngles directionYaw(0, 180 + (direction.ToYaw() - bodyAng.yaw), 0);
+			directionYaw.Normalize360();
+
+			int intensity = 100 - distance;
+			Doom3Quest_HapticUpdateEvent(shader->GetName(), intensity, directionYaw.yaw);
+		} else{
+			Doom3Quest_HapticUpdateEvent(shader->GetName(), 0, 0);
+		}
+	}
 
 	//
 	// allocate and initialize hardware source

@@ -1631,7 +1631,7 @@ bool idEntity::StartSoundShader( const idSoundShader *shader, const s_channelTyp
         float distance = direction.Length();
 
 		if (distance <= 150.0F) {
-			bool repeat = (shader->GetParms()->soundShaderFlags & SSF_LOOPING) != 0;
+			bool looping = (shader->GetParms()->soundShaderFlags & SSF_LOOPING) != 0;
 
             direction.Normalize();
             idVec3 bodyOrigin = vec3_zero;
@@ -1639,16 +1639,15 @@ bool idEntity::StartSoundShader( const idSoundShader *shader, const s_channelTyp
             player->GetViewPos( bodyOrigin, bodyAxis );
             idAngles bodyAng = bodyAxis.ToAngles();
 
-/*            float pitch = direction.ToPitch();
-            if (pitch > 180)
-                pitch -= 360;
-            float yHeight = idMath::ClampFloat(-0.5f, 0.45f, -pitch / 90.0f);*/
             idAngles directionYaw(0, 180 + (direction.ToYaw() - bodyAng.yaw), 0);
             directionYaw.Normalize360();
 
             //Pass sound on in case it can trigger a haptic event (like doors)
-			float intensity = 40 + Min<float>((int)(150.0f - distance), 80);
-			common->HapticEvent(shader->GetName(), 4, repeat ? 1 : 0, intensity, directionYaw.yaw, 0);
+			float intensity = looping ? (100.0f - distance) :
+					40 + Min<float>((int)(150.0f - distance), 80);
+
+            common->HapticEvent(shader->GetName(), 4, looping ? 1 : 0, intensity,
+                                directionYaw.yaw, 0);
 		}
 	}
 
