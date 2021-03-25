@@ -26,7 +26,6 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include <d3es-multithread-master/neo/framework/Game.h>
 #include "sys/platform.h"
 #include "framework/FileSystem.h"
 #include "framework/Session.h"
@@ -1593,8 +1592,6 @@ void idSoundWorldLocal::CalcEars( int numSpeakers, idVec3 spatializedOrigin, idV
 	}
 }
 
-extern idGame *					game;
-
 /*
 ===============
 idSoundWorldLocal::AddChannelContribution
@@ -1762,20 +1759,19 @@ void idSoundWorldLocal::AddChannelContribution( idSoundEmitterLocal *sound, idSo
 	float *alignedInputSamples = (float *) ( ( ( (intptr_t)inputSamples ) + 15 ) & ~15 );
 
 	if (cvarSystem->GetCVarBool("vr_bhaptics") &&
-		looping &&
-			game != NULL)
+		looping)
 	{
 		idVec3 direction = (listenerPos / DOOM_TO_METERS) - sound->origin;
 
 		float distance = direction.Length();
 
-		if (distance <= 100.0F) {
+		if (distance <= 150.0F) {
 			direction.Normalize();
 			idAngles bodyAng = listenerAxis.ToAngles();
 			idAngles directionYaw(0, 180 + (direction.ToYaw() - bodyAng.yaw), 0);
 			directionYaw.Normalize360();
 
-			int intensity = 100 - distance;
+			int intensity = (int)((distance * 100)/ 150.0f);
 			Doom3Quest_HapticUpdateEvent(shader->GetName(), intensity, directionYaw.yaw);
 		} else{
 			Doom3Quest_HapticUpdateEvent(shader->GetName(), 0, 0);
