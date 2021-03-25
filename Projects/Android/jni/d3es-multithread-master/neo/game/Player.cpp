@@ -5741,22 +5741,29 @@ void idPlayerHand::NextWeapon( int dir )
 			vr_weaponHand.SetInteger( 1 - whichHand );
 		}
 
+		if (currentWeapon == WEAPON_CHAINSAW)
+		{
+			//Stop all chainsaw haptics immediately
+			common->HapticStopEvent("chainsaw_idle");
+			common->HapticStopEvent("chainsaw_fire");
+		}
+
     	idealWeapon = w;
         weaponSwitchTime = gameLocal.time + WEAPON_SWITCH_DELAY;
         owner->UpdateHudWeapon( whichHand );
         if( vr_debugHands.GetBool() )
             common->Printf( "Changing weapon\n" );
 
-		common->HapticEvent("weapon_switch", 0, 0, 100, 0, 0);
-
         if (idealWeapon == WEAPON_CHAINSAW)
         {
+        	//Start chainsaw idling haptic immediately
             common->HapticEvent("chainsaw_idle", vr_weaponHand.GetInteger() ? 1 : 2, 1, 100, 0, 0);
         }
-		else
-        {
-            common->HapticStopEvent("chainsaw_idle");
-        }
+        else
+		{
+
+			common->HapticEvent("weapon_switch", 0, 0, 100, 0, 0);
+		}
     }
 
     if( vr_debugHands.GetBool() )

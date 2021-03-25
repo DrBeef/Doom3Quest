@@ -58,6 +58,11 @@ import static android.system.Os.setenv;
 		bHaptics.playHaptic(event, position, flags, intensity, angle, yHeight);
 	}
 
+	public void haptic_updateevent(String event, int intensity, float angle) {
+
+		bHaptics.updateRepeatingHaptic(event, intensity, angle);
+	}
+
 	public void haptic_stopevent(String event) {
 
 		bHaptics.stopHaptic(event);

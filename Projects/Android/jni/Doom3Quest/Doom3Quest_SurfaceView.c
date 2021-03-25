@@ -956,6 +956,7 @@ void Doom3Quest_Vibrate(int channel, float low, float high)
 }
 
 void jni_haptic_event(const char* event, int position, int flags, int intensity, float angle, float yHeight);
+void jni_haptic_updateevent(const char* event, int intensity, float angle);
 void jni_haptic_stopevent(const char* event);
 void jni_haptic_beginframe();
 void jni_haptic_endframe();
@@ -965,6 +966,11 @@ void jni_haptic_disable();
 void Doom3Quest_HapticEvent(const char* event, int position, int flags, int intensity, float angle, float yHeight )
 {
     jni_haptic_event(event, position, flags, intensity, angle, yHeight);
+}
+
+void Doom3Quest_HapticUpdateEvent(const char* event, int intensity, float angle )
+{
+    jni_haptic_updateevent(event, intensity, angle);
 }
 
 void Doom3Quest_HapticBeginFrame()
@@ -1959,6 +1965,7 @@ Activity lifecycle
 
 jmethodID android_shutdown;
 jmethodID android_haptic_event;
+jmethodID android_haptic_updateevent;
 jmethodID android_haptic_stopevent;
 jmethodID android_haptic_beginframe;
 jmethodID android_haptic_endframe;
@@ -1991,6 +1998,20 @@ void jni_haptic_event(const char* event, int position, int flags, int intensity,
     jstring StringArg1 = (*env)->NewStringUTF(env, event);
 
     return (*env)->CallVoidMethod(env, jniCallbackObj, android_haptic_event, StringArg1, position, flags, intensity, angle, yHeight);
+}
+
+void jni_haptic_updateevent(const char* event, int intensity, float angle)
+{
+    JNIEnv *env;
+    jobject tmp;
+    if (((*jVM)->GetEnv(jVM, (void**) &env, JNI_VERSION_1_4))<0)
+    {
+        (*jVM)->AttachCurrentThread(jVM,&env, NULL);
+    }
+
+    jstring StringArg1 = (*env)->NewStringUTF(env, event);
+
+    return (*env)->CallVoidMethod(env, jniCallbackObj, android_haptic_updateevent, StringArg1, intensity, angle);
 }
 
 void jni_haptic_stopevent(const char* event)
@@ -2132,6 +2153,7 @@ JNIEXPORT void JNICALL Java_com_drbeef_doom3quest_GLES3JNILib_onStart( JNIEnv * 
 
     android_shutdown = (*env)->GetMethodID(env,callbackClass,"shutdown","()V");
 	android_haptic_event = (*env)->GetMethodID(env, callbackClass, "haptic_event", "(Ljava/lang/String;IIIFF)V");
+	android_haptic_updateevent = (*env)->GetMethodID(env, callbackClass, "haptic_updateevent", "(Ljava/lang/String;IF)V");
 	android_haptic_stopevent = (*env)->GetMethodID(env, callbackClass, "haptic_stopevent", "(Ljava/lang/String;)V");
 	android_haptic_beginframe = (*env)->GetMethodID(env, callbackClass, "haptic_beginframe", "()V");
 	android_haptic_endframe = (*env)->GetMethodID(env, callbackClass, "haptic_endframe", "()V");
