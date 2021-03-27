@@ -92,7 +92,7 @@ public class bHaptics {
 
     private static Map<String, Vector<Haptic>> eventToEffectKeyMap = new HashMap<>();
 
-    private static  Map<String, Haptic> repeatingHaptics = new HashMap<>();
+    private static Map<String, Vector<Haptic>> repeatingHaptics = new HashMap<>();
 
     public static void initialise()
     {
@@ -162,11 +162,22 @@ public class bHaptics {
         registerFromAsset(context, "bHaptics/Interaction/Vest/Spark.tact", "spark", "environment");
         registerFromAsset(context, "bHaptics/Interaction/Head/Spark.tact", PositionType.Head, "spark", "environment", 0.5f, 0.5f);
 
-        //Directional based place holder for looping steam pattern
-        registerFromAsset(context, "bHaptics/Interaction/Vest/Spark.tact", PositionType.Vest, "steam_loop", "environment", 0.5f, 0.25f);
-        eventToEffectKeyMap.get("steam_loop").elementAt(0).directional = true;
+        //Directional based looping steam pattern
+        registerFromAsset(context, "bHaptics/Interaction/Vest/Steam.tact", PositionType.Vest, "steam_loop", "environment", 0.5f, 1.0f);
+        registerFromAsset(context, "bHaptics/Interaction/Head/Steam.tact", PositionType.Head, "steam_loop", "environment", 0.5f, 1.0f);
+        eventToEffectKeyMap.get("steam_loop").forEach((haptic) -> {
+            haptic.directional = true;
+        });
 
-        registerFromAsset(context, "bHaptics/Interaction/Vest/Spark.tact", "steam_blast", "environment");
+        //Directional based looping flames pattern (use steam, but stronger)
+        registerFromAsset(context, "bHaptics/Interaction/Vest/Steam.tact", PositionType.Vest, "flame_loop", "environment", 1.0f, 1.0f);
+        registerFromAsset(context, "bHaptics/Interaction/Head/Steam.tact", PositionType.Head, "flame_loop", "environment", 1.0f, 1.0f);
+        eventToEffectKeyMap.get("flame_loop").forEach((haptic) -> {
+            haptic.directional = true;
+        });
+
+        //Re use the spark for the steam blast
+        registerFromAsset(context, "bHaptics/Interaction/Vest/Spark.tact", PositionType.Vest, "steam_blast", "environment", 1.0f, 0.25f);
 
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_PDA_Open.tact", "pda_open", "pda");
         registerFromAsset(context, "bHaptics/Interaction/Vest/Body_PDA_Open.tact", "pda_close", "pda");
@@ -201,15 +212,15 @@ public class bHaptics {
         registerFromAsset(context, "bHaptics/Weapon/Arms/ReloadFinish_Mirror.tact", PositionType.ForearmL, "weapon_reload_finish", "weapon");
 
         //Chainsaw Idle
-        registerFromAsset(context, "bHaptics/Weapon/Vest/Chainsaw_LV2.tact", PositionType.Right, "chainsaw_idle", "weapon");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Chainsaw_LV1.tact", PositionType.Right, "chainsaw_idle", "weapon");
         registerFromAsset(context, "bHaptics/Weapon/Arms/Chainsaw_LV2.tact", PositionType.ForearmR, "chainsaw_idle", "weapon");
-        registerFromAsset(context, "bHaptics/Weapon/Vest/Chainsaw_LV2_Mirror.tact", PositionType.Left, "chainsaw_idle", "weapon");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Chainsaw_LV1_Mirror.tact", PositionType.Left, "chainsaw_idle", "weapon");
         registerFromAsset(context, "bHaptics/Weapon/Arms/Chainsaw_LV2_Mirror.tact", PositionType.ForearmL, "chainsaw_idle", "weapon");
 
         //Chainsaw Fire
-        registerFromAsset(context, "bHaptics/Weapon/Vest/Chainsaw_LV1.tact", PositionType.Right, "chainsaw_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Chainsaw_LV2.tact", PositionType.Right, "chainsaw_fire", "weapon_fire");
         registerFromAsset(context, "bHaptics/Weapon/Arms/Chainsaw_LV1.tact", PositionType.ForearmR, "chainsaw_fire", "weapon_fire");
-        registerFromAsset(context, "bHaptics/Weapon/Vest/Chainsaw_LV1_Mirror.tact", PositionType.Left, "chainsaw_fire", "weapon_fire");
+        registerFromAsset(context, "bHaptics/Weapon/Vest/Chainsaw_LV2_Mirror.tact", PositionType.Left, "chainsaw_fire", "weapon_fire");
         registerFromAsset(context, "bHaptics/Weapon/Arms/Chainsaw_LV1_Mirror.tact", PositionType.ForearmL, "chainsaw_fire", "weapon_fire");
 
         //Fist
@@ -406,22 +417,28 @@ public class bHaptics {
         }
     }
 
-    public static void beginFrame()
+    public static void beginFrame() {}
+
+    public static void endFrame()
     {
-        Vector<String> toRemove = new Vector<>();
         if (enabled && hasPairedDevice) {
-            repeatingHaptics.forEach((key, haptic) -> {
-                if (haptic.level == 0) {
-                    if (player.isPlaying(haptic.altKey))
-                    {
-                        player.turnOff(haptic.altKey);
+            repeatingHaptics.forEach((key, haptics) -> {
+                haptics.forEach((haptic) -> {
+                    if (haptic.level < 10) {
+                        if (player.isPlaying(haptic.altKey)) {
+                            player.turnOff(haptic.altKey);
+                        }
+                    } else if (!player.isPlaying(haptic.altKey)) {
+                        //If a repeating haptic isn't playing, start it again with last known values
+                        float flIntensity = ((haptic.level / 100.0F) * haptic.intensity);
+
+                        if (haptic.type != PositionType.Head ||
+                                //If the haptic is head based, then only play if it is within a certain FOV
+                                (haptic.rotation >= -360 && haptic.rotation <= -315) || (haptic.rotation >= 0 && haptic.rotation <= 45)) {
+                            player.submitRegistered(haptic.key, haptic.altKey, flIntensity, haptic.duration, haptic.rotation, 0);
+                        }
                     }
-                }
-                else if (!player.isPlaying(haptic.altKey)) {
-                    //If a repeating haptic isn't playing, start it again with last known values
-                    float flIntensity = ((haptic.level / 100.0F) * haptic.intensity);
-                    player.submitRegistered(haptic.key, haptic.altKey, flIntensity, haptic.duration, haptic.rotation, 0);
-                }
+                });
             });
         }
         else
@@ -429,8 +446,6 @@ public class bHaptics {
             repeatingHaptics.clear();
         }
     }
-
-    public static void endFrame() {}
 
     /*
        position values:
@@ -558,7 +573,18 @@ public class bHaptics {
                             }
 
                             repeatingHaptic.level = intensity;
-                            repeatingHaptics.put(key, repeatingHaptic);
+
+                            if (!repeatingHaptics.containsKey(key))
+                            {
+                                Vector<Haptic> v = new Vector<>();
+                                v.add(repeatingHaptic);
+                                repeatingHaptics.put(key, v);
+                            }
+                            else
+                            {
+                                Vector<Haptic> v = repeatingHaptics.get(key);
+                                v.add(repeatingHaptic);
+                            }
                         }
                         else {
                             player.submitRegistered(haptic.key, haptic.altKey, flIntensity, flDuration, flAngle, yHeight);
@@ -637,6 +663,10 @@ public class bHaptics {
         {
             key = "spark";
         }
+        else if (key.contains("flames") || key.contains("propane") || key.contains("burning"))
+        {
+            key = "flame_loop";
+        }
         else if (key.contains("steam"))
         {
             if (key.contains("blast") || key.contains("shot") || key.contains("chuff")) {
@@ -667,8 +697,9 @@ public class bHaptics {
 
             if (repeatingHaptics.containsKey(key))
             {
-                Haptic haptic = repeatingHaptics.get(key);
-                player.turnOff(haptic.altKey);
+                repeatingHaptics.get(key).forEach((haptic) -> {
+                    player.turnOff(haptic.altKey);
+                });
 
                 repeatingHaptics.remove(key);
             }
@@ -683,12 +714,13 @@ public class bHaptics {
 
             if (repeatingHaptics.containsKey(key))
             {
-                Haptic haptic = repeatingHaptics.get(key);
-                if (haptic.directional) {
-                    haptic.rotation = angle;
-                }
+                repeatingHaptics.get(key).forEach((haptic) -> {
+                    if (haptic.directional) {
+                        haptic.rotation = angle;
+                    }
 
-                haptic.level = intensity;
+                    haptic.level = intensity;
+                });
             }
         }
     }
