@@ -1771,7 +1771,7 @@ void idSoundWorldLocal::AddChannelContribution( idSoundEmitterLocal *sound, idSo
 			idAngles directionYaw(0, 180 + (direction.ToYaw() - bodyAng.yaw), 0);
 			directionYaw.Normalize360();
 
-			int intensity = (int)((distance * 100)/ 150.0f);
+			int intensity = 100 - (int)((distance * 100)/ 150.0f);
 			Doom3Quest_HapticUpdateEvent(shader->GetName(), intensity, directionYaw.yaw);
 		} else{
 			Doom3Quest_HapticUpdateEvent(shader->GetName(), 0, 0);
