@@ -163,8 +163,6 @@ public:
     void				MotionControllerSetHapticOculus( float low, float hi );
     void				MotionControllerSetHapticOpenVR( int hand, unsigned short value );
 
-    bool                GetWeaponStabilised();
-
     //void				MSAAResolve( void );
     //void				FXAAResolve( idImage * leftCurrent, idImage * rightCurrent );
     //void				FXAASetUniforms( Framebuffer FBO );
@@ -413,6 +411,8 @@ private:
 
 
 };
+
+extern idCVar	vr_useHapticsService;
 
 extern idCVar	vr_scale;
 extern idCVar	vr_normalViewHeight;

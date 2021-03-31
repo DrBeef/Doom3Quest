@@ -1622,7 +1622,7 @@ bool idEntity::StartSoundShader( const idSoundShader *shader, const s_channelTyp
 	}
 
 	idPlayer *player = gameLocal.GetLocalPlayer();
-	if (vr_bhaptics.GetBool() &&
+	if (vr_useHapticsService.GetBool() &&
             player != NULL) {
 		idVec3 playerOrigin = gameLocal.GetLocalPlayer()->GetPlayerPhysics()->GetOrigin(0);
 		idVec3 entityOrigin = GetPhysics()->GetOrigin(0);

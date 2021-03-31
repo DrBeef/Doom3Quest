@@ -813,6 +813,20 @@ void idGameLocal::SetLocalClient( int clientNum ) {
 void idGameLocal::SetVRClientInfo(vrClientInfo *pVR)
 {
 	pVRClientInfo = pVR;
+
+	//Only triggers haptic enabling if value of cvar changes or the first time this is called
+	static bool firstTime = true;
+	static bool lastUseHapticsService = false;
+	if (firstTime || (lastUseHapticsService != vr_useHapticsService.GetBool())) {
+		if (vr_useHapticsService.GetBool()) {
+			common->HapticEnable();
+		} else {
+			common->HapticDisable();
+		}
+
+		firstTime = false;
+		lastUseHapticsService = vr_useHapticsService.GetBool();
+	}
 }
 
 /*

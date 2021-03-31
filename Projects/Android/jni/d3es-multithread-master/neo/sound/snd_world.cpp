@@ -1758,7 +1758,7 @@ void idSoundWorldLocal::AddChannelContribution( idSoundEmitterLocal *sound, idSo
 	float inputSamples[MIXBUFFER_SAMPLES*2+16];
 	float *alignedInputSamples = (float *) ( ( ( (intptr_t)inputSamples ) + 15 ) & ~15 );
 
-	if (cvarSystem->GetCVarBool("vr_bhaptics") &&
+	if (cvarSystem->GetCVarBool("vr_useHapticsService") &&
 		looping)
 	{
 		idVec3 direction = (listenerPos / DOOM_TO_METERS) - sound->origin;
