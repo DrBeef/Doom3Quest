@@ -151,13 +151,6 @@ import static android.system.Os.setenv;
 		checkPermissionsAndInitialize();
 	}
 
-	private void requestPermissions() {
-		ActivityCompat.requestPermissions(this,
-				new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
-						Manifest.permission.WRITE_EXTERNAL_STORAGE},
-				1);
-	}
-
 	/** Initializes the Activity only if the permission has been granted. */
 	private void checkPermissionsAndInitialize() {
 		// Boilerplate for checking runtime permissions in Android.
@@ -166,14 +159,10 @@ import static android.system.Os.setenv;
 			ActivityCompat.requestPermissions(this,
 					new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
 							Manifest.permission.WRITE_EXTERNAL_STORAGE},
-					1);
+					WRITE_EXTERNAL_STORAGE_PERMISSION_ID);
 		}
 		else
 		{
-			permissionCount++;
-		}
-
-		if (permissionCount == 1) {
 			// Permissions have already been granted.
 			create();
 		}
@@ -183,14 +172,9 @@ import static android.system.Os.setenv;
 	@Override
 	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
 		if (requestCode == WRITE_EXTERNAL_STORAGE_PERMISSION_ID) {
-			if (results.length > 0 && results[0] != PackageManager.PERMISSION_GRANTED) {
-
-				finish();
-				System.exit(0);
-			}
+			finish();
+			System.exit(0);
 		}
-
-		checkPermissionsAndInitialize();
 	}
 
 	public void create() {
