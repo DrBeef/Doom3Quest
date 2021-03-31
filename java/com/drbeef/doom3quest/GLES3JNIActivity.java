@@ -5,18 +5,24 @@ package com.drbeef.doom3quest;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.os.RemoteException;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.WindowManager;
 
-import com.bhaptics.commons.PermissionUtils;
-import com.drbeef.doom3quest.bhaptics.bHaptics;
+import com.drbeef.hapticsservice.IHapticsService;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -29,7 +35,7 @@ import java.io.OutputStream;
 
 import static android.system.Os.setenv;
 
-@SuppressLint("SdCardPath") public class GLES3JNIActivity extends Activity implements SurfaceHolder.Callback
+@SuppressLint("SdCardPath") public class GLES3JNIActivity extends Activity implements SurfaceHolder.Callback, ServiceConnection
 {
 	// Load the gles3jni library right away to make sure JNI_OnLoad() gets called as the very first thing.
 	static
@@ -37,9 +43,15 @@ import static android.system.Os.setenv;
 		System.loadLibrary( "doom3" );
 	}
 
-	private static final String TAG = "Doom3Quest";
+	private boolean hasHapticService = false;
+	private IHapticsService hapticsService = null;
 
 	private int permissionCount = 0;
+	private static final int READ_EXTERNAL_STORAGE_PERMISSION_ID = 1;
+	private static final int WRITE_EXTERNAL_STORAGE_PERMISSION_ID = 2;
+
+
+	private static final String APPLICATION = "Doom3Quest";
 
 	private String commandLineParams;
 
@@ -53,41 +65,74 @@ import static android.system.Os.setenv;
 	}
 
 
-	public void haptic_event(String event, int position, int flags, int intensity, float angle, float yHeight) {
+	public void haptic_event(String event, int position, int flags, int intensity, float angle, float yHeight)  {
 
-		bHaptics.playHaptic(event, position, flags, intensity, angle, yHeight);
+		if (hasHapticService) {
+			try {
+				hapticsService.hapticEvent(APPLICATION, event, position, flags, intensity, angle, yHeight);
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public void haptic_updateevent(String event, int intensity, float angle) {
 
-		bHaptics.updateRepeatingHaptic(event, intensity, angle);
+		if (hasHapticService) {
+			try {
+				hapticsService.hapticUpdateEvent(APPLICATION, event, intensity, angle);
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public void haptic_stopevent(String event) {
 
-		bHaptics.stopHaptic(event);
-	}
-
-	public void haptic_beginframe() {
-		bHaptics.beginFrame();
+		if (hasHapticService) {
+			try {
+				hapticsService.hapticStopEvent(APPLICATION, event);
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public void haptic_endframe() {
-		bHaptics.endFrame();
+
+		if (hasHapticService) {
+			try {
+				hapticsService.hapticFrameTick();
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public void haptic_enable() {
-		bHaptics.enable(this);
+
+		if (hasHapticService) {
+			try {
+				hapticsService.hapticEnable();
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public void haptic_disable() {
-		bHaptics.disable();
+
+		if (hasHapticService) {
+			try {
+				hapticsService.hapticDisable();
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	@Override protected void onCreate( Bundle icicle )
 	{
-		Log.v( TAG, "----------------------------------------------------------------" );
-		Log.v( TAG, "GLES3JNIActivity::onCreate()" );
 		super.onCreate( icicle );
 
 		mView = new SurfaceView( this );
@@ -115,35 +160,37 @@ import static android.system.Os.setenv;
 
 	/** Initializes the Activity only if the permission has been granted. */
 	private void checkPermissionsAndInitialize() {
-		if (PermissionUtils.hasFilePermissions(this)) {
-			create();
-			onStart();
+		// Boilerplate for checking runtime permissions in Android.
+		if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+				!= PackageManager.PERMISSION_GRANTED){
+			ActivityCompat.requestPermissions(this,
+					new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
+							Manifest.permission.WRITE_EXTERNAL_STORAGE},
+					1);
 		}
 		else
 		{
-			requestPermissions();
+			permissionCount++;
+		}
+
+		if (permissionCount == 1) {
+			// Permissions have already been granted.
+			create();
 		}
 	}
 
 	/** Handles the user accepting the permission. */
 	@Override
 	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
-		if (requestCode == 1) {
-			//Quit for now
-			finish();
-			System.exit(0);
-		}
-		//Was this a bHaptics FINE LOCATION perms request?
-		else if (requestCode == 2) {
-			if (results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED) {
-				//call enable again
-				bHaptics.enable(this);
-			}
-			else
-			{
-				//Don't do anything here, we can't enable if permissions were denied
+		if (requestCode == WRITE_EXTERNAL_STORAGE_PERMISSION_ID) {
+			if (results.length > 0 && results[0] != PackageManager.PERMISSION_GRANTED) {
+
+				finish();
+				System.exit(0);
 			}
 		}
+
+		checkPermissionsAndInitialize();
 	}
 
 	public void create() {
@@ -296,8 +343,12 @@ import static android.system.Os.setenv;
 
 	@Override protected void onStart()
 	{
-		Log.v( TAG, "GLES3JNIActivity::onStart()" );
+		Log.v(APPLICATION, "GLES3JNIActivity::onStart()" );
 		super.onStart();
+
+		// Bind to the service - Make this a config file thing
+		bindService(new Intent("com.drbeef.hapticservice.HapticService_bHaptics").setPackage("com.drbeef.hapticservice"), this,
+				Context.BIND_AUTO_CREATE);
 
 		if ( mNativeHandle != 0 )
 		{
@@ -307,7 +358,7 @@ import static android.system.Os.setenv;
 
 	@Override protected void onResume()
 	{
-		Log.v( TAG, "GLES3JNIActivity::onResume()" );
+		Log.v(APPLICATION, "GLES3JNIActivity::onResume()" );
 		super.onResume();
 
 		if ( mNativeHandle != 0 )
@@ -318,7 +369,7 @@ import static android.system.Os.setenv;
 
 	@Override protected void onPause()
 	{
-		Log.v( TAG, "GLES3JNIActivity::onPause()" );
+		Log.v(APPLICATION, "GLES3JNIActivity::onPause()" );
 		if ( mNativeHandle != 0 )
 		{
 			GLES3JNILib.onPause(mNativeHandle);
@@ -328,19 +379,21 @@ import static android.system.Os.setenv;
 
 	@Override protected void onStop()
 	{
-		Log.v( TAG, "GLES3JNIActivity::onStop()" );
+		Log.v(APPLICATION, "GLES3JNIActivity::onStop()" );
 		if ( mNativeHandle != 0 )
 		{
 			GLES3JNILib.onStop(mNativeHandle);
 		}
+
+		// Unbind from the service
+		unbindService(this);
+
 		super.onStop();
 	}
 
 	@Override protected void onDestroy()
 	{
-		Log.v( TAG, "GLES3JNIActivity::onDestroy()" );
-
-		bHaptics.destroy();
+		Log.v(APPLICATION, "GLES3JNIActivity::onDestroy()" );
 
 		if ( mSurfaceHolder != null )
 		{
@@ -358,7 +411,7 @@ import static android.system.Os.setenv;
 
 	@Override public void surfaceCreated( SurfaceHolder holder )
 	{
-		Log.v( TAG, "GLES3JNIActivity::surfaceCreated()" );
+		Log.v(APPLICATION, "GLES3JNIActivity::surfaceCreated()" );
 		if ( mNativeHandle != 0 )
 		{
 			GLES3JNILib.onSurfaceCreated( mNativeHandle, holder.getSurface() );
@@ -368,7 +421,7 @@ import static android.system.Os.setenv;
 
 	@Override public void surfaceChanged( SurfaceHolder holder, int format, int width, int height )
 	{
-		Log.v( TAG, "GLES3JNIActivity::surfaceChanged()" );
+		Log.v(APPLICATION, "GLES3JNIActivity::surfaceChanged()" );
 		if ( mNativeHandle != 0 )
 		{
 			GLES3JNILib.onSurfaceChanged( mNativeHandle, holder.getSurface() );
@@ -378,11 +431,25 @@ import static android.system.Os.setenv;
 	
 	@Override public void surfaceDestroyed( SurfaceHolder holder )
 	{
-		Log.v( TAG, "GLES3JNIActivity::surfaceDestroyed()" );
+		Log.v(APPLICATION, "GLES3JNIActivity::surfaceDestroyed()" );
 		if ( mNativeHandle != 0 )
 		{
 			GLES3JNILib.onSurfaceDestroyed( mNativeHandle );
 			mSurfaceHolder = null;
 		}
+	}
+
+	@Override
+	public void onServiceConnected(ComponentName name, IBinder service) {
+		hapticsService = IHapticsService.Stub.asInterface(service);
+		hasHapticService = true;
+	}
+
+	@Override
+	public void onServiceDisconnected(ComponentName name) {
+		stopService(new Intent("com.drbeef.hapticservice.HapticService_bHaptics").setPackage("com.drbeef.hapticservice"));
+
+		hasHapticService = false;
+		hapticsService = null;
 	}
 }
