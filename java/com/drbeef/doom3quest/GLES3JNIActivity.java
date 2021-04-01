@@ -61,6 +61,7 @@ import static android.system.Os.setenv;
 
 
 	public void shutdown() {
+		finish();
 		System.exit(0);
 	}
 

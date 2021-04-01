@@ -842,6 +842,46 @@ int idSoundEmitterLocal::StartSound( const idSoundShader *shader, const s_channe
 	chan->stopped = false;
 	chan->Start();
 
+	if (cvarSystem->GetCVarBool("vr_useHapticsService"))
+	{
+		idVec3 direction = (soundWorld->listenerPos / DOOM_TO_METERS) - origin;
+
+		float distance = direction.Length();
+		bool looping = (shader->GetParms()->soundShaderFlags & SSF_LOOPING) != 0;
+
+		if (distance <= 150.0F || looping)
+		{
+			direction.Normalize();
+			idAngles bodyAng = soundWorld->listenerAxis.ToAngles();
+			idAngles directionYaw(0, 180 + (direction.ToYaw() - bodyAng.yaw), 0);
+			directionYaw.Normalize360();
+
+			//Pass sound on in case it can trigger a haptic event (like doors)
+			float intensity = looping ? (100 - ((distance * 100)/ 150.0f)) :
+							  40 + Min<float>((int)(150.0f - distance), 80);
+
+			if (distance == 0)
+			{
+				intensity = 100;
+			}
+
+			//Even if the sound is too far away to make a haptic play, we still need to report it if
+			//it is a looping event, looping event intensity are handled in snd_world
+			if (distance > 150.0F || intensity < 0 || looping)
+			{
+				intensity = 0;
+			}
+
+			if (looping)
+			{
+				common->Printf("Start Looping: %s", shader->GetName());
+			}
+
+			common->HapticEvent(shader->GetName(), 4, looping ? 1 : 0, intensity,
+								directionYaw.yaw, 0);
+		}
+	}
+
 	// we need to start updating the def and mixing it in
 	playing = true;
 
