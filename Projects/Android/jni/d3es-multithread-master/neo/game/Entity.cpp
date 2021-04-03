@@ -1649,10 +1649,6 @@ void idEntity::StopSound( const s_channelType channel, bool broadcast ) {
 
 	if ( refSound.referenceSound ) {
 		refSound.referenceSound->StopSound( channel );
-
-		if (refSound.shader) {
-			common->HapticStopEvent(refSound.shader->GetName());
-		}
 	}
 }
 

@@ -151,6 +151,7 @@ idSoundChannel::idSoundChannel
 */
 idSoundChannel::idSoundChannel( void ) {
 	decoder = NULL;
+	soundShader = NULL;
 	Clear();
 }
 
@@ -212,6 +213,12 @@ idSoundChannel::Stop
 void idSoundChannel::Stop( void ) {
 	triggerState = false;
 	stopped = true;
+
+	if (soundShader != NULL)
+	{
+		common->HapticStopEvent(soundShader->GetName());
+	}
+
 	if ( decoder != NULL ) {
 		idSampleDecoder::Free( decoder );
 		decoder = NULL;
@@ -970,6 +977,8 @@ void idSoundEmitterLocal::StopSound( const s_channelType channel ) {
 	}
 
 	Sys_EnterCriticalSection();
+
+	const char* soundShaderName = NULL;
 
 	for( i = 0; i < SOUND_MAX_CHANNELS; i++ ) {
 		idSoundChannel	*chan = &channels[i];
