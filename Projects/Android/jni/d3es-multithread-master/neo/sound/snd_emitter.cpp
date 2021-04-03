@@ -210,14 +210,13 @@ void idSoundChannel::Start( void ) {
 idSoundChannel::Stop
 ===================
 */
-extern "C" void Doom3Quest_HapticStopEvent(const char* event);
 void idSoundChannel::Stop( void ) {
 	triggerState = false;
 	stopped = true;
 
 	if (soundShader != NULL)
 	{
-		Doom3Quest_HapticStopEvent(soundShader->GetName());
+		common->HapticStopEvent(soundShader->GetName());
 	}
 
 	if ( decoder != NULL ) {
@@ -978,6 +977,8 @@ void idSoundEmitterLocal::StopSound( const s_channelType channel ) {
 	}
 
 	Sys_EnterCriticalSection();
+
+	const char* soundShaderName = NULL;
 
 	for( i = 0; i < SOUND_MAX_CHANNELS; i++ ) {
 		idSoundChannel	*chan = &channels[i];

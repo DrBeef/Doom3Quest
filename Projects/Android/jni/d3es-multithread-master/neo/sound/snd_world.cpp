@@ -1356,6 +1356,17 @@ void idSoundWorldLocal::ReadFromSaveGame( idFile *savefile ) {
 				chan->channelFade.fadeEnd44kHz += soundTimeOffset;
 			}
 
+			//Only concerned with registering looping sounds with the haptics service
+            if (cvarSystem->GetCVarBool("vr_useHapticsService"))
+            {
+                bool looping = (def->parms.soundShaderFlags & SSF_LOOPING) != 0;
+                if (looping)
+                {
+                    common->Printf("Start Looping: %s", chan->soundShader->GetName());
+                    common->HapticEvent(chan->soundShader->GetName(), 4, 1, 0, 0, 0);
+                }
+            }
+
 			// next command
 			savefile->ReadInt( channel );
 		}
