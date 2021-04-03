@@ -429,6 +429,10 @@ void idPlayerView::CalculateShake() {
 
         player->hands[HAND_RIGHT].SetControllerShake( highMag, highDuration, lowMag, lowDuration );
         player->hands[HAND_LEFT].SetControllerShake( highMag, highDuration, lowMag, lowDuration );
+
+        //generic rumbling - keep it low
+        common->HapticEvent("rumble_front", 0, 0, 30.0f * idMath::ClampFloat(0.1, 1.0, shakeVolume*2.0f + 0.1f), highDuration, 0);
+        common->HapticEvent("rumble_back", 0, 0, 30.0f * idMath::ClampFloat(0.1, 1.0, shakeVolume*2.0f + 0.1f), highDuration, 0);
     }
 }
 
