@@ -3878,7 +3878,7 @@ void idPlayer::UpdateVrHud()
 
                     idAngles a(0, viewAngles.yaw - pVRClientInfo->hmdorientation[YAW], 0);
                     offpos *= a.ToMat3();
-                    offpos *= vr_worldscale.GetFloat();
+                    offpos *= ((100.0f / 2.54f) * vr_scale.GetFloat());
 
                     {
                         hudOrigin = viewOrigin + offpos;
@@ -11588,7 +11588,7 @@ void idPlayer::UpdateFlashlightHolster()
 
 		idAngles a(0, viewAngles.yaw - pVRClientInfo->hmdorientation[YAW], 0);
 		holsterOffset *= a.ToMat3();
-        holsterOffset *= vr_worldscale.GetFloat();
+        holsterOffset *= ((100.0f / 2.54f) * vr_scale.GetFloat());
         flashlightRenderEntity.origin = firstPersonViewOrigin + holsterOffset;
 
         flashlightRenderEntity.entityNum = ENTITYNUM_NONE;
@@ -11653,14 +11653,16 @@ void idPlayer::Think( void ) {
         else {
             pVRClientInfo->weaponid = -1;
         }
-        cvarSystem->SetCVarBool("vr_weapon_stabilised", pVRClientInfo->weapon_stabilised);
+
         int _currentWeapon = GetCurrentWeaponId();
         if(_currentWeapon == WEAPON_FLASHLIGHT || _currentWeapon == WEAPON_FISTS)
         	pVRClientInfo->velocitytriggered = true;
 		else
 			pVRClientInfo->velocitytriggered = false;
 		pVRClientInfo->velocitytriggeredoffhand = true;
-        pVRClientInfo->pistol = GetCurrentWeaponId() == WEAPON_PISTOL;
+
+        pVRClientInfo->oneHandOnly = (_currentWeapon == WEAPON_FISTS) ||
+			(_currentWeapon == weapon_handgrenade);
     }
 
     // clear the ik before we do anything else so the skeleton doesn't get updated twice
@@ -13264,7 +13266,7 @@ void idPlayer::CalculateViewWeaponPos( int hand, idVec3& origin, idMat3& axis )
 
         idAngles a(0, viewAngles.yaw - pVRClientInfo->hmdorientation[YAW], 0);
         gunpos *= a.ToMat3();
-        gunpos *= cvarSystem->GetCVarFloat( "vr_worldscale" );
+        gunpos *= ((100.0f / 2.54f) * vr_scale.GetFloat());
 
         if (GetCurrentWeaponId( == WEAPON_FLASHLIGHT) // Flashlight adjustment
         {
@@ -13485,8 +13487,11 @@ void idPlayer::CalculateViewWeaponPosVR( int hand, idVec3 &origin, idMat3 &axis 
 
 	commonVr->MotionControlGetHand( hand, hands[ hand ].motionPosition, hands[ hand ].motionRotation );
 
-	weaponPitch = idAngles( vr_motionWeaponPitchAdj.GetFloat(), 0.0f, 0.0f ).ToQuat();
-	hands[ hand ].motionRotation = weaponPitch * hands[ hand ].motionRotation;
+	if (!pVRClientInfo->weapon_stabilised)
+	{
+		weaponPitch = idAngles( vr_motionWeaponPitchAdj.GetFloat(), 0.0f, 0.0f ).ToQuat();
+		hands[hand].motionRotation = weaponPitch * hands[hand].motionRotation;
+	}
 
 	GetViewPos( weapOrigin, weapAxis );
 
@@ -13758,6 +13763,10 @@ void idPlayer::CalculateViewFlashlightPos( idVec3 &origin, idMat3 &axis, idVec3 
     axis = idAngles( 0.0, viewAngles.yaw - commonVr->bodyYawOffset, 0.0f ).ToMat3();
 
     int flashlightMode = commonVr->GetCurrentFlashlightMode();
+    if (pVRClientInfo->weapon_stabilised && flashlightMode == FLASHLIGHT_HAND )
+	{
+		flashlightMode = FLASHLIGHT_GUN;
+	}
 
     setLeftHand = false;
     //move the flashlight to alternate location for items with no mount
@@ -14041,7 +14050,7 @@ idVec3 idPlayer::GetEyePosition( void ) const {
 	if (pVRClientInfo)
     {
 		float eyeHeight = 0;
-		float vrEyeHeight = (-(pVRClientInfo->hmdposition[1] +  vr_heightoffset.GetFloat()) * vr_worldscale.GetFloat());
+		float vrEyeHeight = (-(pVRClientInfo->hmdposition[1] +  vr_heightoffset.GetFloat()) * ((100.0f / 2.54f) * vr_scale.GetFloat()));
 
 		//Add special handling for physical crouching at some point
 		if (physicsObj.IsCrouching() && PHYSICAL_CROUCH) {
