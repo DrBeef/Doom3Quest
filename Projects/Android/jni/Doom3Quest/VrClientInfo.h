@@ -16,6 +16,7 @@ typedef struct {
     bool screen;
     float fov;
     bool weapon_stabilised;
+    bool oneHandOnly;
     bool right_handed;
     bool player_moving;
     bool visible_hud;
@@ -61,8 +62,6 @@ typedef struct {
     vec3_t throw_origin;
     vec3_t throw_trajectory;
     float throw_power;
-
-    bool pistol;                // True if the weapon is a pistol
 
     bool velocitytriggered; // Weapon attack triggered by velocity (knife)
     bool velocitytriggeredoffhand; // Weapon attack triggered by velocity (puncher)

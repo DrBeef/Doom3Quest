@@ -135,19 +135,15 @@ idCVar vr_jumpBounce( "vr_jumpBounce", "0", CVAR_FLOAT | CVAR_ARCHIVE | CVAR_GAM
 idCVar vr_stepSmooth( "vr_stepSmooth", "1", CVAR_FLOAT | CVAR_ARCHIVE | CVAR_GAME, "Enable smoothing when climbing stairs. 0 = Disabled, 1 = Full", 0.0f, 1.0f ); // Carl
 
 //Added to menu - needs testing
-idCVar vr_walkSpeedAdjust( "vr_walkSpeedAdjust", "-20", CVAR_FLOAT | CVAR_ARCHIVE, "Player walk speed adjustment in VR. (slow down default movement)" );
+idCVar vr_walkSpeedAdjust( "vr_walkSpeedAdjust", "0", CVAR_FLOAT | CVAR_ARCHIVE, "Player walk speed adjustment in VR. (slow down default movement)" );
 
 //What is this??
 idCVar vr_headbbox( "vr_headbbox", "10.0", CVAR_FLOAT | CVAR_ARCHIVE, "" );
 
-//idCVar vr_pdaPosX( "vr_pdaPosX", "20", CVAR_FLOAT | CVAR_ARCHIVE, "" );
-//idCVar vr_pdaPosY( "vr_pdaPosY", "0", CVAR_FLOAT | CVAR_ARCHIVE, "" );
-//idCVar vr_pdaPosZ( "vr_pdaPosZ", "-11", CVAR_FLOAT | CVAR_ARCHIVE, "" );
-
 //GB I've re-used this for both fixed position and hand. Check fixed and if worth keeping separate the two
-idCVar vr_pdaPosX( "vr_pdaPosX", "-0.5", CVAR_FLOAT | CVAR_ARCHIVE, "" );
-idCVar vr_pdaPosY( "vr_pdaPosY", "0", CVAR_FLOAT | CVAR_ARCHIVE, "" );
-idCVar vr_pdaPosZ( "vr_pdaPosZ", "3.0", CVAR_FLOAT | CVAR_ARCHIVE, "" );
+idCVar vr_pdaPosX( "vr_pdaPosX", "6.0", CVAR_FLOAT | CVAR_ARCHIVE, "" );
+idCVar vr_pdaPosY( "vr_pdaPosY", "4.0", CVAR_FLOAT | CVAR_ARCHIVE, "" );
+idCVar vr_pdaPosZ( "vr_pdaPosZ", "5.0", CVAR_FLOAT | CVAR_ARCHIVE, "" );
 idCVar vr_pdaPitch( "vr_pdaPitch", "30", CVAR_FLOAT | CVAR_ARCHIVE, "" );
 
 idCVar vr_comfortRepeat( "vr_comfortRepeat", "100", CVAR_ARCHIVE | CVAR_INTEGER, "Delay in MS between repeating comfort snap turns." );
@@ -621,10 +617,20 @@ void iVr::HMDGetOrientation( idAngles &hmdAngles, idVec3 &headPositionDelta, idV
         }
 
         //GB Get all hand poses
-        idVec3 _lhandPosition = idVec3(pVRClientInfo->lhandposition[0],pVRClientInfo->lhandposition[1],pVRClientInfo->lhandposition[2]);
-        idQuat _lhandOrientation = idQuat(pVRClientInfo->lhand_orientation_quat[0],pVRClientInfo->lhand_orientation_quat[1],pVRClientInfo->lhand_orientation_quat[2],pVRClientInfo->lhand_orientation_quat[3]);
-        idVec3 _rhandPosition = idVec3(pVRClientInfo->rhandposition[0],pVRClientInfo->rhandposition[1],pVRClientInfo->rhandposition[2]);
-        idQuat _rhandOrientation = idQuat(pVRClientInfo->rhand_orientation_quat[0],pVRClientInfo->rhand_orientation_quat[1],pVRClientInfo->rhand_orientation_quat[2],pVRClientInfo->rhand_orientation_quat[3]);
+        idVec3 _lhandPosition = idVec3(pVRClientInfo->lhandposition[0],
+                                       pVRClientInfo->lhandposition[1],
+                                       pVRClientInfo->lhandposition[2]);
+        idQuat _lhandOrientation = idQuat(pVRClientInfo->lhand_orientation_quat[0],
+                                          pVRClientInfo->lhand_orientation_quat[1],
+                                          pVRClientInfo->lhand_orientation_quat[2],
+                                          pVRClientInfo->lhand_orientation_quat[3]);
+        idVec3 _rhandPosition = idVec3(pVRClientInfo->rhandposition[0],
+                                       pVRClientInfo->rhandposition[1],
+                                       pVRClientInfo->rhandposition[2]);
+        idQuat _rhandOrientation = idQuat(pVRClientInfo->rhand_orientation_quat[0],
+                                          pVRClientInfo->rhand_orientation_quat[1],
+                                          pVRClientInfo->rhand_orientation_quat[2],
+                                          pVRClientInfo->rhand_orientation_quat[3]);
 
 
         commonVr->handPose[1].Orientation = _lhandOrientation;
@@ -895,31 +901,38 @@ void iVr::MotionControlGetTouchController( int hand, idVec3 &motionPosition, idQ
 	motionPosition.x = -handPose[hand].Position.z * (100.0f / 2.54f) / vr_scale.GetFloat();// Koz convert position (in meters) to inch (1 id unit = 1 inch).
 	motionPosition.y = -handPose[hand].Position.x * (100.0f / 2.54f) / vr_scale.GetFloat();
 	motionPosition.z = handPose[hand].Position.y * (100.0f / 2.54f) / vr_scale.GetFloat();
-    //motionPosition.x = -handPose[hand].Position.z;
-    //motionPosition.y = -handPose[hand].Position.x;
-    //motionPosition.z = handPose[hand].Position.y;
-
 	motionPosition -= trackingOriginOffset;
-
 	motionPosition *= idAngles( 0.0f, (-trackingOriginYawOffset), 0.0f ).ToMat3();
+    motionPosition -= commonVr->hmdBodyTranslation;
 
-	poseRot.x = handPose[hand].Orientation.z;	// x;
-	poseRot.y = handPose[hand].Orientation.x;	// y;
-	poseRot.z = -handPose[hand].Orientation.y;	// z;
-	poseRot.w = handPose[hand].Orientation.w;
+    if (pVRClientInfo->weapon_stabilised &&
+            hand == vr_weaponHand.GetInteger()) {
+        idVec3 offHandPosition;
+        offHandPosition.x = -handPose[1 - hand].Position.z * (100.0f / 2.54f) / vr_scale.GetFloat();// Koz convert position (in meters) to inch (1 id unit = 1 inch).
+        offHandPosition.y = -handPose[1 - hand].Position.x * (100.0f / 2.54f) / vr_scale.GetFloat();
+        offHandPosition.z = handPose[1 - hand].Position.y * (100.0f / 2.54f) / vr_scale.GetFloat();
+        offHandPosition -= trackingOriginOffset;
+        offHandPosition *= idAngles(0.0f, (-trackingOriginYawOffset), 0.0f ).ToMat3();
+        offHandPosition -= commonVr->hmdBodyTranslation;
 
-	poseAngles = poseRot.ToAngles();
+        poseAngles = (offHandPosition - motionPosition).ToAngles();
 
-	angTemp.yaw = poseAngles.yaw;
-	angTemp.roll = poseAngles.roll;
-	angTemp.pitch = poseAngles.pitch;
+        angTemp.Set(poseAngles.pitch, poseAngles.yaw, poseAngles.roll);
+    } else {
 
-	motionPosition -= commonVr->hmdBodyTranslation;
+        poseRot.x = handPose[hand].Orientation.z;    // x;
+        poseRot.y = handPose[hand].Orientation.x;    // y;
+        poseRot.z = -handPose[hand].Orientation.y;    // z;
+        poseRot.w = handPose[hand].Orientation.w;
 
-	angTemp.yaw -= trackingOriginYawOffset;// + bodyYawOffset;
-	angTemp.Normalize360();
+        poseAngles = poseRot.ToAngles();
 
-	motionRotation = angTemp.ToQuat();
+        angTemp.Set(poseAngles.pitch, poseAngles.yaw, poseAngles.roll);
+        angTemp.yaw -= trackingOriginYawOffset;// + bodyYawOffset;
+    }
+
+    angTemp.Normalize360();
+    motionRotation = angTemp.ToQuat();
 
 }
 /*

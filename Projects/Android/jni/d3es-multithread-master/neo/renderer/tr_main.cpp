@@ -886,7 +886,7 @@ void R_SetViewMatrix( viewDef_t *viewDef ) {
 			{
 				origin += (eye == 0 ? 1.0f : -1.0f) * viewDef->renderView.viewaxis[1] *
 						  (cvarSystem->GetCVarFloat("vr_ipd") / 2.0f) *
-						  cvarSystem->GetCVarFloat("vr_worldscale");
+						((100.0f / 2.54f) * cvarSystem->GetCVarFloat("vr_scale"));
 			}
 
 			viewerMatrix[0] = viewDef->renderView.viewaxis[0][0];

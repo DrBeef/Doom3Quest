@@ -2079,6 +2079,7 @@ void idWeapon::BeginAttack( void ) {
 		}
 	}
 	WEAPON_ATTACK = true;
+
 }
 
 /*
@@ -4064,7 +4065,7 @@ void idWeapon::Event_LaunchProjectiles( int num_projectiles, float spread, float
 										 pVRClientInfo->throw_origin[1]);
 				idAngles a(0, owner->viewAngles.yaw - pVRClientInfo->hmdorientation[YAW], 0);
 				releaseOffset *= a.ToMat3();
-				releaseOffset *= cvarSystem->GetCVarFloat( "vr_worldscale" );
+				releaseOffset *= ((100.0f / 2.54f) * vr_scale.GetFloat());
 				muzzle_pos = owner->firstPersonViewOrigin + releaseOffset;
 
 				idVec3	throw_direction( -pVRClientInfo->throw_trajectory[2],
@@ -4167,6 +4168,7 @@ void idWeapon::Event_Melee( void ) {
 	if ( !meleeDef ) {
 		gameLocal.Error( "No meleeDef on '%s'", weaponDef->dict.GetString( "classname" ) );
 	}
+
 
 	if ( !gameLocal.isClient ) {
 		idVec3 start = viewWeaponOrigin;

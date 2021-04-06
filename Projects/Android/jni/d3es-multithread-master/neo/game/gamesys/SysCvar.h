@@ -267,7 +267,6 @@ extern idCVar	g_xp_bind_run_once;
 //VR CVARS
 extern idCVar vr_weaponHand;
 extern idCVar vr_ipd;
-extern idCVar vr_worldscale;
 extern idCVar vr_heightoffset;
 extern idCVar vr_controlscheme;
 extern idCVar	vr_shakeamplitude;
