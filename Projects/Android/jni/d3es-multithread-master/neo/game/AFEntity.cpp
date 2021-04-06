@@ -464,10 +464,10 @@ void idAFAttachment::Think( void ) {
 idAfAttachment::GetPhysicsToVisualTransform
 ================
 */
-idCVar vr_chibi("vr_chibi", "1.0", CVAR_FLOAT | CVAR_ARCHIVE, "changes the size of human heads.");
+idCVar vr_headScale("vr_headScale", "1.085", CVAR_FLOAT | CVAR_ARCHIVE, "changes the size of human heads.");
 bool idAFAttachment::GetPhysicsToVisualTransform( idVec3& origin, idMat3& axis )
 {
-	const float scale = vr_chibi.GetFloat();
+	const float scale = vr_headScale.GetFloat();
 	if( scale > 0.f && scale != 1.0f )
 	{
 		static const idVec3 offset( -1.8f, 0, -8.f);

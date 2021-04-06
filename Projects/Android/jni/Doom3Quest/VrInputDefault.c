@@ -227,7 +227,7 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
 
         //Turn on weapon stabilisation?
         bool stabilised = false;
-        if (!pVRClientInfo->pistol && // Don't stabilise pistols
+        if (!pVRClientInfo->oneHandOnly && // Don't stabilise pistols
             (pOffTrackedRemoteNew->Buttons & ovrButton_GripTrigger) && (distance < STABILISATION_DISTANCE))
         {
             stabilised = true;
@@ -482,8 +482,9 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
                      (offhandButtonsOld & ovrButton_Joystick)) &&
                     (offhandButtonsNew & ovrButton_Joystick)) {
 
-                    Android_SetCommand("give all");
 #ifdef DEBUG
+                    Android_SetCommand("give all");
+
                     if(give_weapon_count == 1){
                         Android_SetCommand("give weapon_pistol");
                         give_weapon_count = give_weapon_count + 1;
