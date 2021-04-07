@@ -2079,7 +2079,6 @@ void idWeapon::BeginAttack( void ) {
 		}
 	}
 	WEAPON_ATTACK = true;
-
 }
 
 /*

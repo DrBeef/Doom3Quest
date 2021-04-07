@@ -13389,7 +13389,7 @@ void idPlayer::CalculateViewWeaponPosVR( int hand, idVec3 &origin, idMat3 &axis 
 
 	commonVr->MotionControlGetHand( hand, hands[ hand ].motionPosition, hands[ hand ].motionRotation );
 
-	if (!pVRClientInfo->weapon_stabilised)
+	if (!commonVr->GetWeaponStabilised())
 	{
 		weaponPitch = idAngles( vr_motionWeaponPitchAdj.GetFloat(), 0.0f, 0.0f ).ToQuat();
 		hands[hand].motionRotation = weaponPitch * hands[hand].motionRotation;
@@ -13665,7 +13665,7 @@ void idPlayer::CalculateViewFlashlightPos( idVec3 &origin, idMat3 &axis, idVec3 
     axis = idAngles( 0.0, viewAngles.yaw - commonVr->bodyYawOffset, 0.0f ).ToMat3();
 
     int flashlightMode = commonVr->GetCurrentFlashlightMode();
-    if (pVRClientInfo->weapon_stabilised && flashlightMode == FLASHLIGHT_HAND )
+    if (commonVr->GetWeaponStabilised() && flashlightMode == FLASHLIGHT_HAND )
 	{
 		flashlightMode = FLASHLIGHT_GUN;
 	}
