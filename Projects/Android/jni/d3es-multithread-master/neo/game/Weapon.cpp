@@ -2092,7 +2092,7 @@ void idWeapon::BeginAttack( void ) {
     }
     if (currentWeapon == WEAPON_CHAINGUN)
     {
-		position = pVRClientInfo->weapon_stabilised ? 4 : position;
+		position = commonVr->GetWeaponStabilised() ? 4 : position;
 		common->HapticEvent("chaingun_init", position, 0, 100, 0, 0);
     }
     if (currentWeapon == WEAPON_BFG)
@@ -4049,21 +4049,19 @@ void idWeapon::Event_LaunchProjectiles( int num_projectiles, float spread, float
 
 			int position = vr_weaponHand.GetInteger() ? 1 : 2;
 
-			vrClientInfo *pVRClientInfo = owner->GetVRClientInfo();
-
 			if (currentWeap == WEAPON_PISTOL)
             {
-				position = pVRClientInfo->weapon_stabilised ? 4 : position;
+				position = commonVr->GetWeaponStabilised() ? 4 : position;
 			    common->HapticEvent("pistol_fire", position, 0, 100, 0, 0);
             }
 			if (currentWeap == WEAPON_SHOTGUN)
             {
-				position = pVRClientInfo->weapon_stabilised ? 4 : position;
+				position = commonVr->GetWeaponStabilised() ? 4 : position;
 			    common->HapticEvent("shotgun_fire",  position, 0, 100, 0, 0);
             }
 			if (currentWeap == WEAPON_PLASMAGUN)
             {
-				position = pVRClientInfo->weapon_stabilised ? 4 : position;
+				position = commonVr->GetWeaponStabilised() ? 4 : position;
 			    common->HapticEvent("plasmagun_fire",  position, 0, 100, 0, 0);
             }
 			if (currentWeap == WEAPON_HANDGRENADE)
@@ -4072,12 +4070,12 @@ void idWeapon::Event_LaunchProjectiles( int num_projectiles, float spread, float
             }
 			if (currentWeap == WEAPON_MACHINEGUN)
             {
-				position = pVRClientInfo->weapon_stabilised ? 4 : position;
+				position = commonVr->GetWeaponStabilised() ? 4 : position;
 			    common->HapticEvent("machinegun_fire",  position, 0, 100, 0, 0);
             }
 			if (currentWeap == WEAPON_CHAINGUN)
             {
-				position = pVRClientInfo->weapon_stabilised ? 4 : position;
+				position = commonVr->GetWeaponStabilised() ? 4 : position;
 			    common->HapticEvent("chaingun_fire",  position, 0, 100, 0, 0);
             }
 			if (currentWeap == WEAPON_BFG)
@@ -4086,7 +4084,7 @@ void idWeapon::Event_LaunchProjectiles( int num_projectiles, float spread, float
             }
 			if (currentWeap == WEAPON_ROCKETLAUNCHER)
             {
-				position = pVRClientInfo->weapon_stabilised ? 4 : position;
+				position = commonVr->GetWeaponStabilised() ? 4 : position;
 			    common->HapticEvent("rocket_fire",  position, 0, 100, 0, 0);
             }
 
@@ -4246,8 +4244,6 @@ void idWeapon::Event_Melee( void ) {
 	if ( !meleeDef ) {
 		gameLocal.Error( "No meleeDef on '%s'", weaponDef->dict.GetString( "classname" ) );
 	}
-
-	vrClientInfo *pVRClientInfo = owner->GetVRClientInfo();
 
 	weapon_t currentWeapon = IdentifyWeapon();
 	if (currentWeapon == WEAPON_FISTS)
