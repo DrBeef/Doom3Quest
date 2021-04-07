@@ -1098,6 +1098,16 @@ void iVr::CalcAimMove( float &yawDelta, float &pitchDelta )
 
 }
 
+bool iVr::GetWeaponStabilised()
+{
+    if (pVRClientInfo)
+    {
+        return pVRClientInfo->weapon_stabilised;
+    }
+
+    return false;
+}
+
 
 
 /*
