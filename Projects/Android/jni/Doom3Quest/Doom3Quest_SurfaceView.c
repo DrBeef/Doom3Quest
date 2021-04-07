@@ -1580,7 +1580,7 @@ void * AppThreadFunction(void * parm ) {
 		questType = 2;
 		if (SS_MULTIPLIER == -1.0f)
 		{
-			SS_MULTIPLIER = 1.2f;
+			SS_MULTIPLIER = 1.1f;
 		}
 
 		if (NUM_MULTI_SAMPLES == -1)

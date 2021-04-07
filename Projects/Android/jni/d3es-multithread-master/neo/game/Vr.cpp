@@ -905,7 +905,8 @@ void iVr::MotionControlGetTouchController( int hand, idVec3 &motionPosition, idQ
 	motionPosition *= idAngles( 0.0f, (-trackingOriginYawOffset), 0.0f ).ToMat3();
     motionPosition -= commonVr->hmdBodyTranslation;
 
-    if (pVRClientInfo->weapon_stabilised &&
+    if (pVRClientInfo != NULL &&
+            pVRClientInfo->weapon_stabilised &&
             hand == vr_weaponHand.GetInteger()) {
         idVec3 offHandPosition;
         offHandPosition.x = -handPose[1 - hand].Position.z * (100.0f / 2.54f) / vr_scale.GetFloat();// Koz convert position (in meters) to inch (1 id unit = 1 inch).

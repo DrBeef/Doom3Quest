@@ -5727,6 +5727,7 @@ void idPlayerHand::NextWeapon( int dir )
         owner->UpdateHudWeapon( whichHand );
         if( vr_debugHands.GetBool() )
             common->Printf( "Changing weapon\n" );
+
     }
     if( vr_debugHands.GetBool() )
     {
