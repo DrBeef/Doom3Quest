@@ -135,7 +135,7 @@ idCVar vr_jumpBounce( "vr_jumpBounce", "0", CVAR_FLOAT | CVAR_ARCHIVE | CVAR_GAM
 idCVar vr_stepSmooth( "vr_stepSmooth", "1", CVAR_FLOAT | CVAR_ARCHIVE | CVAR_GAME, "Enable smoothing when climbing stairs. 0 = Disabled, 1 = Full", 0.0f, 1.0f ); // Carl
 
 //Added to menu - needs testing
-idCVar vr_walkSpeedAdjust( "vr_walkSpeedAdjust", "0", CVAR_FLOAT | CVAR_ARCHIVE, "Player walk speed adjustment in VR. (slow down default movement)" );
+idCVar vr_walkSpeedAdjust( "vr_walkSpeedAdjust", "20", CVAR_FLOAT | CVAR_ARCHIVE, "Player walk speed adjustment for VR" );
 
 //What is this??
 idCVar vr_headbbox( "vr_headbbox", "10.0", CVAR_FLOAT | CVAR_ARCHIVE, "" );
@@ -633,10 +633,10 @@ void iVr::HMDGetOrientation( idAngles &hmdAngles, idVec3 &headPositionDelta, idV
                                           pVRClientInfo->rhand_orientation_quat[3]);
 
 
-        commonVr->handPose[1].Orientation = _lhandOrientation;
-        commonVr->handPose[1].Position = _lhandPosition;
-        commonVr->handPose[0].Orientation = _rhandOrientation;
-        commonVr->handPose[0].Position = _rhandPosition;
+        handPose[1].Orientation = _lhandOrientation;
+        handPose[1].Position = _lhandPosition;
+        handPose[0].Orientation = _rhandOrientation;
+        handPose[0].Position = _rhandPosition;
 
         for (int i = 0; i < 2; i++)
         {
@@ -898,15 +898,19 @@ void iVr::MotionControlGetTouchController( int hand, idVec3 &motionPosition, idQ
 	static idAngles poseAngles = ang_zero;
 	static idAngles angTemp = ang_zero;
 
-	motionPosition.x = -handPose[hand].Position.z * (100.0f / 2.54f) / vr_scale.GetFloat();// Koz convert position (in meters) to inch (1 id unit = 1 inch).
+    poseRot.x = handPose[hand].Orientation.z;    // x;
+    poseRot.y = handPose[hand].Orientation.x;    // y;
+    poseRot.z = -handPose[hand].Orientation.y;    // z;
+    poseRot.w = handPose[hand].Orientation.w;
+
+    motionPosition.x = -handPose[hand].Position.z * (100.0f / 2.54f) / vr_scale.GetFloat();// Koz convert position (in meters) to inch (1 id unit = 1 inch).
 	motionPosition.y = -handPose[hand].Position.x * (100.0f / 2.54f) / vr_scale.GetFloat();
 	motionPosition.z = handPose[hand].Position.y * (100.0f / 2.54f) / vr_scale.GetFloat();
 	motionPosition -= trackingOriginOffset;
 	motionPosition *= idAngles( 0.0f, (-trackingOriginYawOffset), 0.0f ).ToMat3();
     motionPosition -= commonVr->hmdBodyTranslation;
 
-    if (pVRClientInfo != NULL &&
-            pVRClientInfo->weapon_stabilised &&
+    if (GetWeaponStabilised() &&
             hand == vr_weaponHand.GetInteger()) {
         idVec3 offHandPosition;
         offHandPosition.x = -handPose[1 - hand].Position.z * (100.0f / 2.54f) / vr_scale.GetFloat();// Koz convert position (in meters) to inch (1 id unit = 1 inch).
@@ -918,14 +922,8 @@ void iVr::MotionControlGetTouchController( int hand, idVec3 &motionPosition, idQ
 
         poseAngles = (offHandPosition - motionPosition).ToAngles();
 
-        angTemp.Set(poseAngles.pitch, poseAngles.yaw, poseAngles.roll);
+        angTemp.Set(poseAngles.pitch, poseAngles.yaw, poseRot.ToAngles().roll);
     } else {
-
-        poseRot.x = handPose[hand].Orientation.z;    // x;
-        poseRot.y = handPose[hand].Orientation.x;    // y;
-        poseRot.z = -handPose[hand].Orientation.y;    // z;
-        poseRot.w = handPose[hand].Orientation.w;
-
         poseAngles = poseRot.ToAngles();
 
         angTemp.Set(poseAngles.pitch, poseAngles.yaw, poseAngles.roll);
