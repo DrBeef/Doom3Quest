@@ -181,6 +181,7 @@ public:
     //------------------
     int                 lastComfortTime;
     int					currentFlashlightMode;
+    bool				restoreFlashlightMode;
 
     bool				VR_GAME_PAUSED;
 
