@@ -1837,6 +1837,7 @@ void idPlayer::Init( void ) {
 
 	//GBFix Not in Original
 	hudActive = true;
+
 	PDAorigin = vec3_zero;
 	PDAaxis = mat3_identity;
 	InitTeleportTarget();
@@ -3391,11 +3392,7 @@ idDict *idPlayer::GetUserInfo( void ) {
 	return &gameLocal.userInfo[ entityNumber ];
 }
 
-/*
-==============
-idPlayer::UpdateSkinSetup
-==============
-*/
+
 /*
 ==============
 idPlayer::UpdateSkinSetup
@@ -3411,60 +3408,59 @@ void idPlayer::UpdateSkinSetup()
 
     if ( game->isVR )
     {
-        idStr skinN = skin->GetName();
-        //GB Force skin
-        //idStr skinN = "skins/characters/player/greenmarine_arm2";
+		int funcBeh = common->GetModBehaviour("UpdateSkinSetup");
 
-        if ( strstr( skinN.c_str(), "skins/characters/player/tshirt_mp" ) )
-        {
-            skinN = "skins/characters/player/tshirt_mp";
-        }
-        else if ( strstr( skinN.c_str(), "skins/characters/player/greenmarine_arm2" ) )
-        {
-            skinN = "skins/characters/player/greenmarine_arm2";
-        }
-        else if ( strstr( skinN.c_str(), "skins/characters/player/d3xp_sp_vrik" ) )
-        {
-            skinN = "skins/characters/player/d3xp_sp_vrik";
-        }
-        else
-        {
-            gameType = GetExpansionType();
+    	idStr skinN;
+		if(funcBeh != 3) {
+			skinN = skin->GetName();
+		}
+		else
+		{
+			//GB Force skin
+			skinN = "skins/characters/player/greenmarine_arm2";
+		}
 
-            if ( gameType == GAME_D3XP || gameType == GAME_D3LE )
-            {
-                skinN = "skins/characters/player/d3xp_sp_vrik";
-            }
-            else
-            {
-                skinN = "skins/characters/player/greenmarine_arm2";
-            }
-        }
+        if(funcBeh == 0) {
+			if (strstr(skinN.c_str(), "skins/characters/player/tshirt_mp")) {
+				skinN = "skins/characters/player/tshirt_mp";
+			} else if (strstr(skinN.c_str(), "skins/characters/player/greenmarine_arm2")) {
+				skinN = "skins/characters/player/greenmarine_arm2";
+			} else if (strstr(skinN.c_str(), "skins/characters/player/d3xp_sp_vrik")) {
+				skinN = "skins/characters/player/d3xp_sp_vrik";
+			} else {
+				gameType = GetExpansionType();
 
-        if ( commonVr->thirdPersonMovement )
-        {
-            skinN += body;
-        }
-        else if ( vr_playerBodyMode.GetInteger() == 1 || ( vr_playerBodyMode.GetInteger() == 2 && (hands[ 0 ].currentWeapon == weapon_fists || hands[ 1 ].currentWeapon == weapon_fists || commonVr->handInGui) ) )
-        {
-            skinN += handsOnly;
-        }
-        else if ( vr_playerBodyMode.GetInteger() == 2 )
-        {
-            skinN += weaponOnly;
-        }
-        else
-        {
-            // if crouched more than 16 inches hide the body if enabled.
-            if ( (commonVr->headHeightDiff < -16.0f || IsCrouching()) && vr_crouchHideBody.GetBool() )
-            {
-                skinN += handsOnly;
-            }
-            else
-            {
-                skinN += body;
-            }
-        }
+				if (gameType == GAME_D3XP || gameType == GAME_D3LE) {
+					skinN = "skins/characters/player/d3xp_sp_vrik";
+				} else {
+					skinN = "skins/characters/player/greenmarine_arm2";
+				}
+			}
+		}
+
+		if(funcBeh <= 2) {
+			if (commonVr->thirdPersonMovement) {
+				skinN += body;
+			} else if (vr_playerBodyMode.GetInteger() == 1 ||
+					   (vr_playerBodyMode.GetInteger() == 2 &&
+						(hands[0].currentWeapon == weapon_fists ||
+						 hands[1].currentWeapon == weapon_fists || commonVr->handInGui))) {
+				skinN += handsOnly;
+			} else if (vr_playerBodyMode.GetInteger() == 2) {
+				skinN += weaponOnly;
+			} else {
+				// if crouched more than 16 inches hide the body if enabled.
+				if ((commonVr->headHeightDiff < -16.0f || IsCrouching()) &&
+					vr_crouchHideBody.GetBool()) {
+					skinN += handsOnly;
+				} else {
+					skinN += body;
+				}
+			}
+		}
+		else if(funcBeh == 2) {
+			skinN += handsOnly;
+		}
 
         skin = declManager->FindSkin( skinN.c_str(), false );
         //	common->Printf( "UpdateSkinSetup returning player skin %s\n", skinN.c_str() );
@@ -10546,84 +10542,80 @@ void idPlayer::InitPlayerBones()
 		gameLocal.Error( "Joint '%s' not found for 'bone_head' on '%s'", value, name.c_str() );
 	}
 
+
 	// Koz begin
-	value = spawnArgs.GetString( "bone_neck", "" );
-	neckJoint = animator.GetJointHandle( value );
-	if ( neckJoint == INVALID_JOINT )
-	{
-		gameLocal.Error( "Joint '%s' not found for 'bone_neck' on '%s'", value, name.c_str() );
+	value = spawnArgs.GetString("bone_neck", "");
+	neckJoint = animator.GetJointHandle(value);
+	if (neckJoint == INVALID_JOINT) {
+		gameLocal.Error("Joint '%s' not found for 'bone_neck' on '%s'", value, name.c_str());
 	}
 
-	value = spawnArgs.GetString( "bone_chest_pivot", "" );
-	chestPivotJoint = animator.GetJointHandle( value );
-	if ( chestPivotJoint == INVALID_JOINT )
-	{
-		gameLocal.Error( "Joint '%s' not found for 'bone_chest_pivot' on '%s'", value, name.c_str() );
+	value = spawnArgs.GetString("bone_chest_pivot", "");
+	chestPivotJoint = animator.GetJointHandle(value);
+	if (chestPivotJoint == INVALID_JOINT) {
+		gameLocal.Error("Joint '%s' not found for 'bone_chest_pivot' on '%s'", value,
+						name.c_str());
 	}
 
 	// we need to load the starting joint orientations for the hands so we can compute correct offsets later
-	value = spawnArgs.GetString( "ik_hand1", "" ); // right hand
-	ik_hand[0] = animator.GetJointHandle( value );
-	if ( ik_hand[0] == INVALID_JOINT )
-	{
-		gameLocal.Error( "Joint '%s' not found for 'ik_hand1' on '%s'", value, name.c_str() );
+	value = spawnArgs.GetString("ik_hand1", ""); // right hand
+	ik_hand[0] = animator.GetJointHandle(value);
+	if (ik_hand[0] == INVALID_JOINT) {
+		gameLocal.Error("Joint '%s' not found for 'ik_hand1' on '%s'", value, name.c_str());
 	}
 
-	value = spawnArgs.GetString( "ik_hand2", "" );// left hand
-	ik_hand[1] = animator.GetJointHandle( value );
-	if ( ik_hand[1] == INVALID_JOINT )
-	{
-		gameLocal.Error( "Joint '%s' not found for 'ik_hand2' on '%s'", value, name.c_str() );
+	value = spawnArgs.GetString("ik_hand2", "");// left hand
+	ik_hand[1] = animator.GetJointHandle(value);
+	if (ik_hand[1] == INVALID_JOINT) {
+		gameLocal.Error("Joint '%s' not found for 'ik_hand2' on '%s'", value, name.c_str());
 	}
 
-	ik_handAttacher[0] = animator.GetJointHandle( "RhandWeap" );
-	if ( ik_handAttacher[0] == INVALID_JOINT )
-	{
-		gameLocal.Error( "Joint RhandWeap not found for player anim default\n" );
+	ik_handAttacher[0] = animator.GetJointHandle("RhandWeap");
+	if (ik_handAttacher[0] == INVALID_JOINT) {
+		gameLocal.Error("Joint RhandWeap not found for player anim default\n");
 	}
 
-	ik_handAttacher[1] = animator.GetJointHandle( "LhandWeap" );
+	ik_handAttacher[1] = animator.GetJointHandle("LhandWeap");
 
-	if ( ik_handAttacher[1] == INVALID_JOINT )
-	{
-		gameLocal.Error( "Joint LhandWeap not found for player anim default\n" );
+	if (ik_handAttacher[1] == INVALID_JOINT) {
+		gameLocal.Error("Joint LhandWeap not found for player anim default\n");
 	}
 
 	idStr animPre = "default";// this is the anim that has the default/normal hand and weapon attacher orientations (relationsh
 
-	int animNo = animator.GetAnim( animPre.c_str() );
-	if ( animNo == 0 )
-	{
-		gameLocal.Error( "Player default animation not found\n" );
+	int animNo = animator.GetAnim(animPre.c_str());
+	if (animNo == 0) {
+		gameLocal.Error("Player default animation not found\n");
 	}
 
 	int numJoints = animator.NumJoints();
 
-	idJointMat* joints = (idJointMat*)_alloca16( numJoints * sizeof( joints[0] ) );
+	idJointMat *joints = (idJointMat *) _alloca16(numJoints * sizeof(joints[0]));
 
 	// create the idle default pose ( in this case set to default which should tranlsate to pistol_idle )
-	gameEdit->ANIM_CreateAnimFrame( animator.ModelHandle(), animator.GetAnim( animNo )->MD5Anim( 0 ), numJoints, joints, 1, animator.ModelDef()->GetVisualOffset() + modelOffset, animator.RemoveOrigin() );
-
+	gameEdit->ANIM_CreateAnimFrame(animator.ModelHandle(), animator.GetAnim(animNo)->MD5Anim(0),
+								   numJoints, joints, 1,
+								   animator.ModelDef()->GetVisualOffset() + modelOffset,
+								   animator.RemoveOrigin());
 
 
 	static idVec3 defaultWeapAttachOff[2]; // the default distance between the weapon attacher and the hand joint;
-	defaultWeapAttachOff[0] = joints[ik_handAttacher[0]].ToVec3() - joints[ik_hand[0]].ToVec3(); // default
+	defaultWeapAttachOff[0] =
+			joints[ik_handAttacher[0]].ToVec3() - joints[ik_hand[0]].ToVec3(); // default
 	defaultWeapAttachOff[1] = joints[ik_handAttacher[1]].ToVec3() - joints[ik_hand[1]].ToVec3();
 
 	jointHandle_t j1;
-	value = spawnArgs.GetString( "ik_elbow1", "" );// right
-	j1 = animator.GetJointHandle( value );
-	if ( j1 == INVALID_JOINT )
-	{
-		gameLocal.Error( "Joint ik_elbow1 not found for player anim default\n" );
+	value = spawnArgs.GetString("ik_elbow1", "");// right
+	j1 = animator.GetJointHandle(value);
+	if (j1 == INVALID_JOINT) {
+		gameLocal.Error("Joint ik_elbow1 not found for player anim default\n");
 	}
 	ik_elbowCorrectAxis[0] = joints[j1].ToMat3();
 
-	value = spawnArgs.GetString( "ik_elbow2", "" );// left
-	j1 = animator.GetJointHandle( value );
-	if ( j1 == INVALID_JOINT )
-	{
-		gameLocal.Error( "Joint ik_elbow2 not found for player anim default\n" );
+	value = spawnArgs.GetString("ik_elbow2", "");// left
+	j1 = animator.GetJointHandle(value);
+	if (j1 == INVALID_JOINT) {
+		gameLocal.Error("Joint ik_elbow2 not found for player anim default\n");
 	}
 	ik_elbowCorrectAxis[1] = joints[j1].ToMat3();
 
@@ -10632,29 +10624,31 @@ void idPlayer::InitPlayerBones()
 	commonVr->chestDefaultDefined = true;
 
 
-
-	common->Printf( "Animpre hand 0 default offset = %s\n", defaultWeapAttachOff[0].ToString() );
-	common->Printf( "Animpre hand 1 default offset = %s\n", defaultWeapAttachOff[1].ToString() );
+	common->Printf("Animpre hand 0 default offset = %s\n", defaultWeapAttachOff[0].ToString());
+	common->Printf("Animpre hand 1 default offset = %s\n", defaultWeapAttachOff[1].ToString());
 
 	// now calc the weapon attacher offsets
-	for ( int hand = 0; hand < 2; hand++ )
-	{
-		for ( int weap = 0; weap < 32; weap++ ) // should be max weapons
+	for (int hand = 0; hand < 2; hand++) {
+		for (int weap = 0; weap < 32; weap++) // should be max weapons
 		{
 
-			idStr animPre = spawnArgs.GetString( va( "def_weapon%d", weap ) );
-			animPre.Strip( "weapon_" );
+			idStr animPre = spawnArgs.GetString(va("def_weapon%d", weap));
+			animPre.Strip("weapon_");
 			animPre += "_idle";
 
-			int animNo = animator.GetAnim( animPre.c_str() );
+			int animNo = animator.GetAnim(animPre.c_str());
 			int numJoints = animator.NumJoints();
 
-			if ( animNo == 0 ) continue;
+			if (animNo == 0) continue;
 
 			//	common->Printf( "Animpre = %s animNo = %d\n", animPre.c_str(), animNo );
 
 			// create the idle pose for this weapon
-			gameEdit->ANIM_CreateAnimFrame( animator.ModelHandle(), animator.GetAnim( animNo )->MD5Anim( 0 ), numJoints, joints, 1, animator.ModelDef()->GetVisualOffset() + modelOffset, animator.RemoveOrigin() );
+			gameEdit->ANIM_CreateAnimFrame(animator.ModelHandle(),
+										   animator.GetAnim(animNo)->MD5Anim(0), numJoints,
+										   joints, 1,
+										   animator.ModelDef()->GetVisualOffset() + modelOffset,
+										   animator.RemoveOrigin());
 
 			ik_handCorrectAxis[hand][weap] = joints[ik_hand[hand]].ToMat3();
 			//	common->Printf( "Hand %d weap %d anim %s attacher pos %s   default pos %s\n", hand, weap, animPre.c_str(), joints[ik_handAttacher[hand]].ToVec3().ToString(), defaultWeapAttachOff[hand].ToString() );
@@ -10662,17 +10656,19 @@ void idPlayer::InitPlayerBones()
 			//this is the translation between the hand joint ( the wrist ) and the attacher joint.  The attacher joint is
 			//the location in space where the motion control is locating the weapon / hand, but IK is using the 'wrist' to
 			//drive animation, so use this offset to derive the wrist position from the attacher joint orientation
-			handWeaponAttachertoWristJointOffset[hand][weap] = joints[ik_handAttacher[hand]].ToVec3() - joints[ik_hand[hand]].ToVec3();
+			handWeaponAttachertoWristJointOffset[hand][weap] =
+					joints[ik_handAttacher[hand]].ToVec3() - joints[ik_hand[hand]].ToVec3();
 
 			// the is the delta if the attacher joint was moved from the position in the default animation to aid with alignment in
 			// different weapon animations.  To keep the hand in a consistant location when weapon is changed,
 			// the weapon and hand positions will need to be adjusted by this amount when presented
-			handWeaponAttacherToDefaultOffset[hand][weap] = handWeaponAttachertoWristJointOffset[hand][weap] - defaultWeapAttachOff[hand];
+			handWeaponAttacherToDefaultOffset[hand][weap] =
+					handWeaponAttachertoWristJointOffset[hand][weap] -
+					defaultWeapAttachOff[hand];
 
 			//	common->Printf( "Hand %d weap %d anim %s attacher offset = %s\n", hand, weap, animPre.c_str(), handWeaponAttacherToDefaultOffset[hand][weap].ToString() );
 		}
 	}
-
 }
 
 /*
@@ -11686,8 +11682,9 @@ void idPlayer::Think( void ) {
 	}
 
 	Move();
-	SetWeaponHandPose();
-	SetFlashHandPose(); // Call set flashlight hand pose script function
+
+    SetWeaponHandPose();
+    SetFlashHandPose(); // Call set flashlight hand pose script function
 
 	if ( !g_stopTime.GetBool() ) {
 

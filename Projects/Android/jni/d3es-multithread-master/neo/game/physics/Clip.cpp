@@ -810,7 +810,7 @@ int idClip::ClipModelsTouchingBounds( const idBounds &bounds, int contentMask, i
 			bounds[0][1] > bounds[1][1] ||
 			bounds[0][2] > bounds[1][2] ) {
 		// we should not go through the tree for degenerate or backwards bounds
-		assert( false );
+		//assert( false );
 		return 0;
 	}
 

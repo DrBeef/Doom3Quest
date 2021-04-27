@@ -128,6 +128,9 @@ public:
 								// Shuts down everything.
 	virtual void				Shutdown( void ) = 0;
 
+	// Adds FP Features.
+	virtual int					GetModBehaviour(const char *function ) = 0;
+
 								// Shuts down everything.
 	virtual void				Quit( void ) = 0;
 

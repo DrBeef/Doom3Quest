@@ -465,7 +465,8 @@ public:
 
     renderEntity_t			hudEntity; // Koz add a model to place the hud into the world
     qhandle_t				hudHandle;
-    bool					hudActive;
+	bool					hudActive;
+
 
     bool resetHUDYaw;
     float hud_yaw_x = 0.0f;

@@ -138,6 +138,7 @@ public:
 
 	virtual void				Init( int argc, char **argv );
 	virtual void				Shutdown( void );
+    virtual int					GetModBehaviour( const char *function );
 	virtual void				Quit( void );
 	virtual bool				IsInitialized( void ) const;
 	virtual void				Frame( void );
@@ -613,6 +614,28 @@ void idCommonLocal::DumpWarnings( void ) {
 	}
 }
 
+/*
+==================
+idCommonLocal::GetModBehaviour
+==================
+*/
+int idCommonLocal::GetModBehaviour(const char *function) {
+
+
+	if(strcmp(function, "UpdateSkinSetup"))
+	{
+		/* 0 = Overwrite with FP Skin + Body Hand Logic
+		 * 1 = Original Skin + Body Hand Logic
+		 * 2 = Original Skin + Hands Only
+		 * 3 = Forced greenmarine_arm2 + Hands Only
+		 */
+		if(strcmp(cvarSystem->GetCVarString("fs_game"),"Prometheus_D3_BETA") == 0)
+		{
+			return 3;
+		}
+	}
+    return 0;
+}
 /*
 ==================
 idCommonLocal::Error
