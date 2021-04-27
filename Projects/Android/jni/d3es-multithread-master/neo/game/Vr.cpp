@@ -281,7 +281,7 @@ iVr::iVr()
     wasSaved = false;
     wasLoaded = false;
     shouldRecenter = false;
-
+    restoreFlashlightMode = false;
     PDAclipModelSet = false;
     useFBO = false;
 

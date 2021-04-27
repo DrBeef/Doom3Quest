@@ -1758,6 +1758,7 @@ void idPlayer::Init( void ) {
 	InitPlayerBones();
 
 	commonVr->currentFlashlightMode = vr_flashlightMode.GetInteger();
+	commonVr->restoreFlashlightMode = false;
 
 	commonVr->thirdPersonMovement = false;
 	commonVr->thirdPersonDelta = 0.0f;
@@ -13764,7 +13765,16 @@ void idPlayer::CalculateViewFlashlightPos( idVec3 &origin, idMat3 &axis, idVec3 
     int flashlightMode = commonVr->GetCurrentFlashlightMode();
     if (commonVr->GetWeaponStabilised() && flashlightMode == FLASHLIGHT_HAND )
 	{
-		flashlightMode = FLASHLIGHT_GUN;
+		//GB Changed as previous wasn't persistent across functions
+		commonVr->restoreFlashlightMode = true;
+		vr_flashlightMode.SetInteger( FLASHLIGHT_GUN );
+		vr_flashlightMode.SetModified();
+	}
+    else if (!commonVr->GetWeaponStabilised() && commonVr->restoreFlashlightMode)
+	{
+		commonVr->restoreFlashlightMode = false;
+    	vr_flashlightMode.SetInteger( FLASHLIGHT_HAND );
+		vr_flashlightMode.SetModified();
 	}
 
     setLeftHand = false;
