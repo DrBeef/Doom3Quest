@@ -20,9 +20,10 @@ import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.WindowManager;
 
-import com.drbeef.hapticsservice.IHapticsService;
+import com.drbeef.externalhapticsservice.HapticServiceClient;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -35,7 +36,7 @@ import java.io.OutputStream;
 
 import static android.system.Os.setenv;
 
-@SuppressLint("SdCardPath") public class GLES3JNIActivity extends Activity implements SurfaceHolder.Callback, ServiceConnection
+@SuppressLint("SdCardPath") public class GLES3JNIActivity extends Activity implements SurfaceHolder.Callback
 {
 	// Load the gles3jni library right away to make sure JNI_OnLoad() gets called as the very first thing.
 	static
@@ -43,8 +44,7 @@ import static android.system.Os.setenv;
 		System.loadLibrary( "doom3" );
 	}
 
-	private boolean hasHapticService = false;
-	private IHapticsService hapticsService = null;
+	private HapticServiceClient externalHapticsServiceClient = null;
 
 	private int permissionCount = 0;
 	private static final int READ_EXTERNAL_STORAGE_PERMISSION_ID = 1;
@@ -68,66 +68,78 @@ import static android.system.Os.setenv;
 
 	public void haptic_event(String event, int position, int flags, int intensity, float angle, float yHeight)  {
 
-		if (hasHapticService) {
+		if (externalHapticsServiceClient.hasService()) {
 			try {
-				hapticsService.hapticEvent(APPLICATION, event, position, flags, intensity, angle, yHeight);
-			} catch (RemoteException e) {
-				e.printStackTrace();
+				externalHapticsServiceClient.getHapticsService().hapticEvent(APPLICATION, event, position, flags, intensity, angle, yHeight);
+			}
+			catch (RemoteException r)
+			{
+				Log.v(APPLICATION, r.toString());
 			}
 		}
 	}
 
 	public void haptic_updateevent(String event, int intensity, float angle) {
 
-		if (hasHapticService) {
+		if (externalHapticsServiceClient.hasService()) {
 			try {
-				hapticsService.hapticUpdateEvent(APPLICATION, event, intensity, angle);
-			} catch (RemoteException e) {
-				e.printStackTrace();
+				externalHapticsServiceClient.getHapticsService().hapticUpdateEvent(APPLICATION, event, intensity, angle);
+			}
+			catch (RemoteException r)
+			{
+				Log.v(APPLICATION, r.toString());
 			}
 		}
 	}
 
 	public void haptic_stopevent(String event) {
 
-		if (hasHapticService) {
+		if (externalHapticsServiceClient.hasService()) {
 			try {
-				hapticsService.hapticStopEvent(APPLICATION, event);
-			} catch (RemoteException e) {
-				e.printStackTrace();
+				externalHapticsServiceClient.getHapticsService().hapticStopEvent(APPLICATION, event);
+			}
+			catch (RemoteException r)
+			{
+				Log.v(APPLICATION, r.toString());
 			}
 		}
 	}
 
 	public void haptic_endframe() {
 
-		if (hasHapticService) {
+		if (externalHapticsServiceClient.hasService()) {
 			try {
-				hapticsService.hapticFrameTick();
-			} catch (RemoteException e) {
-				e.printStackTrace();
+				externalHapticsServiceClient.getHapticsService().hapticFrameTick();
+			}
+			catch (RemoteException r)
+			{
+				Log.v(APPLICATION, r.toString());
 			}
 		}
 	}
 
 	public void haptic_enable() {
 
-		if (hasHapticService) {
+		if (externalHapticsServiceClient.hasService()) {
 			try {
-				hapticsService.hapticEnable();
-			} catch (RemoteException e) {
-				e.printStackTrace();
+				externalHapticsServiceClient.getHapticsService().hapticEnable();
+			}
+			catch (RemoteException r)
+			{
+				Log.v(APPLICATION, r.toString());
 			}
 		}
 	}
 
 	public void haptic_disable() {
 
-		if (hasHapticService) {
+		if (externalHapticsServiceClient.hasService()) {
 			try {
-				hapticsService.hapticDisable();
-			} catch (RemoteException e) {
-				e.printStackTrace();
+				externalHapticsServiceClient.getHapticsService().hapticDisable();
+			}
+			catch (RemoteException r)
+			{
+				Log.v(APPLICATION, r.toString());
 			}
 		}
 	}
@@ -281,6 +293,13 @@ import static android.system.Os.setenv;
 			}
 		}
 
+		externalHapticsServiceClient = new HapticServiceClient(this, (state, desc) -> {
+			Log.v(APPLICATION, "ExternalHapticsService is:" + desc);
+		});
+
+		externalHapticsServiceClient.bindService();
+
+
 		mNativeHandle = GLES3JNILib.onCreate( this, commandLineParams, refresh, ss, msaa );
 	}
 	
@@ -331,10 +350,6 @@ import static android.system.Os.setenv;
 		Log.v(APPLICATION, "GLES3JNIActivity::onStart()" );
 		super.onStart();
 
-		// Bind to the service - Make this a config file thing
-		bindService(new Intent("com.drbeef.hapticservice.HapticService_bHaptics").setPackage("com.drbeef.hapticservice"), this,
-				Context.BIND_AUTO_CREATE);
-
 		if ( mNativeHandle != 0 )
 		{
 			GLES3JNILib.onStart(mNativeHandle, this);
@@ -370,8 +385,6 @@ import static android.system.Os.setenv;
 			GLES3JNILib.onStop(mNativeHandle);
 		}
 
-		// Unbind from the service
-		unbindService(this);
 
 		super.onStop();
 	}
@@ -389,6 +402,8 @@ import static android.system.Os.setenv;
 		{
 			GLES3JNILib.onDestroy(mNativeHandle);
 		}
+
+		externalHapticsServiceClient.stopBinding();
 
 		super.onDestroy();
 		mNativeHandle = 0;
@@ -422,19 +437,5 @@ import static android.system.Os.setenv;
 			GLES3JNILib.onSurfaceDestroyed( mNativeHandle );
 			mSurfaceHolder = null;
 		}
-	}
-
-	@Override
-	public void onServiceConnected(ComponentName name, IBinder service) {
-		hapticsService = IHapticsService.Stub.asInterface(service);
-		hasHapticService = true;
-	}
-
-	@Override
-	public void onServiceDisconnected(ComponentName name) {
-		stopService(new Intent("com.drbeef.hapticservice.HapticService_bHaptics").setPackage("com.drbeef.hapticservice"));
-
-		hasHapticService = false;
-		hapticsService = null;
 	}
 }
