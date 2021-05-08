@@ -218,8 +218,12 @@ public:
 
 	virtual int 				GetFrameNumber() = 0;
 
-								//Haptic Feedback
+	//Haptic Feedback
 	virtual void 				Vibrate(int channel, float low, float high ) = 0;
+	virtual void 				HapticEvent(const char* event, int position, int flags, int intensity, float angle, float yHeight ) = 0;
+	virtual void 				HapticStopEvent(const char* event) = 0;
+	virtual void 				HapticEnable() = 0;
+	virtual void 				HapticDisable() = 0;
 
 	/* Some Mods (like Ruiner and DarkMod when it still was a mod) used "SourceHook"
 	 * to override Doom3 Methods to call their own code before the original method
