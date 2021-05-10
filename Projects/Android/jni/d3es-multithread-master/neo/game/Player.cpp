@@ -12631,9 +12631,7 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 		}
 	}
 
-	if ( IsType( idPlayer::Type ) &&
-	    //Save the effort of going through this code if vr_useHapticsService isn't enabled
-        vr_useHapticsService.GetBool()) {
+	if ( IsType( idPlayer::Type )) {
 		idVec3 bodyOrigin = vec3_zero;
 		idMat3 bodyAxis;
 		GetViewPos( bodyOrigin, bodyAxis );

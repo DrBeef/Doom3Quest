@@ -841,7 +841,6 @@ int idSoundEmitterLocal::StartSound( const idSoundShader *shader, const s_channe
 	chan->stopped = false;
 	chan->Start();
 
-	if (cvarSystem->GetCVarBool("vr_useHapticsService"))
 	{
 		idVec3 direction = (soundWorld->listenerPos / DOOM_TO_METERS) - origin;
 

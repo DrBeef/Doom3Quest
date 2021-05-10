@@ -415,8 +415,6 @@ private:
 
 };
 
-extern idCVar	vr_useHapticsService;
-
 extern idCVar	vr_scale;
 extern idCVar	vr_normalViewHeight;
 extern idCVar	vr_useFloorHeight;
