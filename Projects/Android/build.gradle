@@ -63,3 +63,6 @@ buildscript {
         google()
     }
 }
+
+task prepareKotlinBuildScriptModel {
+}

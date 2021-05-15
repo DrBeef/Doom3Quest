@@ -1357,7 +1357,6 @@ void idSoundWorldLocal::ReadFromSaveGame( idFile *savefile ) {
 			}
 
 			//Only concerned with registering looping sounds with the haptics service
-            if (cvarSystem->GetCVarBool("vr_useHapticsService"))
             {
                 bool looping = (def->parms.soundShaderFlags & SSF_LOOPING) != 0;
                 if (looping)
@@ -1769,8 +1768,7 @@ void idSoundWorldLocal::AddChannelContribution( idSoundEmitterLocal *sound, idSo
 	float inputSamples[MIXBUFFER_SAMPLES*2+16];
 	float *alignedInputSamples = (float *) ( ( ( (intptr_t)inputSamples ) + 15 ) & ~15 );
 
-	if (cvarSystem->GetCVarBool("vr_useHapticsService") &&
-		looping)
+	if (looping)
 	{
 		idVec3 direction = (listenerPos / DOOM_TO_METERS) - sound->origin;
 

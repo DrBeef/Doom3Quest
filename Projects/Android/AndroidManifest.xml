@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 		package="com.drbeef.doom3quest"
-		android:versionCode="24"
-		android:versionName="1.2.0" android:installLocation="auto" >
+		android:versionCode="25"
+		android:versionName="1.2.1"
+		android:installLocation="auto">
 
 
 	<!-- Tell the system this app requires OpenGL ES 3.1. -->
@@ -17,7 +18,11 @@
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
-	<application android:allowBackup="false" android:icon="@drawable/ic_qquest" android:label="@string/doom3quest">
+	<application android:allowBackup="false"
+		android:icon="@drawable/ic_qquest"
+		android:label="@string/doom3quest"
+		android:extractNativeLibs="true">
+
 		<meta-data android:name="com.samsung.android.vr.application.mode" android:value="vr_only"/>
 		<meta-data android:name="com.oculus.supportedDevices" android:value="quest|quest2"/>
 		<!-- The activity is the built-in NativeActivity framework class. -->
