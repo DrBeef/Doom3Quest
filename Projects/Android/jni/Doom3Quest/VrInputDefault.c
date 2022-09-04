@@ -525,11 +525,19 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
             int vr_turn_mode = Android_GetCVarInteger("vr_turnmode");
             float vr_turn_angle = Android_GetCVarInteger("vr_turnangle");
 
+            //This fixes a problem with older thumbsticks misreporting the X value
+            static float joyx[4] = {0};
+            for (int j = 3; j > 0; --j)
+                joyx[j] = joyx[j-1];
+            joyx[0] = pPrimaryJoystick->x;
+            float joystickX = (joyx[0] + joyx[1] + joyx[2] + joyx[3]) / 4.0f;
+
+
             //No snap turn when using mounted gun
             snapTurn = 0;
             static int increaseSnap = true;
             {
-                if (pPrimaryJoystick->x > 0.7f) {
+                if (joystickX > 0.7f) {
                     if (increaseSnap) {
                         float turnAngle = vr_turn_mode ? (vr_turn_angle / 9.0f) : vr_turn_angle;
                         snapTurn -= turnAngle;
@@ -544,12 +552,12 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
                     } else {
                         snapTurn = 0;
                     }
-                } else if (pPrimaryJoystick->x < 0.3f) {
+                } else if (joystickX < 0.2f) {
                     increaseSnap = true;
                 }
 
                 static int decreaseSnap = true;
-                if (pPrimaryJoystick->x < -0.7f) {
+                if (joystickX < -0.7f) {
                     if (decreaseSnap) {
 
                         float turnAngle = vr_turn_mode ? (vr_turn_angle / 9.0f) : vr_turn_angle;
@@ -567,7 +575,7 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
                     } else {
                         snapTurn = 0;
                     }
-                } else if (pPrimaryJoystick->x > -0.3f) {
+                } else if (joystickX > -0.2f) {
                     decreaseSnap = true;
                 }
             }
