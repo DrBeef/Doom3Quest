@@ -7,12 +7,6 @@ Authors		:	Simon Brown
 
 *************************************************************************************/
 
-#include <VrApi.h>
-#include <VrApi_Helpers.h>
-#include <VrApi_SystemUtils.h>
-#include <VrApi_Input.h>
-#include <VrApi_Types.h>
-
 #include "VrInput.h"
 
 void Sys_AddMouseMoveEvent(int dx, int dy);

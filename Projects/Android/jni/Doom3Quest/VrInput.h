@@ -13,16 +13,14 @@ enum control_scheme;
 
 ovrInputStateTrackedRemote leftTrackedRemoteState_old;
 ovrInputStateTrackedRemote leftTrackedRemoteState_new;
-ovrTracking leftRemoteTracking_new;
+ovrTrackedController leftRemoteTracking_new;
 
 ovrInputStateTrackedRemote rightTrackedRemoteState_old;
 ovrInputStateTrackedRemote rightTrackedRemoteState_new;
-ovrTracking rightRemoteTracking_new;
+ovrTrackedController rightRemoteTracking_new;
 
-ovrInputStateGamepad footTrackedRemoteState_old;
-ovrInputStateGamepad footTrackedRemoteState_new;
-
-ovrDeviceID controllerIDs[2];
+//ovrInputStateGamepad footTrackedRemoteState_old;
+//ovrInputStateGamepad footTrackedRemoteState_new;
 
 float remote_movementSideways;
 float remote_movementForward;
@@ -34,10 +32,8 @@ float snapTurn;
 void sendButtonAction(const char* action, long buttonDown);
 void sendButtonActionSimple(const char* action);
 
-void acquireTrackedRemotesData(ovrMobile *Ovr, double displayTime);
-
-void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGamepad *pFootTrackingNew, ovrInputStateGamepad *pFootTrackingOld, ovrInputStateTrackedRemote *pDominantTrackedRemoteNew, ovrInputStateTrackedRemote *pDominantTrackedRemoteOld, ovrTracking* pDominantTracking,
-                          ovrInputStateTrackedRemote *pOffTrackedRemoteNew, ovrInputStateTrackedRemote *pOffTrackedRemoteOld, ovrTracking* pOffTracking,
+void HandleInput_Default( int controlscheme, int switchsticks, /*ovrInputStateGamepad *pFootTrackingNew, ovrInputStateGamepad *pFootTrackingOld,*/ ovrInputStateTrackedRemote *pDominantTrackedRemoteNew, ovrInputStateTrackedRemote *pDominantTrackedRemoteOld, ovrTrackedController* pDominantTracking,
+                          ovrInputStateTrackedRemote *pOffTrackedRemoteNew, ovrInputStateTrackedRemote *pOffTrackedRemoteOld, ovrTrackedController* pOffTracking,
                           int domButton1, int domButton2, int offButton1, int offButton2 );
 
 

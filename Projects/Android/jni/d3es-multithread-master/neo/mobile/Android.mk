@@ -7,11 +7,13 @@ LOCAL_MODULE := doom3
 
 
 LOCAL_C_INCLUDES :=   \
-$(TOP_DIR) \
-$(D3QUEST_TOP_PATH)/neo/mobile \
-$(SDL_INCLUDE_PATHS) \
-$(SUPPORT_LIBS)/openal/include/ \
-$(SUPPORT_LIBS)/liboggvorbis/include
+	$(TOP_DIR) \
+	$(D3QUEST_TOP_PATH)/neo/mobile \
+	$(SDL_INCLUDE_PATHS) \
+	$(SUPPORT_LIBS)/openal/include/ \
+	$(SUPPORT_LIBS)/liboggvorbis/include \
+	${OPENXR}/include \
+	${OPENXR}/src/common
 
 
 
@@ -303,11 +305,14 @@ src_renderer_glsl = \
 
 src_d3quest = \
    ../../Doom3Quest/Doom3Quest_SurfaceView.c \
-   ../../Doom3Quest/VrCompositor.c \
+	../../Doom3Quest/OpenXrInput.c \
+	../../Doom3Quest/TBXR_Common.c \
    ../../Doom3Quest/VrInputCommon.c \
    ../../Doom3Quest/VrInputDefault.c \
    ../../Doom3Quest/mathlib.c \
-   ../../Doom3Quest/matrixlib.c
+   ../../Doom3Quest/matrixlib.c \
+   ../../Doom3Quest/argtable3.c
+   
    
 src_core = \
     	${src_renderer} \
@@ -330,7 +335,7 @@ LOCAL_SRC_FILES = $(SRC_ANDROID) \
 
 
 
-LOCAL_SHARED_LIBRARIES := openal SDL2 libvorbis libogg vrapi
+LOCAL_SHARED_LIBRARIES := openal SDL2 libvorbis libogg openxr_loader
 LOCAL_STATIC_LIBRARIES := jpeg
 
 LOCAL_LDLIBS :=  -llog -lm  -lEGL -landroid -lGLESv3 -lz
@@ -338,4 +343,4 @@ LOCAL_LDLIBS :=  -llog -lm  -lEGL -landroid -lGLESv3 -lz
 include $(BUILD_SHARED_LIBRARY)
 
 
-$(call import-module,VrApi/Projects/AndroidPrebuilt/jni)
+$(call import-module,AndroidPrebuilt/jni)

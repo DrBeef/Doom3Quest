@@ -17,7 +17,6 @@
 #include "../idlib/Lib.h"
 #include "gamesys/SysCvar.h"
 #include "../cm/CollisionModel.h"
-#include "../../../../../../../../VrApi/Include/VrApi_Types.h"
 #include "../framework/Licensee.h"
 
 //#include "libs\LibOVR\Include\OVR_CAPI_GL.h"

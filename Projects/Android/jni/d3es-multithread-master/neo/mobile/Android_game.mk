@@ -6,10 +6,12 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := d3es_game
 
 LOCAL_C_INCLUDES :=  \
-$(SDL_INCLUDE_PATHS) \
-$(D3QUEST_TOP_PATH)/neo/mobile \
-$(D3QUEST_TOP_PATH)/neo/game \
-$(SDL_INCLUDE_PATHS)
+	$(SDL_INCLUDE_PATHS) \
+	$(D3QUEST_TOP_PATH)/neo/mobile \
+	$(D3QUEST_TOP_PATH)/neo/game \
+	$(SDL_INCLUDE_PATHS)  \
+	${OPENXR}/include \
+	${OPENXR}/src/common
 
 
 LOCAL_CPPFLAGS :=  -DGAME_DLL -fPIC

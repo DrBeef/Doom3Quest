@@ -7,11 +7,6 @@ Authors		:	Simon Brown
 
 *************************************************************************************/
 
-#include "../../../../../../VrApi/Include/VrApi.h"
-#include "../../../../../../VrApi/Include/VrApi_Helpers.h"
-#include "../../../../../../VrApi/Include/VrApi_SystemUtils.h"
-#include "../../../../../../VrApi/Include/VrApi_Input.h"
-#include "../../../../../../VrApi/Include/VrApi_Types.h"
 #include <android/keycodes.h>
 #include <sys/time.h>
 
@@ -63,8 +58,8 @@ extern bool inCinematic;
 
 void Doom3Quest_HapticEvent(const char* event, int position, int flags, int intensity, float angle, float yHeight );
 
-void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGamepad *pFootTrackingNew, ovrInputStateGamepad *pFootTrackingOld, ovrInputStateTrackedRemote *pDominantTrackedRemoteNew, ovrInputStateTrackedRemote *pDominantTrackedRemoteOld, ovrTracking* pDominantTracking,
-                          ovrInputStateTrackedRemote *pOffTrackedRemoteNew, ovrInputStateTrackedRemote *pOffTrackedRemoteOld, ovrTracking* pOffTracking,
+void HandleInput_Default( int controlscheme, int switchsticks, /*ovrInputStateGamepad *pFootTrackingNew, ovrInputStateGamepad *pFootTrackingOld,*/ ovrInputStateTrackedRemote *pDominantTrackedRemoteNew, ovrInputStateTrackedRemote *pDominantTrackedRemoteOld, ovrTrackedController* pDominantTracking,
+                          ovrInputStateTrackedRemote *pOffTrackedRemoteNew, ovrInputStateTrackedRemote *pOffTrackedRemoteOld, ovrTrackedController* pOffTracking,
                           int domButton1, int domButton2, int offButton1, int offButton2 )
 
 {
@@ -73,12 +68,12 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
 
 
     //Need this for the touch screen
-    ovrTracking * pWeapon = pDominantTracking;
-    ovrTracking * pOff = pOffTracking;
+    ovrTrackedController * pWeapon = pDominantTracking;
+    ovrTrackedController * pOff = pOffTracking;
 
     //All this to allow stick and button switching!
-    ovrVector2f *pPrimaryJoystick;
-    ovrVector2f *pSecondaryJoystick;
+    XrVector2f *pPrimaryJoystick;
+    XrVector2f *pSecondaryJoystick;
     uint32_t primaryButtonsNew;
     uint32_t primaryButtonsOld;
     uint32_t secondaryButtonsNew;
@@ -125,9 +120,9 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
 
     {
         //Store original values
-        const ovrQuatf quatRHand = pWeapon->HeadPose.Pose.Orientation;
+        const XrQuaternionf quatRHand = pWeapon->HeadPose.Pose.Orientation;
         const ovrVector3f positionRHand = pWeapon->HeadPose.Pose.Position;
-        const ovrQuatf quatLHand = pOff->HeadPose.Pose.Orientation;
+        const XrQuaternionf quatLHand = pOff->HeadPose.Pose.Orientation;
         const ovrVector3f positionLHand = pOff->HeadPose.Pose.Position;
 
         /*VectorSet(pVRClientInfo->rhandposition, positionRHand.x, positionRHand.y, positionRHand.z);

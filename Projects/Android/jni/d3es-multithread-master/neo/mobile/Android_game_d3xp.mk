@@ -7,9 +7,12 @@ LOCAL_MODULE := d3es_d3xp
 
 
 LOCAL_C_INCLUDES :=  \
-$(SDL_INCLUDE_PATHS) \
-$(TOP_DIR)/Doom/d3es/neo/mobile \
-$(TOP_DIR)/Doom/d3es/neo/d3xp \
+	$(SDL_INCLUDE_PATHS) \
+	$(TOP_DIR)/Doom/d3es/neo/mobile \
+	$(TOP_DIR)/Doom/d3es/neo/d3xp \
+	${TOP_DIR}/OpenXR-SDK/include \
+	${TOP_DIR}/OpenXR-SDK/src/common
+	
 
 
 LOCAL_CPPFLAGS :=  -DGAME_DLL -D_D3XP -DCTF -fPIC

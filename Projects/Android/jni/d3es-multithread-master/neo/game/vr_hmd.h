@@ -30,7 +30,7 @@ If you have questions concerning this license or the applicable additional terms
 #define __VR_HMD_H__
 
 #include "../idlib/math/Vector.h"
-#include "../../../../../../../../VrApi/Include/VrApi_Types.h"
+#include <openxr/openxr.h>
 
 typedef enum
 {
@@ -101,7 +101,7 @@ typedef struct _hmdEye
     ovrFovPort			eyeFov;
     ovrEyeRenderDesc	eyeRenderDesc;
 	ovrSizei			renderTarget;
-	ovrVector2f			UVScaleoffset[2];
+	XrVector2f			UVScaleoffset[2];
 } hmdEye_t;
 
 #endif

@@ -1,14 +1,11 @@
 #if !defined(vrcommon_h)
 #define vrcommon_h
 
-#include <VrApi_Input.h>
 
 #include <android/log.h>
 
-#include "mathlib.h"
-#include "VrClientInfo.h"
+#include "TBXR_Common.h"
 
-#define LOG_TAG "D3QUESTVR"
 
 #ifndef NDEBUG
 #define DEBUG 1
@@ -44,7 +41,7 @@ bool between(float min, float val, float max);
 
 void rotateAboutOrigin(float v1, float v2, float rotation, vec2_t out);
 
-void QuatToYawPitchRoll(ovrQuatf q, vec3_t rotation, vec3_t out);
+void QuatToYawPitchRoll(XrQuaternionf q, vec3_t rotation, vec3_t out);
 
 void handleTrackedControllerButton_AsButton(uint32_t buttonsNew, uint32_t buttonsOld,
                                    bool mouse, uint32_t button, int key);
