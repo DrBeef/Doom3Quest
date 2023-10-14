@@ -82,7 +82,7 @@ PFNEGLGETSYNCATTRIBKHRPROC		eglGetSyncAttribKHR;
 
 //Let's go to the maximum!
 const int CPU_LEVEL			= 4;
-const int GPU_LEVEL			= 4;
+const int GPU_LEVEL			= 5;
 
 //Passed in from the Java code
 int NUM_MULTI_SAMPLES	= -1;
@@ -578,7 +578,7 @@ static bool ovrFramebuffer_Create(
 			// Create the depth buffer texture.
 			GL(glGenTextures(1, &frameBuffer->DepthBuffers[i]));
 			GL(glBindTexture(GL_TEXTURE_2D_ARRAY, frameBuffer->DepthBuffers[i]));
-			GL(glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_DEPTH_COMPONENT24, width, height, 2));
+			GL(glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_DEPTH24_STENCIL8, width, height, 2));
 			GL(glBindTexture(GL_TEXTURE_2D_ARRAY, 0));
 
 			// Create the frame buffer.
@@ -588,6 +588,14 @@ static bool ovrFramebuffer_Create(
 				GL(glFramebufferTextureMultisampleMultiviewOVR(
 						GL_DRAW_FRAMEBUFFER,
 						GL_DEPTH_ATTACHMENT,
+						frameBuffer->DepthBuffers[i],
+						0 /* level */,
+						multisamples /* samples */,
+						0 /* baseViewIndex */,
+						2 /* numViews */));
+				GL(glFramebufferTextureMultisampleMultiviewOVR(
+						GL_DRAW_FRAMEBUFFER,
+						GL_STENCIL_ATTACHMENT,
 						frameBuffer->DepthBuffers[i],
 						0 /* level */,
 						multisamples /* samples */,
@@ -605,6 +613,13 @@ static bool ovrFramebuffer_Create(
 				GL(glFramebufferTextureMultiviewOVR(
 						GL_DRAW_FRAMEBUFFER,
 						GL_DEPTH_ATTACHMENT,
+						frameBuffer->DepthBuffers[i],
+						0 /* level */,
+						0 /* baseViewIndex */,
+						2 /* numViews */));
+				GL(glFramebufferTextureMultiviewOVR(
+						GL_DRAW_FRAMEBUFFER,
+						GL_STENCIL_ATTACHMENT,
 						frameBuffer->DepthBuffers[i],
 						0 /* level */,
 						0 /* baseViewIndex */,
@@ -633,7 +648,7 @@ static bool ovrFramebuffer_Create(
 				GL(glGenRenderbuffers(1, &frameBuffer->DepthBuffers[i]));
 				GL(glBindRenderbuffer(GL_RENDERBUFFER, frameBuffer->DepthBuffers[i]));
 				GL(glRenderbufferStorageMultisampleEXT(
-						GL_RENDERBUFFER, multisamples, GL_DEPTH_COMPONENT24, width, height));
+						GL_RENDERBUFFER, multisamples, GL_DEPTH24_STENCIL8, width, height));
 				GL(glBindRenderbuffer(GL_RENDERBUFFER, 0));
 
 				// Create the frame buffer.
@@ -650,6 +665,11 @@ static bool ovrFramebuffer_Create(
 				GL(glFramebufferRenderbuffer(
 						GL_FRAMEBUFFER,
 						GL_DEPTH_ATTACHMENT,
+						GL_RENDERBUFFER,
+						frameBuffer->DepthBuffers[i]));
+				GL(glFramebufferRenderbuffer(
+						GL_FRAMEBUFFER,
+						GL_STENCIL_ATTACHMENT,
 						GL_RENDERBUFFER,
 						frameBuffer->DepthBuffers[i]));
 				GL(GLenum renderFramebufferStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER));
@@ -673,6 +693,11 @@ static bool ovrFramebuffer_Create(
 				GL(glFramebufferRenderbuffer(
 						GL_DRAW_FRAMEBUFFER,
 						GL_DEPTH_ATTACHMENT,
+						GL_RENDERBUFFER,
+						frameBuffer->DepthBuffers[i]));
+				GL(glFramebufferRenderbuffer(
+						GL_DRAW_FRAMEBUFFER,
+						GL_STENCIL_ATTACHMENT,
 						GL_RENDERBUFFER,
 						frameBuffer->DepthBuffers[i]));
 				GL(glFramebufferTexture2D(
@@ -720,8 +745,8 @@ void ovrFramebuffer_SetNone()
 void ovrFramebuffer_Resolve( ovrFramebuffer * frameBuffer )
 {
 	// Discard the depth buffer, so the tiler won't need to write it back out to memory.
-	const GLenum depthAttachment[1] = { GL_DEPTH_ATTACHMENT };
-	glInvalidateFramebuffer( GL_DRAW_FRAMEBUFFER, 1, depthAttachment );
+	const GLenum depthAttachment[2] = { GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT };
+	glInvalidateFramebuffer( GL_DRAW_FRAMEBUFFER, 2, depthAttachment );
 }
 
 void ovrFramebuffer_Advance( ovrFramebuffer * frameBuffer )
@@ -1612,9 +1637,30 @@ void * AppThreadFunction(void * parm ) {
 			NUM_MULTI_SAMPLES = 1;
 		}
 	}
+	else if (vrapi_GetSystemPropertyInt(&java, VRAPI_SYS_PROP_SUGGESTED_EYE_FOV_DEGREES_Y) > 101)
+	{
+		questType = 3;
+		if (DISPLAY_REFRESH == -1)
+		{
+			DISPLAY_REFRESH = 72.0;
+		}
+		if (SS_MULTIPLIER == -1.0f)
+		{
+			SS_MULTIPLIER = 1.1f;
+		}
+
+		if (NUM_MULTI_SAMPLES == -1)
+		{
+			NUM_MULTI_SAMPLES = 1;
+		}
+	}
 	else if (vrapi_GetSystemPropertyInt(&java, VRAPI_SYS_PROP_DEVICE_TYPE) == VRAPI_DEVICE_TYPE_OCULUSQUEST2)
 	{
 		questType = 2;
+		if (DISPLAY_REFRESH == -1)
+		{
+			DISPLAY_REFRESH = 60.0;
+		}
 		if (SS_MULTIPLIER == -1.0f)
 		{
 			SS_MULTIPLIER = 1.1f;
@@ -1653,6 +1699,32 @@ void * AppThreadFunction(void * parm ) {
         Doom3Quest_getHMDOrientation();
         showLoadingIcon();
     }
+
+	int maximumSupportRefresh = 0;
+	//AmmarkoV : Query Refresh rates and select maximum..!
+	//-----------------------------------------------------------------------------------------------------------
+	int numberOfRefreshRates = vrapi_GetSystemPropertyInt(&java,
+														  VRAPI_SYS_PROP_NUM_SUPPORTED_DISPLAY_REFRESH_RATES);
+	float refreshRatesArray[16]; //Refresh rates are currently (12/2020) the following 4 : 60.0 / 72.0 / 80.0 / 90.0
+	if (numberOfRefreshRates > 16) { numberOfRefreshRates = 16; }
+	vrapi_GetSystemPropertyFloatArray(&java, VRAPI_SYS_PROP_SUPPORTED_DISPLAY_REFRESH_RATES,
+									  &refreshRatesArray[0], numberOfRefreshRates);
+	for (int i = 0; i < numberOfRefreshRates; i++) {
+		ALOGV("Supported refresh rate : %d Hz", refreshRatesArray[i]);
+		if (maximumSupportRefresh < refreshRatesArray[i]) {
+			maximumSupportRefresh = refreshRatesArray[i];
+		}
+	}
+
+	if (maximumSupportRefresh > 90.0) {
+		ALOGV("Soft limiting to 90.0 Hz as per John carmack's request ( https://www.onlinepeeps.org/oculus-quest-2-according-to-carmack-in-the-future-also-at-120-hz/ );P");
+		maximumSupportRefresh = 90.0;
+	}
+
+	if (DISPLAY_REFRESH == 0 || DISPLAY_REFRESH > maximumSupportRefresh)
+	{
+		DISPLAY_REFRESH = 72.0;
+	}
 
     //Should now be all set up and ready - start the Doom3 main loop
     VR_Doom3Main(argc, argv);

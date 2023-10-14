@@ -42,6 +42,7 @@ android {
     }
     compileSdkVersion = 26
     buildToolsVersion = '29.0.1'
+    ndkVersion '21.1.6352462'
 /*    buildTypes {
         release {
             debuggable true

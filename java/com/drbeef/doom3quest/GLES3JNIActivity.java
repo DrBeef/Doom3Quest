@@ -226,6 +226,7 @@ import static android.system.Os.setenv;
 		//these so forcefully overwrite
 		copy_asset("/sdcard/Doom3Quest/config/base", "quest1_default.cfg", true);
 		copy_asset("/sdcard/Doom3Quest/config/base", "quest2_default.cfg", true);
+		copy_asset("/sdcard/Doom3Quest/config/base", "quest3_default.cfg", true);
 
 		if (exitAfterCopy)
 		{
@@ -270,10 +271,13 @@ import static android.system.Os.setenv;
 
 		}
 
+		//GB Change per headset defaults
 		//Parse the config file for these values
-		long refresh = 60; // Default to 60
+		long refresh = -1; // Let the Surface View Default this
 		float ss = -1.0F;
 		long msaa = 1; // default for both HMDs
+
+
 		String configFileName = "/sdcard/Doom3Quest/config/base/doom3quest.cfg";
 		if(new File(configFileName).exists())
 		{
