@@ -1,5 +1,15 @@
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:4.0.0'
+    }
+}
+
 apply plugin: 'com.android.application'
-apply from: "${rootProject.projectDir}/VrApp.gradle"
 
 android {
   // This is the name of the generated apk file, which will have
@@ -26,6 +36,12 @@ android {
       minSdkVersion 26
       targetSdkVersion 26
   }
+
+    externalNativeBuild {
+        ndkBuild {
+            path file('jni/Android.mk')
+        }
+    }
 
   sourceSets {
     main {
@@ -63,7 +79,4 @@ buildscript {
     repositories {
         google()
     }
-}
-
-task prepareKotlinBuildScriptModel {
 }
