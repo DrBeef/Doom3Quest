@@ -15,9 +15,6 @@ $RECYCLE.BIN/
 *.o
 *.d
 
-#binaries
-*.so
-
 #libs
 *.a
 
@@ -29,12 +26,8 @@ $RECYCLE.BIN/
 *.ap_
 *.class
 drbeef-release-key.keystore
-projects/Android/.cxx
-projects/Android/build/*
-Projects/Android/.externalNativeBuild/*
 *.json
 *.bin
-Projects/Android/.gradle/*
 *.ser
-Projects/Android/.idea/*
-Projects/Android/Android.iml
+.idea
+.gradle

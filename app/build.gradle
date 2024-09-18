@@ -1,0 +1,57 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.drbeef.doom3quest'
+    compileSdk 32
+
+    defaultConfig {
+        applicationId "com.drbeef.doom3quest"
+        minSdk 26
+        targetSdk 26
+        versionCode 1
+        versionName "1.0"
+
+        ndk {
+            abiFilters 'arm64-v8a'
+        }
+    }
+
+    externalNativeBuild {
+        ndkBuild {
+            path 'src/main/jni/Android.mk'
+        }
+    }
+
+    sourceSets {
+        main {
+            jniLibs {
+                srcDir 'src/main/jni/VrApi/Libs/'
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    lintOptions {
+        checkReleaseBuilds false
+        //If you want to continue even if errors found use following line
+        abortOnError false
+    }
+}
+
+dependencies {
+    implementation "com.android.support:support-compat:26.1.0"
+    implementation "com.android.support:support-core-utils:26.1.0"
+    implementation files('src/main/libs/haptic_service.aar')
+}
