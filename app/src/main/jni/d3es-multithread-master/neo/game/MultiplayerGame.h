@@ -355,6 +355,9 @@ private:
 	void			VoiceChat( const idCmdArgs &args, bool team );
 	void			DumpTourneyLine( void );
 	void			SuddenRespawn( void );
+
+public:
+	idStr			GetBestGametype(const char *map, const char *gametype);
 };
 
 ID_INLINE idMultiplayerGame::gameState_t idMultiplayerGame::GetGameState( void ) const {

@@ -516,6 +516,7 @@ void idEntityFx::Run( int time ) {
 				} else if ( fxaction.trackOrigin ) {
 					useAction->renderEntity.origin = GetPhysics()->GetOrigin() + fxaction.offset;
 					useAction->renderEntity.axis = fxaction.explicitAxis ? fxaction.axis : GetPhysics()->GetAxis();
+					gameRenderWorld->UpdateEntityDef(useAction->modelDefHandle, &useAction->renderEntity);
 				}
 				ApplyFade( fxaction, *useAction, time, actualStart );
 				break;
@@ -542,6 +543,35 @@ void idEntityFx::Run( int time ) {
 						}
 					}
 				}
+				break;
+			}
+			case FX_SHOCKWAVE: {
+				if (gameLocal.isClient) {
+					useAction->shakeStarted = true;
+					break;
+				}
+
+				if (!useAction->shakeStarted) {
+					idStr	shockDefName;
+					useAction->shakeStarted = true;
+
+					shockDefName = fxaction.data;
+
+					if (!shockDefName.Length()) {
+						shockDefName = "func_shockwave";
+					}
+
+					projectileDef = gameLocal.FindEntityDefDict(shockDefName, false);
+
+					if (!projectileDef) {
+						gameLocal.Warning("shockwave \'%s\' not found", shockDefName.c_str());
+					} else {
+						gameLocal.SpawnEntityDef(*projectileDef, &ent);
+						ent->SetOrigin(GetPhysics()->GetOrigin() + fxaction.offset);
+						ent->PostEventMS(&EV_Remove, ent->spawnArgs.GetInt("duration"));
+					}
+				}
+
 				break;
 			}
 		}

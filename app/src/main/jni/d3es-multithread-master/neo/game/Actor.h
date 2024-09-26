@@ -57,6 +57,8 @@ extern const idEventDef AI_AnimDone;
 extern const idEventDef AI_SetBlendFrames;
 extern const idEventDef AI_GetBlendFrames;
 
+extern const idEventDef AI_SetState;
+
 class idDeclParticle;
 
 class idAnimState {
@@ -283,6 +285,8 @@ protected:
 
 	idList<idAttachInfo>	attachments;
 
+	int						damageCap;
+
 	virtual void			Gib( const idVec3 &dir, const char *damageDefName );
 
 							// removes attachments with "remove" set for when character dies
@@ -338,6 +342,12 @@ private:
 	void					Event_SetState( const char *name );
 	void					Event_GetState( void );
 	void					Event_GetHead( void );
+	void					Event_SetDamageGroupScale(const char *groupName, float scale);
+	void					Event_SetDamageGroupScaleAll(float scale);
+	void					Event_GetDamageGroupScale(const char *groupName);
+	void					Event_SetDamageCap(float _damageCap);
+	void					Event_SetWaitState(const char *waitState);
+	void					Event_GetWaitState();
 };
 
 #endif /* !__GAME_ACTOR_H__ */

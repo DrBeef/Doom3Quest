@@ -264,6 +264,7 @@ private:
 	void					Event_TeamBlocked( idEntity *blockedEntity, idEntity *blockingEntity );
 	void					Event_Activate( idEntity *activator );
 	void					Event_PostFloorArrival();
+	void					Event_SetGuiStates();
 
 };
 
@@ -344,6 +345,7 @@ protected:
 	idPhysics_Parametric	physicsObj;
 	qhandle_t				areaPortal;			// 0 = no portal
 	bool					blocked;
+	bool					playerOnly;
 	idList< idEntityPtr<idEntity> >	guiTargets;
 
 	void					MatchActivateTeam( moverState_t newstate, int time );
@@ -390,6 +392,7 @@ public:
 
 	bool					IsOpen( void );
 	bool					IsNoTouch( void );
+	bool					AllowPlayerOnly(idEntity *ent);
 	int						IsLocked( void );
 	void					Lock( int f );
 	void					Use( idEntity *other, idEntity *activator );

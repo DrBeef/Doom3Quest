@@ -606,6 +606,8 @@ void idCameraAnim::GetViewParms( renderView_t *view ) {
 		return;
 	}
 
+	SetTimeState ts(timeGroup);
+
 	if ( frameRate == renderSystem->GetRefresh() ) {
 		frameTime	= gameLocal.time - starttime;
 		frame		= frameTime / USERCMD_MSEC;

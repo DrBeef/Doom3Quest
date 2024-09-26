@@ -46,8 +46,8 @@ class idRestoreGame;
 #define MAX_STRING_LEN		128
 #define MAX_GLOBALS			296608			// in bytes - DG: increased this for better support of mods that use the vanilla game dll
 #define MAX_STRINGS			1024
-#define MAX_FUNCS			3072
-#define MAX_STATEMENTS		81920			// statement_t - 18 bytes last I checked
+#define MAX_FUNCS			3584
+#define MAX_STATEMENTS		131072			// statement_t - 18 bytes last I checked
 
 typedef enum {
 	ev_error = -1, ev_void, ev_scriptevent, ev_namespace, ev_string, ev_float, ev_vector, ev_entity, ev_field, ev_function, ev_virtualfunction, ev_pointer, ev_object, ev_jumpoffset, ev_argsize, ev_boolean

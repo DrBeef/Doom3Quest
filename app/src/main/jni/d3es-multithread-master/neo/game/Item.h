@@ -161,6 +161,7 @@ public:
 
 	void					Spawn( void );
 	virtual void			Think( void );
+	virtual bool			Collide(const trace_t &collision, const idVec3 &velocity);
 	virtual bool			Pickup( idPlayer *player );
 
 	static void				DropItems( idAnimatedEntity *ent, const char *type, idList<idEntity *> *list );
@@ -174,6 +175,7 @@ private:
 	idClipModel *			trigger;
 	const idDeclParticle *	smoke;
 	int						smokeTime;
+	int						nextSoundTime;
 
 	void					Gib( const idVec3 &dir, const char *damageDefName );
 

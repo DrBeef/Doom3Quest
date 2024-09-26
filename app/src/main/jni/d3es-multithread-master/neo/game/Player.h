@@ -166,6 +166,7 @@ public:
 	int						clip[ MAX_WEAPONS ];
 	int						clipDuplicate[ MAX_WEAPONS ];
 	int						powerupEndTime[ MAX_POWERUPS ];
+	RechargeAmmo_t			rechargeAmmo[ AMMO_NUMTYPES ];
 
 	// mp
 	int						ammoPredictTime;
@@ -215,11 +216,13 @@ public:
 	int						WeaponIndexForAmmoClass( const idDict & spawnArgs, const char *ammo_classname ) const;
 	ammo_t					AmmoIndexForWeaponClass( const char *weapon_classname, int *ammoRequired );
 	const char *			AmmoPickupNameForIndex( ammo_t ammonum ) const;
-	void					AddPickupName( const char *name, const char *icon );
+	void					AddPickupName(const char *name, const char *icon, idPlayer *owner);   //_D3XP
 
 	int						HasAmmo( ammo_t type, int amount );
 	bool					UseAmmo( ammo_t type, int amount );
-	int						HasAmmo( const char *weapon_classname );			// looks up the ammo information for the weapon class first
+	int						HasAmmo(const char *weapon_classname, bool includeClip = false, idPlayer *owner = NULL);			// _D3XP
+
+	bool					HasEmptyClipCannotRefill(const char *weapon_classname, idPlayer *owner);
 
 	void					UpdateArmor( void );
 	int						GetClipAmmoForWeapon( const int weapon, const bool duplicate ) const;
@@ -231,6 +234,10 @@ public:
 	int						onePickupTime;
 	idList<idItemInfo>		pickupItemNames;
 	idList<idObjectiveInfo>	objectiveNames;
+
+	void					InitRechargeAmmo(idPlayer *owner);
+	void					RechargeAmmo(idPlayer *owner);
+	bool					CanGive(idPlayer *owner, const idDict &spawnArgs, const char *statname, const char *value, int *idealWeapon);
 };
 
 typedef struct {
@@ -618,7 +625,7 @@ public:
 	idEntityPtr<idProjectile> soulCubeProjectile;
 
 	// mp stuff
-	static idVec3			colorBarTable[ 5 ];
+	static idVec3			colorBarTable[ 8 ];
 	int						spectator;
 	idVec3					colorBar;			// used for scoreboard and hud display
 	int						colorBarIndex;
@@ -663,7 +670,7 @@ public:
 
     idDragEntity			dragEntity;
 
-    //idFuncMountedObject*		mountedObject;
+    idFuncMountedObject*		mountedObject;
     idEntityPtr<idLight>	enviroSuitLight;
 
     bool					healthRecharge;
@@ -904,6 +911,7 @@ public:
 	void					SetCurrentHeartRate( void );
 	int						GetBaseHeartRate( void );
 	void					UpdateAir( void );
+	void					UpdatePowerupHud();
 
 	virtual bool			HandleSingleGuiCommand( idEntity *entityGui, idLexer *src );
 	bool					GuiActive( void ) { return focusGUIent != NULL; }
@@ -979,6 +987,10 @@ public:
 	virtual	void			HidePlayerIcons( void );
 	bool					NeedsIcon( void );
 
+
+	void					StartHealthRecharge(int speed);
+	void					StopHealthRecharge();
+
 	bool					SelfSmooth( void );
 	void					SetSelfSmooth( bool b );
 	idStr					GetCurrentWeapon();
@@ -995,6 +1007,11 @@ public:
 	{
 		return weaponToggles;
 	}
+
+	bool					CanGive(const char *statname, const char *value);
+
+	void					StopHelltime(bool quick = true);
+	void					PlayHelltimeStopSound();
 
     virtual void			FreeModelDef();
 
@@ -1133,6 +1150,10 @@ private:
 
     idHashTable<WeaponToggle_t>	weaponToggles;
 
+	int						hudPowerup;
+	int						lastHudPowerup;
+	int						hudPowerupDuration;
+
 	// mp
 	bool					ready;					// from userInfo
 	bool					respawning;				// set to true while in SpawnToPoint for telefrag checks
@@ -1223,12 +1244,20 @@ private:
 	void					Event_HideTip( void );
 	void					Event_LevelTrigger( void );
 	void					Event_Gibbed( void );
+
+    //BSM: Event to remove inventory items. Useful with powercells.
+    void					Event_GiveInventoryItem(const char *name);
+    void					Event_RemoveInventoryItem(const char *name);
+
     void					Event_ForceOrigin( idVec3& origin, idAngles& angles );
 	void					Event_GetIdealWeapon( void );
     void					Event_WeaponAvailable( const char* name );
     void					Event_SetPowerupTime( int powerup, int time );
     void					Event_IsPowerupActive( int powerup );
     void					Event_StartWarp();
+    void					Event_StopHelltime(int mode);
+    void					Event_ToggleBloom(int on);
+    void					Event_SetBloomParms(float speed, float intensity);
 
     // Koz
     void					Event_GetWeaponHand();

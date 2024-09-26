@@ -197,6 +197,8 @@ void idPlayerStart::TeleportPlayer( idPlayer *player ) {
 	const char *viewName = spawnArgs.GetString( "visualView", "" );
 	idEntity *ent = viewName ? gameLocal.FindEntity( viewName ) : NULL;
 
+	SetTimeState ts(player->timeGroup);
+
 	if ( f && ent ) {
 		// place in private camera view for some time
 		// the entity needs to teleport to where the camera view is to have the PVS right
@@ -566,6 +568,26 @@ void idDamagable::Killed( idEntity *inflictor, idEntity *attacker, int damage, c
 
 /*
 ================
+idDamagable::Hide
+================
+*/
+void idDamagable::Hide(void) {
+    idEntity::Hide();
+    GetPhysics()->SetContents(0);
+}
+
+/*
+================
+idDamagable::Show
+================
+*/
+void idDamagable::Show(void) {
+    idEntity::Show();
+    GetPhysics()->SetContents(CONTENTS_SOLID);
+}
+
+/*
+================
 idDamagable::Event_BecomeBroken
 ================
 */
@@ -892,6 +914,8 @@ const idEventDef EV_LaunchMissiles( "launchMissiles", "ssssdf" );
 const idEventDef EV_LaunchMissilesUpdate( "<launchMissiles>", "dddd" );
 const idEventDef EV_AnimDone( "<AnimDone>", "d" );
 const idEventDef EV_StartRagdoll( "startRagdoll" );
+const idEventDef EV_SetAnimation( "setAnimation", "s" );
+const idEventDef EV_GetAnimationLength( "getAnimationLength", NULL, 'f' );
 
 CLASS_DECLARATION( idAFEntity_Gibbable, idAnimated )
 	EVENT( EV_Activate,				idAnimated::Event_Activate )
@@ -903,6 +927,8 @@ CLASS_DECLARATION( idAFEntity_Gibbable, idAnimated )
 	EVENT( EV_FootstepRight,		idAnimated::Event_Footstep )
 	EVENT( EV_LaunchMissiles,		idAnimated::Event_LaunchMissiles )
 	EVENT( EV_LaunchMissilesUpdate,	idAnimated::Event_LaunchMissilesUpdate )
+	EVENT( EV_SetAnimation,			idAnimated::Event_SetAnimation )
+	EVENT( EV_GetAnimationLength,	idAnimated::Event_GetAnimationLength )
 END_CLASS
 
 /*
@@ -1332,6 +1358,36 @@ void idAnimated::Event_LaunchMissiles( const char *projectilename, const char *s
 	ProcessEvent( &EV_LaunchMissilesUpdate, launch, target, numshots - 1, framedelay );
 }
 
+/*
+=====================
+idAnimated::Event_SetAnimation
+=====================
+*/
+void idAnimated::Event_SetAnimation(const char *animName) {
+    //BSM Nerve: Need to add some error checking so we don't change the animation
+    //in the middle of the existing animation
+    anim = animator.GetAnim(animName);
+
+    if (!anim) {
+        gameLocal.Error("idAnimated '%s' at (%s): cannot find anim '%s'", name.c_str(), GetPhysics()->GetOrigin().ToString(0), animName);
+    }
+
+}
+
+/*
+=====================
+idAnimated::Event_GetAnimationLength
+=====================
+*/
+void idAnimated::Event_GetAnimationLength() {
+    float length = 0;
+
+    if (anim) {
+        length = (float)(animator.AnimLength(anim)) / 1000.f;
+    }
+
+    idThread::ReturnFloat(length);
+}
 
 /*
 ===============================================================================
@@ -1681,6 +1737,158 @@ void idFuncEmitter::ReadFromSnapshot( const idBitMsgDelta &msg ) {
 	}
 }
 
+/*
+===============================================================================
+idFuncShootProjectile
+===============================================================================
+*/
+
+
+CLASS_DECLARATION( idStaticEntity, idFuncShootProjectile )
+                EVENT( EV_Activate,				idFuncShootProjectile::Event_Activate )
+END_CLASS
+
+/*
+===============
+idFuncShootProjectile::idFuncShootProjectile
+===============
+*/
+idFuncShootProjectile::idFuncShootProjectile() {
+    mRespawnDelay = 1000;
+    mRespawnTime = 0;
+    mShootSpeed = 1000;
+    mShootDir = idVec3( 0.0f, 0.0f, 1.0f );
+}
+
+/*
+===============
+idFuncShootProjectile::Spawn
+===============
+*/
+void idFuncShootProjectile::Spawn() {
+}
+
+/*
+===============
+idFuncShootProjectile::Think
+===============
+*/
+void idFuncShootProjectile::Think() {
+    if ( thinkFlags & TH_THINK ) {
+        // time to spawn a new projectile?
+        if ( mRespawnTime > 0 && mRespawnTime <= gameLocal.GetTime() ) {
+            const idDict *dict = gameLocal.FindEntityDefDict( mEntityDefName );
+            idEntity *ent = NULL;
+            gameLocal.SpawnEntityDef( *dict, &ent );
+            if ( ent != NULL ) {
+                idProjectile *proj = static_cast<idProjectile *>(ent);
+
+                idVec3 pushVel = mShootDir * mShootSpeed;
+                proj->Create( this, GetPhysics()->GetOrigin(), mShootDir );
+                proj->Launch( GetPhysics()->GetOrigin(), mShootDir, pushVel );
+                if ( mShootSpeed == 0.0f ) {
+                    proj->GetPhysics()->SetLinearVelocity( vec3_zero );
+                } else {
+                    proj->GetPhysics()->SetLinearVelocity( pushVel );
+                }
+
+                mLastProjectile = proj;
+            }
+            if ( mShootSpeed == 0.0f ) {
+                mRespawnTime = 0;	// stationary, respawn when triggered
+            } else {
+                mRespawnTime = gameLocal.GetTime() + mRespawnDelay;		// moving, respawn after delay
+            }
+        }
+    }
+}
+
+/*
+===============
+idFuncShootProjectile::Save
+===============
+*/
+void idFuncShootProjectile::Save( idSaveGame *savefile ) const {
+    savefile->WriteInt( mRespawnDelay );
+    savefile->WriteInt( mRespawnTime );
+    savefile->WriteFloat( mShootSpeed );
+    savefile->WriteVec3( mShootDir );
+    savefile->WriteString( mEntityDefName );
+}
+
+/*
+===============
+idFuncShootProjectile::Restore
+===============
+*/
+void idFuncShootProjectile::Restore( idRestoreGame *savefile ) {
+    savefile->ReadInt( mRespawnDelay );
+    savefile->ReadInt( mRespawnTime );
+    savefile->ReadFloat( mShootSpeed );
+    savefile->ReadVec3( mShootDir );
+    savefile->ReadString( mEntityDefName );
+}
+
+/*
+================
+idFuncShootProjectile::Event_Activate
+================
+*/
+void idFuncShootProjectile::Event_Activate( idEntity *activator ) {
+    if ( ( thinkFlags & TH_THINK ) != 0 ) {
+        if ( mShootSpeed == 0.0f && mRespawnTime == 0 ) {
+            mRespawnTime = gameLocal.GetTime();
+            return;
+        }
+    }
+
+    mRespawnDelay = spawnArgs.GetInt( "spawn_delay_ms" );
+    mShootSpeed = spawnArgs.GetFloat( "speed" );
+    mEntityDefName = spawnArgs.GetString( "def_projectile" );
+    if ( targets.Num() > 0 && targets[0].IsValid() ) {
+        mShootDir = targets[0]->GetPhysics()->GetOrigin() - GetPhysics()->GetOrigin();
+        //mShootDir = targets[0].GetPhysics()->GetOrigin() - GetPhysics()->GetOrigin();
+        mShootDir.Normalize();
+    } else {
+        // stationary projectile, doesn't move and only respawns when triggered
+        mShootSpeed = 0.0f;
+        mRespawnTime = 0;
+    }
+
+    if ( ( thinkFlags & TH_THINK ) != 0 ) {
+        // currently active, deactivate
+        BecomeInactive( TH_THINK );
+    } else {
+        // currently inactive, activate
+        BecomeActive( TH_THINK );
+        mRespawnTime = gameLocal.GetTime();
+    }
+}
+
+/*
+================
+idFuncShootProjectile::WriteToSnapshot
+================
+*/
+void idFuncShootProjectile::WriteToSnapshot( idBitMsgDelta &msg ) const {
+    // 	msg.WriteBits( hidden ? 1 : 0, 1 );
+    // 	msg.WriteFloat( renderEntity.shaderParms[ SHADERPARM_PARTICLE_STOPTIME ] );
+    // 	msg.WriteFloat( renderEntity.shaderParms[ SHADERPARM_TIMEOFFSET ] );
+}
+
+/*
+================
+idFuncShootProjectile::ReadFromSnapshot
+================
+*/
+void idFuncShootProjectile::ReadFromSnapshot( const idBitMsgDelta &msg ) {
+    // 	hidden = msg.ReadBits( 1 ) != 0;
+    // 	renderEntity.shaderParms[ SHADERPARM_PARTICLE_STOPTIME ] = msg.ReadFloat();
+    // 	renderEntity.shaderParms[ SHADERPARM_TIMEOFFSET ] = msg.ReadFloat();
+    // 	if ( msg.HasChanged() ) {
+    // 		UpdateVisuals();
+    // 	}
+}
 
 /*
 ===============================================================================
@@ -1841,7 +2049,7 @@ void idFuncSmoke::Think( void ) {
 	}
 
 	if ( ( thinkFlags & TH_UPDATEPARTICLES) && !IsHidden() ) {
-		if ( !gameLocal.smokeParticles->EmitSmoke( smoke, smokeTime, gameLocal.random.CRandomFloat(), GetPhysics()->GetOrigin(), GetPhysics()->GetAxis() ) ) {
+		if ( !gameLocal.smokeParticles->EmitSmoke( smoke, smokeTime, gameLocal.random.CRandomFloat(), GetPhysics()->GetOrigin(), GetPhysics()->GetAxis(), timeGroup /*_D3XP*/ ) ) {
 			if ( restart ) {
 				smokeTime = gameLocal.time;
 			} else {
@@ -3155,4 +3363,571 @@ void idPhantomObjects::Think( void ) {
 	if ( !num ) {
 		BecomeInactive( TH_THINK );
 	}
+}
+
+/*
+===============================================================================
+
+idShockwave
+
+===============================================================================
+*/
+CLASS_DECLARATION(idEntity, idShockwave)
+                EVENT(EV_Activate,			idShockwave::Event_Activate)
+END_CLASS
+
+/*
+===============
+idShockwave::idShockwave
+===============
+*/
+idShockwave::idShockwave()
+{
+    isActive = false;
+    startTime = 0;
+    duration = 0;
+    startSize = 0.f;
+    endSize = 0.f;
+    currentSize = 0.f;
+    magnitude = 0.f;
+
+    height = 0.0f;
+    playerDamaged = false;
+    playerDamageSize = 0.0f;
+}
+
+/*
+===============
+idShockwave::~idShockwave
+===============
+*/
+idShockwave::~idShockwave()
+{
+}
+
+/*
+===============
+idShockwave::Save
+===============
+*/
+void idShockwave::Save(idSaveGame *savefile) const
+{
+    savefile->WriteBool(isActive);
+    savefile->WriteInt(startTime);
+    savefile->WriteInt(duration);
+
+    savefile->WriteFloat(startSize);
+    savefile->WriteFloat(endSize);
+    savefile->WriteFloat(currentSize);
+
+    savefile->WriteFloat(magnitude);
+
+    savefile->WriteFloat(height);
+    savefile->WriteBool(playerDamaged);
+    savefile->WriteFloat(playerDamageSize);
+}
+
+/*
+===============
+idShockwave::Restore
+===============
+*/
+void idShockwave::Restore(idRestoreGame *savefile)
+{
+    savefile->ReadBool(isActive);
+    savefile->ReadInt(startTime);
+    savefile->ReadInt(duration);
+
+    savefile->ReadFloat(startSize);
+    savefile->ReadFloat(endSize);
+    savefile->ReadFloat(currentSize);
+
+    savefile->ReadFloat(magnitude);
+
+    savefile->ReadFloat(height);
+    savefile->ReadBool(playerDamaged);
+    savefile->ReadFloat(playerDamageSize);
+
+}
+
+/*
+===============
+idShockwave::Spawn
+===============
+*/
+void idShockwave::Spawn()
+{
+
+    spawnArgs.GetInt("duration", "1000", duration);
+    spawnArgs.GetFloat("startsize", "8", startSize);
+    spawnArgs.GetFloat("endsize", "512", endSize);
+    spawnArgs.GetFloat("magnitude", "100", magnitude);
+
+    spawnArgs.GetFloat("height", "0", height);
+    spawnArgs.GetFloat("player_damage_size", "20", playerDamageSize);
+
+    if (spawnArgs.GetBool("start_on")) {
+        ProcessEvent(&EV_Activate, this);
+    }
+}
+
+/*
+===============
+idShockwave::Think
+===============
+*/
+void idShockwave::Think()
+{
+    int endTime;
+
+    if (!isActive) {
+        BecomeInactive(TH_THINK);
+        return;
+    }
+
+    endTime = startTime + duration;
+
+    if (gameLocal.time < endTime) {
+        float u;
+        float newSize;
+
+        // Expand shockwave
+        u = (float)(gameLocal.time - startTime) / (float)duration;
+        newSize = startSize + u * (endSize - startSize);
+
+        // Find all clipmodels between currentSize and newSize
+        idVec3		pos, end;
+        idClipModel *clipModelList[ MAX_GENTITIES ];
+        idClipModel *clip;
+        idEntity	*ent;
+        int			i, listedClipModels;
+
+        // Set bounds
+        pos = GetPhysics()->GetOrigin();
+
+        float zVal;
+
+        if (!height) {
+            zVal = newSize;
+        } else {
+            zVal = height/2.0f;
+        }
+
+        //Expand in a sphere
+        end = pos + idVec3(newSize, newSize, zVal);
+        idBounds bounds(end);
+        end = pos + idVec3(-newSize, -newSize, -zVal);
+        bounds.AddPoint(end);
+
+        listedClipModels = gameLocal.clip.ClipModelsTouchingBounds(bounds, -1, clipModelList, MAX_GENTITIES);
+
+        for (i = 0; i < listedClipModels; i++) {
+            clip = clipModelList[ i ];
+            ent = clip->GetEntity();
+
+            if (ent->IsHidden()) {
+                continue;
+            }
+
+            if (!ent->IsType(idMoveable::Type) && !ent->IsType(idAFEntity_Base::Type) && !ent->IsType(idPlayer::Type)) {
+                continue;
+            }
+
+            idVec3 point = ent->GetPhysics()->GetOrigin();
+            idVec3 force = point - pos;
+
+            float dist = force.Normalize();
+
+            if (ent->IsType(idPlayer::Type)) {
+
+                if (ent->GetPhysics()->GetAbsBounds().IntersectsBounds(bounds)) {
+
+                    //For player damage we check the current radius and a specified player damage ring size
+                    if (dist <= newSize && dist > newSize-playerDamageSize) {
+
+                        idStr damageDef = spawnArgs.GetString("def_player_damage", "");
+
+                        if (damageDef.Length() > 0 && !playerDamaged) {
+
+                            playerDamaged = true;	//Only damage once per shockwave
+                            idPlayer *player = static_cast< idPlayer * >(ent);
+                            idVec3 dir = ent->GetPhysics()->GetOrigin() - pos;
+                            dir.NormalizeFast();
+                            player->Damage(NULL, NULL, dir, damageDef, 1.0f, INVALID_JOINT);
+                        }
+                    }
+                }
+
+            } else {
+
+                // If the object is inside the current expansion...
+                if (dist <= newSize && dist > currentSize) {
+                    force.z += 4.f;
+                    force.NormalizeFast();
+
+                    if (ent->IsType(idAFEntity_Base::Type)) {
+                        force = force * (ent->GetPhysics()->GetMass() * magnitude * 0.01f);
+                    } else {
+                        force = force * ent->GetPhysics()->GetMass() * magnitude;
+                    }
+
+                    // Kick it up, move force point off object origin
+                    float rad = ent->GetPhysics()->GetBounds().GetRadius();
+                    point.x += gameLocal.random.CRandomFloat() * rad;
+                    point.y += gameLocal.random.CRandomFloat() * rad;
+
+                    int j;
+
+                    for (j=0; j < ent->GetPhysics()->GetNumClipModels(); j++) {
+                        ent->GetPhysics()->AddForce(j, point, force);
+                    }
+                }
+            }
+        }
+
+        // Update currentSize for next frame
+        currentSize = newSize;
+
+    } else {
+
+        // turn off
+        isActive = false;
+    }
+}
+
+/*
+===============
+idShockwave::Event_Activate
+===============
+*/
+void idShockwave::Event_Activate(idEntity *activator)
+{
+
+    isActive = true;
+    startTime = gameLocal.time;
+    playerDamaged = false;
+
+    BecomeActive(TH_THINK);
+}
+
+
+/*
+===============================================================================
+
+idFuncMountedObject
+
+===============================================================================
+*/
+
+CLASS_DECLARATION(idEntity, idFuncMountedObject)
+                EVENT(EV_Touch,			idFuncMountedObject::Event_Touch)
+                EVENT(EV_Activate,			idFuncMountedObject::Event_Activate)
+END_CLASS
+
+/*
+===============
+idFuncMountedObject::idFuncMountedObject
+===============
+*/
+idFuncMountedObject::idFuncMountedObject()
+{
+    isMounted = false;
+    scriptFunction = NULL;
+    mountedPlayer = NULL;
+    harc = 0;
+    varc = 0;
+}
+
+/*
+===============
+idFuncMountedObject::idFuncMountedObject
+===============
+*/
+idFuncMountedObject::~idFuncMountedObject()
+{
+}
+
+/*
+===============
+idFuncMountedObject::Spawn
+===============
+*/
+void idFuncMountedObject::Spawn(void)
+{
+    // Get viewOffset
+    spawnArgs.GetInt("harc", "45", harc);
+    spawnArgs.GetInt("varc", "30", varc);
+
+    // Get script function
+    idStr funcName = spawnArgs.GetString("call", "");
+
+    if (funcName.Length()) {
+        scriptFunction = gameLocal.program.FindFunction(funcName);
+
+        if (scriptFunction == NULL) {
+            gameLocal.Warning("idFuncMountedObject '%s' at (%s) calls unknown function '%s'\n", name.c_str(), GetPhysics()->GetOrigin().ToString(0), funcName.c_str());
+        }
+    }
+
+    BecomeActive(TH_THINK);
+}
+
+/*
+================
+idFuncMountedObject::Think
+================
+*/
+void idFuncMountedObject::Think(void)
+{
+
+    idEntity::Think();
+}
+
+/*
+================
+idFuncMountedObject::GetViewInfo
+================
+*/
+void idFuncMountedObject::GetAngleRestrictions(int &yaw_min, int &yaw_max, int &pitch)
+{
+    idMat3		axis;
+    idAngles	angs;
+
+    axis = GetPhysics()->GetAxis();
+    angs = axis.ToAngles();
+
+    yaw_min = angs.yaw - harc;
+    yaw_min = idMath::AngleNormalize180(yaw_min);
+
+    yaw_max = angs.yaw + harc;
+    yaw_max = idMath::AngleNormalize180(yaw_max);
+
+    pitch = varc;
+}
+
+/*
+================
+idFuncMountedObject::Event_Touch
+================
+*/
+void idFuncMountedObject::Event_Touch(idEntity *other, trace_t *trace)
+{
+
+    ProcessEvent(&EV_Activate, other);
+}
+
+/*
+================
+idFuncMountedObject::Event_Activate
+================
+*/
+void idFuncMountedObject::Event_Activate(idEntity *activator)
+{
+    if (!isMounted && activator->IsType(idPlayer::Type)) {
+        idPlayer *client = (idPlayer *)activator;
+
+        mountedPlayer = client;
+
+        /*
+        // Place player at path_corner targeted by mounted object
+        int i;
+        idPathCorner	*spot;
+
+        for ( i = 0; i < targets.Num(); i++ ) {
+        if ( targets[i]->IsType( idPathCorner::Type ) ) {
+        spot = (idPathCorner*)targets[i];
+        break;
+        }
+        }
+
+        mountedPlayer->GetPhysics()->SetOrigin( spot->GetPhysics()->GetOrigin() );
+        mountedPlayer->GetPhysics()->SetAxis( spot->GetPhysics()->GetAxis() );
+        */
+
+        mountedPlayer->Bind(this, true);
+        mountedPlayer->mountedObject = this;
+
+        // Call a script function
+        idThread	*mountthread;
+
+        if (scriptFunction) {
+            mountthread = new idThread(scriptFunction);
+            mountthread->DelayedStart(0);
+        }
+
+        isMounted = true;
+    }
+}
+
+/*
+===============================================================================
+
+idFuncMountedWeapon
+
+===============================================================================
+*/
+CLASS_DECLARATION(idFuncMountedObject, idFuncMountedWeapon)
+                EVENT(EV_PostSpawn,		idFuncMountedWeapon::Event_PostSpawn)
+END_CLASS
+
+idFuncMountedWeapon::idFuncMountedWeapon()
+{
+    turret = NULL;
+    weaponLastFireTime = 0;
+    weaponFireDelay = 0;
+    projectile = NULL;
+}
+
+idFuncMountedWeapon::~idFuncMountedWeapon()
+{
+}
+
+
+void idFuncMountedWeapon::Spawn(void)
+{
+
+    // Get projectile info
+    projectile = gameLocal.FindEntityDefDict(spawnArgs.GetString("def_projectile"), false);
+
+    if (!projectile) {
+        gameLocal.Warning("Invalid projectile on func_mountedweapon.");
+    }
+
+    float firerate;
+    spawnArgs.GetFloat("firerate", "3", firerate);
+    weaponFireDelay = 1000.f / firerate;
+
+    // Get the firing sound
+    idStr fireSound;
+    spawnArgs.GetString("snd_fire", "", fireSound);
+    soundFireWeapon = declManager->FindSound(fireSound);
+
+    PostEventMS(&EV_PostSpawn, 0);
+}
+
+void idFuncMountedWeapon::Think(void)
+{
+
+    if (isMounted && turret) {
+        idVec3		vec = mountedPlayer->viewAngles.ToForward();
+        idAngles	ang = mountedPlayer->GetLocalVector(vec).ToAngles();
+
+        turret->GetPhysics()->SetAxis(ang.ToMat3());
+        turret->UpdateVisuals();
+
+        // Check for firing
+        if (mountedPlayer->usercmd.buttons & BUTTON_ATTACK && (gameLocal.time > weaponLastFireTime + weaponFireDelay)) {
+            // FIRE!
+            idEntity		*ent;
+            idProjectile	*proj;
+            idBounds		projBounds;
+            idVec3			dir;
+
+            gameLocal.SpawnEntityDef(*projectile, &ent);
+
+            if (!ent || !ent->IsType(idProjectile::Type)) {
+                const char *projectileName = spawnArgs.GetString("def_projectile");
+                gameLocal.Error("'%s' is not an idProjectile", projectileName);
+            }
+
+            mountedPlayer->GetViewPos(muzzleOrigin, muzzleAxis);
+
+            muzzleOrigin += (muzzleAxis[0] * 128);
+            muzzleOrigin -= (muzzleAxis[2] * 20);
+
+            dir = muzzleAxis[0];
+
+            proj = static_cast<idProjectile *>(ent);
+            proj->Create(this, muzzleOrigin, dir);
+
+            projBounds = proj->GetPhysics()->GetBounds().Rotate(proj->GetPhysics()->GetAxis());
+
+            proj->Launch(muzzleOrigin, dir, vec3_origin);
+            StartSoundShader(soundFireWeapon, SND_CHANNEL_WEAPON, SSF_GLOBAL, false, NULL);
+
+            weaponLastFireTime = gameLocal.time;
+        }
+    }
+
+    idFuncMountedObject::Think();
+}
+
+void idFuncMountedWeapon::Event_PostSpawn(void)
+{
+
+    if (targets.Num() >= 1) {
+        for (int i=0; i < targets.Num(); i++) {
+            if (targets[i].GetEntity()->IsType(idStaticEntity::Type)) {
+                turret = targets[i].GetEntity();
+                break;
+            }
+        }
+    } else {
+        gameLocal.Warning("idFuncMountedWeapon::Spawn:  Please target one model for a turret\n");
+    }
+}
+
+/*
+===============================================================================
+
+idPortalSky
+
+===============================================================================
+*/
+
+CLASS_DECLARATION(idEntity, idPortalSky)
+                EVENT(EV_PostSpawn,			idPortalSky::Event_PostSpawn)
+                EVENT(EV_Activate,				idPortalSky::Event_Activate)
+END_CLASS
+
+/*
+===============
+idPortalSky::idPortalSky
+===============
+*/
+idPortalSky::idPortalSky(void)
+{
+
+}
+
+/*
+===============
+idPortalSky::~idPortalSky
+===============
+*/
+idPortalSky::~idPortalSky(void)
+{
+
+}
+
+/*
+===============
+idPortalSky::Spawn
+===============
+*/
+void idPortalSky::Spawn(void)
+{
+    if (!spawnArgs.GetBool("triggered")) {
+        PostEventMS(&EV_PostSpawn, 1);
+    }
+}
+
+/*
+================
+idPortalSky::Event_PostSpawn
+================
+*/
+void idPortalSky::Event_PostSpawn()
+{
+    gameLocal.SetPortalSkyEnt(this);
+}
+
+/*
+================
+idPortalSky::Event_Activate
+================
+*/
+void idPortalSky::Event_Activate(idEntity *activator)
+{
+    gameLocal.SetPortalSkyEnt(this);
 }

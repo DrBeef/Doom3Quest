@@ -291,6 +291,11 @@ void idGameLocal::Clear( void ) {
 	savedEventQueue.Init();
 
 	memset( lagometer, 0, sizeof( lagometer ) );
+
+	portalSkyEnt			= NULL;
+	portalSkyActive			= false;
+
+	ResetSlowTimeVars();
 }
 
 
@@ -374,8 +379,38 @@ void idGameLocal::Init( void ) {
 
 	InitConsoleCommands();
 
+	if (!g_xp_bind_run_once.GetBool()) {
+		//The default config file contains remapped controls that support the XP weapons
+		//We want to run this once after the base doom config file has run so we can
+		//have the correct xp binds
+		cmdSystem->BufferCommandText(CMD_EXEC_APPEND, "exec default.cfg\n");
+		cmdSystem->BufferCommandText(CMD_EXEC_APPEND, "seta g_xp_bind_run_once 1\n");
+		cmdSystem->ExecuteCommandBuffer();
+	}
+
 	// load default scripts
 	program.Startup( SCRIPT_DEFAULT );
+
+	//BSM Nerve: Loads a game specific main script file
+	idStr gamedir;
+	int i;
+
+	for (i = 0; i < 2; i++) {
+		if (i == 0) {
+			gamedir = cvarSystem->GetCVarString("fs_game_base");
+		} else if (i == 1) {
+			gamedir = cvarSystem->GetCVarString("fs_game");
+		}
+
+		if (gamedir.Length() > 0) {
+			idStr scriptFile = va("script/%s_main.script", gamedir.c_str());
+
+			if (fileSystem->ReadFile(scriptFile.c_str(), NULL) > 0) {
+				program.CompileFile(scriptFile.c_str());
+				program.FinishCompilation();
+			}
+		}
+	}
 
 	smokeParticles = new idSmokeParticles;
 
@@ -591,6 +626,10 @@ void idGameLocal::SaveGame( idFile *f ) {
 
 	savegame.WriteInt( framenum );
 	savegame.WriteInt( previousTime );
+
+	int msec = GetMSec(false);
+	savegame.WriteInt(msec);
+
 	savegame.WriteInt( time );
 
 	savegame.WriteInt( vacuumAreaNum );
@@ -606,6 +645,16 @@ void idGameLocal::SaveGame( idFile *f ) {
 	savegame.WriteInt( realClientTime );
 	savegame.WriteBool( isNewFrame );
 	savegame.WriteFloat( clientSmoothing );
+
+	portalSkyEnt.Save(&savegame);
+	savegame.WriteBool(portalSkyActive);
+
+	fast.Save(&savegame);
+	slow.Save(&savegame);
+
+	savegame.WriteInt(slowmoState);
+	savegame.WriteFloat(slowmoMsec);
+	savegame.WriteBool(quickSlowmoReset);
 
 	savegame.WriteBool( mapCycleLoaded );
 	savegame.WriteInt( spawnCount );
@@ -1347,6 +1396,10 @@ void idGameLocal::LoadMap( const char *mapName, int randseed ) {
 	// clear the sound system
 	gameSoundWorld->ClearAllSoundEmitters();
 
+	// clear envirosuit sound fx
+	gameSoundWorld->SetEnviroSuit(false);
+	gameSoundWorld->SetSlowmo(false);
+
 	InitAsyncNetwork();
 
 	if ( !sameMap || ( mapFile && mapFile->NeedsReload() ) ) {
@@ -1408,6 +1461,11 @@ void idGameLocal::LoadMap( const char *mapName, int randseed ) {
 	framenum		= 0;
 	sessionCommand = "";
 	nextGibTime		= 0;
+
+	portalSkyEnt			= NULL;
+	portalSkyActive			= false;
+
+	ResetSlowTimeVars();
 
 	vacuumAreaNum = -1;		// if an info_vacuum is spawned, it will set this
 
@@ -1475,6 +1533,9 @@ void idGameLocal::LocalMapRestart( ) {
 	// clear the sound system
 	if ( gameSoundWorld ) {
 		gameSoundWorld->ClearAllSoundEmitters();
+		// clear envirosuit sound fx
+		gameSoundWorld->SetEnviroSuit(false);
+		gameSoundWorld->SetSlowmo(false);
 	}
 
 	// the spawnCount is reset to zero temporarily to spawn the map entities with the same spawnId
@@ -1515,6 +1576,17 @@ void idGameLocal::MapRestart( ) {
 	idDict		newInfo;
 	int			i;
 	const idKeyValue *keyval, *keyval2;
+
+	if (isMultiplayer && isServer) {
+		char buf[ MAX_STRING_CHARS ];
+		idStr gametype;
+		GetBestGameType(si_map.GetString(), si_gameType.GetString(), buf);
+		gametype = buf;
+
+		if (gametype != si_gameType.GetString()) {
+			cvarSystem->SetCVarString("si_gameType", gametype);
+		}
+	}
 
 	if ( isClient ) {
 		LocalMapRestart();
@@ -1848,6 +1920,10 @@ bool idGameLocal::InitFromSaveGame( const char *mapName, idRenderWorld *renderWo
 	savegame.ReadInt( previousTime );
 	savegame.ReadInt( time );
 
+	int msec = 0;
+	savegame.ReadInt(msec);
+	SetMSec(msec);
+
 	savegame.ReadInt( vacuumAreaNum );
 
 	savegame.ReadInt( entityDefBits );
@@ -1861,6 +1937,33 @@ bool idGameLocal::InitFromSaveGame( const char *mapName, idRenderWorld *renderWo
 	savegame.ReadInt( realClientTime );
 	savegame.ReadBool( isNewFrame );
 	savegame.ReadFloat( clientSmoothing );
+
+	portalSkyEnt.Restore(&savegame);
+	savegame.ReadBool(portalSkyActive);
+
+	fast.Restore(&savegame);
+	slow.Restore(&savegame);
+
+	int blah;
+	savegame.ReadInt(blah);
+	slowmoState = (slowmoState_t)blah;
+
+	savegame.ReadFloat(slowmoMsec);
+	savegame.ReadBool(quickSlowmoReset);
+
+	if (slowmoState == SLOWMO_STATE_OFF) {
+		if (gameSoundWorld) {
+			gameSoundWorld->SetSlowmo(false);
+		}
+	} else {
+		if (gameSoundWorld) {
+			gameSoundWorld->SetSlowmo(true);
+		}
+	}
+
+	if (gameSoundWorld) {
+		gameSoundWorld->SetSlowmoSpeed(slowmoMsec / (float)USERCMD_MSEC);
+	}
 
 	savegame.ReadBool( mapCycleLoaded );
 	savegame.ReadInt( spawnCount );
@@ -2053,6 +2156,20 @@ void idGameLocal::DumpOggSounds( void ) {
 			for ( j = 0; j < soundShader->GetNumSounds(); j++ ) {
 				soundName = soundShader->GetSound( j );
 				soundName.BackSlashesToSlashes();
+
+				// D3XP :: don't add sounds that are in Doom 3's pak files
+				if (fileSystem->FileIsInPAK(soundName)) {
+					continue;
+				} else {
+					// Also check for a pre-ogg'd version in the pak file
+					idStr testName = soundName;
+
+					testName.SetFileExtension(".ogg");
+
+					if (fileSystem->FileIsInPAK(testName)) {
+						continue;
+					}
+				}
 
 				// don't OGG sounds that cause a shake because that would
 				// cause continuous seeking on the OGG file which is expensive
@@ -2555,6 +2672,23 @@ void idGameLocal::SetupPlayerPVS( void ) {
 			pvs.FreeCurrentPVS( otherPVS );
 			playerConnectedAreas = newPVS;
 		}
+
+		// if portalSky is preset, then merge into pvs so we get rotating brushes, etc
+		if (portalSkyEnt.GetEntity()) {
+			idEntity *skyEnt = portalSkyEnt.GetEntity();
+
+			otherPVS = pvs.SetupCurrentPVS(skyEnt->GetPVSAreas(), skyEnt->GetNumPVSAreas());
+			newPVS = pvs.MergeCurrentPVS(playerPVS, otherPVS);
+			pvs.FreeCurrentPVS(playerPVS);
+			pvs.FreeCurrentPVS(otherPVS);
+			playerPVS = newPVS;
+
+			otherPVS = pvs.SetupCurrentPVS(skyEnt->GetPVSAreas(), skyEnt->GetNumPVSAreas());
+			newPVS = pvs.MergeCurrentPVS(playerConnectedAreas, otherPVS);
+			pvs.FreeCurrentPVS(playerConnectedAreas);
+			pvs.FreeCurrentPVS(otherPVS);
+			playerConnectedAreas = newPVS;
+		}
 	}
 }
 
@@ -2718,6 +2852,34 @@ void idGameLocal::EndFrame()
 
 /*
 ================
+idGameLocal::RunTimeGroup2
+================
+*/
+void idGameLocal::RunTimeGroup2()
+{
+    idEntity *ent;
+    int num = 0;
+
+    int msec = 0;
+    fast.Increment();
+    fast.Get(time, previousTime, msec, framenum, realClientTime);
+    SetMSec(msec);
+
+    for (ent = activeEntities.Next(); ent != NULL; ent = ent->activeNode.Next()) {
+        if (ent->timeGroup != TIME_GROUP2) {
+            continue;
+        }
+
+        ent->Think();
+        num++;
+    }
+
+    slow.Get(time, previousTime, msec, framenum, realClientTime);
+    SetMSec(msec);
+}
+
+/*
+================
 idGameLocal::RunFrame
 ================
 */
@@ -2738,6 +2900,13 @@ gameReturn_t idGameLocal::RunFrame( const usercmd_t *clientCmds ) {
 
 	player = GetLocalPlayer();
 
+	ComputeSlowMsec();
+
+	int msec = 0;
+	slow.Get(time, previousTime, msec, framenum, realClientTime);
+	msec = slowmoMsec;
+	SetMSec(slowmoMsec);
+
     player->SetVRClientInfo(pVRClientInfo);
 
 	if ( !isMultiplayer && g_stopTime.GetBool() || commonVr->VR_GAME_PAUSED  ) {
@@ -2756,6 +2925,7 @@ gameReturn_t idGameLocal::RunFrame( const usercmd_t *clientCmds ) {
 		previousTime = time;
 		time += USERCMD_MSEC;
 		realClientTime = time;
+		slow.Set(time, previousTime, msec, framenum, realClientTime);
 
 #ifdef GAME_DLL
 		// allow changing SIMD usage on the fly
@@ -2835,11 +3005,16 @@ gameReturn_t idGameLocal::RunFrame( const usercmd_t *clientCmds ) {
 			} else {
 				num = 0;
 				for( ent = activeEntities.Next(); ent != NULL; ent = ent->activeNode.Next() ) {
+					if (ent->timeGroup != TIME_GROUP1) {
+						continue;
+					}
 					ent->Think();
 					num++;
 				}
 			}
 		}
+
+		RunTimeGroup2();
 
 		// remove any entities that have stopped thinking
 		if ( numEntitiesToDeactivate ) {
@@ -2862,6 +3037,14 @@ gameReturn_t idGameLocal::RunFrame( const usercmd_t *clientCmds ) {
 
 		// service any pending events
 		idEvent::ServiceEvents();
+
+		// service pending fast events
+		int msec = 0;
+		fast.Get(time, previousTime, msec, framenum, realClientTime);
+		SetMSec(msec);
+		idEvent::ServiceFastEvents();
+		slow.Get(time, previousTime, msec, framenum, realClientTime);
+		SetMSec(msec);
 
 		timer_events.Stop();
 
@@ -3615,6 +3798,21 @@ bool idGameLocal::SpawnEntityDef( const idDict &args, idEntity **ent, bool setDe
 
 	spawnArgs.SetDefaults( &def->dict );
 
+	if (!spawnArgs.FindKey("slowmo")) {
+		bool slowmo = true;
+
+		for (int i = 0; fastEntityList[i]; i++) {
+			if (!idStr::Cmp(classname, fastEntityList[i])) {
+				slowmo = false;
+				break;
+			}
+		}
+
+		if (!slowmo) {
+			spawnArgs.SetBool("slowmo", slowmo);
+		}
+	}
+
 	// check if we should spawn a class object
 	spawnArgs.GetString( "spawnclass", NULL, &spawn );
 	if ( spawn ) {
@@ -3700,12 +3898,19 @@ bool idGameLocal::InhibitEntitySpawn( idDict &spawnArgs ) {
 		spawnArgs.GetBool( "not_medium", "0", result );
 	} else {
 		spawnArgs.GetBool( "not_hard", "0", result );
+        if (!result && g_skill.GetInteger() == 3) {
+            spawnArgs.GetBool("not_nightmare", "0", result);
+        }
 	}
 
 	const char *name;
 	if ( g_skill.GetInteger() == 3 ) {
 		name = spawnArgs.GetString( "classname" );
-		if ( idStr::Icmp( name, "item_medkit" ) == 0 || idStr::Icmp( name, "item_medkit_small" ) == 0 ) {
+
+		// _D3XP :: remove moveable medkit packs also
+		if (idStr::Icmp(name, "item_medkit") == 0 || idStr::Icmp(name, "item_medkit_small") == 0 ||
+			idStr::Icmp(name, "moveable_item_medkit") == 0 || idStr::Icmp(name, "moveable_item_medkit_small") == 0) {
+
 			result = true;
 		}
 	}
@@ -4104,6 +4309,13 @@ idGameLocal::GetAlertEntity
 ============
 */
 idActor *idGameLocal::GetAlertEntity( void ) {
+	int timeGroup = 0;
+
+	if (lastAIAlertTime && lastAIAlertEntity.GetEntity()) {
+		timeGroup = lastAIAlertEntity.GetEntity()->timeGroup;
+	}
+
+	SetTimeState ts(timeGroup);
 	if ( lastAIAlertTime >= time ) {
 		return lastAIAlertEntity.GetEntity();
 	}
@@ -4407,7 +4619,7 @@ void idGameLocal::ProjectDecal( const idVec3 &origin, const idVec3 &dir, float d
 	winding += idVec5( windingOrigin + ( axis * decalWinding[1] ) * size, idVec2( 0, 1 ) );
 	winding += idVec5( windingOrigin + ( axis * decalWinding[2] ) * size, idVec2( 0, 0 ) );
 	winding += idVec5( windingOrigin + ( axis * decalWinding[3] ) * size, idVec2( 1, 0 ) );
-	gameRenderWorld->ProjectDecalOntoWorld( winding, projectionOrigin, parallel, depth * 0.5f, declManager->FindMaterial( material ), time );
+	gameRenderWorld->ProjectDecalOntoWorld(winding, projectionOrigin, parallel, depth * 0.5f, declManager->FindMaterial(material), gameLocal.slow.time /* _D3XP */);
 }
 
 /*
@@ -4860,13 +5072,43 @@ idGameLocal::ThrottleUserInfo
 void idGameLocal::ThrottleUserInfo( void ) {
 	mpGame.ThrottleUserInfo();
 }
+/*
+=================
+idPlayer::SetPortalSkyEnt
+=================
+*/
+void idGameLocal::SetPortalSkyEnt(idEntity *ent)
+{
+    portalSkyEnt = ent;
+}
+
+/*
+=================
+idPlayer::IsPortalSkyAcive
+=================
+*/
+bool idGameLocal::IsPortalSkyAcive()
+{
+    return portalSkyActive;
+}
 
 /*
 ===========
 idGameLocal::SelectTimeGroup
 ============
 */
-void idGameLocal::SelectTimeGroup( int timeGroup ) { }
+void idGameLocal::SelectTimeGroup(int timeGroup)
+{
+    int i = 0;
+
+    int msec = 0;
+    if (timeGroup) {
+        fast.Get(time, previousTime, msec, framenum, realClientTime);
+    } else {
+        slow.Get(time, previousTime, msec, framenum, realClientTime);
+    }
+    SetMSec(msec);
+}
 
 /*
 ===========
@@ -4874,7 +5116,11 @@ idGameLocal::GetTimeGroupTime
 ============
 */
 int idGameLocal::GetTimeGroupTime( int timeGroup ) {
-	return gameLocal.time;
+    if (timeGroup) {
+        return fast.time;
+    } else {
+        return slow.time;
+    }
 }
 
 /*
@@ -4883,8 +5129,130 @@ idGameLocal::GetBestGameType
 ============
 */
 void idGameLocal::GetBestGameType( const char* map, const char* gametype, char buf[ MAX_STRING_CHARS ] ) {
-	strncpy( buf, gametype, MAX_STRING_CHARS );
+	idStr aux = mpGame.GetBestGametype(map, gametype);
+	strncpy(buf, aux.c_str(), MAX_STRING_CHARS);
 	buf[ MAX_STRING_CHARS - 1 ] = '\0';
+}
+
+/*
+===========
+idGameLocal::ComputeSlowMsec
+============
+*/
+void idGameLocal::ComputeSlowMsec()
+{
+    idPlayer *player;
+    bool powerupOn;
+    float delta;
+
+    // check if we need to do a quick reset
+    if (quickSlowmoReset) {
+        quickSlowmoReset = false;
+
+        // stop the sounds
+        if (gameSoundWorld) {
+            gameSoundWorld->SetSlowmo(false);
+            gameSoundWorld->SetSlowmoSpeed(1);
+        }
+
+        // stop the state
+        slowmoState = SLOWMO_STATE_OFF;
+        slowmoMsec = USERCMD_MSEC;
+    }
+
+    // check the player state
+    player = GetLocalPlayer();
+    powerupOn = false;
+
+    if (player && player->PowerUpActive(HELLTIME)) {
+        powerupOn = true;
+    } else if (g_enableSlowmo.GetBool()) {
+        powerupOn = true;
+    }
+
+    // determine proper slowmo state
+    if (powerupOn && slowmoState == SLOWMO_STATE_OFF) {
+        slowmoState = SLOWMO_STATE_RAMPUP;
+
+        slowmoMsec = GetMSec(false);
+
+        if (gameSoundWorld) {
+            gameSoundWorld->SetSlowmo(true);
+            gameSoundWorld->SetSlowmoSpeed(slowmoMsec / (float)USERCMD_MSEC);
+        }
+    } else if (!powerupOn && slowmoState == SLOWMO_STATE_ON) {
+        slowmoState = SLOWMO_STATE_RAMPDOWN;
+
+        // play the stop sound
+        if (player) {
+            player->PlayHelltimeStopSound();
+        }
+    }
+
+    // do any necessary ramping
+    if (slowmoState == SLOWMO_STATE_RAMPUP) {
+        delta = 4 - slowmoMsec;
+
+        if (fabs(delta) < g_slowmoStepRate.GetFloat()) {
+            slowmoMsec = 4;
+            slowmoState = SLOWMO_STATE_ON;
+        } else {
+            slowmoMsec += delta * g_slowmoStepRate.GetFloat();
+        }
+
+        if (gameSoundWorld) {
+            gameSoundWorld->SetSlowmoSpeed(slowmoMsec / (float)USERCMD_MSEC);
+        }
+    } else if (slowmoState == SLOWMO_STATE_RAMPDOWN) {
+        delta = 16 - slowmoMsec;
+
+        if (fabs(delta) < g_slowmoStepRate.GetFloat()) {
+            slowmoMsec = 16;
+            slowmoState = SLOWMO_STATE_OFF;
+
+            if (gameSoundWorld) {
+                gameSoundWorld->SetSlowmo(false);
+            }
+        } else {
+            slowmoMsec += delta * g_slowmoStepRate.GetFloat();
+        }
+
+        if (gameSoundWorld) {
+            gameSoundWorld->SetSlowmoSpeed(slowmoMsec / (float)USERCMD_MSEC);
+        }
+    }
+}
+
+/*
+===========
+idGameLocal::ResetSlowTimeVars
+============
+*/
+void idGameLocal::ResetSlowTimeVars()
+{
+    SetMSec(USERCMD_MSEC);
+    slowmoMsec			= USERCMD_MSEC;
+    slowmoState			= SLOWMO_STATE_OFF;
+
+    fast.framenum		= 0;
+    fast.previousTime	= 0;
+    fast.time			= 0;
+    fast.msec			= USERCMD_MSEC;
+
+    slow.framenum		= 0;
+    slow.previousTime	= 0;
+    slow.time			= 0;
+    slow.msec			= USERCMD_MSEC;
+}
+
+/*
+===========
+idGameLocal::QuickSlowmoReset
+============
+*/
+void idGameLocal::QuickSlowmoReset()
+{
+    quickSlowmoReset = true;
 }
 
 /*

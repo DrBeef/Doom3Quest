@@ -46,6 +46,8 @@ class idGrabber;
 ===============================================================================
 */
 
+extern const idEventDef EV_Weapon_State;
+
 typedef enum {
 	WP_READY,
 	WP_OUTOFAMMO,
@@ -505,6 +507,17 @@ private:
 	void					Event_Grabber( int enable );
 	void					Event_GrabberHasTarget();
 	void					Event_GrabberSetGrabDistance( float dist );
+	void					Event_LaunchProjectilesEllipse(int num_projectiles, float spreada, float spreadb, float fuseOffset, float power);
+	void					Event_LaunchPowerup(const char *powerup, float duration, int useAmmo);
+
+	void					Event_StartWeaponSmoke();
+	void					Event_StopWeaponSmoke();
+
+	void					Event_StartWeaponParticle(const char *name);
+	void					Event_StopWeaponParticle(const char *name);
+
+	void					Event_StartWeaponLight(const char *name);
+	void					Event_StopWeaponLight(const char *name);
 };
 
 ID_INLINE bool idWeapon::IsLinked( void ) {

@@ -156,6 +156,27 @@ void Cmd_ReloadScript_f( const idCmdArgs &args ) {
 	// recompile the scripts
 	gameLocal.program.Startup( SCRIPT_DEFAULT );
 
+	// loads a game specific main script file
+	idStr gamedir;
+	int i;
+
+	for (i = 0; i < 2; i++) {
+		if (i == 0) {
+			gamedir = cvarSystem->GetCVarString("fs_game_base");
+		} else if (i == 1) {
+			gamedir = cvarSystem->GetCVarString("fs_game");
+		}
+
+		if (gamedir.Length() > 0) {
+			idStr scriptFile = va("script/%s_main.script", gamedir.c_str());
+
+			if (fileSystem->ReadFile(scriptFile.c_str(), NULL) > 0) {
+				gameLocal.program.CompileFile(scriptFile.c_str());
+				gameLocal.program.FinishCompilation();
+			}
+		}
+	}
+
 	// error out so that the user can rerun the scripts
 	gameLocal.Error( "Exiting map to reload scripts" );
 }
@@ -359,6 +380,36 @@ void Cmd_Give_f( const idCmdArgs &args ) {
 
 	if ( idStr::Icmp( name, "invis" ) == 0 ) {
 		player->GivePowerUp( INVISIBILITY, SEC2MS( 30.0f ) );
+		return;
+	}
+
+	if (idStr::Icmp(name, "invulnerability") == 0) {
+		if (args.Argc() > 2) {
+			player->GivePowerUp(INVULNERABILITY, atoi(args.Argv(2)));
+		} else {
+			player->GivePowerUp(INVULNERABILITY, 30000);
+		}
+
+		return;
+	}
+
+	if (idStr::Icmp(name, "helltime") == 0) {
+		if (args.Argc() > 2) {
+			player->GivePowerUp(HELLTIME, atoi(args.Argv(2)));
+		} else {
+			player->GivePowerUp(HELLTIME, 30000);
+		}
+
+		return;
+	}
+
+	if (idStr::Icmp(name, "envirosuit") == 0) {
+		if (args.Argc() > 2) {
+			player->GivePowerUp(ENVIROSUIT, atoi(args.Argv(2)));
+		} else {
+			player->GivePowerUp(ENVIROSUIT, 30000);
+		}
+
 		return;
 	}
 
@@ -2036,7 +2087,7 @@ static void Cmd_RecordViewNotes_f( const idCmdArgs &args ) {
 
 	idStr str = args.Argv(1);
 	str.SetFileExtension( ".txt" );
-	idFile *file = fileSystem->OpenFileAppend( str );
+	idFile *file = fileSystem->OpenFileAppend(str, false, "fs_cdpath");
 	if ( file ) {
 		file->WriteFloatString( "\"view\"\t( %s )\t( %s )\r\n", origin.ToString(), axis.ToString() );
 		file->WriteFloatString( "\"comments\"\t\"%s: %s\"\r\n\r\n", args.Argv(2), args.Argv(3) );
@@ -2276,6 +2327,32 @@ void Cmd_NextGUI_f( const idCmdArgs &args ) {
 	player->Teleport( origin, angles, NULL );
 }
 
+void Cmd_SetActorState_f(const idCmdArgs &args)
+{
+
+    if (args.Argc() != 3) {
+        common->Printf("usage: setActorState <entity name> <state>\n");
+        return;
+    }
+
+    idEntity *ent;
+    ent = gameLocal.FindEntity(args.Argv(1));
+
+    if (!ent) {
+        gameLocal.Printf("entity not found\n");
+        return;
+    }
+
+
+    if (!ent->IsType(idActor::Type)) {
+        gameLocal.Printf("entity not an actor\n");
+        return;
+    }
+
+    idActor *actor = (idActor *)ent;
+    actor->PostEventMS(&AI_SetState, 0, args.Argv(2));
+}
+
 static void ArgCompletion_DefFile( const idCmdArgs &args, void(*callback)( const char *s ) ) {
 	cmdSystem->ArgCompletion_FolderExtension( args, callback, "def/", true, ".def", NULL );
 }
@@ -2411,6 +2488,8 @@ void idGameLocal::InitConsoleCommands( void ) {
 	// localization help commands
 	cmdSystem->AddCommand( "nextGUI",				Cmd_NextGUI_f,				CMD_FL_GAME|CMD_FL_CHEAT,	"teleport the player to the next func_static with a gui" );
 	cmdSystem->AddCommand( "testid",				Cmd_TestId_f,				CMD_FL_GAME|CMD_FL_CHEAT,	"output the string for the specified id." );
+
+	cmdSystem->AddCommand("setActorState",			Cmd_SetActorState_f,		CMD_FL_GAME|CMD_FL_CHEAT,	"Manually sets an actors script state", idGameLocal::ArgCompletion_EntityName);
 }
 
 /*

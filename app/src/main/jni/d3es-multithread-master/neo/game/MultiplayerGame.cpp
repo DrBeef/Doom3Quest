@@ -31,6 +31,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "idlib/Str.h"
 #include "idlib/LangDict.h"
 #include "framework/async/NetworkSystem.h"
+#include "framework/DeclEntityDef.h"
 #include "framework/FileSystem.h"
 #include "ui/UserInterface.h"
 
@@ -492,7 +493,7 @@ void idMultiplayerGame::UpdateScoreboard( idUserInterface *scoreBoard, idPlayer 
 
 	// clear remaining lines (empty slots)
 	iline++;
-	while ( iline < 5 ) {
+	while ( iline < MAX_CLIENTS ) {
 		scoreBoard->SetStateString( va( "player%i", iline ), "" );
 		scoreBoard->SetStateString( va( "player%i_score", iline ), "" );
 		scoreBoard->SetStateString( va( "player%i_tdm_tscore", iline ), "" );
@@ -1965,7 +1966,7 @@ void idMultiplayerGame::UpdateHud( idPlayer *player, idUserInterface *hud ) {
 			}
 		}
 	}
-	for ( i = ( gameState == GAMEON ? numRankedPlayers : 0 ) ; i < 5; i++ ) {
+	for (i = (gameState == GAMEON ? numRankedPlayers : 0) ; i < MAX_CLIENTS; i++) {
 		hud->SetStateString( va( "player%i", i+1 ), "" );
 		hud->SetStateString( va( "player%i_score", i+1 ), "" );
 		hud->SetStateInt( va( "rank%i", i+1 ), 0 );
@@ -2069,7 +2070,8 @@ void idMultiplayerGame::DrawChat() {
 	}
 }
 
-const int ASYNC_PLAYER_FRAG_BITS = -idMath::BitsForInteger( MP_PLAYER_MAXFRAGS - MP_PLAYER_MINFRAGS );	// player can have negative frags
+//D3XP: Adding one to frag count to allow for the negative flag in numbers greater than 255
+const int ASYNC_PLAYER_FRAG_BITS = -(idMath::BitsForInteger(MP_PLAYER_MAXFRAGS - MP_PLAYER_MINFRAGS)+1);	// player can have negative frags
 const int ASYNC_PLAYER_WINS_BITS = idMath::BitsForInteger( MP_PLAYER_MAXWINS );
 const int ASYNC_PLAYER_PING_BITS = idMath::BitsForInteger( MP_PLAYER_MAXPING );
 
@@ -3385,4 +3387,34 @@ idMultiplayerGame::ClientReadWarmupTime
 */
 void idMultiplayerGame::ClientReadWarmupTime( const idBitMsg &msg ) {
 	warmupEndTime = msg.ReadInt();
+}
+
+idStr idMultiplayerGame::GetBestGametype(const char *map, const char *gametype)
+{
+
+    int num = declManager->GetNumDecls(DECL_MAPDEF);
+    int i, j;
+
+    for (i = 0; i < num; i++) {
+        const idDeclEntityDef *mapDef = static_cast<const idDeclEntityDef *>(declManager->DeclByIndex(DECL_MAPDEF, i));
+
+        if (mapDef && idStr::Icmp(mapDef->GetName(), map) == 0) {
+            if (mapDef->dict.GetBool(gametype)) {
+                // dont change gametype
+                return gametype;
+            }
+
+            for (j = 1; si_gameTypeArgs[ j ]; j++) {
+                if (mapDef->dict.GetBool(si_gameTypeArgs[ j ])) {
+                    return si_gameTypeArgs[ j ];
+                }
+            }
+
+            // error out, no valid gametype
+            return "deathmatch";
+        }
+    }
+
+    //For testing a new map let it play any gametpye
+    return gametype;
 }

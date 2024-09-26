@@ -160,10 +160,18 @@ public:
 		bool				grabbed				:1;	// if true object is currently being grabbed
 	} fl;
 
+	int						timeGroup;
+
 	bool					noGrab;
 
-    void					SetGrabbedState( bool grabbed );
-    bool					IsGrabbed();
+	renderEntity_t			xrayEntity;
+	qhandle_t				xrayEntityHandle;
+	const idDeclSkin 		*xraySkin;
+
+	void					DetermineTimeGroup(bool slowmo);
+
+	void					SetGrabbedState(bool grabbed);
+	bool					IsGrabbed();
 
 public:
 	ABSTRACT_PROTOTYPE( idEntity );
@@ -475,6 +483,11 @@ private:
 	void					Event_HasFunction( const char *name );
 	void					Event_CallFunction( const char *name );
 	void					Event_SetNeverDormant( int enable );
+	void					Event_SetGui(int guiNum, const char *guiName);
+	void					Event_PrecacheGui(const char *guiName);
+	void					Event_GetGuiParm(int guiNum, const char *key);
+	void					Event_GetGuiParmFloat(int guiNum, const char *key);
+	void					Event_GuiNamedEvent(int guiNum, const char *event);
 };
 
 /*
@@ -540,5 +553,72 @@ private:
 	void					Event_GetJointPos( jointHandle_t jointnum );
 	void					Event_GetJointAngle( jointHandle_t jointnum );
 };
+
+class SetTimeState {
+    bool					activated;
+    bool					previousFast;
+    bool					fast;
+
+public:
+    SetTimeState();
+    SetTimeState(int timeGroup);
+    ~SetTimeState();
+
+    void					PushState(int timeGroup);
+};
+
+ID_INLINE SetTimeState::SetTimeState() {
+    activated = false;
+}
+
+ID_INLINE SetTimeState::SetTimeState(int timeGroup) {
+    activated = false;
+    PushState(timeGroup);
+}
+
+ID_INLINE void SetTimeState::PushState(int timeGroup) {
+
+    // Don't mess with time in Multiplayer
+    if (!gameLocal.isMultiplayer) {
+
+        activated = true;
+
+        // determine previous fast setting
+        if (gameLocal.time == gameLocal.slow.time) {
+            previousFast = false;
+        } else {
+            previousFast = true;
+        }
+
+        // determine new fast setting
+        if (timeGroup) {
+            fast = true;
+        } else {
+            fast = false;
+        }
+
+        // set correct time
+        int msec = gameLocal.GetMSec();
+        if (fast) {
+            gameLocal.fast.Get(gameLocal.time, gameLocal.previousTime, msec, gameLocal.framenum, gameLocal.realClientTime);
+        } else {
+            gameLocal.slow.Get(gameLocal.time, gameLocal.previousTime, msec, gameLocal.framenum, gameLocal.realClientTime);
+        }
+        gameLocal.SetMSec(msec);
+    }
+}
+
+ID_INLINE SetTimeState::~SetTimeState() {
+    if (activated && !gameLocal.isMultiplayer) {
+        // set previous correct time
+        int msec = gameLocal.GetMSec();
+        if (previousFast) {
+            gameLocal.fast.Get(gameLocal.time, gameLocal.previousTime, msec, gameLocal.framenum, gameLocal.realClientTime);
+        } else {
+            gameLocal.slow.Get(gameLocal.time, gameLocal.previousTime, msec, gameLocal.framenum, gameLocal.realClientTime);
+        }
+        gameLocal.SetMSec(msec);
+    }
+}
 
 #endif /* !__GAME_ENTITY_H__ */

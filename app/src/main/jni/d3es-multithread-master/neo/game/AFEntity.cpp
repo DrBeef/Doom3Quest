@@ -34,6 +34,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "Item.h"
 #include "Player.h"
 #include "SmokeParticles.h"
+#include "Fx.h"
 
 #include "AFEntity.h"
 
@@ -1210,7 +1211,7 @@ void idAFEntity_Gibbable::SpawnGibs( const idVec3 &dir, const char *damageDefNam
 			list[i]->GetPhysics()->UnlinkClip();
 			list[i]->GetPhysics()->PutToRest();
 		} else {
-			list[i]->GetPhysics()->SetContents( CONTENTS_CORPSE );
+			list[i]->GetPhysics()->SetContents( 0 );
 			list[i]->GetPhysics()->SetClipMask( CONTENTS_SOLID );
 			velocity = list[i]->GetPhysics()->GetAbsBounds().GetCenter() - entityCenter;
 			velocity.NormalizeFast();
@@ -1505,6 +1506,12 @@ void idAFEntity_WithAttachedHead::SetupHead( void ) {
 		headEnt->SetBody( this, headModel, joint );
 		headEnt->SetCombatModel();
 		head = headEnt;
+
+		idStr xSkin;
+		if (spawnArgs.GetString("skin_head_xray", "", xSkin)) {
+			headEnt->xraySkin = declManager->FindSkin(xSkin.c_str());
+			headEnt->UpdateModel();
+		}
 
 		animator.GetJointTransform( joint, gameLocal.time, origin, axis );
 		origin = renderEntity.origin + origin * renderEntity.axis;
@@ -2131,7 +2138,7 @@ void idAFEntity_VehicleFourWheels::Think( void ) {
 			for ( i = 0; i < 4; i++ ) {
 				numContacts = af.GetPhysics()->GetBodyContactConstraints( wheels[i]->GetClipModel()->GetId(), contacts, 2 );
 				for ( int j = 0; j < numContacts; j++ ) {
-					gameLocal.smokeParticles->EmitSmoke( dustSmoke, gameLocal.time, gameLocal.random.RandomFloat(), contacts[j]->GetContact().point, contacts[j]->GetContact().normal.ToMat3() );
+					gameLocal.smokeParticles->EmitSmoke( dustSmoke, gameLocal.time, gameLocal.random.RandomFloat(), contacts[j]->GetContact().point, contacts[j]->GetContact().normal.ToMat3(), timeGroup /* D3XP */ );
 				}
 			}
 		}
@@ -2321,7 +2328,7 @@ void idAFEntity_VehicleSixWheels::Think( void ) {
 			for ( i = 0; i < 6; i++ ) {
 				numContacts = af.GetPhysics()->GetBodyContactConstraints( wheels[i]->GetClipModel()->GetId(), contacts, 2 );
 				for ( int j = 0; j < numContacts; j++ ) {
-					gameLocal.smokeParticles->EmitSmoke( dustSmoke, gameLocal.time, gameLocal.random.RandomFloat(), contacts[j]->GetContact().point, contacts[j]->GetContact().normal.ToMat3() );
+					gameLocal.smokeParticles->EmitSmoke( dustSmoke, gameLocal.time, gameLocal.random.RandomFloat(), contacts[j]->GetContact().point, contacts[j]->GetContact().normal.ToMat3(), timeGroup /* D3XP */ );
 				}
 			}
 		}
@@ -2334,6 +2341,200 @@ void idAFEntity_VehicleSixWheels::Think( void ) {
 	}
 }
 
+/*
+===============================================================================
+
+idAFEntity_VehicleAutomated
+
+===============================================================================
+*/
+const idEventDef EV_Vehicle_setVelocity("setVelocity", "f");
+const idEventDef EV_Vehicle_setTorque("setTorque", "f");
+const idEventDef EV_Vehicle_setSteeringSpeed("setSteeringSpeed", "f");
+const idEventDef EV_Vehicle_setWaypoint("setWaypoint", "e");
+
+CLASS_DECLARATION(idAFEntity_VehicleSixWheels, idAFEntity_VehicleAutomated)
+                EVENT(EV_PostSpawn,				idAFEntity_VehicleAutomated::PostSpawn)
+                EVENT(EV_Vehicle_setVelocity,		idAFEntity_VehicleAutomated::Event_SetVelocity)
+                EVENT(EV_Vehicle_setTorque,		idAFEntity_VehicleAutomated::Event_SetTorque)
+                EVENT(EV_Vehicle_setSteeringSpeed,	idAFEntity_VehicleAutomated::Event_SetSteeringSpeed)
+                EVENT(EV_Vehicle_setWaypoint,		idAFEntity_VehicleAutomated::Event_SetWayPoint)
+END_CLASS
+
+/*
+================
+idAFEntity_VehicleAutomated::Spawn
+================
+*/
+void idAFEntity_VehicleAutomated::Spawn(void)
+{
+
+    velocity = force = steerAngle = 0.f;
+    currentSteering = steeringSpeed = 0.f;
+    originHeight = 0.f;
+    waypoint = NULL;
+
+    spawnArgs.GetFloat("velocity", "150", velocity);
+    spawnArgs.GetFloat("torque", "200000", force);
+    spawnArgs.GetFloat("steeringSpeed", "1", steeringSpeed);
+    spawnArgs.GetFloat("originHeight", "0", originHeight);
+
+    PostEventMS(&EV_PostSpawn, 0);
+}
+
+/*
+================
+idAFEntity_VehicleAutomated::PostSpawn
+================
+*/
+void idAFEntity_VehicleAutomated::PostSpawn(void)
+{
+
+    if (targets.Num()) {
+        waypoint = targets[0].GetEntity();
+    }
+}
+
+/*
+================
+idAFEntity_VehicleAutomated::Event_SetVelocity
+================
+*/
+void idAFEntity_VehicleAutomated::Event_SetVelocity(float _velocity)
+{
+    velocity = _velocity;
+}
+
+/*
+================
+idAFEntity_VehicleAutomated::Event_SetTorque
+================
+*/
+void idAFEntity_VehicleAutomated::Event_SetTorque(float _torque)
+{
+    force = _torque;
+}
+
+/*
+================
+idAFEntity_VehicleAutomated::Event_SetSteeringSpeed
+================
+*/
+void idAFEntity_VehicleAutomated::Event_SetSteeringSpeed(float _steeringSpeed)
+{
+    steeringSpeed = _steeringSpeed;
+}
+
+/*
+================
+idAFEntity_VehicleAutomated::Event_SetWayPoint
+================
+*/
+void idAFEntity_VehicleAutomated::Event_SetWayPoint(idEntity *_waypoint)
+{
+    waypoint = _waypoint;
+}
+
+/*
+================
+idAFEntity_VehicleAutomated::Think
+================
+*/
+#define	HIT_WAYPOINT_THRESHOLD	80.f
+
+void idAFEntity_VehicleAutomated::Think(void)
+{
+
+    // If we don't have a waypoint, coast to a stop
+    if (!waypoint) {
+        velocity = force = steerAngle = 0.f;
+        idAFEntity_VehicleSixWheels::Think();
+        return;
+    }
+
+    idVec3 waypoint_origin, vehicle_origin;
+    idVec3 travel_vector;
+    float distance_from_waypoint;
+
+    // Set up the vector from the vehicle origin, to the waypoint
+    vehicle_origin = GetPhysics()->GetOrigin();
+    vehicle_origin.z -= originHeight;
+
+    waypoint_origin = waypoint->GetPhysics()->GetOrigin();
+
+    travel_vector = waypoint_origin - vehicle_origin;
+    distance_from_waypoint = travel_vector.Length();
+
+    // Check if we've hit the waypoint (within a certain threshold)
+    if (distance_from_waypoint < HIT_WAYPOINT_THRESHOLD) {
+        idStr				callfunc;
+        const function_t	*func;
+        idThread			*thread;
+
+        // Waypoints can call script functions
+        waypoint->spawnArgs.GetString("call", "", callfunc);
+
+        if (callfunc.Length()) {
+            func = gameLocal.program.FindFunction(callfunc);
+
+            if (func != NULL) {
+                thread = new idThread(func);
+                thread->DelayedStart(0);
+            }
+        }
+
+        // Get next waypoint
+        if (waypoint->targets.Num()) {
+            waypoint = waypoint->targets[0].GetEntity();
+        } else {
+            waypoint = NULL;
+        }
+
+        // We are switching waypoints, adjust steering next frame
+        idAFEntity_VehicleSixWheels::Think();
+        return;
+    }
+
+    idAngles vehicle_angles, travel_angles;
+
+    // Get the angles we need to steer towards
+    travel_angles = travel_vector.ToAngles().Normalize360();
+    vehicle_angles = this->GetPhysics()->GetAxis().ToAngles().Normalize360();
+
+    float	delta_yaw;
+
+    // Get the shortest steering angle towards the travel angles
+    delta_yaw = vehicle_angles.yaw - travel_angles.yaw;
+
+    if (idMath::Fabs(delta_yaw) > 180.f) {
+        if (delta_yaw > 0) {
+            delta_yaw = delta_yaw - 360;
+        } else {
+            delta_yaw = delta_yaw + 360;
+        }
+    }
+
+    // Maximum steering angle is 35 degrees
+    delta_yaw = idMath::ClampFloat(-35.f, 35.f, delta_yaw);
+
+    idealSteering = delta_yaw;
+
+    // Adjust steering incrementally so it doesn't snap to the ideal angle
+    if (idMath::Fabs((idealSteering - currentSteering)) > steeringSpeed) {
+        if (idealSteering > currentSteering) {
+            currentSteering += steeringSpeed;
+        } else {
+            currentSteering -= steeringSpeed;
+        }
+    } else {
+        currentSteering = idealSteering;
+    }
+
+    // Set the final steerAngle for the vehicle
+    steerAngle = currentSteering;
+
+    idAFEntity_VehicleSixWheels::Think();
+}
 
 /*
 ===============================================================================
@@ -2965,4 +3166,584 @@ idRenderModel *idGameEdit::AF_CreateMesh( const idDict &args, idVec3 &meshOrigin
 
 	// instantiate a mesh using the joint information from the render entity
 	return md5->InstantiateDynamicModel( &ent, NULL, NULL );
+}
+
+
+/*
+===============================================================================
+idHarvestable
+===============================================================================
+*/
+
+const idEventDef EV_Harvest_SpawnHarvestTrigger("<spawnHarvestTrigger>", NULL);
+
+CLASS_DECLARATION(idEntity, idHarvestable)
+                EVENT(EV_Harvest_SpawnHarvestTrigger,	idHarvestable::Event_SpawnHarvestTrigger)
+                EVENT(EV_Touch,						idHarvestable::Event_Touch)
+END_CLASS
+
+idHarvestable::idHarvestable()
+{
+    trigger = NULL;
+    parentEnt = NULL;
+}
+
+idHarvestable::~idHarvestable()
+{
+    if (trigger) {
+        delete trigger;
+        trigger = NULL;
+    }
+}
+
+void idHarvestable::Spawn()
+{
+
+    startTime = 0;
+
+    spawnArgs.GetFloat("triggersize", "120", triggersize);
+    spawnArgs.GetFloat("give_delay", "3", giveDelay);
+    giveDelay *= 1000;
+    given = false;
+
+    removeDelay = spawnArgs.GetFloat("remove_delay") * 1000.0f;
+
+    fxFollowPlayer = spawnArgs.GetBool("fx_follow_player", "1");
+    fxOrient = spawnArgs.GetString("fx_orient");
+
+
+}
+
+void idHarvestable::Init(idEntity *parent)
+{
+
+    assert(parent);
+
+    parentEnt = parent;
+
+    GetPhysics()->SetOrigin(parent->GetPhysics()->GetOrigin());
+    this->Bind(parent, true);
+
+    //Set the skin of the entity to the harvest skin
+    idStr skin = parent->spawnArgs.GetString("skin_harvest", "");
+
+    if (skin.Length()) {
+        parent->SetSkin(declManager->FindSkin(skin.c_str()));
+    }
+
+    idEntity *head;
+
+    if (parent->IsType(idActor::Type)) {
+        idActor *withHead = (idActor *)parent;
+        head = withHead->GetHeadEntity();
+    }
+
+    if (parent->IsType(idAFEntity_WithAttachedHead::Type)) {
+        idAFEntity_WithAttachedHead *withHead = (idAFEntity_WithAttachedHead *)parent;
+        head = withHead->head.GetEntity();
+    }
+
+    if (head) {
+        idStr headskin = parent->spawnArgs.GetString("skin_harvest_head", "");
+
+        if (headskin.Length()) {
+            head->SetSkin(declManager->FindSkin(headskin.c_str()));
+        }
+    }
+
+    idStr sound = parent->spawnArgs.GetString("harvest_sound");
+
+    if (sound.Length() > 0) {
+        parent->StartSound(sound.c_str(), SND_CHANNEL_ANY, 0, false, NULL);
+    }
+
+
+    PostEventMS(&EV_Harvest_SpawnHarvestTrigger, 0);
+}
+
+void idHarvestable::Save(idSaveGame *savefile) const
+{
+    savefile->WriteFloat(triggersize);
+    savefile->WriteClipModel(trigger);
+    savefile->WriteFloat(giveDelay);
+    savefile->WriteFloat(removeDelay);
+    savefile->WriteBool(given);
+
+    player.Save(savefile);
+    savefile->WriteInt(startTime);
+
+    savefile->WriteBool(fxFollowPlayer);
+    fx.Save(savefile);
+    savefile->WriteString(fxOrient);
+
+    parentEnt.Save(savefile);
+}
+
+void idHarvestable::Restore(idRestoreGame *savefile)
+{
+    savefile->ReadFloat(triggersize);
+    savefile->ReadClipModel(trigger);
+    savefile->ReadFloat(giveDelay);
+    savefile->ReadFloat(removeDelay);
+    savefile->ReadBool(given);
+
+    player.Restore(savefile);
+    savefile->ReadInt(startTime);
+
+    savefile->ReadBool(fxFollowPlayer);
+    fx.Restore(savefile);
+    savefile->ReadString(fxOrient);
+
+    parentEnt.Restore(savefile);
+}
+
+void idHarvestable::SetParent(idEntity *parent)
+{
+    parentEnt = parent;
+}
+
+void idHarvestable::Think()
+{
+    idEntity *parent = parentEnt.GetEntity();
+
+    if (!parent) {
+        return;
+    }
+
+    //Update the orientation of the box
+    if (trigger && parent && !parent->GetPhysics()->IsAtRest()) {
+        trigger->Link(gameLocal.clip, this, 0, parent->GetPhysics()->GetOrigin(), parent->GetPhysics()->GetAxis());
+    }
+
+    if (startTime && gameLocal.slow.time - startTime > giveDelay && ! given) {
+        idPlayer *thePlayer = player.GetEntity();
+
+        int hand = thePlayer->GetMainWeapon()->GetHand();
+        thePlayer->Give(spawnArgs.GetString("give_item"), spawnArgs.GetString("give_value"), hand);
+        thePlayer->harvest_lock = false;
+        given = true;
+    }
+
+    if (startTime && gameLocal.slow.time - startTime > removeDelay) {
+        parent->PostEventMS(&EV_Remove, 0);
+        PostEventMS(&EV_Remove, 0);
+    }
+
+    if (fxFollowPlayer) {
+        idEntityFx *fxEnt = fx.GetEntity();
+
+        if (fxEnt) {
+            idMat3 orientAxisLocal;
+
+            if (GetFxOrientationAxis(orientAxisLocal)) {
+                //gameRenderWorld->DebugAxis(fxEnt->GetPhysics()->GetOrigin(), orientAxisLocal);
+                fxEnt->GetPhysics()->SetAxis(orientAxisLocal);
+            }
+        }
+    }
+}
+
+/*
+================
+idAFEntity_Harvest::Gib
+Called when the parent object has been gibbed.
+================
+*/
+void idHarvestable::Gib()
+{
+    //Stop any looping sound that was playing
+    idEntity *parent = parentEnt.GetEntity();
+
+    if (parent) {
+        idStr sound = parent->spawnArgs.GetString("harvest_sound");
+
+        if (sound.Length() > 0) {
+            parent->StopSound(SND_CHANNEL_ANY, false);
+        }
+    }
+}
+
+/*
+================
+idAFEntity_Harvest::BeginBurn
+================
+*/
+void idHarvestable::BeginBurn()
+{
+
+    idEntity *parent = parentEnt.GetEntity();
+
+    if (!parent) {
+        return;
+    }
+
+    if (!spawnArgs.GetBool("burn")) {
+        return;
+    }
+
+
+    //Switch Skins if the parent would like us to.
+    idStr skin = parent->spawnArgs.GetString("skin_harvest_burn", "");
+
+    if (skin.Length()) {
+        parent->SetSkin(declManager->FindSkin(skin.c_str()));
+    }
+
+    parent->GetRenderEntity()->noShadow = true;
+    parent->SetShaderParm(SHADERPARM_TIME_OF_DEATH, gameLocal.slow.time * 0.001f);
+
+    idEntity *head;
+
+    if (parent->IsType(idActor::Type)) {
+        idActor *withHead = (idActor *)parent;
+        head = withHead->GetHeadEntity();
+    }
+
+    if (parent->IsType(idAFEntity_WithAttachedHead::Type)) {
+        idAFEntity_WithAttachedHead *withHead = (idAFEntity_WithAttachedHead *)parent;
+        head = withHead->head.GetEntity();
+    }
+
+    if (head) {
+        idStr headskin = parent->spawnArgs.GetString("skin_harvest_burn_head", "");
+
+        if (headskin.Length()) {
+            head->SetSkin(declManager->FindSkin(headskin.c_str()));
+        }
+
+        head->GetRenderEntity()->noShadow = true;
+        head->SetShaderParm(SHADERPARM_TIME_OF_DEATH, gameLocal.slow.time * 0.001f);
+    }
+
+
+
+}
+
+/*
+================
+idAFEntity_Harvest::BeginFX
+================
+*/
+void idHarvestable::BeginFX()
+{
+    if (strlen(spawnArgs.GetString("fx")) <= 0) {
+        return;
+    }
+
+    idMat3 *orientAxis = NULL;
+    idMat3 orientAxisLocal;
+
+    if (GetFxOrientationAxis(orientAxisLocal)) {
+        orientAxis = &orientAxisLocal;
+    }
+
+    fx = idEntityFx::StartFx(spawnArgs.GetString("fx"), NULL, orientAxis, this, spawnArgs.GetBool("fx_bind"));
+}
+
+/*
+================
+idAFEntity_Harvest::CalcTriggerBounds
+================
+*/
+void idHarvestable::CalcTriggerBounds(float size, idBounds &bounds)
+{
+
+    idEntity *parent = parentEnt.GetEntity();
+
+    if (!parent) {
+        return;
+    }
+
+    //Simple trigger bounds is the absolute bounds of the AF plus a defined size
+    bounds = parent->GetPhysics()->GetAbsBounds();
+    bounds.ExpandSelf(size);
+    bounds[0] -= parent->GetPhysics()->GetOrigin();
+    bounds[1] -= parent->GetPhysics()->GetOrigin();
+}
+
+bool idHarvestable::GetFxOrientationAxis(idMat3 &mat)
+{
+    idEntity *parent = parentEnt.GetEntity();
+
+    if (!parent) {
+        return false;
+    }
+
+    idPlayer *thePlayer = player.GetEntity();
+
+    if (!fxOrient.Icmp("up")) {
+        //Orient up
+        idVec3 grav = parent->GetPhysics()->GetGravityNormal()*-1;
+        idVec3 left, up;
+
+        grav.OrthogonalBasis(left, up);
+        idMat3 temp(left.x, left.y, left.z, up.x, up.y, up.z, grav.x, grav.y, grav.z);
+        mat = temp;
+
+        return true;
+
+    } else if (!fxOrient.Icmp("weapon")) {
+        //Orient the fx towards the muzzle of the weapon
+        jointHandle_t	joint;
+        idVec3	joint_origin;
+        idMat3	joint_axis;
+
+        joint = thePlayer->GetMainWeapon()->GetAnimator()->GetJointHandle(spawnArgs.GetString("fx_weapon_joint"));
+
+        if (joint != INVALID_JOINT) {
+            thePlayer->GetMainWeapon()->GetJointWorldTransform(joint, gameLocal.slow.time, joint_origin, joint_axis);
+        } else {
+            joint_origin = thePlayer->GetPhysics()->GetOrigin();
+        }
+
+        idVec3 toPlayer = joint_origin-parent->GetPhysics()->GetOrigin();
+        toPlayer.NormalizeFast();
+
+        idVec3 left, up;
+        toPlayer.OrthogonalBasis(left, up);
+        idMat3 temp(left.x, left.y, left.z, up.x, up.y, up.z, toPlayer.x, toPlayer.y, toPlayer.z);
+        mat = temp;
+
+        return true;
+
+    } else if (!fxOrient.Icmp("player")) {
+        //Orient the fx towards the eye of the player
+        idVec3 eye = thePlayer->GetEyePosition();
+        idVec3 toPlayer = eye-parent->GetPhysics()->GetOrigin();
+
+        toPlayer.Normalize();
+
+        idVec3 left, up;
+        up.Set(0, 1, 0);
+        left = toPlayer.Cross(up);
+        up = left.Cross(toPlayer);
+
+
+        //common->Printf("%.2f %.2f %.2f - %.2f %.2f %.2f - %.2f %.2f %.2f\n", toPlayer.x, toPlayer.y, toPlayer.z, left.x, left.y, left.z, up.x, up.y, up.z );
+
+        idMat3 temp(left.x, left.y, left.z, up.x, up.y, up.z, toPlayer.x, toPlayer.y, toPlayer.z);
+
+        mat = temp;
+
+        return true;
+    }
+
+    //Returning false indicates that the orientation is not used;
+    return false;
+}
+
+/*
+================
+idAFEntity_Harvest::Event_SpawnHarvestTrigger
+================
+*/
+void idHarvestable::Event_SpawnHarvestTrigger(void)
+{
+    idBounds		bounds;
+
+    idEntity *parent = parentEnt.GetEntity();
+
+    if (!parent) {
+        return;
+    }
+
+    CalcTriggerBounds(triggersize, bounds);
+
+    // create a trigger clip model
+    trigger = new idClipModel(idTraceModel(bounds));
+    trigger->Link(gameLocal.clip, this, 255, parent->GetPhysics()->GetOrigin(), mat3_identity);
+    trigger->SetContents(CONTENTS_TRIGGER);
+
+    startTime = 0;
+}
+
+/*
+================
+idAFEntity_Harvest::Event_Touch
+================
+*/
+void idHarvestable::Event_Touch(idEntity *other, trace_t *trace)
+{
+    idEntity *parent = parentEnt.GetEntity();
+
+    if (!parent) {
+        return;
+    }
+
+    if (parent->IsType(idAFEntity_Gibbable::Type)) {
+        idAFEntity_Gibbable *gibParent = (idAFEntity_Gibbable *)parent;
+
+        if (gibParent->IsGibbed())
+            return;
+    }
+
+
+    if (!startTime && other && other->IsType(idPlayer::Type)) {
+        idPlayer *thePlayer = static_cast<idPlayer *>(other);
+
+        if (thePlayer->harvest_lock) {
+            //Don't harvest if the player is in mid harvest
+            return;
+        }
+
+        player = thePlayer;
+
+        bool okToGive = true;
+        idStr requiredWeapons = spawnArgs.GetString("required_weapons");
+
+        if (requiredWeapons.Length() > 0) {
+            idStr playerWeap = thePlayer->GetCurrentWeapon();
+
+            if (playerWeap.Length() == 0 || requiredWeapons.Find(playerWeap, false) == -1) {
+                okToGive = false;
+            }
+        }
+
+        if (okToGive) {
+            if (thePlayer->CanGive(spawnArgs.GetString("give_item"), spawnArgs.GetString("give_value"))) {
+
+                startTime = gameLocal.slow.time;
+
+                //Lock the player from harvesting to prevent multiple harvests when only one is needed
+                thePlayer->harvest_lock = true;
+
+                idWeapon *weap = thePlayer->GetMainWeapon();
+
+                if (weap) {
+                    //weap->PostEventMS(&EV_Weapon_State, 0, "Charge", 8);
+                    weap->ProcessEvent(&EV_Weapon_State, "Charge", 8);
+                }
+
+                BeginBurn();
+                BeginFX();
+
+                //Stop any looping sound that was playing
+                idStr sound = parent->spawnArgs.GetString("harvest_sound");
+
+                if (sound.Length() > 0) {
+                    parent->StopSound(SND_CHANNEL_ANY, false);
+                }
+
+                //Make the parent object non-solid
+                parent->GetPhysics()->SetContents(0);
+                parent->GetPhysics()->GetClipModel()->Unlink();
+
+                //Turn of the trigger so it doesn't process twice
+                trigger->SetContents(0);
+            }
+        }
+    }
+}
+
+
+/*
+===============================================================================
+
+idAFEntity_Harvest
+
+===============================================================================
+*/
+
+const idEventDef EV_Harvest_SpawnHarvestEntity("<spawnHarvestEntity>", NULL);
+
+CLASS_DECLARATION(idAFEntity_WithAttachedHead, idAFEntity_Harvest)
+                EVENT(EV_Harvest_SpawnHarvestEntity,	idAFEntity_Harvest::Event_SpawnHarvestEntity)
+END_CLASS
+
+/*
+================
+idAFEntity_Harvest::idAFEntity_Harvest
+================
+*/
+idAFEntity_Harvest::idAFEntity_Harvest()
+{
+    harvestEnt = NULL;
+}
+
+/*
+================
+idAFEntity_Harvest::~idAFEntity_Harvest
+================
+*/
+idAFEntity_Harvest::~idAFEntity_Harvest()
+{
+
+    if (harvestEnt.GetEntity()) {
+        harvestEnt.GetEntity()->PostEventMS(&EV_Remove, 0);
+    }
+
+}
+
+/*
+================
+idAFEntity_Harvest::Save
+================
+*/
+void idAFEntity_Harvest::Save(idSaveGame *savefile) const
+{
+    harvestEnt.Save(savefile);
+}
+
+/*
+================
+idAFEntity_Harvest::Restore
+================
+*/
+void idAFEntity_Harvest::Restore(idRestoreGame *savefile)
+{
+    harvestEnt.Restore(savefile);
+    //if(harvestEnt.GetEntity()) {
+    //	harvestEnt.GetEntity()->SetParent(this);
+    //}
+}
+
+/*
+================
+idAFEntity_Harvest::Spawn
+================
+*/
+void idAFEntity_Harvest::Spawn(void)
+{
+
+    PostEventMS(&EV_Harvest_SpawnHarvestEntity, 0);
+}
+
+/*
+================
+idAFEntity_Harvest::Think
+================
+*/
+void idAFEntity_Harvest::Think(void)
+{
+
+    idAFEntity_WithAttachedHead::Think();
+
+}
+
+void idAFEntity_Harvest::Event_SpawnHarvestEntity(void)
+{
+
+    const idDict *harvestDef = gameLocal.FindEntityDefDict(spawnArgs.GetString("def_harvest_type"), false);
+
+    if (harvestDef) {
+        idEntity *temp;
+        gameLocal.SpawnEntityDef(*harvestDef, &temp, false);
+        harvestEnt = static_cast<idHarvestable *>(temp);
+    }
+
+    if (harvestEnt.GetEntity()) {
+        //Let the harvest entity set itself up
+        harvestEnt.GetEntity()->Init(this);
+        harvestEnt.GetEntity()->BecomeActive(TH_THINK);
+    }
+}
+
+void idAFEntity_Harvest::Gib(const idVec3 &dir, const char *damageDefName)
+{
+    if (harvestEnt.GetEntity()) {
+        //Let the harvest ent know that we gibbed
+        harvestEnt.GetEntity()->Gib();
+    }
+
+    idAFEntity_WithAttachedHead::Gib(dir, damageDefName);
 }

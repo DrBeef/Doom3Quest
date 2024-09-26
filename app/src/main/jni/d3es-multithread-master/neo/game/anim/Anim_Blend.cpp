@@ -574,6 +574,78 @@ const char *idAnim::AddFrameCommand( const idDeclModelDef *modelDef, int framenu
 		fc.type = FC_FIREMISSILEATTARGET;
 		fc.string = new idStr( token );
 		fc.index = jointInfo->num;
+	} else if (token == "launch_projectile") {
+		if (!src.ReadTokenOnLine(&token)) {
+			return "Unexpected end of line";
+		}
+
+		if (!declManager->FindDeclWithoutParsing(DECL_ENTITYDEF, token, false)) {
+			return "Unknown projectile def";
+		}
+
+		fc.type = FC_LAUNCH_PROJECTILE;
+		fc.string = new idStr(token);
+	} else if (token == "trigger_fx") {
+
+		if (!src.ReadTokenOnLine(&token)) {
+			return "Unexpected end of line";
+		}
+
+		jointInfo = modelDef->FindJoint(token);
+
+		if (!jointInfo) {
+			return va("Joint '%s' not found", token.c_str());
+		}
+
+		if (!src.ReadTokenOnLine(&token)) {
+			return "Unexpected end of line";
+		}
+
+		if (!declManager->FindType(DECL_FX, token, false)) {
+			return "Unknown FX def";
+		}
+
+		fc.type = FC_TRIGGER_FX;
+		fc.string = new idStr(token);
+		fc.index = jointInfo->num;
+
+	} else if (token == "start_emitter") {
+
+		idStr str;
+
+		if (!src.ReadTokenOnLine(&token)) {
+			return "Unexpected end of line";
+		}
+
+		str = token + " ";
+
+		if (!src.ReadTokenOnLine(&token)) {
+			return "Unexpected end of line";
+		}
+
+		jointInfo = modelDef->FindJoint(token);
+
+		if (!jointInfo) {
+			return va("Joint '%s' not found", token.c_str());
+		}
+
+		if (!src.ReadTokenOnLine(&token)) {
+			return "Unexpected end of line";
+		}
+
+		str += token;
+		fc.type = FC_START_EMITTER;
+		fc.string = new idStr(str);
+		fc.index = jointInfo->num;
+
+	} else if (token == "stop_emitter") {
+
+		if (!src.ReadTokenOnLine(&token)) {
+			return "Unexpected end of line";
+		}
+
+		fc.type = FC_STOP_EMITTER;
+		fc.string = new idStr(token);
 	} else if ( token == "footstep" ) {
 		fc.type = FC_FOOTSTEP;
 	} else if ( token == "leftfoot" ) {
@@ -824,6 +896,7 @@ void idAnim::CallFrameCommands( idEntity *ent, int from, int to ) const {
 
 					target = gameLocal.FindEntity( command.string->c_str() );
 					if ( target ) {
+						SetTimeState ts(target->timeGroup);
 						target->Signal( SIG_TRIGGER );
 						target->ProcessEvent( &EV_Activate, ent );
 						target->TriggerGuis();
@@ -868,6 +941,27 @@ void idAnim::CallFrameCommands( idEntity *ent, int from, int to ) const {
 				case FC_FIREMISSILEATTARGET: {
 					ent->ProcessEvent( &AI_FireMissileAtTarget, modelDef->GetJointName( command.index ), command.string->c_str() );
 					break;
+				}
+				case FC_LAUNCH_PROJECTILE: {
+					ent->ProcessEvent(&AI_LaunchProjectile, command.string->c_str());
+					break;
+				}
+				case FC_TRIGGER_FX: {
+					ent->ProcessEvent(&AI_TriggerFX, modelDef->GetJointName(command.index), command.string->c_str());
+					break;
+				}
+				case FC_START_EMITTER: {
+					int index = command.string->Find(" ");
+
+					if (index >= 0) {
+						idStr name = command.string->Left(index);
+						idStr particle = command.string->Right(command.string->Length() - index - 1);
+						ent->ProcessEvent(&AI_StartEmitter, name.c_str(), modelDef->GetJointName(command.index), particle.c_str());
+					}
+				}
+
+				case FC_STOP_EMITTER: {
+					ent->ProcessEvent(&AI_StopEmitter, command.string->c_str());
 				}
 				case FC_FOOTSTEP : {
 					ent->ProcessEvent( &EV_Footstep );

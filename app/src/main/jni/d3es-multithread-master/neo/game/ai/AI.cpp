@@ -32,6 +32,8 @@ If you have questions concerning this license or the applicable additional terms
 #include "gamesys/SysCvar.h"
 #include "Moveable.h"
 #include "SmokeParticles.h"
+#include "Fx.h"
+#include "framework/DeclEntityDef.h"
 
 #include "ai/AI.h"
 
@@ -351,6 +353,9 @@ idAI::idAI() {
 	current_yaw			= 0.0f;
 	ideal_yaw			= 0.0f;
 
+	spawnClearMoveables	= false;
+	harvestEnt			= NULL;
+
 	num_cinematics		= 0;
 	current_cinematic	= 0;
 
@@ -398,6 +403,10 @@ idAI::~idAI() {
 	if ( worldMuzzleFlashHandle != -1 ) {
 		gameRenderWorld->FreeLightDef( worldMuzzleFlashHandle );
 		worldMuzzleFlashHandle = -1;
+	}
+
+	if (harvestEnt.GetEntity()) {
+		harvestEnt.GetEntity()->PostEventMS(&EV_Remove, 0);
 	}
 }
 
@@ -531,6 +540,17 @@ void idAI::Save( idSaveGame *savefile ) const {
 	savefile->WriteJoint( flyTiltJoint );
 
 	savefile->WriteBool( GetPhysics() == static_cast<const idPhysics *>(&physicsObj) );
+
+	savefile->WriteInt(funcEmitters.Num());
+
+	for (int i = 0; i < funcEmitters.Num(); i++) {
+		funcEmitter_t *emitter = funcEmitters.GetIndex(i);
+		savefile->WriteString(emitter->name);
+		savefile->WriteJoint(emitter->joint);
+		savefile->WriteObject(emitter->particle);
+	}
+
+	harvestEnt.Save(savefile);
 }
 
 /*
@@ -698,6 +718,42 @@ void idAI::Restore( idRestoreGame *savefile ) {
 	if ( restorePhysics ) {
 		RestorePhysics( &physicsObj );
 	}
+
+
+	//Clean up the emitters
+	for (int i = 0; i < funcEmitters.Num(); i++) {
+		funcEmitter_t *emitter = funcEmitters.GetIndex(i);
+
+		if (emitter->particle) {
+			//Destroy the emitters
+			emitter->particle->PostEventMS(&EV_Remove, 0);
+		}
+	}
+
+	funcEmitters.Clear();
+
+	int emitterCount;
+	savefile->ReadInt(emitterCount);
+
+	for (int i = 0; i < emitterCount; i++) {
+		funcEmitter_t newEmitter;
+		memset(&newEmitter, 0, sizeof(newEmitter));
+
+		idStr name;
+		savefile->ReadString(name);
+
+		strcpy(newEmitter.name, name.c_str());
+
+		savefile->ReadJoint(newEmitter.joint);
+		savefile->ReadObject(reinterpret_cast<idClass * &>(newEmitter.particle));
+
+		funcEmitters.Set(newEmitter.name, newEmitter);
+	}
+
+	harvestEnt.Restore(savefile);
+	//if(harvestEnt.GetEntity()) {
+	//	harvestEnt.GetEntity()->SetParent(this);
+	//}
 }
 
 /*
@@ -932,6 +988,17 @@ void idAI::Spawn( void ) {
 
 	// init the move variables
 	StopMove( MOVE_STATUS_DONE );
+
+	spawnArgs.GetBool("spawnClearMoveables", "0", spawnClearMoveables);
+}
+
+void idAI::Gib(const idVec3 &dir, const char *damageDefName) {
+	if (harvestEnt.GetEntity()) {
+		//Let the harvest ent know that we gibbed
+		harvestEnt.GetEntity()->Gib();
+	}
+
+	idActor::Gib(dir, damageDefName);
 }
 
 /*
@@ -2704,6 +2771,7 @@ void idAI::AnimMove( void ) {
 		}
 	}
 
+	physicsObj.UseFlyMove(false);
 	physicsObj.SetDelta( delta );
 	physicsObj.ForceDeltaMove( disableGravity );
 
@@ -3295,7 +3363,7 @@ const idDeclParticle *idAI::SpawnParticlesOnJoint( particleEmitter_t &pe, const 
 			pe.time = gameLocal.time;
 		}
 		pe.particle = static_cast<const idDeclParticle *>( declManager->FindType( DECL_PARTICLE, particleName ) );
-		gameLocal.smokeParticles->EmitSmoke( pe.particle, pe.time, gameLocal.random.CRandomFloat(), origin, axis );
+		gameLocal.smokeParticles->EmitSmoke( pe.particle, pe.time, gameLocal.random.CRandomFloat(), origin, axis, timeGroup /*_D3XP*/ );
 	}
 
 	return pe.particle;
@@ -3379,6 +3447,8 @@ void idAI::Killed( idEntity *inflictor, idEntity *attacker, int damage, const id
 		physicsObj.SetLinearVelocity( vec3_zero );
 		physicsObj.PutToRest();
 		physicsObj.DisableImpact();
+		// No grabbing if "model_death"
+		noGrab = true;
 	}
 
 	restartParticles = false;
@@ -3397,8 +3467,22 @@ void idAI::Killed( idEntity *inflictor, idEntity *attacker, int damage, const id
 		kv = spawnArgs.MatchPrefix( "def_drops", kv );
 	}
 
-	if ( ( attacker && attacker->IsType( idPlayer::Type ) ) && ( inflictor && !inflictor->IsType( idSoulCubeMissile::Type ) ) ) {
-		static_cast< idPlayer* >( attacker )->AddAIKill();
+
+	if (spawnArgs.GetBool("harvest_on_death")) {
+		const idDict *harvestDef = gameLocal.FindEntityDefDict(spawnArgs.GetString("def_harvest_type"), false);
+
+		if (harvestDef) {
+			idEntity *temp;
+			gameLocal.SpawnEntityDef(*harvestDef, &temp, false);
+			harvestEnt = static_cast<idHarvestable *>(temp);
+
+		}
+
+		if (harvestEnt.GetEntity()) {
+			//Let the harvest entity set itself up
+			harvestEnt.GetEntity()->Init(this);
+			harvestEnt.GetEntity()->BecomeActive(TH_THINK);
+		}
 	}
 }
 
@@ -3581,6 +3665,11 @@ idAI::TalkTo
 void idAI::TalkTo( idActor *actor ) {
 	if ( talk_state != TALK_OK ) {
 		return;
+	}
+
+	// Wake up monsters that are pretending to be NPC's
+	if (team == 1 && actor->team != team) {
+		ProcessEvent(&EV_Activate, actor);
 	}
 
 	talkTarget = actor;
@@ -4017,6 +4106,11 @@ bool idAI::GetAimDir( const idVec3 &firePos, idEntity *aimAtEnt, const idEntity 
 	} else {
 		targetPos1 = aimAtEnt->GetPhysics()->GetAbsBounds().GetCenter();
 		targetPos2 = targetPos1;
+	}
+
+	if (this->team == 0 && !idStr::Cmp(aimAtEnt->GetEntityDefName(), "monster_demon_vulgar")) {
+		targetPos1.z -= 28.f;
+		targetPos2.z -= 12.f;
 	}
 
 	// try aiming for chest
@@ -4686,6 +4780,9 @@ void idAI::UpdateParticles( void ) {
 
 		int particlesAlive = 0;
 		for ( int i = 0; i < particles.Num(); i++ ) {
+			// Smoke particles on AI characters will always be "slow", even when held by grabber
+			SetTimeState ts(TIME_GROUP1);
+
 			if ( particles[i].particle && particles[i].time ) {
 				particlesAlive++;
 				if (af.IsActive()) {
@@ -4697,7 +4794,7 @@ void idAI::UpdateParticles( void ) {
 					realVector = physicsObj.GetOrigin() + ( realVector + modelOffset ) * ( viewAxis * physicsObj.GetGravityAxis() );
 				}
 
-				if ( !gameLocal.smokeParticles->EmitSmoke( particles[i].particle, particles[i].time, gameLocal.random.CRandomFloat(), realVector, realAxis )) {
+				if ( !gameLocal.smokeParticles->EmitSmoke( particles[i].particle, particles[i].time, gameLocal.random.CRandomFloat(), realVector, realAxis, timeGroup /*_D3XP*/ )) {
 					if ( restartParticles ) {
 						particles[i].time = gameLocal.time;
 					} else {
@@ -4730,6 +4827,118 @@ void idAI::TriggerParticles( const char *jointName ) {
 	}
 }
 
+void idAI::TriggerFX(const char *joint, const char *fx)
+{
+
+    if (!strcmp(joint, "origin")) {
+        idEntityFx::StartFx(fx, NULL, NULL, this, true);
+    } else {
+        idVec3	joint_origin;
+        idMat3	joint_axis;
+        jointHandle_t jointNum;
+        jointNum = animator.GetJointHandle(joint);
+
+        if (jointNum == INVALID_JOINT) {
+            gameLocal.Warning("Unknown fx joint '%s' on entity %s", joint, name.c_str());
+            return;
+        }
+
+        GetJointWorldTransform(jointNum, gameLocal.time, joint_origin, joint_axis);
+        idEntityFx::StartFx(fx, &joint_origin, &joint_axis, this, true);
+    }
+}
+
+idEntity *idAI::StartEmitter(const char *name, const char *joint, const char *particle)
+{
+
+    idEntity *existing = GetEmitter(name);
+
+    if (existing) {
+        return existing;
+    }
+
+    jointHandle_t jointNum;
+    jointNum = animator.GetJointHandle(joint);
+
+    idVec3 offset;
+    idMat3 axis;
+
+    GetJointWorldTransform(jointNum, gameLocal.time, offset, axis);
+
+    /*animator.GetJointTransform( jointNum, gameLocal.time, offset, axis );
+    offset = GetPhysics()->GetOrigin() + offset * GetPhysics()->GetAxis();
+    axis = axis * GetPhysics()->GetAxis();*/
+
+
+
+    idDict args;
+
+    const idDeclEntityDef *emitterDef = gameLocal.FindEntityDef("func_emitter", false);
+    args = emitterDef->dict;
+    args.Set("model", particle);
+    args.Set("origin", offset.ToString());
+    args.SetBool("start_off", true);
+
+    idEntity *ent;
+    gameLocal.SpawnEntityDef(args, &ent, false);
+
+    ent->GetPhysics()->SetOrigin(offset);
+    //ent->GetPhysics()->SetAxis(axis);
+
+    // align z-axis of model with the direction
+    /*idVec3		tmp;
+    axis = (viewAxis[ 0 ] * physicsObj.GetGravityAxis()).ToMat3();
+    tmp = axis[2];
+    axis[2] = axis[0];
+    axis[0] = -tmp;
+
+    ent->GetPhysics()->SetAxis(axis);*/
+
+    axis = physicsObj.GetGravityAxis();
+    ent->GetPhysics()->SetAxis(axis);
+
+
+    ent->GetPhysics()->GetClipModel()->SetOwner(this);
+
+
+    //Keep a reference to the emitter so we can track it
+    funcEmitter_t newEmitter;
+    strcpy(newEmitter.name, name);
+    newEmitter.particle = (idFuncEmitter *)ent;
+    newEmitter.joint = jointNum;
+    funcEmitters.Set(newEmitter.name, newEmitter);
+
+    //Bind it to the joint and make it active
+    newEmitter.particle->BindToJoint(this, jointNum, true);
+    newEmitter.particle->BecomeActive(TH_THINK);
+    newEmitter.particle->Show();
+    newEmitter.particle->PostEventMS(&EV_Activate, 0, this);
+    return newEmitter.particle;
+}
+
+idEntity *idAI::GetEmitter(const char *name)
+{
+    funcEmitter_t *emitter;
+    funcEmitters.Get(name, &emitter);
+
+    if (emitter) {
+        return emitter->particle;
+    }
+
+    return NULL;
+}
+
+void idAI::StopEmitter(const char *name)
+{
+    funcEmitter_t *emitter;
+    funcEmitters.Get(name, &emitter);
+
+    if (emitter) {
+        emitter->particle->Unbind();
+        emitter->particle->PostEventMS(&EV_Remove, 0);
+        funcEmitters.Remove(name);
+    }
+}
 
 /***********************************************************************
 

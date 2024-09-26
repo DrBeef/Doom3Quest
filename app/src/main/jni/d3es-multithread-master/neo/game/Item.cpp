@@ -712,6 +712,46 @@ void idObjective::Event_CamShot( ) {
 			renderView_t fullView = *view;
 			fullView.width = SCREEN_WIDTH;
 			fullView.height = SCREEN_HEIGHT;
+
+			// HACK : always draw sky-portal view if there is one in the map, this isn't real-time
+			if (gameLocal.portalSkyEnt.GetEntity() && g_enablePortalSky.GetBool()) {
+				renderView_t	portalView = fullView;
+				portalView.vieworg = gameLocal.portalSkyEnt.GetEntity()->GetPhysics()->GetOrigin();
+
+				// setup global fixup projection vars
+				if (1) {
+					int vidWidth, vidHeight;
+					idVec2 shiftScale;
+
+					renderSystem->GetGLSettings(vidWidth, vidHeight);
+
+					float pot;
+					int temp;
+
+					int	 w = vidWidth;
+
+					for (temp = 1 ; temp < w ; temp<<=1) {
+					}
+
+					pot = (float)temp;
+					shiftScale.x = (float)w / pot;
+
+					int	 h = vidHeight;
+
+					for (temp = 1 ; temp < h ; temp<<=1) {
+					}
+
+					pot = (float)temp;
+					shiftScale.y = (float)h / pot;
+
+					fullView.shaderParms[4] = shiftScale.x;
+					fullView.shaderParms[5] = shiftScale.y;
+				}
+
+				gameRenderWorld->RenderScene(&portalView);
+				renderSystem->CaptureRenderToImage("_currentRender");
+			}
+
 			// draw a view to a texture
 			renderSystem->DirectFrameBufferStart();
 			renderSystem->CropRenderSize( 256, 256, true );
@@ -872,6 +912,7 @@ idMoveableItem::idMoveableItem() {
 	trigger = NULL;
 	smoke = NULL;
 	smokeTime = 0;
+	nextSoundTime = 0;
 }
 
 /*
@@ -897,6 +938,7 @@ void idMoveableItem::Save( idSaveGame *savefile ) const {
 
 	savefile->WriteParticle( smoke );
 	savefile->WriteInt( smokeTime );
+	savefile->WriteInt( nextSoundTime );
 }
 
 /*
@@ -912,6 +954,7 @@ void idMoveableItem::Restore( idRestoreGame *savefile ) {
 
 	savefile->ReadParticle( smoke );
 	savefile->ReadInt( smokeTime );
+	savefile->ReadInt( nextSoundTime );
 }
 
 /*
@@ -924,6 +967,7 @@ void idMoveableItem::Spawn( void ) {
 	float density, friction, bouncyness, tsize;
 	idStr clipModelName;
 	idBounds bounds;
+	SetTimeState ts(timeGroup);
 
 	// create a trigger for item pickup
 	spawnArgs.GetFloat( "triggersize", "16.0", tsize );
@@ -970,6 +1014,7 @@ void idMoveableItem::Spawn( void ) {
 
 	smoke = NULL;
 	smokeTime = 0;
+	nextSoundTime = 0;
 	const char *smokeName = spawnArgs.GetString( "smoke_trail" );
 	if ( *smokeName != '\0' ) {
 		smoke = static_cast<const idDeclParticle *>( declManager->FindType( DECL_PARTICLE, smokeName ) );
@@ -993,13 +1038,38 @@ void idMoveableItem::Think( void ) {
 	}
 
 	if ( thinkFlags & TH_UPDATEPARTICLES ) {
-		if ( !gameLocal.smokeParticles->EmitSmoke( smoke, smokeTime, gameLocal.random.CRandomFloat(), GetPhysics()->GetOrigin(), GetPhysics()->GetAxis() ) ) {
+		if ( !gameLocal.smokeParticles->EmitSmoke( smoke, smokeTime, gameLocal.random.CRandomFloat(), GetPhysics()->GetOrigin(), GetPhysics()->GetAxis(), timeGroup /*_D3XP*/ ) ) {
 			smokeTime = 0;
 			BecomeInactive( TH_UPDATEPARTICLES );
 		}
 	}
 
 	Present();
+}
+
+/*
+=================
+idMoveableItem::Collide
+=================
+*/
+bool idMoveableItem::Collide(const trace_t &collision, const idVec3 &velocity) {
+    float v, f;
+
+    v = -(velocity * collision.c.normal);
+
+    if (v > 80 && gameLocal.time > nextSoundTime) {
+        f = v > 200 ? 1.0f : idMath::Sqrt(v - 80) * 0.091f;
+
+        if (StartSound("snd_bounce", SND_CHANNEL_ANY, 0, false, NULL)) {
+            // don't set the volume unless there is a bounce sound as it overrides the entire channel
+            // which causes footsteps on ai's to not honor their shader parms
+            SetSoundVolume(f);
+        }
+
+        nextSoundTime = gameLocal.time + 500;
+    }
+
+    return false;
 }
 
 /*
@@ -1160,7 +1230,7 @@ void idMoveableItem::Gib( const idVec3 &dir, const char *damageDefName ) {
 	const char *smokeName = spawnArgs.GetString( "smoke_gib" );
 	if ( *smokeName != '\0' ) {
 		const idDeclParticle *smoke = static_cast<const idDeclParticle *>( declManager->FindType( DECL_PARTICLE, smokeName ) );
-		gameLocal.smokeParticles->EmitSmoke( smoke, gameLocal.time, gameLocal.random.CRandomFloat(), renderEntity.origin, renderEntity.axis );
+		gameLocal.smokeParticles->EmitSmoke( smoke, gameLocal.time, gameLocal.random.CRandomFloat(), renderEntity.origin, renderEntity.axis, timeGroup /*_D3XP*/ );
 	}
 	// remove the entity
 	PostEventMS( &EV_Remove, 0 );
@@ -1319,7 +1389,7 @@ void idObjectiveComplete::Event_Trigger( idEntity *activator ) {
 			if ( player->hud ) {
 				player->hud->SetStateString( "objective", "2" );
 				player->hud->SetStateString( "objectivetext", spawnArgs.GetString( "objectivetext" ) );
-				player->hud->SetStateString( "objectivetitle", spawnArgs.GetString( "objectivetitle" ) );
+				player->hud->SetStateString( "objectivecompletetitle", spawnArgs.GetString("objectivetitle" ) );
 				player->CompleteObjective( spawnArgs.GetString( "objectivetitle" ) );
 				PostEventMS( &EV_GetPlayerPos, 2000 );
 			}

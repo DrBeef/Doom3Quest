@@ -96,6 +96,7 @@ public:
 	void				WritePVS( const pvsHandle_t handle, idBitMsg &msg );
 	void				ReadPVS( const pvsHandle_t handle, const idBitMsg &msg );
 #endif
+	bool				CheckAreasForPortalSky(const pvsHandle_t handle, const idVec3 &origin);
 
 private:
 	int					numAreas;

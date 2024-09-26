@@ -1572,6 +1572,7 @@ idElevator
 */
 const idEventDef EV_PostArrival( "postArrival", NULL );
 const idEventDef EV_GotoFloor( "gotoFloor", "d" );
+const idEventDef EV_SetGuiStates("setGuiStates");
 
 CLASS_DECLARATION( idMover, idElevator )
 	EVENT( EV_Activate,				idElevator::Event_Activate )
@@ -1580,6 +1581,7 @@ CLASS_DECLARATION( idMover, idElevator )
 	EVENT( EV_PostArrival,			idElevator::Event_PostFloorArrival )
 	EVENT( EV_GotoFloor,			idElevator::Event_GotoFloor )
 	EVENT( EV_Touch,				idElevator::Event_Touch )
+	EVENT(EV_SetGuiStates,			idElevator::Event_SetGuiStates)
 END_CLASS
 
 /*
@@ -1973,6 +1975,10 @@ void idElevator::Event_PostFloorArrival() {
 	}
 }
 
+void idElevator::Event_SetGuiStates() {
+	SetGuiStates((currentFloor == 1) ? guiBinaryMoverStates[0] : guiBinaryMoverStates[1]);
+}
+
 /*
 ================
 idElevator::DoneMoving
@@ -2119,6 +2125,7 @@ idMover_Binary::idMover_Binary() {
 	updateStatus = 0;
 	areaPortal = 0;
 	blocked = false;
+	playerOnly = false;
 	fl.networkSync = true;
 }
 
@@ -2197,6 +2204,7 @@ void idMover_Binary::Save( idSaveGame *savefile ) const {
 		savefile->WriteInt( gameRenderWorld->GetPortalState( areaPortal ) );
 	}
 	savefile->WriteBool( blocked );
+	savefile->WriteBool(playerOnly);
 
 	savefile->WriteInt( guiTargets.Num() );
 	for( i = 0; i < guiTargets.Num(); i++ ) {
@@ -2258,6 +2266,7 @@ void idMover_Binary::Restore( idRestoreGame *savefile ) {
 		gameLocal.SetPortalState( areaPortal, portalState );
 	}
 	savefile->ReadBool( blocked );
+	savefile->ReadBool(playerOnly);
 
 	guiTargets.Clear();
 	savefile->ReadInt( num );
@@ -2567,6 +2576,9 @@ void idMover_Binary::Event_OpenPortal( void ) {
 		if ( slave->areaPortal ) {
 			slave->SetPortalState( true );
 		}
+		if (slave->playerOnly) {
+			gameLocal.SetAASAreaState(slave->GetPhysics()->GetAbsBounds(), AREACONTENTS_CLUSTERPORTAL, false);
+		}
 	}
 }
 
@@ -2584,6 +2596,9 @@ void idMover_Binary::Event_ClosePortal( void ) {
 		if ( !slave->IsHidden() ) {
 			if ( slave->areaPortal ) {
 				slave->SetPortalState( false );
+			}
+			if (slave->playerOnly) {
+				gameLocal.SetAASAreaState(slave->GetPhysics()->GetAbsBounds(), AREACONTENTS_CLUSTERPORTAL, true);
 			}
 		}
 	}
@@ -3251,6 +3266,7 @@ void idDoor::Spawn( void ) {
 	spawnArgs.GetBool( "crusher", "0", crusher );
 	spawnArgs.GetBool( "start_open", "0", start_open );
 	spawnArgs.GetBool( "no_touch", "0", noTouch );
+	spawnArgs.GetBool("player_only", "0", playerOnly);
 
 	// expects syncLock to be a door that must be closed before this door will open
 	spawnArgs.GetString( "syncLock", "", syncLock );
@@ -3309,6 +3325,10 @@ void idDoor::Spawn( void ) {
 	if ( !start_open ) {
 		// start closed
 		ProcessEvent( &EV_Mover_ClosePortal );
+	}
+
+	if (playerOnly) {
+		gameLocal.SetAASAreaState(GetPhysics()->GetAbsBounds(), AREACONTENTS_CLUSTERPORTAL, true);
 	}
 
 	int locked = spawnArgs.GetInt( "locked" );
@@ -3581,6 +3601,19 @@ bool idDoor::IsNoTouch( void ) {
 }
 
 /*
+================
+idDoor::AllowPlayerOnly
+================
+*/
+bool idDoor::AllowPlayerOnly(idEntity *ent) {
+	if (playerOnly && !ent->IsType(idPlayer::Type)) {
+		return false;
+	}
+
+	return true;
+}
+
+/*
 ======================
 idDoor::CalcTriggerBounds
 
@@ -3808,7 +3841,9 @@ void idDoor::Event_Touch( idEntity *other, trace_t *trace ) {
 
 	if ( trigger && trace->c.id == trigger->GetId() ) {
 		if ( !IsNoTouch() && !IsLocked() && GetMoverState() != MOVER_1TO2 ) {
-			Use( this, other );
+			if (AllowPlayerOnly(other)) {
+				Use(this, other);
+			}
 		}
 	} else if ( sndTrigger && trace->c.id == sndTrigger->GetId() ) {
 		if ( other && other->IsType( idPlayer::Type ) && IsLocked() && gameLocal.time > nextSndTriggerTime ) {

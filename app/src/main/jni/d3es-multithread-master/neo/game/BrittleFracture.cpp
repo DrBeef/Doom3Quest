@@ -71,6 +71,7 @@ idBrittleFracture::idBrittleFracture( void ) {
 	changed = false;
 
 	fl.networkSync = true;
+	isXraySurface = false;
 }
 
 /*
@@ -154,6 +155,7 @@ void idBrittleFracture::Save( idSaveGame *savefile ) const {
 		savefile->WriteBool( shards[i]->atEdge );
 		savefile->WriteStaticObject( shards[i]->physicsObj );
 	}
+	savefile->WriteBool(isXraySurface);
 }
 
 /*
@@ -241,6 +243,7 @@ void idBrittleFracture::Restore( idRestoreGame *savefile ) {
 			shards[i]->clipModel = shards[i]->physicsObj.GetClipModel();
 		}
 	}
+	savefile->ReadBool(isXraySurface);
 }
 
 /*
@@ -277,6 +280,22 @@ void idBrittleFracture::Spawn( void ) {
 
 	// FIXME: set "bleed" so idProjectile calls AddDamageEffect
 	spawnArgs.SetBool( "bleed", 1 );
+
+	// check for xray surface
+	if (1) {
+		const idRenderModel *model = renderEntity.hModel;
+
+		isXraySurface = false;
+
+		for (int i = 0; i < model->NumSurfaces(); i++) {
+			const modelSurface_t *surf = model->Surface(i);
+
+			if (idStr(surf->shader->GetName()) == "textures/smf/window_scratch") {
+				isXraySurface = true;
+				break;
+			}
+		}
+	}
 
 	CreateFractures( renderEntity.hModel );
 
@@ -1027,7 +1046,11 @@ void idBrittleFracture::Fracture_r( idFixedWinding &w ) {
 		}
 
 		// randomly create a split plane
-		a = gameLocal.random.RandomFloat() * idMath::TWO_PI;
+		if (isXraySurface) {
+			a = idMath::TWO_PI / 2.f;
+		} else {
+			a = gameLocal.random.RandomFloat() * idMath::TWO_PI;
+		}
 		c = cos( a );
 		s = -sin( a );
 		axis[2] = windingPlane.Normal();
@@ -1096,21 +1119,61 @@ void idBrittleFracture::CreateFractures( const idRenderModel *renderModel ) {
 	physicsObj.SetOrigin( GetPhysics()->GetOrigin(), 0 );
 	physicsObj.SetAxis( GetPhysics()->GetAxis(), 0 );
 
-	for ( i = 0; i < 1 /*renderModel->NumSurfaces()*/; i++ ) {
-		surf = renderModel->Surface( i );
-		material = surf->shader;
 
-		for ( j = 0; j < surf->geometry->numIndexes; j += 3 ) {
+	if (isXraySurface) {
+		for (i = 0; i < 1 /*renderModel->NumSurfaces()*/; i++) {
+			surf = renderModel->Surface(i);
+			material = surf->shader;
+
 			w.Clear();
-			for ( k = 0; k < 3; k++ ) {
-				v = &surf->geometry->verts[ surf->geometry->indexes[ j + 2 - k ] ];
-				w.AddPoint( v->xyz );
-				w[k].s = v->st[0];
-				w[k].t = v->st[1];
+
+			int k = 0;
+			v = &surf->geometry->verts[k];
+			w.AddPoint(v->xyz);
+			w[k].s = v->st[0];
+			w[k].t = v->st[1];
+
+			k = 1;
+			v = &surf->geometry->verts[k];
+			w.AddPoint(v->xyz);
+			w[k].s = v->st[0];
+			w[k].t = v->st[1];
+
+			k = 3;
+			v = &surf->geometry->verts[k];
+			w.AddPoint(v->xyz);
+			w[k].s = v->st[0];
+			w[k].t = v->st[1];
+
+			k = 2;
+			v = &surf->geometry->verts[k];
+			w.AddPoint(v->xyz);
+			w[k].s = v->st[0];
+			w[k].t = v->st[1];
+
+			Fracture_r(w);
+		}
+
+	} else {
+		for (i = 0; i < 1 /*renderModel->NumSurfaces()*/; i++) {
+			surf = renderModel->Surface(i);
+			material = surf->shader;
+
+			for (j = 0; j < surf->geometry->numIndexes; j += 3) {
+				w.Clear();
+
+				for (k = 0; k < 3; k++) {
+					v = &surf->geometry->verts[ surf->geometry->indexes[ j + 2 - k ] ];
+					w.AddPoint(v->xyz);
+					w[k].s = v->st[0];
+					w[k].t = v->st[1];
+				}
+
+				Fracture_r(w);
 			}
-			Fracture_r( w );
 		}
 	}
+
 
 	physicsObj.SetContents( material->GetContentFlags() );
 	SetPhysics( &physicsObj );

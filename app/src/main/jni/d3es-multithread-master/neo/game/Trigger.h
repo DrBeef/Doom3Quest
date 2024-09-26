@@ -138,6 +138,8 @@ private:
 	bool				triggerFirst;
 	idStr				entityName;
 
+	bool				testPartialName;
+
 	void				TriggerAction( idEntity *activator );
 	void				Event_TriggerAction( idEntity *activator );
 	void				Event_Trigger( idEntity *activator );

@@ -126,6 +126,11 @@ protected:
 	const idDeclParticle *	smokeFly;
 	int						smokeFlyTime;
 
+	bool					mNoExplodeDisappear;
+	bool					mTouchTriggers;
+
+	int						originalTimeGroup;
+
 	typedef enum {
 		// must update these in script/doom_defs.script if changed
 		SPAWNED = 0,
@@ -247,6 +252,40 @@ private:
 	void					FreeBeams();
 	void					Event_RemoveBeams();
 	void					ApplyDamage();
+};
+
+class idHomingProjectile : public idProjectile {
+public :
+CLASS_PROTOTYPE( idHomingProjectile );
+
+    idHomingProjectile();
+    ~idHomingProjectile();
+
+    void					Save( idSaveGame *savefile ) const;
+    void					Restore( idRestoreGame *savefile );
+
+    void					Spawn();
+    virtual void			Think();
+    virtual void			Launch( const idVec3 &start, const idVec3 &dir, const idVec3 &pushVelocity, const float timeSinceFire = 0.0f, const float launchPower = 1.0f, const float dmgPower = 1.0f );
+    void					SetEnemy( idEntity *ent );
+    void					SetSeekPos( idVec3 pos );
+    void					Event_SetEnemy(idEntity *ent);
+
+protected:
+    float					speed;
+    idEntityPtr<idEntity>	enemy;
+    idVec3					seekPos;
+
+private:
+    idAngles				rndScale;
+    idAngles				rndAng;
+    idAngles				angles;
+    float					turn_max;
+    float					clamp_dist;
+    bool					burstMode;
+    bool					unGuided;
+    float					burstDist;
+    float					burstVelocity;
 };
 
 /*

@@ -117,6 +117,7 @@ public:
 	static void					CancelEvents( const idClass *obj, const idEventDef *evdef = NULL );
 	static void					ClearEventList( void );
 	static void					ServiceEvents( void );
+	static void					ServiceFastEvents();
 	static void					Init( void );
 	static void					Shutdown( void );
 
