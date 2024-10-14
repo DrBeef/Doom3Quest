@@ -867,7 +867,7 @@ extern idCVar r_brightness;				// changes gamma tables
 
 extern idCVar r_checkBounds;			// compare all surface bounds with precalculated ones
 
-extern idCVar r_usePhong;
+extern idCVar r_usePBR;
 extern idCVar r_specularExponent;
 extern idCVar r_useLightPortalFlow;		// 1 = do a more precise area reference determination
 extern idCVar r_useShadowSurfaceScissor;// 1 = scissor shadows by the scissor rect of the interaction surfaces

@@ -50,6 +50,34 @@ android {
     }
 }
 
+android {
+    task PackVrSupportPK4 {
+        dependsOn 'Pack399PK4'
+        dependsOn 'Pack399RoEPK4'
+        dependsOn 'Pack399LMPK4'
+    }
+    task Pack399PK4(type: Zip) {
+        from 'src/main/pk4/pak399/'
+        archiveName 'pak399.pk4'
+        destinationDir(file('src/main/assets/'))
+    }
+    task Pack399RoEPK4(type: Zip) {
+        from 'src/main/pk4/pak399roe/'
+        archiveName 'pak399roe.pk4'
+        destinationDir(file('src/main/assets/'))
+    }
+    task Pack399LMPK4(type: Zip) {
+        from 'src/main/pk4/pak399lm/'
+        archiveName 'pak399lm.pk4'
+        destinationDir(file('src/main/assets/'))
+    }
+    afterEvaluate {
+        if (project(':app').tasks.findByName('createDebugVariantModel'))
+            project(':app').createDebugVariantModel.dependsOn PackVrSupportPK4
+        if (project(':app').tasks.findByName('createReleaseVariantModel'))
+            project(':app').createReleaseVariantModel.dependsOn PackVrSupportPK4
+    }
+}
 dependencies {
     implementation "com.android.support:support-compat:26.1.0"
     implementation "com.android.support:support-core-utils:26.1.0"

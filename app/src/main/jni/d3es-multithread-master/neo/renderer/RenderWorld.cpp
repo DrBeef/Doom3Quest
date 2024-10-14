@@ -948,14 +948,18 @@ BoundsInAreas
 int idRenderWorldLocal::BoundsInAreas( const idBounds &bounds, int *areas, int maxAreas ) const {
 	int numAreas = 0;
 
-	assert( areas );
-	assert( bounds[0][0] <= bounds[1][0] && bounds[0][1] <= bounds[1][1] && bounds[0][2] <= bounds[1][2] );
-	assert( bounds[1][0] - bounds[0][0] < 1e4f && bounds[1][1] - bounds[0][1] < 1e4f && bounds[1][2] - bounds[0][2] < 1e4f );
-
-	if ( !areaNodes ) {
-		return numAreas;
+	//Lubos BEGIN
+	if( areas ) {
+		if ( bounds[0][0] <= bounds[1][0] && bounds[0][1] <= bounds[1][1] && bounds[0][2] <= bounds[1][2] ) {
+			if ( bounds[1][0] - bounds[0][0] < 1e4f && bounds[1][1] - bounds[0][1] < 1e4f && bounds[1][2] - bounds[0][2] < 1e4f ) {
+				if ( !areaNodes ) {
+					return numAreas;
+				}
+				BoundsInAreas_r( 0, bounds, areas, &numAreas, maxAreas );
+			}
+		}
 	}
-	BoundsInAreas_r( 0, bounds, areas, &numAreas, maxAreas );
+	//Lubos END
 	return numAreas;
 }
 

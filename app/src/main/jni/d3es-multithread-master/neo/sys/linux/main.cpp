@@ -108,7 +108,7 @@ bool Sys_GetPath(sysPath_t type, idStr &path) {
 	case PATH_SAVE:
 #ifdef __ANDROID__
 		s = getenv("USER_FILES");
-		idStr::snPrintf(buf, sizeof(buf), "%s/saves", s);
+		idStr::snPrintf(buf, sizeof(buf), "%s/saves_v1.3", s);
 #else
 		s = getenv("XDG_DATA_HOME");
 		if (s)

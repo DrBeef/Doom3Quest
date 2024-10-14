@@ -598,7 +598,7 @@ ID_INLINE void SetTimeState::PushState(int timeGroup) {
         }
 
         // set correct time
-        int msec = gameLocal.GetMSec();
+        int msec = 1000 / 60;
         if (fast) {
             gameLocal.fast.Get(gameLocal.time, gameLocal.previousTime, msec, gameLocal.framenum, gameLocal.realClientTime);
         } else {
@@ -611,7 +611,7 @@ ID_INLINE void SetTimeState::PushState(int timeGroup) {
 ID_INLINE SetTimeState::~SetTimeState() {
     if (activated && !gameLocal.isMultiplayer) {
         // set previous correct time
-        int msec = gameLocal.GetMSec();
+        int msec = 1000 / 60;
         if (previousFast) {
             gameLocal.fast.Get(gameLocal.time, gameLocal.previousTime, msec, gameLocal.framenum, gameLocal.realClientTime);
         } else {

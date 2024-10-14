@@ -63,34 +63,39 @@ out vec2 var_TexDiffuse;
 out vec2 var_TexNormal;
 out vec2 var_TexSpecular;
 out vec4 var_TexLight;
+out vec3 var_Normal;
 out lowp vec4 var_Color;
 out vec3 var_L;
+out vec3 var_V;
 out vec3 var_H;
-  
+
 void main()
 {
   mat3 M = mat3(attr_Tangent, attr_Bitangent, attr_Normal);
-  
+
   var_TexNormal.x = dot(u_bumpMatrixS, attr_TexCoord);
   var_TexNormal.y = dot(u_bumpMatrixT, attr_TexCoord);
-  
+
   var_TexDiffuse.x = dot(u_diffuseMatrixS, attr_TexCoord);
   var_TexDiffuse.y = dot(u_diffuseMatrixT, attr_TexCoord);
-  
+
   var_TexSpecular.x = dot(u_specularMatrixS, attr_TexCoord);
   var_TexSpecular.y = dot(u_specularMatrixT, attr_TexCoord);
-  
+
   var_TexLight.x = dot(u_lightProjection[0], attr_Vertex);
   var_TexLight.y = dot(u_lightProjection[1], attr_Vertex);
   var_TexLight.z = dot(u_lightProjection[2], attr_Vertex);
   var_TexLight.w = dot(u_lightProjection[3], attr_Vertex);
-  
+
   vec3 L = u_lightOrigin.xyz - attr_Vertex.xyz;
   vec3 V = u_viewOrigin.xyz - attr_Vertex.xyz;
   vec3 H = normalize(L) + normalize(V);
-  
+
   var_L = L * M;
+  var_V = V * M;
   var_H = H * M;
+
+  var_Normal = attr_Normal * M;
 
   if (u_colorModulate == 0.0) {
     var_Color = vec4(u_colorAdd);

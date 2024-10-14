@@ -1105,7 +1105,7 @@ bool idInventory::Give( idPlayer *owner, const idDict &spawnArgs, const char *st
 			if ( i >= MAX_WEAPONS ) {
 				//Loop through and print out spawnArgs
 				spawnArgs.Print();
-				gameLocal.Error( "Unknown weapon '%s'", weaponName.c_str() );
+				gameLocal.Warning("Unknown weapon '%s'", weaponName.c_str());
 				continue;
 			}
 
@@ -2667,6 +2667,17 @@ void idPlayer::Save( idSaveGame *savefile ) const {
         }
     }
 
+    savefile->WriteObject(mountedObject);
+    enviroSuitLight.Save(savefile);
+    savefile->WriteBool(healthRecharge);
+    savefile->WriteInt(lastHealthRechargeTime);
+    savefile->WriteInt(rechargeSpeed);
+    savefile->WriteFloat(new_g_damageScale);
+
+    savefile->WriteBool(bloomEnabled);
+    savefile->WriteFloat(bloomSpeed);
+    savefile->WriteFloat(bloomIntensity);
+
     savefile->WriteObject( flashlight );
     savefile->WriteInt( flashlightBattery );
 
@@ -2721,29 +2732,6 @@ void idPlayer::Save( idSaveGame *savefile ) const {
 		hud->SetStateString( "message", common->GetLanguageDict()->GetString( "#str_02916" ) );
 		hud->HandleNamedEvent( "Message" );
 	}
-
-	savefile->WriteInt(weaponToggles.Num());
-
-	for (i = 0; i < weaponToggles.Num(); i++) {
-		WeaponToggle_t *weaponToggle = weaponToggles.GetIndex(i);
-		savefile->WriteString(weaponToggle->name);
-		savefile->WriteInt(weaponToggle->toggleList.Num());
-
-		for (int j = 0; j < weaponToggle->toggleList.Num(); j++) {
-		   savefile->WriteInt(weaponToggle->toggleList[j]);
-	   }
-	}
-
-	savefile->WriteObject(mountedObject);
-	enviroSuitLight.Save(savefile);
-	savefile->WriteBool(healthRecharge);
-	savefile->WriteInt(lastHealthRechargeTime);
-	savefile->WriteInt(rechargeSpeed);
-	savefile->WriteFloat(new_g_damageScale);
-
-	savefile->WriteBool(bloomEnabled);
-	savefile->WriteFloat(bloomSpeed);
-	savefile->WriteFloat(bloomIntensity);
 }
 
 /*
@@ -4065,14 +4053,15 @@ void idPlayer::DrawHUD( idUserInterface *_hud ) {
 	// weapon targeting crosshair
 	if ( !GuiActive() ) {
 		if ( cursor && hands[ vr_weaponHand.GetInteger() ].weapon->ShowCrosshair() ) {
-			if (hands[ vr_weaponHand.GetInteger() ].weapon->GetGrabberState() == 1 || hands[ vr_weaponHand.GetInteger() ].weapon->GetGrabberState() == 2) {
+			//GB Fix - we may need this later
+			/*if (hands[ vr_weaponHand.GetInteger() ].weapon->GetGrabberState() == 1 || hands[ vr_weaponHand.GetInteger() ].weapon->GetGrabberState() == 2) {
 				cursor->SetStateString("grabbercursor", "1");
 				cursor->SetStateString("combatcursor", "0");
 			} else {
 				cursor->SetStateString("grabbercursor", "0");
 				cursor->SetStateString("combatcursor", "1");
 			}
-			cursor->Redraw( gameLocal.realClientTime );
+			cursor->Redraw( gameLocal.realClientTime );*/
 		}
 	}
 }
@@ -15424,7 +15413,8 @@ void idPlayer::CalculateRenderView( void ) {
 				//commonVr->cinematicStartPosition.y = -commonVr->hmdTrackingState.HeadPose.ThePose.Position.x;
 				//commonVr->cinematicStartPosition.z = commonVr->hmdTrackingState.HeadPose.ThePose.Position.y;
 
-				playerView.Flash(colorWhite, 300);
+				//Lubos:The flash isn't working correctly since slow motion support.
+				//playerView.Flash(colorWhite, 300);
 
 				if ( vr_cinematics.GetInteger() == 2)
 				{

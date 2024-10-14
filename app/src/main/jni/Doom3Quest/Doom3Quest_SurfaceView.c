@@ -146,7 +146,7 @@ void Doom3Quest_setUseScreenLayer(int screen)
 
 bool Doom3Quest_useScreenLayer()
 {
-	return inMenu || forceVirtualScreen || inCinematic || loading;
+	return inMenu || forceVirtualScreen || inCinematic || loading || pVRClientInfo->consoleShown;
 }
 
 static void UnEscapeQuotes( char *arg )

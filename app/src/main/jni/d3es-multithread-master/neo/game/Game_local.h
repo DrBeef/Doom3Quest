@@ -531,8 +531,8 @@ public:
 	// added the following to assist licensees with merge issues
 	int						GetFrameNum() const { return framenum; };
 	int						GetTime() const { return time; };
-	int						GetMSec(bool dynamic = true) const { return USERCMD_MSEC; /* TODO:implement static */ };
-	int					 	SetMSec(int value) const { /* TODO: implement*/ }
+	int						GetMSec(bool dynamic = true) const;
+	void					SetMSec(int value) const;
 
 	int						GetNextClientNum( int current ) const;
 	idPlayer *				GetClientByNum( int current ) const;

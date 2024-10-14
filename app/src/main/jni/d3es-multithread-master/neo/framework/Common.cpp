@@ -82,6 +82,7 @@ struct version_s {
 idCVar vr_refresh( "vr_refresh", "60", CVAR_INTEGER | CVAR_ARCHIVE, "Refresh rate" );
 idCVar vr_supersampling( "vr_supersampling", "-1.0", CVAR_FLOAT | CVAR_ARCHIVE, "Supersampling" );
 idCVar vr_msaa( "vr_msaa",  "1", CVAR_FLOAT | CVAR_ARCHIVE, "MSAA" );
+idCVar vr_timescale( "vr_timescale",  "1", CVAR_FLOAT | CVAR_ARCHIVE, "Current slow motion timescale" );
 
 idCVar com_version( "si_version", version.string, CVAR_SYSTEM|CVAR_ROM|CVAR_SERVERINFO, "engine version" );
 idCVar com_skipRenderer( "com_skipRenderer", "0", CVAR_BOOL|CVAR_SYSTEM, "skip the renderer completely" );
@@ -2605,10 +2606,8 @@ void idCommonLocal::LoadGameDLL( void ) {
 
 	common->Warning( "nativeLibsPath = %s, gameType = %d", nativeLibsPath, gameType );
 
-	if(gameType == GAME_DOOM3)
+	if((gameType == GAME_DOOM3) || (gameType == GAME_DOOM3_ROE))
 		strcpy(dll,"/libd3es_game.so");
-	else if(gameType == GAME_DOOM3_ROE)
-		strcpy(dll,"/libd3es_d3xp.so");
 	else
 		common->Warning( "BAD GAME TYPE" );
 

@@ -1,0 +1,132 @@
+models/characters/male_npc/marine/marine2_arm2
+{
+       noSelfShadow
+		unsmoothedTangents
+		flesh
+		forceOverlays
+		clamp
+		collision	
+		//noShadows
+	{	// burning corpse effect
+		if	parm7			// only when dead
+		// make a burned away alpha test for the normal skin
+		blend	gl_zero, gl_one			// don't draw anything
+		
+		map models/monsters/spectre/dis2.tga	// replace this with a monster-specific texture
+		alphaTest 0.05 + 1.7 * (time - parm7)
+	}
+	renderbump  -size 1024 3072 -trace 0.07 -colorMap -aa 2  models/characters/male_npc/marine/marine_local.tga models/characters/male_npc/marine/marine_hi.lwo
+      
+	diffusemap	models/characters/player_character/body/body2_arm2.tga
+	bumpmap models/characters/player_character/body/body_codpiecefix_local_scaled.tga
+	specularmap	models/characters/player_character/body/body_arm2_s.tga
+}
+models/characters/male_npc/marine/marine2_arm2working
+{
+       noSelfShadow
+		unsmoothedTangents
+		flesh
+		forceOverlays
+		clamp
+		collision	
+		//noShadows
+	{	// burning corpse effect
+		if	parm7			// only when dead
+		// make a burned away alpha test for the normal skin
+		blend	gl_zero, gl_one			// don't draw anything
+		
+		map models/monsters/spectre/dis2.tga	// replace this with a monster-specific texture
+		alphaTest 0.05 + 1.7 * (time - parm7)
+	}
+	renderbump  -size 1024 3072 -trace 0.07 -colorMap -aa 2  models/characters/male_npc/marine/marine_local.tga models/characters/male_npc/marine/marine_hi.lwo
+        diffusemap	  models/characters/male_npc/marine/marine_arm2.tga
+		bumpmap		  addnormals(models/characters/male_npc/marine/marine_arm2_local.tga, heightmap(models/characters/male_npc/marine/marine_arm2_h.tga, 5 ) )
+        specularmap	  models/characters/male_npc/marine/marine_arm2_s.tga
+}
+
+models/characters/male_npc/soldier/soldier_arm2
+{
+    noselfShadow
+	clamp
+	unsmoothedTangents
+	flesh
+	forceOverlays
+	//noShadows
+	
+
+
+	{	
+		if	parm7			
+		blend	gl_zero, gl_one				
+		noclamp map models/monsters/spectre/global_dis.tga	
+		alphaTest 0.05 + 2 * (time - parm7)
+	}
+
+	
+		renderbump  -size 1024 3072 -trace 0.03 -colorMap -aa 2  models/characters/male_npc/soldier/soldier_local.tga models/characters/male_npc/soldier/soldier_hi.lwo
+		//diffusemap	  models/characters/male_npc/soldier/soldier_new.tga
+		diffusemap	  models/characters/male_npc/soldier/soldier_arm2.tga
+
+	
+	{
+		blend bumpmap
+	//	map  addnormals(models/characters/male_npc/soldier/soldier_new_local.tga, heightmap(models/characters/male_npc/soldier/soldier_new_h.tga, 1 ) )
+		map  addnormals(models/characters/male_npc/soldier/soldier_arm2_local.tga, heightmap(models/characters/male_npc/soldier/soldier_arm2_h.tga, 1 ) )
+ 		  
+     	}
+		
+	{
+		blend	specularmap	
+		//map	models/characters/male_npc/soldier/soldier_new_s.tga
+		map	models/characters/male_npc/soldier/soldier_arm2_s.tga
+		red	.3
+		green	.3	
+		blue	.3
+	}
+
+
+
+}
+
+models/characters/player/body
+{
+        noselfShadow
+		clamp
+		collision	
+	renderbump  -size 1024 2048 -trace 0.03 -colorMap -aa 2  models/characters/player/body_local.tga models/characters/player/body_hi.lwo
+
+
+ 				diffusemap	  models/characters/player/body.tga
+
+		{
+ 		  blend bumpmap
+          map  addnormals(models/characters/player/body_local.tga, heightmap(models/characters/player/body_h.tga, 5 ) )
+ 		  
+     	}
+		
+                  specularmap	models/characters/player/body_s.tga
+}
+
+models/characters/player/body_invisible
+{
+      noselfShadow
+		clamp
+		collision	
+		translucent
+	   //renderbump  -size 1024 2048 -trace 0.03 -colorMap -aa 2  models/characters/player/body_local.tga models/characters/player/body_hi.lwo
+	   renderbump  -size 1024 2048 -trace 0.03 -colorMap -aa 2  models/invis_gb.tga models/characters/player/body_hi.lwo
+	
+ 		diffusemap	  models/invis_gb.tga
+
+		/*{
+ 		  blend bumpmap
+          map  addnormals(models/characters/player/body_local.tga, heightmap(models/characters/player/body_h.tga, 5 ) )
+ 		  
+     	}*/
+	
+   /*{
+		blend specularmap
+		map	models/invis_gb.tga
+		translate	time * 0 , time * 0.6
+	}*/
+}

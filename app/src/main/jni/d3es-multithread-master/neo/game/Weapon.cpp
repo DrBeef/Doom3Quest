@@ -444,6 +444,34 @@ void idWeapon::Save( idSaveGame *savefile ) const {
 
 	savefile->WriteJoint( smokeJointView );
 
+    savefile->WriteInt(weaponParticles.Num());
+
+    for (int i = 0; i < weaponParticles.Num(); i++) {
+        WeaponParticle_t *part = weaponParticles.GetIndex(i);
+        savefile->WriteString(part->name);
+        savefile->WriteString(part->particlename);
+        savefile->WriteBool(part->active);
+        savefile->WriteInt(part->startTime);
+        savefile->WriteJoint(part->joint);
+        savefile->WriteBool(part->smoke);
+
+        if (!part->smoke) {
+            savefile->WriteObject(part->emitter);
+        }
+    }
+
+    savefile->WriteInt(weaponLights.Num());
+
+    for (int i = 0; i < weaponLights.Num(); i++) {
+        WeaponLight_t *light = weaponLights.GetIndex(i);
+        savefile->WriteString(light->name);
+        savefile->WriteBool(light->active);
+        savefile->WriteInt(light->startTime);
+        savefile->WriteJoint(light->joint);
+        savefile->WriteInt(light->lightHandle);
+        savefile->WriteRenderLight(light->light);
+    }
+
     // Koz begin
     for ( int i = 0; i < 2; i++ )
     {

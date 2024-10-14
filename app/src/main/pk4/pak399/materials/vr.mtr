@@ -1,0 +1,570 @@
+// the gui for the stat watch
+guisurfs/vrstatgui
+{	
+	qer_editorimage	guisurfaces/guisurface.tga
+	guiSurf guis/weapons/vrstatgui.gui
+	discrete
+	description "VR stats watch gui"
+}
+
+gui/weapons/statwatch/background
+{	
+	noShadows
+	twosided
+	{
+		Blend add
+		Map   guis/assets/statwatch/statbg2.tga
+		zeroclamp
+		//rgb mguitable[ time *.3 ]
+	}
+} 
+
+
+// materials so hands/arms/fists/stats watch can be enabled/disabled thru skins in vr
+// overridden by skin assigned in weapon scripts to hide inactive elements
+
+vr/soldierarm
+{
+        noselfShadow
+		//noShadows
+		clamp
+	renderbump  -size 1024 2048 -trace 0.1 -colorMap   models/characters/player/arm2_local.tga models/characters/player/arm1_hi.lwo
+
+
+
+        	diffusemap	models/characters/player/arm2.tga
+		{
+ 		  blend bumpmap
+          map  addnormals(models/characters/player/arm2_local.tga, heightmap(models/characters/player/arm2_h.tga, 3 ) )
+ 		  
+     	}
+                  specularmap	models/characters/player/arm2_s.tga
+}
+
+vr/rightarm
+{
+        noselfShadow
+		//noShadows
+		clamp
+	renderbump  -size 1024 2048 -trace 0.1 -colorMap   models/characters/player/arm2_local.tga models/characters/player/arm1_hi.lwo
+
+
+
+        	diffusemap	models/characters/player/arm2.tga
+		{
+ 		  blend bumpmap
+          map  addnormals(models/characters/player/arm2_local.tga, heightmap(models/characters/player/arm2_h.tga, 3 ) )
+ 		  
+     	}
+                  specularmap	models/characters/player/arm2_s.tga
+}
+
+vr/leftarm
+{
+        noselfShadow
+		//noShadows
+		clamp
+	renderbump  -size 1024 2048 -trace 0.1 -colorMap   models/characters/player/arm2_local.tga models/characters/player/arm1_hi.lwo
+
+
+
+        	diffusemap	models/characters/player/arm2.tga
+		{
+ 		  blend bumpmap
+          map  addnormals(models/characters/player/arm2_local.tga, heightmap(models/characters/player/arm2_h.tga, 3 ) )
+ 		  
+     	}
+                  specularmap	models/characters/player/arm2_s.tga
+}
+
+vr/righthand
+{	
+    	noSelfShadow
+		//noshadows
+		
+	
+        diffusemap	models/weapons/hands/hand_df.tga
+
+		{
+ 		  blend bumpmap
+          map  addnormals( models/weapons/hands/hand_local.tga, heightmap( models/weapons/hands/hand_add.tga, 3 ) )
+ 		  
+     	}
+
+        specularmap	models/weapons/hands/hand_sp.tga
+}
+
+vr/lefthand
+{	
+    	noSelfShadow
+		//noshadows
+	
+        diffusemap	models/weapons/hands/hand_df.tga
+
+		{
+ 		  blend bumpmap
+          map  addnormals( models/weapons/hands/hand_local.tga, heightmap( models/weapons/hands/hand_add.tga, 3 ) )
+ 		  
+     	}
+
+        specularmap	models/weapons/hands/hand_sp.tga
+}
+
+vr/statwatch
+{
+        noselfShadow
+	unsmoothedTangents
+	renderbump  -size 1024 1024 -trace 0.1 -colorMap -aa 2  models/items/pda/pda_local.tga models/items/pda/pda_hi.lwo
+
+        	diffusemap	models/items/pda/pda.tga
+		{
+ 		  blend bumpmap
+          map  addnormals(models/items/pda/pda_local.tga, heightmap(models/items/pda/pda_h.tga, 7 ) )
+ 		  
+     	}
+	
+           specularmap	 models/items/pda/pda_s.tga
+}
+
+vr/statwatchgui
+{
+	qer_editorimage	guisurfaces/guisurface.tga
+	guiSurf guis/weapons/vrstatgui.gui
+	discrete
+	description "VR stats watch gui"
+}
+
+vr/flashhand
+{
+        noselfShadow
+		//noShadows
+		clamp
+	renderbump  -size 1024 2048 -trace 0.1 -colorMap   models/characters/player/arm2_local.tga models/characters/player/arm1_hi.lwo
+
+
+
+        	diffusemap	models/characters/player/arm2.tga
+		{
+ 		  blend bumpmap
+          map  addnormals(models/characters/player/arm2_local.tga, heightmap(models/characters/player/arm2_h.tga, 3 ) )
+ 		  
+     	}
+                  specularmap	models/characters/player/arm2_s.tga
+}
+
+vr/leftstatwatch
+{
+        noselfShadow
+	unsmoothedTangents
+	renderbump  -size 1024 1024 -trace 0.1 -colorMap -aa 2  models/items/pda/pda_local.tga models/items/pda/pda_hi.lwo
+
+        	diffusemap	models/items/pda/pda.tga
+		{
+ 		  blend bumpmap
+          map  addnormals(models/items/pda/pda_local.tga, heightmap(models/items/pda/pda_h.tga, 7 ) )
+ 		  
+     	}
+	
+           specularmap	 models/items/pda/pda_s.tga
+}
+
+vr/leftstatwatchgui
+{
+	qer_editorimage	guisurfaces/guisurface.tga
+	guiSurf guis/weapons/vrstatgui.gui
+	discrete
+	description "VR stats watch gui"
+}
+
+vr/leftfist
+{
+    noselfShadow
+	//noShadows
+	renderbump  -size 1024 2048 -trace 0.03 -colorMap   models/weapons/berserk/fist_local.tga models/weapons/berserk/fist_hi.lwo
+
+
+
+        diffusemap	models/weapons/berserk/fist.tga
+		{
+ 		  blend bumpmap
+        map  addnormals(models/weapons/berserk/fist_local.tga, heightmap(models/weapons/berserk/fist_h.tga, 3 ) )
+ 		  
+     	}
+                  specularmap	models/weapons/berserk/fist_s.tga
+}
+
+vr/rightfist
+{
+    noselfShadow
+	//noShadows
+	renderbump  -size 1024 2048 -trace 0.03 -colorMap   models/weapons/berserk/fist_local.tga models/weapons/berserk/fist_hi.lwo
+
+
+
+        diffusemap	models/weapons/berserk/fist.tga
+		{
+ 		  blend bumpmap
+        map  addnormals(models/weapons/berserk/fist_local.tga, heightmap(models/weapons/berserk/fist_h.tga, 3 ) )
+ 		  
+     	}
+                  specularmap	models/weapons/berserk/fist_s.tga
+}
+
+
+headingBeamArrowsScroll
+{
+	qer_editorimage	textures/zaphod/shotgun_laser.TGA
+	translucent
+	noShadows
+	{
+		blend add
+		map models/images/headingbeamarrow.tga
+		rgb			guiLightTable[ time *.25 ] * 1.25
+		scroll	time * -0.02, 0
+	}
+}
+
+headingBeamArrows
+{
+	qer_editorimage	textures/zaphod/shotgun_laser.TGA
+	translucent
+	noShadows
+	{
+		blend add
+		map models/images/headingbeamarrow.tga
+		rgb			guiLightTable[ time *.25 ] * 1.25
+	}
+}
+
+headingBeamSolid
+{
+	qer_editorimage	textures/zaphod/shotgun_laser.TGA
+	translucent
+	noShadows
+	{
+		blend add
+		map models/images/headingbeamsolid.tga
+		rgb			guiLightTable[ time *.25 ] * 1.25
+		scroll	time * -0.02, 0
+	}
+}
+
+vr/hud
+
+{
+	qer_editorimage	textures/zaphod/shotgun_laser.TGA
+	translucent
+	noShadows
+	{
+		blend add
+		map _hudImage
+	}
+}
+
+vr/weaponsight
+{
+	qer_editorimage	textures/zaphod/shotgun_laser.TGA
+	translucent
+	twoSided
+	noShadows
+	{
+		blend add
+		map models/images/laserdot.tga
+		rgb			guiLightTable[ time *.25 ] * 1.25
+	}
+}
+
+vr/weaponsightCircleDot
+{
+	qer_editorimage	textures/zaphod/shotgun_laser.TGA
+	translucent
+	twoSided
+	noShadows
+	{
+		blend add
+		map models/images/lasercircledot.tga
+		rgb			guiLightTable[ time *.25 ] * 1.25
+	}
+}
+
+vr/weaponsightCross
+{
+	qer_editorimage	textures/zaphod/shotgun_laser.TGA
+	translucent
+	twoSided
+	noShadows
+	{
+		blend add
+		map models/images/lasercrosshair.tga
+		rgb			guiLightTable[ time *.25 ] * 1.25
+	}
+}
+
+models/mapobjects/filler/cola1vr
+{	
+	renderbump -size 256 256
+	noselfshadow
+	bumpmap		addnormals (models/mapobjects/filler/cola1_local.tga, heightmap (models/mapobjects/filler/cola1_bmp.tga, 4) ) 
+	//bumpmap heightmap (models/mapobjects/filler/cola1_bmp.tga, 4)
+	diffusemap		models/mapobjects/filler/cola1_d.tga
+	specularmap		models/mapobjects/filler/cola1_s.tga
+}
+
+models/mapobjects/filler/cola2vr
+{	
+	renderbump -size 256 256
+	noselfshadow
+	bumpmap		addnormals (models/mapobjects/filler/cola1_local.tga, heightmap (models/mapobjects/filler/cola1_bmp.tga, 4) ) 
+	//bumpmap heightmap (models/mapobjects/filler/cola1_bmp.tga, 4)
+	diffusemap		models/mapobjects/filler/cola1_d.tga
+	specularmap		models/mapobjects/filler/cola1_s.tga
+}
+
+teleportTargetCircle
+{
+	translucent
+	noShadows
+	twoSided
+	nonsolid
+	qer_editorimage textures/decals/telemars.tga
+
+	{
+		blend	add 
+  		map     models/images/teleporttarget_1_circle.tga
+	
+		red parm0
+		green parm0
+		blue parm0
+		alpha 0.5
+	}
+  
+} 			
+
+teleportTargetCenter
+{
+	translucent
+	noShadows
+	noselfShadow
+	twoSided
+	nonsolid
+	qer_editorimage textures/decals/telemars.tga
+
+	{
+		blend	add 
+  		map     models/images/teleporttarget_1_center.tga
+		rgb			guiLightTable[ time * 4  ] * 1.5
+	}
+  
+} 	
+
+teleportTargetFX
+{
+	translucent
+	noShadows
+	noselfShadow
+	twoSided
+	nonsolid
+	qer_editorimage textures/decals/telemars.tga
+	
+    {
+		blend	add
+		map 	models/images/teleporttarget_b_add.tga
+  		rgb		telemars[ time * .3 ] * parm1 * 1.25
+		
+		rotate time * .025
+
+	} 
+   	{
+		blend	add
+  		map 	models/images/teleporttarget_c_add.tga
+		rgb		telemars[ time * .1 ] * parm1 * 1.25
+		
+		rotate time * -.035
+
+	} 			
+ 				
+  
+}
+
+teleportTargetBeamBlue
+{
+	translucent
+	noShadows
+	noselfShadow
+	twoSided
+	nonsolid
+	
+	{
+		blend add
+		map models/images/teleportbeam.tga
+		rgb			guiLightTable[ time * 10  ] * 1.5
+		scroll	time * -0.25, 0
+	}
+	{
+		blend add
+		map models/images/teleportbeam_a.tga
+		rgb			guiLightTable[ time * 15  ] 
+		scroll	time * -0.30, time * 0.15
+	}
+	{
+		blend add
+		map models/images/teleportbeam_b.tga
+		rgb			guiLightTable[ time * 12  ] 
+		scroll	time * -.95 , time * -0.25
+	}
+		{
+		blend add
+		map models/images/teleportbeam_b.tga
+		rgb			guiLightTable[ time * 1.2  ] 
+		scroll	time * -.5 , time * 0.45
+	}
+}
+
+teleportTargetBeamoriginStar
+{
+	noSelfShadow
+	noshadows
+	//twosided
+	translucent
+	discrete
+	nonsolid
+	noimpact
+	deform sprite
+
+	qer_editorimage		textures/particles/plasma.tga
+
+	{
+	    blend  add   // GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA
+		map    textures/particles/plasma2.tga
+		//rotate	parm5 * time
+		rotate time * .03
+		rgb		bathroom2table[ time * 3 ] * .25
+		clamp
+
+	}
+
+}
+
+teleportTargetBeamoriginBall
+{
+	noSelfShadow
+	noshadows
+	//twosided
+	translucent
+	discrete
+	nonsolid
+	noimpact
+	deform sprite
+
+	qer_editorimage		textures/particles/plasma.tga
+
+	{
+	    blend  add   // GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA
+		map    textures/particles/plasma.tga
+		rgb		bathroom2table[ time * 3 ] *.75
+		rotate time * .03
+		clamp
+
+	}
+	{
+	    blend  add   // GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA
+		map    textures/particles/plasma.tga
+		rgb		bathroom2table[ time * 3 ] * .75
+		rotate time * -.03
+		clamp
+
+	}
+
+}
+
+teleportTargetCylinder
+{
+	translucent
+	noShadows
+	noselfShadow
+	twoSided
+	nonsolid
+	qer_editorimage textures/decals/telemars.tga
+	
+	 {
+		blend	add
+		map 	models/images/telepadcylinder.tga
+  		rgb			guiLightTable[ time *.15 ] * parm1 
+		scroll time * 0.025,0
+
+	} 
+    {
+		blend	add
+		map 	models/images/telepad_elec.tga
+  		rgb		telemars[ time * .25 ] * parm1 * 1.25
+		scroll time * .014, time * .14
+		
+
+	} 
+   	{
+		blend	add
+  		map 	models/images/telepad_elec2.tga
+		rgb		telemars[ time * .15 ] * parm1 * 1.25
+		scroll time * -.019, time * .20
+		rotate 90
+
+	} 		
+
+   
+}
+
+teleportTargetCylinderCrouch
+{
+	translucent
+	noShadows
+	noselfShadow
+	twoSided
+	nonsolid
+	qer_editorimage textures/decals/telemars.tga
+	
+	 {
+		blend	add
+		map 	models/images/telepadcylinderred.tga
+  		rgb			guiLightTable[ time *.15 ] * parm1 *.5
+		scroll time * 0.025,0
+
+	} 
+    {
+		blend	add
+		map 	models/images/telepad_elec.tga
+  		red		telemars[ time * .25 ] * parm1 * 1.25
+		green 0 
+		blue 0
+		scroll time * .014, time * .14
+		
+
+	} 
+   	{
+		blend	add
+  		map 	models/images/telepad_elec2.tga
+		red		telemars[ time * .15 ] * parm1 * 1.25
+		green 0
+		blue 0
+		scroll time * -.019, time * .20
+		rotate 90
+
+	} 		
+   
+}
+
+teleportTargetCircleRed
+{
+	translucent
+	noShadows
+	twoSided
+	nonsolid
+	qer_editorimage textures/decals/telemars.tga
+
+	{
+		blend	add 
+  		map     models/images/teleporttarget_1_circlered.tga
+		rgb	guiLightTable[ time *.415 ] 
+		alpha 0.5
+	}
+  
+} 

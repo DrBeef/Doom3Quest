@@ -207,6 +207,12 @@ import static android.system.Os.setenv;
 
 	public void create() {
 
+		//Define paths
+		File root = new File("/sdcard/Doom3Quest");
+		File base = new File(root, "base");
+		File roe = new File(root, "d3xp");
+		File lm = new File(root, "d3le");
+
 		boolean exitAfterCopy = false;
 
 		//If this is first run on clean system, or user hasn't copied anything yet, just exit after we have copied
@@ -215,18 +221,14 @@ import static android.system.Os.setenv;
 			exitAfterCopy = true;
 		}
 
-		copy_asset("/sdcard/Doom3Quest", "commandline.txt", false);
-
-		//Create all required folders
-		new File("/sdcard/Doom3Quest/base").mkdirs();
-
-		copy_asset("/sdcard/Doom3Quest/base", "pak399.pk4", true);
-
-		//Now copy our defaults for the two headsets - These are only our defaults, users shouldn't change
-		//these so forcefully overwrite
-		copy_asset("/sdcard/Doom3Quest/config/base", "quest1_default.cfg", true);
-		copy_asset("/sdcard/Doom3Quest/config/base", "quest2_default.cfg", true);
-		copy_asset("/sdcard/Doom3Quest/config/base", "quest3_default.cfg", true);
+		//Create file structure
+		base.mkdirs();
+		copy_common_assets(base);
+		copy_common_assets(roe);
+		copy_common_assets(lm);
+		copy_asset(base.getAbsolutePath(), "commandline.txt", false);
+		copy_asset(roe.getAbsolutePath(), "pak399roe.pk4", true);
+		copy_asset(lm.getAbsolutePath(), "pak399lm.pk4", true);
 
 		if (exitAfterCopy)
 		{
@@ -238,11 +240,12 @@ import static android.system.Os.setenv;
 		commandLineParams = new String("doom3quest");
 
 		//See if user is trying to use command line params
-		if(new File("/sdcard/Doom3Quest/commandline.txt").exists()) // should exist now!
+		File commandline = new File(base.getAbsolutePath(), "commandline.txt");
+		if(commandline.exists()) // should exist now!
 		{
 			BufferedReader br;
 			try {
-				br = new BufferedReader(new FileReader("/sdcard/Doom3Quest/commandline.txt"));
+				br = new BufferedReader(new FileReader(commandline.getAbsolutePath()));
 				String s;
 				StringBuilder sb=new StringBuilder(0);
 				while ((s=br.readLine())!=null)
@@ -278,7 +281,7 @@ import static android.system.Os.setenv;
 		long msaa = 1; // default for both HMDs
 
 
-		String configFileName = "/sdcard/Doom3Quest/config/base/doom3quest.cfg";
+		String configFileName = new File(base, "doom3quest.cfg").getAbsolutePath();
 		if(new File(configFileName).exists())
 		{
 			BufferedReader br;
@@ -323,6 +326,15 @@ import static android.system.Os.setenv;
 		}
 
 		mNativeHandle = GLES3JNILib.onCreate( this, commandLineParams, refresh, ss, msaa );
+	}
+
+	public void copy_common_assets(File path) {
+		if (path.exists()) {
+			copy_asset(path.getAbsolutePath(), "pak399.pk4", true);
+			copy_asset(path.getAbsolutePath(), "quest1_default.cfg", true);
+			copy_asset(path.getAbsolutePath(), "quest2_default.cfg", true);
+			copy_asset(path.getAbsolutePath(), "quest3_default.cfg", true);
+		}
 	}
 	
 	public void copy_asset(String path, String name, boolean force) {

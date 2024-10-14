@@ -1,0 +1,205 @@
+
+
+skin skins/models/weapons/flashlight_onvr/flashhands/0h {
+	vr/leftarm textures/common/nodraw
+	vr/statwatch textures/common/nodraw
+	vr/statwatchgui textures/common/nodraw
+	models/items/flashlight/flashlight2_mini textures/common/nodraw 
+}
+
+skin skins/models/weapons/flashlight_offvr/flashhands/0h {
+	models/items/flashlight/flare textures/common/nodraw
+	models/items/flashlight/beam1 textures/common/nodraw
+	models/items/flashlight/flare2 textures/common/nodraw
+	models/items/flashlight/beam2 textures/common/nodraw
+	models/items/flashlight/bulb textures/common/nodraw
+	vr/statwatch textures/common/nodraw
+	vr/statwatchgui textures/common/nodraw
+	vr/leftarm textures/common/nodraw
+	models/items/flashlight/flashlight2_mini textures/common/nodraw 
+}
+
+skin skins/models/weapons/flashlight_onminivr/flashhands/0h {
+	vr/leftarm textures/common/nodraw
+	vr/statwatch textures/common/nodraw
+	vr/statwatchgui textures/common/nodraw
+	models/items/flashlight/flashlight2 textures/common/nodraw
+}
+
+skin skins/models/weapons/flashlight_offminivr/flashhands/0h {
+	models/items/flashlight/flare textures/common/nodraw
+	models/items/flashlight/beam1 textures/common/nodraw
+	models/items/flashlight/flare2 textures/common/nodraw
+	models/items/flashlight/beam2 textures/common/nodraw
+	models/items/flashlight/bulb textures/common/nodraw
+	vr/statwatch textures/common/nodraw
+	vr/statwatchgui textures/common/nodraw
+	vr/leftarm textures/common/nodraw
+	models/items/flashlight/flashlight2 textures/common/nodraw
+}
+
+
+
+
+skin skins/models/weapons/shotgunnoammo {
+	models/weapons/shell1/sshell textures/common/nodraw
+}
+
+skin skins/models/weapons/shotgunammo {
+
+}
+
+skin skins/models/weapons/plasmagunnoammo {
+	models/weapons/plasmagun/pl_can textures/common/nodraw
+	models/weapons/plasmagun/pl_can_blue textures/common/nodraw
+}
+
+skin skins/models/weapons/plasmagunammo {
+}
+
+skin skins/models/weapons/nade {
+}
+
+skin skins/models/weapons/nonade {
+	models/weapons/grenades/grenades3 textures/common/nodraw
+	models/weapons/grenades/grenades3fx textures/common/nodraw
+}
+
+skin skins/models/weapons/bfgnoammo {
+	models/weapons/plasmagun/pl_can_ammo textures/common/nodraw
+	models/weapons/plasmagun/pl_can_green_ammo textures/common/nodraw
+}
+
+skin skins/models/weapons/bfgammo {
+}
+
+skin skins/models/weapons/0rox {
+	models/weapons/rocketlauncher/rshell1 textures/common/nodraw
+	models/weapons/rocketlauncher/rshell2 textures/common/nodraw
+	models/weapons/rocketlauncher/rshell3 textures/common/nodraw
+	models/weapons/rocketlauncher/rshell4 textures/common/nodraw
+}
+
+skin skins/models/weapons/1rox {
+	models/weapons/rocketlauncher/rshell1 textures/common/nodraw
+	models/weapons/rocketlauncher/rshell2 textures/common/nodraw
+	models/weapons/rocketlauncher/rshell3 textures/common/nodraw
+	models/weapons/rocketlauncher/rshell4 textures/common/nodraw
+}
+
+skin skins/models/weapons/2rox {
+	models/weapons/rocketlauncher/rshell1 textures/common/nodraw
+	models/weapons/rocketlauncher/rshell2 textures/common/nodraw
+	models/weapons/rocketlauncher/rshell3 textures/common/nodraw
+}
+
+skin skins/models/weapons/3rox {
+	models/weapons/rocketlauncher/rshell1 textures/common/nodraw
+	models/weapons/rocketlauncher/rshell2 textures/common/nodraw
+}
+
+skin skins/models/weapons/4rox {
+	models/weapons/rocketlauncher/rshell1 textures/common/nodraw
+}
+
+skin skins/models/weapons/5rox {
+}
+
+skin skins/models/weapons/soulcubefire {
+	models/weapons/soulcube/soulcube3 textures/common/nodraw
+	models/weapons/soulcube/soulcube3fx textures/common/nodraw
+	models/weapons/soulcube/soulcube3fx2 textures/common/nodraw
+	models/weapons/soulcube/soulcube3fx3 textures/common/nodraw
+	models/weapons/soulcube/soulcube3fx4 textures/common/nodraw
+	models/weapons/soulcube/soulcube3fx5 textures/common/nodraw
+	models/weapons/soulcube/soulknife textures/common/nodraw
+	models/weapons/soulcube/soulknife2 textures/common/nodraw
+	models/weapons/soulcube/soulknife3 textures/common/nodraw
+	models/weapons/soulcube/soulknife4 textures/common/nodraw
+}
+
+skin skins/models/weapons/soulcubeidle {
+}
+
+skin skins/weapons/artifact_normal {
+	models/characters/player/arm2  models/characters/player/arm2
+}
+
+skin skins/weapons/artifact_charged {
+	models/characters/player/arm2  models/characters/player/deadarm2
+}
+
+skin skins/weapons/artifact_petrified {
+	models/characters/player/arm2		models/characters/player/arm2
+	models/weapons/artifact/artifact	models/weapons/artifact/artifact_petrified
+}
+
+skin skins/weapons/artifact3rd_petrified {
+	models/weapons/artifact/artifact3rd  models/weapons/artifact/artifact3rd_petrified
+}
+
+skin skins/weapons/artifact_petrified_fx {
+	models/weapons/artifact/artifact3rd	models/weapons/artifact/artifact_petrified_fx1
+}
+
+skin skins/weapons/artifact_3rd_normal {
+	models/weapons/artifact/artifact3rd	models/weapons/artifact/artifact3rd
+}
+
+skin skins/weapons/artifact_3rd_fx2 {
+	models/weapons/artifact/artifact3rd	models/weapons/artifact/artifact_fx2
+}
+
+skin skins/weapons/artifact_3rd_fx3 {
+	models/weapons/artifact/artifact_fx2	models/weapons/artifact/artifact_fx3
+}
+
+skin skins/weapons/artifact_fx2 {
+	models/weapons/artifact/artifact_petrified_fx1	models/weapons/artifact/artifact_petrified_fx2
+}
+
+skin skins/weapons/artifact_fx3 {
+	models/weapons/artifact/artifact_petrified_fx2	models/weapons/artifact/artifact_petrified_fx3
+}
+
+skin skins/models/headingbeamarrowsscroll{
+}
+
+skin skins/models/headingbeamarrows{
+    headingBeamArrowsScroll headingBeamArrows
+}
+
+skin skins/models/headingbeamsolid{
+    headingBeamArrowsScroll headingBeamSolid
+}
+
+skin skins/vr/crosshairDot{
+}
+
+skin skins/vr/crosshairCircleDot{
+	vr/weaponsight vr/weaponsightCircleDot
+}
+
+skin skins/vr/crosshairCross{
+	vr/weaponsight vr/weaponsightCross
+}
+
+
+//just for testing telepad materials, delete when done
+skin skins/vr/pad1{
+	teleportTargetCylinder teleportTargetCylinder
+}
+
+skin skins/vr/pad2{
+	teleportTargetCylinder teleportTargetCylinderDim
+}
+
+skin skins/vr/pad3{
+	teleportTargetCylinder teleportTargetCylinderBolt
+}
+
+skins/vr/padcrouch{
+	teleportTargetCylinder teleportTargetCylinderCrouch
+	teleportTargetCircle teleportTargetCircleRed
+	teleportTargetFX textures/common/nodraw
+}

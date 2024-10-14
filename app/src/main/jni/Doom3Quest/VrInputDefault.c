@@ -235,6 +235,17 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
 
         pVRClientInfo->weapon_stabilised = stabilised;
 
+        //Detect if head is stabilised
+        static float lastHmdYaw = 0;
+        static float smoothedHmdYawDiff = 0;
+        float hmdYaw = pVRClientInfo->hmdorientation_temp[YAW];
+        float hmdYawDiff = hmdYaw - lastHmdYaw;
+        if (hmdYawDiff > 180) hmdYawDiff -= 360;
+        if (hmdYawDiff < -180) hmdYawDiff += 360;
+        smoothedHmdYawDiff = smoothedHmdYawDiff * 0.95f + hmdYawDiff * 0.05f;
+        pVRClientInfo->head_stabilised = fabs(smoothedHmdYawDiff) < 0.1f;
+        lastHmdYaw = hmdYaw;
+
         {
             //Does weapon velocity trigger attack and is it fast enough
             static bool velocityTriggeredAttack = false;
@@ -247,7 +258,7 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
                                            powf(pWeapon->HeadPose.LinearVelocity.y, 2) +
                                            powf(pWeapon->HeadPose.LinearVelocity.z, 2));
 
-                    velocityTriggeredAttack = (velocity > VELOCITY_TRIGGER);
+                    velocityTriggeredAttack = (velocity > VELOCITY_TRIGGER) && pVRClientInfo->head_stabilised;
 
                     if (fired != velocityTriggeredAttack) {
                         ALOGV("**WEAPON EVENT** velocity triggered %s",
@@ -276,7 +287,7 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
                                            powf(pOff->HeadPose.LinearVelocity.y, 2) +
                                            powf(pOff->HeadPose.LinearVelocity.z, 2));
 
-                    velocityTriggeredAttackOffHand = (velocity > VELOCITY_TRIGGER);
+                    velocityTriggeredAttackOffHand = (velocity > VELOCITY_TRIGGER) && pVRClientInfo->head_stabilised;
 
                     if (firedOffHand != velocityTriggeredAttackOffHand) {
                         ALOGV("**WEAPON EVENT** velocity triggered (offhand) %s",

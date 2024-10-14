@@ -1920,7 +1920,7 @@ bool idGameLocal::InitFromSaveGame( const char *mapName, idRenderWorld *renderWo
 	savegame.ReadInt( previousTime );
 	savegame.ReadInt( time );
 
-	int msec = 0;
+	int msec = 1000 / 60;
 	savegame.ReadInt(msec);
 	SetMSec(msec);
 
@@ -2577,6 +2577,24 @@ idPlayer *idGameLocal::GetClientByCmdArgs( const idCmdArgs &args ) const {
 	return player;
 }
 
+int idGameLocal::GetMSec(bool dynamic) const {
+    if (dynamic) {
+        return USERCMD_MSEC;
+    } else {
+        return 1000 / 60;
+    }
+}
+
+void idGameLocal::SetMSec(int value) const {
+    int msec = 1000 / 60;
+    if ((value <= 0) || (value > msec)) {
+        value = msec;
+    }
+    if (cvarSystem) {
+        cvarSystem->SetCVarFloat("vr_timescale", (float)value / (float)msec);
+    }
+}
+
 /*
 ================
 idGameLocal::GetNextClientNum
@@ -2860,7 +2878,7 @@ void idGameLocal::RunTimeGroup2()
     idEntity *ent;
     int num = 0;
 
-    int msec = 0;
+    int msec = 1000 / 60;
     fast.Increment();
     fast.Get(time, previousTime, msec, framenum, realClientTime);
     SetMSec(msec);
@@ -2902,7 +2920,7 @@ gameReturn_t idGameLocal::RunFrame( const usercmd_t *clientCmds ) {
 
 	ComputeSlowMsec();
 
-	int msec = 0;
+	int msec = 1000 / 60;
 	slow.Get(time, previousTime, msec, framenum, realClientTime);
 	msec = slowmoMsec;
 	SetMSec(slowmoMsec);
@@ -2920,10 +2938,14 @@ gameReturn_t idGameLocal::RunFrame( const usercmd_t *clientCmds ) {
 			player->Think();
 		}
 	} else do {
+		float scale = 1;
+		if (cvarSystem) {
+			scale = cvarSystem->GetCVarFloat("vr_timescale");
+		}
 		// update the game time
 		framenum++;
 		previousTime = time;
-		time += USERCMD_MSEC;
+		time += USERCMD_MSEC * scale;
 		realClientTime = time;
 		slow.Set(time, previousTime, msec, framenum, realClientTime);
 
@@ -3039,7 +3061,7 @@ gameReturn_t idGameLocal::RunFrame( const usercmd_t *clientCmds ) {
 		idEvent::ServiceEvents();
 
 		// service pending fast events
-		int msec = 0;
+		int msec = 1000 / 60;
 		fast.Get(time, previousTime, msec, framenum, realClientTime);
 		SetMSec(msec);
 		idEvent::ServiceFastEvents();
@@ -5101,7 +5123,7 @@ void idGameLocal::SelectTimeGroup(int timeGroup)
 {
     int i = 0;
 
-    int msec = 0;
+    int msec = 1000 / 60;
     if (timeGroup) {
         fast.Get(time, previousTime, msec, framenum, realClientTime);
     } else {
@@ -5230,19 +5252,20 @@ idGameLocal::ResetSlowTimeVars
 */
 void idGameLocal::ResetSlowTimeVars()
 {
-    SetMSec(USERCMD_MSEC);
-    slowmoMsec			= USERCMD_MSEC;
+    int msec = 1000 / 60;
+    SetMSec(msec);
+    slowmoMsec			= msec;
     slowmoState			= SLOWMO_STATE_OFF;
 
     fast.framenum		= 0;
     fast.previousTime	= 0;
     fast.time			= 0;
-    fast.msec			= USERCMD_MSEC;
+    fast.msec			= msec;
 
     slow.framenum		= 0;
     slow.previousTime	= 0;
     slow.time			= 0;
-    slow.msec			= USERCMD_MSEC;
+    slow.msec			= msec;
 }
 
 /*

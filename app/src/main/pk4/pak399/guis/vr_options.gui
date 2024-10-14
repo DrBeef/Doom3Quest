@@ -1,0 +1,2078 @@
+
+	windowDef VRBtnText {
+		rect		210, 442, 150, 22
+		text		"VR OPTIONS"
+		textscale	0.25
+		textalign	1
+		forecolor	1.0, 1.0, 1.0, 0.4
+		visible		1
+		notime		1
+
+		onMouseEnter {
+			set			"ToolTip1::text" "VR Options Menu";
+			set			"ToolTip2::text" "VR Options Menu";
+			transition	"forecolor" "1.0 1.0 1.0 0.4" "1.0 1.0 1.0 1.0" "100";
+			resetTime	"ToolTip1" "0";
+		}
+
+		onMouseExit {
+			transition	"forecolor" "0.6 0.8 0.8 1.0" "1.0 1.0 1.0 0.4" "200";
+			resetTime	"ToolTip2" "0";
+		}
+
+		onAction {
+			set			"vr_options::visible" "1";
+			set			"cmd" "play guisounds_menuclickup";
+ 			set			"noevents" "1";
+			transition	"forecolor" "0.6 0.8 0.8 1.0" "1.0 1.0 1.0 0.4" "200";
+			resetTime	"ToolTip2" "0";
+			resetTime	"0";
+		}
+		
+		onTime 5000 {
+			set			"noevents" "0";
+		}
+	}
+	
+	windowDef vr_options {
+		rect		0, 0, 640, 480
+		text		"VR Options"
+		textscale	0.25
+		textalign	1
+		backcolor	0.1796875, 0.25, 0.296875, 0.8
+		visible		0
+		notime		1
+		modal		1
+
+//=====================================================
+// All VR Options Titles here
+		windowDef vr_title {
+			rect		0, 0, 640, 480
+			visible		1      		
+			
+			windowDef vr_main_bg_L {
+				rect     	4, 20, 8, 248
+            	background  "gui/mainmenu/select_edge"
+				matcolor 	0, 0, 0, 1
+           		noevents 	1
+			}
+			windowDef vr_main_bg_M {
+				rect     	12, 20, 104, 248
+				background  "gui/mainmenu/select_border"
+				matcolor 	0, 0, 0, 1
+				noevents 	1
+			}
+			windowDef vr_main_bg_R {
+				rect     	104, 20, 8, 248
+				background  "gui/mainmenu/select_edge"
+				matcolor 	0, 0, 0, 1
+				noevents 	1
+			}
+						
+			windowDef vr_general_title {
+				rect		8, 24, 96, 20
+				text		"General"
+				textscale	0.25
+				forecolor 	0.6, 0.8, 0.8, 1.0
+				visible		1
+				
+				onMouseEnter {
+					if ( "vr_general_settings::visible" == 0 ) {
+						transition	"forecolor" "0.6 0.8 0.8 1.0" "1.0 1.0 1.0 1.0" "100";
+					}
+				}
+				onMouseExit {
+					if ( "vr_general_settings::visible" == 0 ) {
+						transition	"forecolor" "1.0 1.0 1.0 1.0" "0.6 0.8 0.8 1.0" "200";
+					}
+				}
+				onAction {
+					set			"cmd" "play guisounds_menuclickup";
+					set			"vr_general_settings::visible" 		"1";
+					set			"vr_performance_settings::visible"		"0";					
+					set			"vr_hud_settings::visible" 		"0";
+					set			"vr_controls_settings::visible" 		"0";
+				}
+			}
+
+			windowDef vr_performance_title {
+				rect		8, 48, 96, 20
+				text		"Performance"
+				textscale	0.25
+				forecolor 	0.6, 0.8, 0.8, 1.0
+				visible		1
+
+				onMouseEnter {
+					if ( "vr_performance_settings::visible" == 0 ) {
+						transition	"forecolor" "0.6 0.8 0.8 1.0" "1.0 1.0 1.0 1.0" "100";
+					}
+				}
+				onMouseExit {
+					if ( "vr_performance_settings::visible" == 0 ) {
+						transition	"forecolor" "1.0 1.0 1.0 1.0" "0.6 0.8 0.8 1.0" "200";
+					}
+				}
+				onAction {
+					set			"cmd" "play guisounds_menuclickup";
+					set			"vr_general_settings::visible" 		"0";
+					set			"vr_performance_settings::visible"		"1";					
+					set			"vr_hud_settings::visible" 		"0";
+					set			"vr_controls_settings::visible" 		"0";
+				}
+			}
+			
+			windowDef vr_hud_title {
+				rect		8, 72, 96, 20
+				text		"HUD"
+				textscale	0.25
+				forecolor 	0.6, 0.8, 0.8, 1.0
+				visible		1
+
+				onMouseEnter {
+					if ( "vr_hud_settings::visible" == 0 ) {
+						transition	"forecolor" "0.6 0.8 0.8 1.0" "1.0 1.0 1.0 1.0" "100";
+					}
+				}
+				onMouseExit {
+					if ( "vr_hud_settings::visible" == 0 ) {
+						transition	"forecolor" "1.0 1.0 1.0 1.0" "0.6 0.8 0.8 1.0" "200";
+					}
+				}
+				onAction {
+					set			"cmd" "play guisounds_menuclickup";
+					set			"vr_general_settings::visible" 		"0";
+					set			"vr_performance_settings::visible"		"0";					
+					set			"vr_hud_settings::visible" 		"1";
+					set			"vr_controls_settings::visible" 		"0";
+				}
+			}
+			
+			windowDef vr_controls_title {
+				rect		8, 96, 96, 20
+				text		"Controls"
+				textscale	0.25
+				forecolor 	0.6, 0.8, 0.8, 1.0
+				visible		1
+
+				onMouseEnter {
+					if ( "vr_controls_settings::visible" == 0 ) {
+						transition	"forecolor" "0.6 0.8 0.8 1.0" "1.0 1.0 1.0 1.0" "100";
+					}
+				}
+				onMouseExit {
+					if ( "vr_controls_settings::visible" == 0 ) {
+						transition	"forecolor" "1.0 1.0 1.0 1.0" "0.6 0.8 0.8 1.0" "200";
+					}
+				}
+				onAction {
+					set			"cmd" "play guisounds_menuclickup";
+					set			"vr_general_settings::visible" 		"0";
+					set			"vr_performance_settings::visible"		"0";					
+					set			"vr_hud_settings::visible" 		"0";
+					set			"vr_controls_settings::visible" 		"1";
+				}
+			}
+
+			windowDef vr_close_bg_L {
+				rect     	4, 340, 8, 28
+				background  "gui/mainmenu/select_edge"
+				matcolor 	0, 0, 0, 1
+				noevents 	1
+			}
+			windowDef vr_close_bg_M {
+				rect     	12, 340, 104, 28
+				background  "gui/mainmenu/select_border"
+				matcolor 	0, 0, 0, 1
+				noevents 	1
+			}
+			windowDef vr_close_bg_R {
+				rect     	104, 340, 8, 28
+				background  "gui/mainmenu/select_edge"
+				matcolor 	0, 0, 0, 1
+				noevents 	1
+			}
+			windowDef vr_close {
+				rect		8, 344, 96, 20
+				text		"Close"
+				textscale	0.25
+				forecolor	0.6, 0.8, 0.8, 1.0
+				visible		1
+	
+				onMouseEnter {
+					transition	"forecolor" "0.6 0.8 0.8 1.0" "1.0 1.0 1.0 1.0" "100";
+				}
+				onMouseExit {
+					transition	"forecolor" "1.0 1.0 1.0 1.0" "0.6 0.8 0.8 1.0" "200";
+				}
+				onAction {
+					set			"vr_options::visible" "0";
+					set			"cmd" "play guisounds_menuclickdown";
+				}
+			}
+		}
+	
+//=====================================================
+// General VR options
+
+		windowDef vr_general_settings {
+			rect		120, 20, 520, 460
+			visible		0
+
+			// Laser Sight (No Longer Applicable)
+			windowDef vr_laser_toggle {
+				rect		0, 0, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Laser Sight"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"vr_weaponSight"
+					choices		"LaserSight;Red Dot;Circle Dot;Crosshair;Beam + Dot"
+					values		"0;1;2;3;4"
+					choiceType	1
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+			   		
+   		//Shake Amplitude
+   		windowDef vr_general_shakeamplitude {
+   			rect		0, 22, 400, 20
+   			
+   			windowDef OS9L {
+   				rect		0, 0, 8, 16
+   				background	"gui/mainmenu/select_edge"
+   				matcolor	0, 0, 0, 1
+   				noevents	1
+   			}
+   			windowDef OS9M {
+   				rect		8, 0, 304, 16
+   				background	"gui/mainmenu/select_border"
+   				matcolor	0, 0, 0, 1
+   				noevents	1
+   			}
+   			windowDef OS9R {
+   				rect		312, 0, 8, 16
+   				background	"gui/mainmenu/select_angle"
+   				matcolor	0, 0, 0, 1
+   				noevents	1
+   			}
+   			windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Shake Amplitude"
+					textscale   0.2
+				}
+   			windowDef OS9SliderBG {
+   				rect		220, 4, 128, 16
+   				background	"guis/assets/mainmenu/slider_bg"
+   				matcolor	0.6, 0.8, 0.8, 0.5
+   				noevents	1
+   			}
+   			sliderDef OS9Primary {
+   				rect		220, 5, 71, 8
+   				forecolor	0.8, 1, 1, 1
+   				matcolor	1, 1, 1, 1
+   				low			0 
+   				high		1
+   				step		0.1
+   				thumbShader	"guis/assets/mainmenu/slider_bar"
+   				cvar		"vr_shakeamplitude"
+   			}
+   		}
+   		
+   		// BODY MODE 
+			windowDef vr_general_bodymode {
+				rect		0, 44, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Body Mode"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"vr_playerBodyMode"
+					choices		"Full Body;Hands;Weapons Only"
+					values		"0;1;2"
+					choiceType	1
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+			
+			// Hide Body
+			windowDef vr_general_bodyhide {
+				rect		0, 66, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Crouched Body"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"vr_crouchHideBody"
+					choices		"Show;Hide"
+					values		"0;1"
+					choiceType	1
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+			
+			// HEIGHT OFFSET
+			windowDef vr_general_heightoffset {
+   			rect		0, 88, 400, 20
+   			
+   			windowDef OS9L {
+   				rect		0, 0, 8, 16
+   				background	"gui/mainmenu/select_edge"
+   				matcolor	0, 0, 0, 1
+   				noevents	1
+   			}
+   			windowDef OS9M {
+   				rect		8, 0, 304, 16
+   				background	"gui/mainmenu/select_border"
+   				matcolor	0, 0, 0, 1
+   				noevents	1
+   			}
+   			windowDef OS9R {
+   				rect		312, 0, 8, 16
+   				background	"gui/mainmenu/select_angle"
+   				matcolor	0, 0, 0, 1
+   				noevents	1
+   			}
+   			windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Height Offset"
+					textscale   0.2
+				}
+   			windowDef OS9SliderBG {
+   				rect		220, 4, 128, 16
+   				background	"guis/assets/mainmenu/slider_bg"
+   				matcolor	0.6, 0.8, 0.8, 0.5
+   				noevents	1
+   			}
+   			sliderDef OS9Primary {
+   				rect		220, 5, 71, 8
+   				forecolor	0.8, 1, 1, 1
+   				matcolor	1, 1, 1, 1
+   				low			-5 
+   				high		15
+   				step		0.5
+   				thumbShader	"guis/assets/mainmenu/slider_bar"
+   				cvar		"vr_heightoffset"
+   			}
+   		}
+			
+			// FLASHLIGHT MODE
+			windowDef vr_general_flashmode {
+				rect		0, 110, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Flashlight Mode"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"vr_flashlightMode"
+					choices		"Body;Head;Gun;Hand"
+					values		"0;1;2;3"
+					choiceType	1
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+			
+			//Weapon Pitch
+   		windowDef vr_general_flashlightpitch {
+   			rect		0, 132, 400, 20
+   			
+   			windowDef OS9L {
+   				rect		0, 0, 8, 16
+   				background	"gui/mainmenu/select_edge"
+   				matcolor	0, 0, 0, 1
+   				noevents	1
+   			}
+   			windowDef OS9M {
+   				rect		8, 0, 304, 16
+   				background	"gui/mainmenu/select_border"
+   				matcolor	0, 0, 0, 1
+   				noevents	1
+   			}
+   			windowDef OS9R {
+   				rect		312, 0, 8, 16
+   				background	"gui/mainmenu/select_angle"
+   				matcolor	0, 0, 0, 1
+   				noevents	1
+   			}
+   			windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Flashlight Pitch"
+					textscale   0.2
+				}
+   			windowDef OS9SliderBG {
+   				rect		220, 4, 128, 16
+   				background	"guis/assets/mainmenu/slider_bg"
+   				matcolor	0.6, 0.8, 0.8, 0.5
+   				noevents	1
+   			}
+   			sliderDef OS9Primary {
+   				rect		220, 5, 71, 8
+   				forecolor	0.8, 1, 1, 1
+   				matcolor	1, 1, 1, 1
+   				low			0.0 
+   				high		60.0
+   				step		2.0
+   				thumbShader	"guis/assets/mainmenu/slider_bar"
+   				cvar		"vr_motionFlashPitchAdj"
+   			}
+   		}
+			
+			//Weapon Pitch
+   		windowDef vr_general_weaponpitch {
+   			rect		0, 154, 400, 20
+   			
+   			windowDef OS9L {
+   				rect		0, 0, 8, 16
+   				background	"gui/mainmenu/select_edge"
+   				matcolor	0, 0, 0, 1
+   				noevents	1
+   			}
+   			windowDef OS9M {
+   				rect		8, 0, 304, 16
+   				background	"gui/mainmenu/select_border"
+   				matcolor	0, 0, 0, 1
+   				noevents	1
+   			}
+   			windowDef OS9R {
+   				rect		312, 0, 8, 16
+   				background	"gui/mainmenu/select_angle"
+   				matcolor	0, 0, 0, 1
+   				noevents	1
+   			}
+   			windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Weapon Pitch"
+					textscale   0.2
+				}
+   			windowDef OS9SliderBG {
+   				rect		220, 4, 128, 16
+   				background	"guis/assets/mainmenu/slider_bg"
+   				matcolor	0.6, 0.8, 0.8, 0.5
+   				noevents	1
+   			}
+   			sliderDef OS9Primary {
+   				rect		220, 5, 71, 8
+   				forecolor	0.8, 1, 1, 1
+   				matcolor	1, 1, 1, 1
+   				low			0.0 
+   				high		60.0
+   				step		2.0
+   				thumbShader	"guis/assets/mainmenu/slider_bar"
+   				cvar		"vr_motionWeaponPitchAdj"
+   			}
+   		}
+   		
+			//Brightness
+   		windowDef vr_general_brightness {
+   			rect		0, 176, 400, 20
+   			
+   			windowDef OS9L {
+   				rect		0, 0, 8, 16
+   				background	"gui/mainmenu/select_edge"
+   				matcolor	0, 0, 0, 1
+   				noevents	1
+   			}
+   			windowDef OS9M {
+   				rect		8, 0, 304, 16
+   				background	"gui/mainmenu/select_border"
+   				matcolor	0, 0, 0, 1
+   				noevents	1
+   			}
+   			windowDef OS9R {
+   				rect		312, 0, 8, 16
+   				background	"gui/mainmenu/select_angle"
+   				matcolor	0, 0, 0, 1
+   				noevents	1
+   			}
+   			windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Brightness"
+					textscale   0.2
+				}
+   			windowDef OS4SliderBG {
+				rect		220, 4, 128, 16
+				background	"guis/assets/mainmenu/slider_bg"
+				matcolor	0.6, 0.8, 0.8, 0.5
+				noevents	1
+   			}
+   			sliderDef OS4Primary {
+   				rect		220, 5, 71, 8
+   				forecolor	0.8, 1, 1, 1
+   				matcolor	1, 1, 1, 1
+   				low		0.5
+   				high		2.0
+   				step		0.1
+   				thumbShader	"guis/assets/mainmenu/slider_bar"
+   				cvar		"r_brightness"	
+			   }
+   		}
+   					
+			// Cinematics
+			windowDef vr_general_cinematics {
+				rect		0, 198, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Cinematics"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"vr_cinematics"
+					choices		"Immersive;Flat"
+					values		"0;2"
+					choiceType	1
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+			
+			//Walk Speed
+   		windowDef vr_general_walkspeed {
+   			rect		0, 220, 400, 20
+   			
+   			windowDef OS9L {
+   				rect		0, 0, 8, 16
+   				background	"gui/mainmenu/select_edge"
+   				matcolor	0, 0, 0, 1
+   				noevents	1
+   			}
+   			windowDef OS9M {
+   				rect		8, 0, 304, 16
+   				background	"gui/mainmenu/select_border"
+   				matcolor	0, 0, 0, 1
+   				noevents	1
+   			}
+   			windowDef OS9R {
+   				rect		312, 0, 8, 16
+   				background	"gui/mainmenu/select_angle"
+   				matcolor	0, 0, 0, 1
+   				noevents	1
+   			}
+   			windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Walk Speed"
+					textscale   0.2
+				}
+   			windowDef OS9SliderBG {
+   				rect		220, 4, 128, 16
+   				background	"guis/assets/mainmenu/slider_bg"
+   				matcolor	0.6, 0.8, 0.8, 0.5
+   				noevents	1
+   			}
+   			sliderDef OS9Primary {
+   				rect		220, 5, 71, 8
+   				forecolor	0.8, 1, 1, 1
+   				matcolor	1, 1, 1, 1
+   				low			-40.0 
+   				high		70.0
+   				step		2.0
+   				thumbShader	"guis/assets/mainmenu/slider_bar"
+   				cvar		"vr_walkSpeedAdjust"
+   			}
+   		}
+   		
+   		// Skill Level
+			windowDef vr_general_skilllevel {
+				rect		0, 242, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Difficulty"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"g_skill"
+					choices		"Recruit;Marine;Hard;Nightmare"
+					values		"0;1;2;3"
+					choiceType	1
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+			
+			// Langauge
+			windowDef vr_general_language {
+				rect		0, 264, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Language"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"sys_lang"
+					choices		"english;spanish;italian;german;french;russian;polish;korean;japanese;chinese"
+					values		"english;spanish;italian;german;french;russian;polish;korean;japanese;chinese"
+					choiceType	1
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+			
+			//EAX
+		   windowDef SND_EAX {
+   			rect		0, 286, 400, 20
+   			windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+			
+   			windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"EAX Audio"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"s_useEAXReverb"
+					choices		"#str_07228" // On;Off
+				   values		"1;0"
+					choiceType	1
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+					/*onAction {
+					   set "cmd" "sound eax";
+				   }*/
+				}   			
+		   }
+		   
+		   //Shotgun Choke
+   		windowDef vr_general_shotgun {
+   			rect		0, 306, 400, 20
+   			
+   			windowDef OS9L {
+   				rect		0, 0, 8, 16
+   				background	"gui/mainmenu/select_edge"
+   				matcolor	0, 0, 0, 1
+   				noevents	1
+   			}
+   			windowDef OS9M {
+   				rect		8, 0, 304, 16
+   				background	"gui/mainmenu/select_border"
+   				matcolor	0, 0, 0, 1
+   				noevents	1
+   			}
+   			windowDef OS9R {
+   				rect		312, 0, 8, 16
+   				background	"gui/mainmenu/select_angle"
+   				matcolor	0, 0, 0, 1
+   				noevents	1
+   			}
+   			windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Shotgun Choke"
+					textscale   0.2
+				}
+   			windowDef OS9SliderBG {
+   				rect		220, 4, 128, 16
+   				background	"guis/assets/mainmenu/slider_bg"
+   				matcolor	0.6, 0.8, 0.8, 0.5
+   				noevents	1
+   			}
+   			sliderDef OS9Primary {
+   				rect		220, 5, 71, 8
+   				forecolor	0.8, 1, 1, 1
+   				matcolor	1, 1, 1, 1
+   				low			0.0 
+   				high		100.0
+   				step		5.0
+   				thumbShader	"guis/assets/mainmenu/slider_bar"
+   				cvar		"vr_shotgunChoke"
+   			}
+   		}
+	}
+
+//=====================================================
+// Performance options
+		windowDef vr_performance_settings 
+		{
+			rect		120, 20, 520, 460
+			visible		0
+			
+			// Show FPS
+			windowDef vr_performance_showfps {
+				rect		0, 0, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Show FPS"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"com_showFPS"
+					choices		"Off;On"
+					values		"0;1"
+					choiceType	1
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+			
+			// Restart Warning
+			windowDef vr_performance_warning {
+				rect		0, 22, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 20
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 240, 20
+					text		"Most Changes Require Restart"
+					textscale   0.2
+				}				
+			}
+			
+			windowDef vr_performance_warning2 {
+				rect		0, 42, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 32
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 32
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 32
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 240, 40
+					text		"Recommended Headset Settings:"
+					textscale   0.2
+				}				
+			}
+			
+			windowDef vr_performance_warning3 {
+				rect		0, 64, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 32
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 32
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 32
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 240, 40
+					text		"Quest 1: 60hz (Locked) / 1.0 SS / 1xMSAA"
+					textscale   0.2
+				}				
+			}
+			
+			windowDef vr_performance_warning4 {
+				rect		0, 86, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 32
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 32
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 32
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 300, 40
+					text		"Quest 2: 60hz 1.2SS 2xMSAA or 72hz 1.0SS 2xMSAA"
+					textscale   0.18
+				}				
+			}
+			
+			windowDef vr_performance_warning5 {
+				rect		0, 108, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 32
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 32
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 32
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 300, 40
+					text		"Quest 3 (Shadows): 72hz 1.1SS 1xMSAA"
+					textscale   0.18
+				}				
+			}
+			
+			windowDef vr_performance_warning6 {
+				rect		0, 130, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 32
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 32
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 32
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 300, 40
+					text		"Quest 3 (No Shadows): 90hz 1.2SS 2xMSAA"
+					textscale   0.18
+				}				
+			}
+			
+			// Supersampling
+			windowDef vr_performance_supersampling {
+				rect		0, 154, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Supersampling"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"vr_supersampling"
+					choices		"0.9;1.0;1.1;1.2;1.3"
+					values		"0.9;1.0;1.1;1.2;1.3"
+					choiceType	1
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+			
+			// Refresh
+			windowDef vr_performance_refresh {
+				rect		0, 174, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Refresh (Quest2)"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"vr_refresh"
+					choices		"60;72;80;90"
+					values		"60;72;80;90"					
+					choiceType	1
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+			
+			// Refresh
+			windowDef vr_performance_msaa {
+				rect		0, 194, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"MSAA"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"vr_msaa"
+					choices		"1;2;4"
+					values		"1;2;4"
+					choiceType	1
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+			
+			// Shadows
+			windowDef vr_general_shadows {
+				rect		0, 214, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Shadows"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"r_shadows"
+					values		"0;1"
+					choices		"Off;On"
+					choiceType	1
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+			
+			// Shadows
+			windowDef vr_general_flashlight_shadows {
+				rect		0, 234, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Flashlight Shadow"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"g_weaponShadows"
+					values		"0;1"
+					choices		"Off;On"
+					choiceType	1
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+			
+			/*
+			// Turbo Shadows
+			windowDef vr_general_flashlight_turboshadows {
+				rect		0, 254, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Turbo Shadows"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"r_useTurboShadow"
+					values		"0;1"
+					choices		"Off;On"
+					choiceType	1
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+			
+			
+			// Turbo Shadows
+			windowDef vr_general_optimizedshadows {
+				rect		0, 274, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Optimized Shadows"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"r_useOptimizedShadows"
+					values		"0;1"
+					choices		"Off;On"
+					choiceType	1
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+			*/
+			
+			// Projectile Lights
+			windowDef vr_general_projectilelights {
+				rect		0, 254, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Dyn. Proj. Lights"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"g_projectileLights"
+					values		"0;1"
+					choices		"Off;On"
+					choiceType	1
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+			
+			/// Image Downsize
+			windowDef vr_general_downsize_bumps {
+				rect		0, 274, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Bumpmapping"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"image_downSizeBump"
+					values		"0;1"
+					choices		"Quality;Performance"
+					choiceType	1
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+			
+			// Image Downsize
+			windowDef vr_general_downsize {
+				rect		0, 294, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Textures"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"image_downSize"
+					values		"0;1"
+					choices		"Quality;Performance"
+					choiceType	1
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+			
+			// PBR Shader
+			windowDef vr_general_pbr {
+				rect		0, 314, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"PBR Shader"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"r_usePBR"
+					values		"1;0"
+					choices		"On;Off"
+					choiceType	1
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+
+			// Post Processing
+			windowDef vr_general_postproc {
+				rect		0, 334, 400, 20
+
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Post Processing"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"r_skipPostProcess"
+					values		"0;1"
+					choices		"On;Off"
+					choiceType	1
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+								
+			// Shells
+			windowDef vr_general_shells {
+				rect		0, 354, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Show Shells"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"g_showBrass"
+					values		"0;1"
+					choices		"No;Yes"
+					choiceType	1
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+			
+			// Muzzle
+			windowDef vr_general_muzzle {
+				rect		0, 374, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Muzzle Flash"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"g_muzzleFlash"
+					values		"0;1"
+					choices		"No;Yes"
+					choiceType	1
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+			
+			// Filtering
+			windowDef vr_general_filtering {
+				rect		0, 394, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Texture Filtering"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"image_filter"
+					choices		"3x;2x"
+					values		"GL_LINEAR_MIPMAP_linear;GL_LINEAR_MIPMAP_nearest"
+					choiceType	1
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+		}
+		
+//=====================================================
+// Performance options
+		windowDef vr_hud_settings 
+		{
+			rect		120, 20, 520, 460
+			visible		0
+			
+			//HUD Opacity
+   		windowDef vr_hud_hudopacity {
+   			rect		0, 0, 400, 20
+   			
+   			windowDef OS9L {
+   				rect		0, 0, 8, 16
+   				background	"gui/mainmenu/select_edge"
+   				matcolor	0, 0, 0, 1
+   				noevents	1
+   			}
+   			windowDef OS9M {
+   				rect		8, 0, 304, 16
+   				background	"gui/mainmenu/select_border"
+   				matcolor	0, 0, 0, 1
+   				noevents	1
+   			}
+   			windowDef OS9R {
+   				rect		312, 0, 8, 16
+   				background	"gui/mainmenu/select_angle"
+   				matcolor	0, 0, 0, 1
+   				noevents	1
+   			}
+   			windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"HUD Opacity"
+					textscale   0.2
+				}
+				
+   			windowDef OS9SliderBG {
+   				rect		220, 4, 128, 16
+   				background	"guis/assets/mainmenu/slider_bg"
+   				matcolor	0.6, 0.8, 0.8, 0.5
+   				noevents	1
+   			}
+   			sliderDef OS9Primary {
+   				rect		220, 5, 71, 8
+   				forecolor	0.8, 1, 1, 1
+   				matcolor	1, 1, 1, 1
+   				low      0 
+   				high     1.3
+   				step		0.1
+   				thumbShader	"guis/assets/mainmenu/slider_bar"
+   				cvar		"vr_hudTransparency"
+   			}
+   		}
+   		
+   		// NEW HUD ONLY MODE 
+			windowDef vr_hud_hudmode {
+				rect		0, 22, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"HUD Type"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"vr_hudType"
+					choices		"Disable;Full"
+					values		"0;1"
+					choiceType	0
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+			
+			// NEW HUD ONLY MODE 
+			windowDef vr_hud_hudposlock {
+				rect		0, 44, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"HUD Lock"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"vr_hudPosLock"
+					choices		"Face;Body"
+					values		"0;1"
+					choiceType	0
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+			
+			// NEW INTERACTION STYLE
+			windowDef vr_hud_interaction {
+				rect		0, 66, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"GUI Interaction"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"vr_guiMode"
+					choices		"Weapon Aim;Gaze;Touch Screen"
+					values		"0;1;2"
+					choiceType	0
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+			
+			// FIX PDA Location
+			windowDef vr_hud_pdafixed {
+				rect		0, 88, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"PDA Position"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"vr_PDAfixLocation"
+					choices		"Off Hand;Fixed"
+					values		"0;1"
+					choiceType	0
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+			
+			//Hud Scale
+   		windowDef vr_hud_scale {
+   			rect		0, 110, 400, 20
+   			
+   			windowDef OS9L {
+   				rect		0, 0, 8, 16
+   				background	"gui/mainmenu/select_edge"
+   				matcolor	0, 0, 0, 1
+   				noevents	1
+   			}
+   			windowDef OS9M {
+   				rect		8, 0, 304, 16
+   				background	"gui/mainmenu/select_border"
+   				matcolor	0, 0, 0, 1
+   				noevents	1
+   			}
+   			windowDef OS9R {
+   				rect		312, 0, 8, 16
+   				background	"gui/mainmenu/select_angle"
+   				matcolor	0, 0, 0, 1
+   				noevents	1
+   			}
+   			windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"HUD Scale"
+					textscale   0.2
+				}
+   			windowDef OS9SliderBG {
+   				rect		220, 4, 128, 16
+   				background	"guis/assets/mainmenu/slider_bg"
+   				matcolor	0.6, 0.8, 0.8, 0.5
+   				noevents	1
+   			}
+   			sliderDef OS9Primary {
+   				rect		220, 5, 71, 8
+   				forecolor	0.8, 1, 1, 1
+   				matcolor	1, 1, 1, 1
+   				low			0.2 
+   				high		2.0
+   				step		0.1
+   				thumbShader	"guis/assets/mainmenu/slider_bar"
+   				cvar		"vr_hudScale"
+   			}
+   		}
+		}
+		
+		windowDef vr_controls_settings {
+			rect		120, 20, 520, 460
+			visible		0
+
+			// Weapon Hand
+			windowDef vr_controls_controlscheme {
+				rect		0, 0, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Dominant Hand"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"vr_weaponHand"
+					choices		"Right;Left"
+					values		"0;1"
+					choiceType	1
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}					
+   		
+   		// Turn Mode
+			windowDef vr_controls_turnmode {
+				rect		0, 22, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Turn Mode"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"vr_turnmode"
+					choices		"Snap Turn;Smooth Turn"
+					values		"0;1"
+					choiceType	1
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+			
+			// Turn Angle
+			windowDef vr_controls_turnangle {
+				rect		0, 44, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Turn Angle"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"vr_turnangle"
+					choices		"1;3;5;10;15;25;45;60;75"
+					values		"1;3;5;10;15;25;45;60;75"
+					choiceType	1
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+			
+			// Turn Angle
+			windowDef vr_controls_forward {
+				rect		0, 66, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Forward Movement"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"vr_movePoint"
+					choices		"Off Hand;Head;Weapon Hand"
+					values		"1;2;3"
+					choiceType	1
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+			
+			// Switch Sticks
+			windowDef vr_controls_switchsticks {
+				rect		0, 88, 400, 20
+				
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Switch Sticks"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"vr_switchSticks"
+					choices		"No;Yes"
+					values		"0;1"
+					choiceType	0
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
+		}	
+	}
+ 

@@ -41,6 +41,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "framework/Console.h"
 
 #include "tools/edit_public.h"
+#include "Doom3Quest/VrClientInfo.h"
 
 void SCR_DrawTextLeftAlign( float &y, const char *text, ... ) id_attribute((format(printf,2,3)));
 void SCR_DrawTextRightAlign( float &y, const char *text, ... ) id_attribute((format(printf,2,3)));
@@ -759,6 +760,7 @@ Causes the console to start opening the desired amount.
 void idConsoleLocal::SetDisplayFraction( float frac ) {
 	finalFrac = frac;
 	fracTime = com_frameTime;
+	pVRClientInfo->consoleShown = frac >= 0.01f;
 }
 
 /*
@@ -1215,6 +1217,7 @@ void	idConsoleLocal::Draw( bool forceFullScreen ) {
 		// we want the console closed when we go back to a session state
 		Close();
 		// we are however catching keyboard input
+		pVRClientInfo->consoleShown = true;
 		keyCatching = true;
 	}
 

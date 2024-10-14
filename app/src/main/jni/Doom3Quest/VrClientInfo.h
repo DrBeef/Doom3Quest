@@ -15,6 +15,7 @@ typedef float vec4_t[4];
 typedef struct {
     bool screen;
     float fov;
+    bool head_stabilised;
     bool weapon_stabilised;
     bool oneHandOnly;
     bool right_handed;
@@ -36,6 +37,7 @@ typedef struct {
     vec3_t hmdposition;
     vec3_t hmdposition_last; // Don't use this, it is just for calculating delta!
     vec3_t hmdposition_delta;
+    bool consoleShown;
 
     //FP - Temp Variables for other stuff
     vec3_t hmdorientation_temp;
