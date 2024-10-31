@@ -58,7 +58,7 @@ void main()
   
   vec3 R = -reflect(L, N);
   float RdotV = clamp(dot(R, V), 0.0, 1.0);
-  float specularFalloff = pow(RdotV, u_specularExponent);
+  float specularFalloff = pow(RdotV, 3.0);
   
   vec3 color;
   color = diffuseColor;

@@ -213,11 +213,11 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
                 Android_SetImpulse(UB_IMPULSE19);
             }
 
-            //Toggle LaserSight
+            //Quick slow motion or soul cube artifact switch
             if (((secondaryButtonsNew & secondaryButton2) !=
                  (secondaryButtonsOld & secondaryButton2)) &&
                 (secondaryButtonsNew & secondaryButton2)) {
-                Android_SetImpulse(UB_IMPULSE33);
+                Android_SetImpulse(UB_IMPULSE25);
             }
         }
 
@@ -393,10 +393,8 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
             }
 
             //Duck
-            if ((primaryButtonsNew & primaryButton1) !=
-                (primaryButtonsOld & primaryButton1)) {
-
-                handleTrackedControllerButton_AsToggleButton(primaryButtonsNew, primaryButtonsOld, primaryButton1, UB_DOWN);
+            if ((primaryButtonsNew & primaryButton1) != (primaryButtonsOld & primaryButton1)) {
+                handleTrackedControllerButton_AsButton(primaryButtonsNew, primaryButtonsOld, false, primaryButton1, UB_DOWN);
             }
 
             //Jump

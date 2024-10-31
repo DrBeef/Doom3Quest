@@ -44,6 +44,8 @@ import static android.system.Os.setenv;
 	//so a map here of Package -> Action would not work.
 	private static Vector<Pair<String, String>> externalHapticsServiceDetails = new Vector<>();
 
+	private static boolean started = false;
+
 	static
 	{
 		System.loadLibrary( "doom3" );
@@ -176,7 +178,10 @@ import static android.system.Os.setenv;
 		params.screenBrightness = 1.0f;
 		getWindow().setAttributes( params );
 
-		checkPermissionsAndInitialize();
+		if (!started) {
+			checkPermissionsAndInitialize();
+			started = true;
+		}
 	}
 
 	/** Initializes the Activity only if the permission has been granted. */
@@ -200,8 +205,7 @@ import static android.system.Os.setenv;
 	@Override
 	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
 		if (requestCode == WRITE_EXTERNAL_STORAGE_PERMISSION_ID) {
-			finish();
-			System.exit(0);
+			checkPermissionsAndInitialize();
 		}
 	}
 
@@ -427,20 +431,26 @@ import static android.system.Os.setenv;
 	{
 		Log.v(APPLICATION, "GLES3JNIActivity::onDestroy()" );
 
-		if ( mSurfaceHolder != null )
-		{
-			GLES3JNILib.onSurfaceDestroyed( mNativeHandle );
+		try {
+			//The destructors take too long to unload, let's use exit(0)
+			/*if ( mSurfaceHolder != null )
+			{
+				GLES3JNILib.onSurfaceDestroyed( mNativeHandle );
+			}
+
+			if ( mNativeHandle != 0 )
+			{
+				GLES3JNILib.onDestroy(mNativeHandle);
+			}*/
+
+			for (HapticServiceClient externalHapticsServiceClient : externalHapticsServiceClients) {
+				externalHapticsServiceClient.stopBinding();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
-		if ( mNativeHandle != 0 )
-		{
-			GLES3JNILib.onDestroy(mNativeHandle);
-		}
-
-		for (HapticServiceClient externalHapticsServiceClient : externalHapticsServiceClients) {
-			externalHapticsServiceClient.stopBinding();
-		}
-
+		System.exit(0);
 		super.onDestroy();
 		mNativeHandle = 0;
 	}

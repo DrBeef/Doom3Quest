@@ -687,6 +687,7 @@ assumes: color.w is 0 or 1
 */
 void idPlayerView::Fade( idVec4 color, int time ) {
 
+	SetTimeState ts(player->timeGroup);
 	if ( !fadeTime ) {
 		fadeFromColor.Set( 0.0f, 0.0f, 0.0f, 1.0f - color[ 3 ] );
 	} else {
@@ -722,6 +723,7 @@ void idPlayerView::ScreenFade() {
 		return;
 	}
 
+	SetTimeState ts(player->timeGroup);
 	msec = fadeTime - gameLocal.realClientTime;
 
 	if ( msec <= 0 ) {
@@ -782,6 +784,9 @@ idPlayerView::RenderPlayerView
 */
 void idPlayerView::RenderPlayerView( idUserInterface *hud ) {
     renderView_t *view = player->GetRenderView();
+    if (!view) {
+        return;
+    }
 
     if (g_skipViewEffects.GetBool()) {
         SingleView( hud, view );

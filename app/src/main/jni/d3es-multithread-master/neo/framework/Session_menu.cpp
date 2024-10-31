@@ -867,6 +867,27 @@ void idSessionLocal::HandleMainMenuCommands( const char *menuCommand ) {
 			continue;
 		}
 
+		if ( !idStr::Icmp( cmd, "colors" ) ) {
+			if ( args.Argc() - icmd >= 1 ) {
+				idStr profile = args.Argv( icmd++ );
+				if ( !idStr::Icmp( profile, "og" ) ) {
+					cvarSystem->SetCVarFloat("r_lightScale", 1);
+					cvarSystem->SetCVarFloat("r_brightness", 1.3f);
+					cvarSystem->SetCVarBool("r_usePBR", false);
+				} else if ( !idStr::Icmp( profile, "bfg" ) ) {
+					cvarSystem->SetCVarFloat("r_lightScale", 3);
+					cvarSystem->SetCVarFloat("r_brightness", 1.3f);
+					cvarSystem->SetCVarBool("r_usePBR", false);
+				} else if ( !idStr::Icmp( profile, "pbr" ) ) {
+					cvarSystem->SetCVarFloat("r_specularExponent", 2);
+					cvarSystem->SetCVarFloat("r_lightScale", 2);
+					cvarSystem->SetCVarFloat("r_brightness", 1.0f);
+					cvarSystem->SetCVarBool("r_usePBR", true);
+				}
+			}
+			continue;
+		}
+
 		if ( !idStr::Icmp( cmd, "play" ) ) {
 			if ( args.Argc() - icmd >= 1 ) {
 				idStr snd = args.Argv( icmd++ );

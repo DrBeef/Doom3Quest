@@ -365,7 +365,6 @@ public:
 	float controllerShakeLowMag[MAX_SHAKE_BUFFER];        // magnitude of the low frequency controller shake
 	int controllerShakeHighTime[MAX_SHAKE_BUFFER];    // time the controller shake ends for high frequency.
 	int controllerShakeLowTime[MAX_SHAKE_BUFFER];        // time the controller shake ends for low frequency.
-	int controllerShakeTimeGroup;
 
 public:
 	idPlayerHand();

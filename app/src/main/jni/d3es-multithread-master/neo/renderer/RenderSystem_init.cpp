@@ -57,7 +57,7 @@ idCVar r_customHeight( "r_customHeight", "486", CVAR_RENDERER | CVAR_ARCHIVE | C
 idCVar r_checkBounds( "r_checkBounds", "0", CVAR_RENDERER | CVAR_BOOL, "compare all surface bounds with precalculated ones" );
 
 idCVar r_usePBR("r_usePBR", "0", CVAR_RENDERER | CVAR_BOOL | CVAR_ARCHIVE, "use PBR instead of phong shader for interactions" );
-idCVar r_specularExponent("r_specularExponent", "3", CVAR_RENDERER | CVAR_FLOAT, "specular exponent, to be used in GLSL shaders" );
+idCVar r_specularExponent("r_specularExponent", "2", CVAR_RENDERER | CVAR_FLOAT | CVAR_ARCHIVE, "specular exponent, to be used in GLSL shaders" );
 idCVar r_useConstantMaterials( "r_useConstantMaterials", "1", CVAR_RENDERER | CVAR_BOOL, "use pre-calculated material registers if possible" );
 idCVar r_useSilRemap( "r_useSilRemap", "1", CVAR_RENDERER | CVAR_BOOL, "consider verts with the same XYZ, but different ST the same for shadows" );
 idCVar r_useNodeCommonChildren( "r_useNodeCommonChildren", "1", CVAR_RENDERER | CVAR_BOOL, "stop pushing reference bounds early when possible" );
@@ -128,7 +128,7 @@ idCVar r_shadows( "r_shadows", "0", CVAR_RENDERER | CVAR_BOOL  | CVAR_ARCHIVE, "
 idCVar r_testGamma( "r_testGamma", "0", CVAR_RENDERER | CVAR_FLOAT, "if > 0 draw a grid pattern to test gamma levels", 0, 195 );
 idCVar r_testGammaBias( "r_testGammaBias", "0", CVAR_RENDERER | CVAR_FLOAT, "if > 0 draw a grid pattern to test gamma levels" );
 idCVar r_testStepGamma( "r_testStepGamma", "0", CVAR_RENDERER | CVAR_FLOAT, "if > 0 draw a grid pattern to test gamma levels" );
-idCVar r_lightScale( "r_lightScale", "2", CVAR_RENDERER | CVAR_FLOAT, "all light intensities are multiplied by this" );
+idCVar r_lightScale( "r_lightScale", "2", CVAR_RENDERER | CVAR_FLOAT | CVAR_ARCHIVE, "all light intensities are multiplied by this" );
 idCVar r_lightSourceRadius( "r_lightSourceRadius", "0", CVAR_RENDERER | CVAR_FLOAT, "for soft-shadow sampling" );
 idCVar r_flareSize( "r_flareSize", "1", CVAR_RENDERER | CVAR_FLOAT, "scale the flare deforms from the material def" );
 

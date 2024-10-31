@@ -258,6 +258,8 @@ public:
 
 							// is D3XP installed? even if not running it atm
 	virtual bool			HasD3XP( void ) = 0;
+							// is D3LE installed? even if not running it atm
+	virtual bool			HasD3LE( void ) = 0;
 							// are we using D3XP content ( through a real d3xp run or through a double mod )
 	virtual bool			RunningD3XP( void ) = 0;
 

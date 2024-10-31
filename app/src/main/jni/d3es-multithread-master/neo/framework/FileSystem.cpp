@@ -373,6 +373,7 @@ public:
 	virtual void			FindDLL( const char *basename, char dllPath[ MAX_OSPATH ] );
 	virtual void			ClearDirCache( void );
 	virtual bool			HasD3XP( void );
+	virtual bool			HasD3LE( void );
 	virtual bool			RunningD3XP( void );
 	virtual void			CopyFile( const char *fromOSPath, const char *toOSPath );
 	virtual int				ValidateDownloadPakForChecksum( int checksum, char path[ MAX_STRING_CHARS ] );
@@ -431,6 +432,7 @@ private:
 	int						dir_cache_count;
 
 	int						d3xp;	// 0: didn't check, -1: not installed, 1: installed
+	int						d3le;	// 0: didn't check, -1: not installed, 1: installed
 
 private:
 	void					ReplaceSeparators( idStr &path, char sep = PATHSEPERATOR_CHAR );
@@ -1723,6 +1725,8 @@ idModList *idFileSystemLocal::ListMods( void ) {
 		dirs.Remove( "." );
 		dirs.Remove( ".." );
 		dirs.Remove( "base" );
+		dirs.Remove( "d3xp" );
+		dirs.Remove( "d3le" );
 		dirs.Remove( "pb" );
 
 		// see if there are any pk4 files in each directory
@@ -1731,10 +1735,7 @@ idModList *idFileSystemLocal::ListMods( void ) {
 			ListOSFiles( gamepath, ".pk4", pk4s );
 			if ( pk4s.Num() ) {
 				if ( !list->mods.Find( dirs[ i ] ) ) {
-					// D3 1.3 #31, only list d3xp if the pak is present
-					if ( dirs[ i ].Icmp( "d3xp" ) || HasD3XP() ) {
-						list->mods.Append( dirs[ i ] );
-					}
+					list->mods.Append( dirs[ i ] );
 				}
 			}
 		}
@@ -1767,8 +1768,16 @@ idModList *idFileSystemLocal::ListMods( void ) {
 		}
 	}
 
+	if (HasD3LE()) {
+		list->mods.Insert( "d3le" );
+		list->descriptions.Insert( "Doom 3: Lost Mission" );
+	}
+	if (HasD3XP()) {
+		list->mods.Insert( "d3xp" );
+		list->descriptions.Insert( "Doom 3: Resurrection of Evil" );
+	}
 	list->mods.Insert( "" );
-	list->descriptions.Insert( "dhewm 3" );
+	list->descriptions.Insert( "Doom 3: Original game" );
 
 	assert( list->mods.Num() == list->descriptions.Num() );
 
@@ -3706,21 +3715,6 @@ bool idFileSystemLocal::HasD3XP( void ) {
 		return true;
 	}
 
-#if 0
-	// check for a d3xp directory with a pk4 file
-	// copied over from ListMods - only looks in basepath
-	ListOSFiles( fs_basepath.GetString(), "/", dirs );
-	for ( i = 0; i < dirs.Num(); i++ ) {
-		if ( dirs[i].Icmp( "d3xp" ) == 0 ) {
-			gamepath = BuildOSPath( fs_basepath.GetString(), dirs[ i ], "" );
-			ListOSFiles( gamepath, ".pk4", pk4s );
-			if ( pk4s.Num() ) {
-				d3xp = 1;
-				return true;
-			}
-		}
-	}
-#else
 	// check for d3xp's d3xp/pak000.pk4 in any search path
 	// checking wether the pak is loaded by checksum wouldn't be enough:
 	// we may have a different fs_game right now but still need to reply that it's installed
@@ -3738,7 +3732,6 @@ bool idFileSystemLocal::HasD3XP( void ) {
 			return true;
 		}
 	}
-#endif
 
 	// if we didn't find a pk4 file then the user might have unpacked so look for default.cfg file
 	// that's the old way mostly used during developement. don't think it hurts to leave it there
@@ -3758,6 +3751,61 @@ bool idFileSystemLocal::HasD3XP( void ) {
 
 	d3xp = -1;
 	return false;
+}
+
+
+/*
+===============
+idFileSystemLocal::HasD3LE
+===============
+*/
+bool idFileSystemLocal::HasD3LE( void ) {
+    int			i;
+    idStrList	dirs, pk4s;
+    idStr		gamepath;
+
+    if ( d3le == -1 ) {
+        return false;
+    } else if ( d3le == 1 ) {
+        return true;
+    }
+
+    // check for d3xp's d3xp/pak000.pk4 in any search path
+    // checking wether the pak is loaded by checksum wouldn't be enough:
+    // we may have a different fs_game right now but still need to reply that it's installed
+    const char	*search[4];
+    idFile		*pakfile;
+    search[0] = fs_savepath.GetString();
+    search[1] = fs_devpath.GetString();
+    search[2] = fs_basepath.GetString();
+    search[3] = fs_cdpath.GetString();
+    for ( i = 0; i < 4; i++ ) {
+        pakfile = OpenExplicitFileRead( BuildOSPath( search[ i ], "d3le", "lm_pak.pk4" ) );
+        if ( pakfile ) {
+            CloseFile( pakfile );
+            d3le = 1;
+            return true;
+        }
+    }
+
+    // if we didn't find a pk4 file then the user might have unpacked so look for default.cfg file
+    // that's the old way mostly used during developement. don't think it hurts to leave it there
+    ListOSFiles( fs_basepath.GetString(), "/", dirs );
+    for ( i = 0; i < dirs.Num(); i++ ) {
+        if ( dirs[i].Icmp( "d3le" ) == 0 ) {
+
+            gamepath = BuildOSPath( fs_configpath.GetString(), dirs[ i ], "default.cfg" );
+            idFile* cfg = OpenExplicitFileRead(gamepath);
+            if(cfg) {
+                CloseFile(cfg);
+                d3le = 1;
+                return true;
+            }
+        }
+    }
+
+    d3le = -1;
+    return false;
 }
 
 /*

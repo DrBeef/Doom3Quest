@@ -5855,14 +5855,14 @@ void idPlayerHand::GetControllerShake( int & highMagnitude, int & lowMagnitude )
     // use highest values from active buffers
     for( int i = 0; i < MAX_SHAKE_BUFFER; i++ )
     {
-        if( gameLocal.GetTimeGroupTime( controllerShakeTimeGroup ) < controllerShakeLowTime[i] )
+        if( gameLocal.fast.time < controllerShakeLowTime[i] )
         {
             if( controllerShakeLowMag[i] > lowMag )
             {
                 lowMag = controllerShakeLowMag[i];
             }
         }
-        if( gameLocal.GetTimeGroupTime( controllerShakeTimeGroup ) < controllerShakeHighTime[i] )
+        if( gameLocal.fast.time < controllerShakeHighTime[i] )
         {
             if( controllerShakeHighMag[i] > highMag )
             {
@@ -6583,7 +6583,7 @@ void idPlayerHand::SetControllerShake( float highMagnitude, int highDuration, fl
     int inactiveBuffer = -1;
     for( int i = 0; i < MAX_SHAKE_BUFFER; i++ )
     {
-        if( gameLocal.GetTime() <= controllerShakeHighTime[i] || gameLocal.GetTime() <= controllerShakeLowTime[i] )
+        if( gameLocal.fast.time <= controllerShakeHighTime[i] || gameLocal.fast.time <= controllerShakeLowTime[i] )
         {
             if( idMath::Fabs( highMagnitude - controllerShakeHighMag[i] ) <= 0.1f && idMath::Fabs( lowMagnitude - controllerShakeLowMag[i] ) <= 0.1f )
             {
@@ -6609,9 +6609,8 @@ void idPlayerHand::SetControllerShake( float highMagnitude, int highDuration, fl
         controllerShakeLowMag[activeBufferWithSimilarMags] += lowMagnitude;
         controllerShakeLowMag[activeBufferWithSimilarMags] *= 0.5f;
 
-        controllerShakeHighTime[activeBufferWithSimilarMags] = gameLocal.GetTime() + highDuration;
-        controllerShakeLowTime[activeBufferWithSimilarMags] = gameLocal.GetTime() + lowDuration;
-        //controllerShakeTimeGroup = gameLocal.selectedGroup;
+        controllerShakeHighTime[activeBufferWithSimilarMags] = gameLocal.fast.time + highDuration;
+        controllerShakeLowTime[activeBufferWithSimilarMags] = gameLocal.fast.time + lowDuration;
         return;
     }
 
@@ -6622,9 +6621,8 @@ void idPlayerHand::SetControllerShake( float highMagnitude, int highDuration, fl
 
     controllerShakeHighMag[inactiveBuffer] = highMagnitude;
     controllerShakeLowMag[inactiveBuffer] = lowMagnitude;
-    controllerShakeHighTime[inactiveBuffer] = gameLocal.GetTime() + highDuration;
-    controllerShakeLowTime[inactiveBuffer] = gameLocal.GetTime() + lowDuration;
-    //controllerShakeTimeGroup = gameLocal.selectedGroup;
+    controllerShakeHighTime[inactiveBuffer] = gameLocal.fast.time + highDuration;
+    controllerShakeLowTime[inactiveBuffer] = gameLocal.fast.time + lowDuration;
 }
 
 /*
@@ -10793,6 +10791,31 @@ void idPlayer::PerformImpulse( int impulse ) {
 			}
 			break;
 		}
+        //Lubos BEGIN
+        case IMPULSE_25:
+        {
+            if (weapon_bloodstone > 0 && (inventory.weapons & (1 << weapon_bloodstone))) {
+                if ( objectiveSystemOpen ) {
+                    TogglePDA( 1 - vr_weaponHand.GetInteger() );
+                }
+                if (hands[vr_weaponHand.GetInteger()].currentWeapon != weapon_bloodstone) {
+                    SelectWeapon(weapon_bloodstone, false);
+                } else {
+                    SelectWeapon(hands[vr_weaponHand.GetInteger()].previousWeapon, false);
+                }
+            } else if (weapon_soulcube > 0 && (inventory.weapons & (1 << weapon_soulcube))) {
+                if ( objectiveSystemOpen ) {
+                    TogglePDA( 1 - vr_weaponHand.GetInteger() );
+                }
+                if (hands[vr_weaponHand.GetInteger()].currentWeapon != weapon_soulcube) {
+                    SelectWeapon(weapon_soulcube, false);
+                } else {
+                    SelectWeapon(hands[vr_weaponHand.GetInteger()].previousWeapon, false);
+                }
+            }
+            break;
+        }
+        //Lubos END
         // Carl specific fists weapon
         case IMPULSE_26:
         {
@@ -15401,7 +15424,7 @@ void idPlayer::CalculateRenderView( void ) {
 		idMat3 axis = renderView->viewaxis;
 		float yawOffset = commonVr->bodyYawOffset;
 
-		if ( gameLocal.inCinematic || privateCameraView )
+		if ( gameLocal.inCinematic || privateCameraView || (health <= 0) )
 		{
 			if ( wasCinematic == false )
 			{
@@ -15413,8 +15436,9 @@ void idPlayer::CalculateRenderView( void ) {
 				//commonVr->cinematicStartPosition.y = -commonVr->hmdTrackingState.HeadPose.ThePose.Position.x;
 				//commonVr->cinematicStartPosition.z = commonVr->hmdTrackingState.HeadPose.ThePose.Position.y;
 
-				//Lubos:The flash isn't working correctly since slow motion support.
-				//playerView.Flash(colorWhite, 300);
+				if (health > 0) {
+					playerView.Flash(colorWhite, 300);
+				}
 
 				if ( vr_cinematics.GetInteger() == 2)
 				{
@@ -15443,7 +15467,7 @@ void idPlayer::CalculateRenderView( void ) {
 		}
 
 
-		if (!(gameLocal.inCinematic && vr_cinematics.GetInteger() == 2))
+		if (!(gameLocal.inCinematic && vr_cinematics.GetInteger() == 2) && (health > 0))
 		{
 
 			//move the head in relation to the body.
@@ -16659,7 +16683,7 @@ bool idPlayer::TeleportPathSegment( const idVec3& start, const idVec3& end, idVe
                         continue;
                     }
 
-                    //SetTimeState ts(ent->timeGroup);
+                    SetTimeState ts(ent->timeGroup);
 
                     trace.c.contents = cm->GetContents();
                     trace.c.entityNum = cm->GetEntity()->entityNumber;

@@ -537,158 +537,8 @@ windowDef Desktop {
 			}
 		}
 	}
-	
-	windowDef D3QVersion {
-		rect		10, 15, 210, 210
-		matcolor	1 ,1 ,1 ,1		
-		
-		// Version
-		windowDef vr_versiontext {
-			rect		1, 0, 120, 20
-			text		"D3Q Version:"
-			textscale   0.2 
-		}			
-		
-		editDef vr_choice {
-			rect		90, 0, 120, 20
-			cvar		"vr_d3qversion"
-			textscale   0.2
-			forecolor   0.6, 0.8, 0.8, 1
-		}
-	}	
 
-   windowDef Cinematics {
-		rect		10, 30, 210, 210
-		matcolor	1 ,1 ,1 ,1		
-		
-		// Cinematics
-		windowDef vr_main_cinematics {
-			rect		0, 0, 210, 210
-			
-			windowDef vr_name {
-				rect		1, -1, 180, 20
-				text		"Cinematics"
-				textscale   0.4
-			}
-			
-			windowDef vr_name2 {
-				rect		1, 30, 180, 150
-				text		"The cinematics by default allow you to move you head to look around the scene.\nWhen the camera changes so does your view.\nThis May lead to some discomfort or dizziness.\nTo switch to regular flat cutscenes change the below to 'Flat'"
-				textscale   0.2 
-			}
-			
-			windowDef vr_name3 {
-				rect		1, 190, 120, 20
-				text		"Cinematics: "
-				textscale   0.2
-			}
-			choiceDef vr_choice {
-				rect		90, 190, 120, 20
-				cvar		"vr_cinematics"
-				choices		"Immersive;Flat"
-				values		"0;2"
-				choiceType	1
-				textscale   0.2
-				forecolor   0.6, 0.8, 0.8, 1
-			}
-		}
-      
-	}	
-   
-   
-	
-	windowDef Tips {
-		rect		465, 30, 195, 300 		
-		matcolor	1 ,1 ,1 ,1
-		noevents	1
-		
-		// Cinematics
-		windowDef vr_main_cinematics {
-			rect		0, 0, 195, 300
-			
-			windowDef vr_name {
-				rect		1, -1, 180, 30
-				text		"Tips"
-				textscale   0.4
-			}
-			
-			windowDef vr_name2 {
-				rect		1, 30, 180, 20
-				text		"Manual Reload: "
-				textscale   0.2 
-			}
-			
-			windowDef vr_name21 {
-				rect		1, 42, 180, 20
-				text		"Press Weapon-Hand Grip"
-				textscale   0.2 
-			}
-			
-			windowDef vr_name3 {
-				rect		1, 60, 180, 20
-				text		"Reset Height:"
-				textscale   0.2 
-			}
-			windowDef vr_name32 {
-				rect		1, 72, 180, 20
-				text		"Hold Weapon-Hand Grip + "
-				textscale   0.2 
-			}
-			windowDef vr_name33 {
-				rect		1, 82, 180, 20
-				text		"Left Joystick Click"
-				textscale   0.2 
-			}
-			
-			windowDef vr_name4 {
-				rect		1, 100, 180, 20
-				text		"Toggle Lasersight: "
-				textscale   0.2 
-			}
-			windowDef vr_name42 {
-				rect		1, 112, 180, 20
-				text		"Y"
-				textscale   0.2 
-			}
-			
-			windowDef vr_name5 {
-				rect		1, 130, 180, 20
-				text		"Toggle Body: "
-				textscale   0.2 
-			}
-			
-			windowDef vr_name51 {
-				rect		1, 142, 180, 20
-				text		"Click Right Joystick"
-				textscale   0.2 
-			}
-			
-			windowDef vr_name6 {
-				rect		1, 160, 180, 20
-				text		"Toggle Flashlight: "
-				textscale   0.2 
-			}
-			
-			windowDef vr_name62 {
-				rect		1, 172, 180, 20
-				text		"Click Left Joystick"
-				textscale   0.2 
-			}
-			
-			windowDef vr_name7 {
-				rect		1, 190, 180, 20
-				text		"Switch Weapons: "
-				textscale   0.2 
-			}
-			
-			windowDef vr_name72 {
-				rect		1, 202, 180, 20
-				text		"Right Joystick Up / Down"
-				textscale   0.2 
-			}
-		}
-      
-	}
+	#include "guis/vr_main.gui"
 
 	windowDef DoomLogo {
 		rect		210, 145, 256, 128
@@ -5170,353 +5020,6 @@ windowDef OptionsMenuParent {
 
 
 	}
-
-//OPTIONS NAVIGATION
-
-	//options/controls button Text
-	windowDef ControlsBtnText {
-		rect		5, 356, 120, 13
-		text		"#str_02164"
-		textscale	0.25
-		textaligny	-5
-		forecolor	0.6, 1, 1, 1
-		visible 	0
-
-		onMouseEnter {
-			if ("OptionsMenuParent::optionsSelected" == 1) {
-				transition "OptionsBtn1EdgeG::matcolor" "0.8 0.9 1 1" "0.55 0.65 0.75 1" "250" ;
-				transition "OptionsBtn1BorderG::matcolor" "0.8 0.9 1 1" "0.55 0.65 0.75 1" "250" ;
-				transition "OptionsBtn1CornerG::matcolor" "0.8 0.9 1 1" "0.55 0.65 0.75 1" "250" ;
-
-				resetTime "ToolTip1" "0" ;
-				set "ToolTip1::text" "#str_02165" ;
-				set "ToolTip2::text" "#str_02165" ;
-			} else {
-				transition "forecolor" "0.6 1 1 1" "1 1 1 1" "250" ;
-				transition "OptionsBtn1EdgeG::matcolor" "0.8 0.9 1 1" "0.55 0.65 0.75 1" "250" ;
-				transition "OptionsBtn1BorderG::matcolor" "0.8 0.9 1 1" "0.55 0.65 0.75 1" "250" ;
-				transition "OptionsBtn1CornerG::matcolor" "0.8 0.9 1 1" "0.55 0.65 0.75 1" "250" ;
-				transition "OptionsBtn1Border::backcolor" "0.45 0.55 0.7 0.3" "0.55 0.65 0.75 0.5" "200" ;
-				transition "OptionsBtn1Corner::matcolor" "0.45 0.55 0.7 0.3" "0.55 0.65 0.75 0.5" "200" ;
-
-				resetTime "ToolTip1" "0" ;
-				set "ToolTip1::text" "#str_02166" ;
-				set "ToolTip2::text" "#str_02166" ;
-			}
-		}
-		onMouseExit {
-			if ("OptionsMenuParent::optionsSelected" == 1) {
-				transition "OptionsBtn1EdgeG::matcolor" "0.55 0.65 0.75 1" "0.55 0.65 0.75 0.5" "400" ;
-				transition "OptionsBtn1BorderG::matcolor" "0.55 0.65 0.75 1" "0.55 0.65 0.75 0.5" "400" ;
-				transition "OptionsBtn1CornerG::matcolor" "0.55 0.65 0.75 1" "0.55 0.65 0.75 0.5" "400" ;
-
-				resetTime "ToolTip2" "0" ;
-			} else {
-				transition "forecolor" "1 1 1 1" "0.6 1 1 1" "250" ;
-				transition "OptionsBtn1EdgeG::matcolor" "0.55 0.65 0.75 1" "0.55 0.65 0.75 0.5" "400" ;
-				transition "OptionsBtn1BorderG::matcolor" "0.55 0.65 0.75 1" "0.55 0.65 0.75 0.5" "400" ;
-				transition "OptionsBtn1CornerG::matcolor" "0.55 0.65 0.75 1" "0.55 0.65 0.75 0.5" "400" ;
-				transition "OptionsBtn1Border::backcolor" "0.55 0.65 0.75 0.5" "0.45 0.55 0.7 0.3" "400" ;
-				transition "OptionsBtn1Corner::matcolor" "0.55 0.65 0.75 0.5" "0.45 0.55 0.7 0.3" "400" ;
-
-				resetTime "ToolTip2" "0" ;
-			}
-		}
-		onAction {
-			if ("OptionsMenuParent::optionsSelected" == 1) {
-				set	"cmd"	"play guisounds_menuclickdown" ;
-				transition "OptionsBtn1Border::backcolor" "1 1 1 0.6" "0.45 0.55 0.7 0.3" "200" ;
-				transition "OptionsBtn1Corner::matcolor" "1 1 1 0.6" "0.45 0.55 0.7 0.3" "200" ;
-				resetTime "AnimControlsDown" "0" ;
-				set "OptionsMenuParent::optionsSelected" "0" ;
-				resetTime "ToolTip1" "0" ;
-				set "ToolTip1::text" "#str_02166" ;
-				set "ToolTip2::text" "#str_02166" ;
-			} else {
-				set	"cmd"	"play guisounds_menuclickup" ;
-				transition "OptionsBtn1Border::backcolor" "1 1 1 0.8" "0.45 0.55 0.7 0" "200" ;
-				transition "OptionsBtn1Corner::matcolor" "1 1 1 0.8" "0.45 0.55 0.7 0" "200" ;
-
-				if ("OptionsMenuParent::optionsSelected" == 0) {
-					resetTime "AnimControlsUp" "0" ;
-					set "OptionsMenuParent::optionsSelected" "1" ;
-				}
-				if ("OptionsMenuParent::optionsSelected" == 2) {
-					transition "GameOptionsBtnText::forecolor" "1 1 1 1" "0.6 1 1 1" "200" ;
-					transition "OptionsBtn2Border::backcolor" "0.45 0.55 0.7 0" "0.45 0.55 0.7 0.3" "200" ;
-					transition "OptionsBtn2Corner::matcolor" "0.45 0.55 0.7 0" "0.45 0.55 0.7 0.3" "200" ;
-
-					resetTime "AnimGameToControls" "0" ;
-					set "OptionsMenuParent::optionsSelected" "1" ;
-				}
-				if ("OptionsMenuParent::optionsSelected" == 3) {
-					transition "SystemOptionsBtnText::forecolor" "1 1 1 1" "0.6 1 1 1" "200" ;
-					transition "OptionsBtn3Border::backcolor" "0.45 0.55 0.7 0" "0.45 0.55 0.7 0.3" "200" ;
-					transition "OptionsBtn3Corner::matcolor" "0.45 0.55 0.7 0" "0.45 0.55 0.7 0.3" "200" ;
-
-					resetTime "AnimSystemToControls" "0" ;
-					set "OptionsMenuParent::optionsSelected" "1" ;
-				}
-			}
-		}
-	}
-
-	//options/game button Text
-	windowDef GameOptionsBtnText {
-		rect		5, 376, 120, 13
-		text		"#str_02129"
-		textscale	0.25
-		textaligny	-5
-		forecolor	0.6, 1, 1, 1
-		visible 	0
-
-		onMouseEnter {
-			if ("OptionsMenuParent::optionsSelected" == 2) {
-				transition "OptionsBtn2EdgeG::matcolor" "0.8 0.9 1 1" "0.55 0.65 0.75 1" "250" ;
-				transition "OptionsBtn2BorderG::matcolor" "0.8 0.9 1 1" "0.55 0.65 0.75 1" "250" ;
-				transition "OptionsBtn2CornerG::matcolor" "0.8 0.9 1 1" "0.55 0.65 0.75 1" "250" ;
-
-				resetTime "ToolTip1" "0" ;
-				set "ToolTip1::text" "#str_02167" ;
-				set "ToolTip2::text" "#str_02167" ;
-			} else {
-				transition "forecolor" "0.6 1 1 1" "1 1 1 1" "250" ;
-				transition "OptionsBtn2EdgeG::matcolor" "0.8 0.9 1 1" "0.55 0.65 0.75 1" "250" ;
-				transition "OptionsBtn2BorderG::matcolor" "0.8 0.9 1 1" "0.55 0.65 0.75 1" "250" ;
-				transition "OptionsBtn2CornerG::matcolor" "0.8 0.9 1 1" "0.55 0.65 0.75 1" "250" ;
-				transition "OptionsBtn2Border::backcolor" "0.45 0.55 0.7 0.3" "0.55 0.65 0.75 0.5" "200" ;
-				transition "OptionsBtn2Corner::matcolor" "0.45 0.55 0.7 0.3" "0.55 0.65 0.75 0.5" "200" ;
-
-				resetTime "ToolTip1" "0" ;
-				set "ToolTip1::text" "#str_02168" ;
-				set "ToolTip2::text" "#str_02168" ;
-			}
-		}
-		onMouseExit {
-			if ("OptionsMenuParent::optionsSelected" == 2) {
-				transition "OptionsBtn2EdgeG::matcolor" "0.55 0.65 0.75 1" "0.55 0.65 0.75 0.5" "400" ;
-				transition "OptionsBtn2BorderG::matcolor" "0.55 0.65 0.75 1" "0.55 0.65 0.75 0.5" "400" ;
-				transition "OptionsBtn2CornerG::matcolor" "0.55 0.65 0.75 1" "0.55 0.65 0.75 0.5" "400" ;
-
-				resetTime "ToolTip2" "0" ;
-			} else {
-				transition "forecolor" "1 1 1 1" "0.6 1 1 1" "250" ;
-				transition "OptionsBtn2EdgeG::matcolor" "0.55 0.65 0.75 1" "0.55 0.65 0.75 0.5" "400" ;
-				transition "OptionsBtn2BorderG::matcolor" "0.55 0.65 0.75 1" "0.55 0.65 0.75 0.5" "400" ;
-				transition "OptionsBtn2CornerG::matcolor" "0.55 0.65 0.75 1" "0.55 0.65 0.75 0.5" "400" ;
-				transition "OptionsBtn2Border::backcolor" "0.55 0.65 0.75 0.5" "0.45 0.55 0.7 0.3" "400" ;
-				transition "OptionsBtn2Corner::matcolor" "0.55 0.65 0.75 0.5" "0.45 0.55 0.7 0.3" "400" ;
-
-				resetTime "ToolTip2" "0" ;
-			}
-		}
-
-		onAction {
-			if ("OptionsMenuParent::optionsSelected" == 2) {
-				set	"cmd"	"play guisounds_menuclickdown" ;
-				transition "OptionsBtn2Border::backcolor" "1 1 1 0.6" "0.45 0.55 0.7 0.3" "200" ;
-				transition "OptionsBtn2Corner::matcolor" "1 1 1 0.6" "0.45 0.55 0.7 0.3" "200" ;
-				resetTime "AnimGameDown" "0" ;
-				set "OptionsMenuParent::optionsSelected" "0" ;
-				resetTime "ToolTip1" "0" ;
-				set "ToolTip1::text" "#str_02168" ;
-				set "ToolTip2::text" "#str_02168" ;
-			} else {
-				set	"cmd"	"play guisounds_menuclickup" ;
-				transition "OptionsBtn2Border::backcolor" "1 1 1 0.8" "0.45 0.55 0.7 0" "200" ;
-				transition "OptionsBtn2Corner::matcolor" "1 1 1 0.8" "0.45 0.55 0.7 0" "200" ;
-
-				if ("OptionsMenuParent::optionsSelected" == 0) {
-					resetTime "AnimGameUp" "0" ;
-					set "OptionsMenuParent::optionsSelected" "2" ;
-				}
-				if ("OptionsMenuParent::optionsSelected" == 1) {
-					transition "ControlsBtnText::forecolor" "1 1 1 1" "0.6 1 1 1" "200" ;
-					transition "OptionsBtn1Border::backcolor" "0.45 0.55 0.7 0" "0.45 0.55 0.7 0.3" "200" ;
-					transition "OptionsBtn1Corner::matcolor" "0.45 0.55 0.7 0" "0.45 0.55 0.7 0.3" "200" ;
-
-					resetTime "AnimControlsToGame" "0" ;
-					set "OptionsMenuParent::optionsSelected" "2" ;
-				}
-				if ("OptionsMenuParent::optionsSelected" == 3) {
-					transition "SystemOptionsBtnText::forecolor" "1 1 1 1" "0.6 1 1 1" "200" ;
-					transition "OptionsBtn3Border::backcolor" "0.45 0.55 0.7 0" "0.45 0.55 0.7 0.3" "200" ;
-					transition "OptionsBtn3Corner::matcolor" "0.45 0.55 0.7 0" "0.45 0.55 0.7 0.3" "200" ;
-
-					resetTime "AnimSystemToGame" "0" ;
-					set "OptionsMenuParent::optionsSelected" "2" ;
-				}
-			}
-		}
-	}
-
-	//options/game button Text
-	windowDef SystemOptionsBtnText {
-		rect		5, 396, 120, 13
-		text		"#str_00167"
-		textscale	0.25
-		textaligny	-5
-		forecolor	0.6, 1, 1, 1
-		visible 	0
-
-		onMouseEnter {
-			if ("OptionsMenuParent::optionsSelected" == 3) {
-				transition "OptionsBtn3EdgeG::matcolor" "0.8 0.9 1 1" "0.55 0.65 0.75 1" "250" ;
-				transition "OptionsBtn3BorderG::matcolor" "0.8 0.9 1 1" "0.55 0.65 0.75 1" "250" ;
-				transition "OptionsBtn3CornerG::matcolor" "0.8 0.9 1 1" "0.55 0.65 0.75 1" "250" ;
-
-				resetTime "ToolTip1" "0" ;
-				set "ToolTip1::text" "#str_02169" ;
-				set "ToolTip2::text" "#str_02169" ;
-			} else {
-				transition "forecolor" "0.6 1 1 1" "1 1 1 1" "250" ;
-				transition "OptionsBtn3EdgeG::matcolor" "0.8 0.9 1 1" "0.55 0.65 0.75 1" "250" ;
-				transition "OptionsBtn3BorderG::matcolor" "0.8 0.9 1 1" "0.55 0.65 0.75 1" "250" ;
-				transition "OptionsBtn3CornerG::matcolor" "0.8 0.9 1 1" "0.55 0.65 0.75 1" "250" ;
-				transition "OptionsBtn3Border::backcolor" "0.45 0.55 0.7 0.3" "0.55 0.65 0.75 0.5" "200" ;
-				transition "OptionsBtn3Corner::matcolor" "0.45 0.55 0.7 0.3" "0.55 0.65 0.75 0.5" "200" ;
-
-				resetTime "ToolTip1" "0" ;
-				set "ToolTip1::text" "#str_02170" ;
-				set "ToolTip2::text" "#str_02170" ;
-			}
-		}
-		onMouseExit {
-			if ("OptionsMenuParent::optionsSelected" == 3) {
-				transition "OptionsBtn3EdgeG::matcolor" "0.55 0.65 0.75 1" "0.55 0.65 0.75 0.5" "400" ;
-				transition "OptionsBtn3BorderG::matcolor" "0.55 0.65 0.75 1" "0.55 0.65 0.75 0.5" "400" ;
-				transition "OptionsBtn3CornerG::matcolor" "0.55 0.65 0.75 1" "0.55 0.65 0.75 0.5" "400" ;
-
-				resetTime "ToolTip2" "0" ;
-			} else {
-				transition "forecolor" "1 1 1 1" "0.6 1 1 1" "250" ;
-				transition "OptionsBtn3EdgeG::matcolor" "0.55 0.65 0.75 1" "0.55 0.65 0.75 0.5" "400" ;
-				transition "OptionsBtn3BorderG::matcolor" "0.55 0.65 0.75 1" "0.55 0.65 0.75 0.5" "400" ;
-				transition "OptionsBtn3CornerG::matcolor" "0.55 0.65 0.75 1" "0.55 0.65 0.75 0.5" "400" ;
-				transition "OptionsBtn3Border::backcolor" "0.55 0.65 0.75 0.5" "0.45 0.55 0.7 0.3" "400" ;
-				transition "OptionsBtn3Corner::matcolor" "0.55 0.65 0.75 0.5" "0.45 0.55 0.7 0.3" "400" ;
-
-				resetTime "ToolTip2" "0" ;
-			}
-		}
-
-		onAction {
-			if ("OptionsMenuParent::optionsSelected" == 3) {
-				set	"cmd"	"play guisounds_menuclickdown" ;
-				transition "OptionsBtn3Border::backcolor" "1 1 1 0.6" "0.45 0.55 0.7 0.3" "200" ;
-				transition "OptionsBtn3Corner::matcolor" "1 1 1 0.6" "0.45 0.55 0.7 0.3" "200" ;
-				resetTime "ToolTip1" "0" ;
-				set "ToolTip1::text" "#str_02170" ;
-				set "ToolTip2::text" "#str_02170" ;
-				resetTime "AnimSystemDown" "0" ;
-				set "OptionsMenuParent::optionsSelected" "0" ;
-			} else {
-				set	"cmd"	"play guisounds_menuclickup" ;
-				set "cmd"   "resetCvars" ;
-				transition "OptionsBtn3Border::backcolor" "1 1 1 0.8" "0.45 0.55 0.7 0" "200" ;
-				transition "OptionsBtn3Corner::matcolor" "1 1 1 0.8" "0.45 0.55 0.7 0" "200" ;
-
-				if ("OptionsMenuParent::optionsSelected" == 0) {
-					resetTime "AnimSystemUp" "0" ;
-					set "OptionsMenuParent::optionsSelected" "3" ;
-				}
-				if ("OptionsMenuParent::optionsSelected" == 1) {
-					transition "ControlsBtnText::forecolor" "1 1 1 1" "0.6 1 1 1" "200" ;
-					transition "OptionsBtn1Border::backcolor" "0.45 0.55 0.7 0" "0.45 0.55 0.7 0.3" "200" ;
-					transition "OptionsBtn1Corner::matcolor" "0.45 0.55 0.7 0" "0.45 0.55 0.7 0.3" "200" ;
-
-					resetTime "AnimControlsToSystem" "0" ;
-					set "OptionsMenuParent::optionsSelected" "3" ;
-				}
-				if ("OptionsMenuParent::optionsSelected" == 2) {
-					transition "GameOptionsBtnText::forecolor" "1 1 1 1" "0.6 1 1 1" "200" ;
-					transition "OptionsBtn2Border::backcolor" "0.45 0.55 0.7 0" "0.45 0.55 0.7 0.3" "200" ;
-					transition "OptionsBtn2Corner::matcolor" "0.45 0.55 0.7 0" "0.45 0.55 0.7 0.3" "200" ;
-
-					resetTime "AnimGameToSystem" "0" ;
-					set "OptionsMenuParent::optionsSelected" "3" ;
-				}
-			}
-		}
-	}
-	//resetDefaults button Text
-	windowDef ResetDefaultsBtnText {
-		rect		5, 416, 120, 13
-		text		"#str_04086"
-		textscale	0.25
-		textaligny	-5
-		forecolor	0.6, 1, 1, 1
-		visible 	0
-		float "exitanim" 0
-
-		onMouseEnter {
-			transition "forecolor" "0.6 1 1 1" "1 1 1 1" "250" ;
-			transition "OptionsBtn4EdgeG::matcolor" "0.8 0.9 1 1" "0.55 0.65 0.75 1" "250" ;
-			transition "OptionsBtn4BorderG::matcolor" "0.8 0.9 1 1" "0.55 0.65 0.75 1" "250" ;
-			transition "OptionsBtn4CornerG::matcolor" "0.8 0.9 1 1" "0.55 0.65 0.75 1" "250" ;
-			transition "OptionsBtn4Border::backcolor" "0.45 0.55 0.7 0.3" "0.55 0.65 0.75 0.5" "200" ;
-			transition "OptionsBtn4Corner::matcolor" "0.45 0.55 0.7 0.3" "0.55 0.65 0.75 0.5" "200" ;
-			set "exitanim" "1" ;
-
-			resetTime "ToolTip1" "0" ;
-			set "ToolTip1::text" "#str_04087" ;
-			set "ToolTip2::text" "#str_04087" ;
-		}
-		onMouseExit {
-			if ("exitanim" == 1) {
-				transition "forecolor" "1 1 1 1" "0.6 1 1 1" "250" ;
-				transition "OptionsBtn4EdgeG::matcolor" "0.55 0.65 0.75 1" "0.55 0.65 0.75 0.5" "400" ;
-				transition "OptionsBtn4BorderG::matcolor" "0.55 0.65 0.75 1" "0.55 0.65 0.75 0.5" "400" ;
-				transition "OptionsBtn4CornerG::matcolor" "0.55 0.65 0.75 1" "0.55 0.65 0.75 0.5" "400" ;
-				transition "OptionsBtn4Border::backcolor" "0.55 0.65 0.75 0.5" "0.45 0.55 0.7 0.3" "400" ;
-				transition "OptionsBtn4Corner::matcolor" "0.55 0.65 0.75 0.5" "0.45 0.55 0.7 0.3" "400" ;
-
-				resetTime "ToolTip2" "0" ;
-				set "exitanim" "0" ;
-			}
-		}
-
-		onAction {
-			resetTime "AnimRDGUp" "0" ;
-
-			set	"cmd"	"play guisounds_menuclickup" ;
-
-			transition "forecolor" "1 1 1 1" "0.6 1 1 1" "250" ;
-			transition "OptionsBtn4EdgeG::matcolor" "0.55 0.65 0.75 1" "0.55 0.65 0.75 0.5" "400" ;
-			transition "OptionsBtn4BorderG::matcolor" "0.55 0.65 0.75 1" "0.55 0.65 0.75 0.5" "400" ;
-			transition "OptionsBtn4CornerG::matcolor" "0.55 0.65 0.75 1" "0.55 0.65 0.75 0.5" "400" ;
-			transition "OptionsBtn4Border::backcolor" "0.55 0.65 0.75 0.5" "0.45 0.55 0.7 0.3" "400" ;
-			transition "OptionsBtn4Corner::matcolor" "0.55 0.65 0.75 0.5" "0.45 0.55 0.7 0.3" "400" ;
-			resetTime "ToolTip2" "0" ;
-			set "exitanim" "0" ;
-
-			if ("OptionsMenuParent::optionsSelected" == 1) {
-				transition "ControlsBtnText::forecolor" "1 1 1 1" "0.6 1 1 1" "200" ;
-				transition "OptionsBtn1Border::backcolor" "0.45 0.55 0.7 0" "0.45 0.55 0.7 0.3" "200" ;
-				transition "OptionsBtn1Corner::matcolor" "0.45 0.55 0.7 0" "0.45 0.55 0.7 0.3" "200" ;
-
-				resetTime "AnimControlsDown" "0" ;
-				set "OptionsMenuParent::optionsSelected" "0" ;
-			}
-			if ("OptionsMenuParent::optionsSelected" == 2) {
-				transition "GameOptionsBtnText::forecolor" "1 1 1 1" "0.6 1 1 1" "200" ;
-				transition "OptionsBtn2Border::backcolor" "0.45 0.55 0.7 0" "0.45 0.55 0.7 0.3" "200" ;
-				transition "OptionsBtn2Corner::matcolor" "0.45 0.55 0.7 0" "0.45 0.55 0.7 0.3" "200" ;
-
-				resetTime "AnimGameDown" "0" ;
-				set "OptionsMenuParent::optionsSelected" "0" ;
-			}
-			if ("OptionsMenuParent::optionsSelected" == 3) {
-				transition "SystemOptionsBtnText::forecolor" "1 1 1 1" "0.6 1 1 1" "200" ;
-				transition "OptionsBtn3Border::backcolor" "0.45 0.55 0.7 0" "0.45 0.55 0.7 0.3" "200" ;
-				transition "OptionsBtn3Corner::matcolor" "0.45 0.55 0.7 0" "0.45 0.55 0.7 0.3" "200" ;
-
-				resetTime "AnimSystemDown" "0" ;
-				set "OptionsMenuParent::optionsSelected" "0" ;
-			}
-
-		}
-	}
 }
 
 
@@ -8825,44 +8328,7 @@ windowDef MultiplayerNavParent {
 			}
 		}
 	}
-	//updates button Text
-	windowDef UpdatesBtnText {
-		rect		441, 454, 73, 22
-		text		"#str_04837"
-		textscale	0.25
-		textalign	1
-		forecolor	1, 1, 1, 0.4
-		visible		("gui::inGame" == 0)
-		notime 1
 
-
-		onMouseEnter {
-			transition "forecolor" "1 1 1 0.4" "1 1 1 1" "100" ;
-
-			resetTime "ToolTip1" "0" ;
-			set "ToolTip1::text" "#str_04838" ;
-			set "ToolTip2::text" "#str_04838" ;
-		}
-
-		onMouseExit {
-			transition "forecolor" "0.8 0.95 1 1" "1 1 1 0.4" "200" ;
-
-			resetTime "ToolTip2" "0" ;
-		}
-
-		onAction {
-			set	"cmd"	"play guisounds_menuclickup ; CheckUpdate2" ;
-			resetTime "ToolTip2" "0" ;
-			transition "forecolor" "0.8 0.95 1 1" "1 1 1 0.4" "200" ;
-			set "noevents" "1" ;
-			resetTime "0" ;
-		}
-
-		onTime 5000 {
-			set "noevents" "0" ;
-		}
-
-	}
 	//credits button Text
 	windowDef CreditsBtnText {
 		rect		522, 454, 65, 22
@@ -22415,7 +21881,6 @@ windowDef MultiplayerLANParent {
 			transition "Resurrection::matcolor" "1 1 1 1" "1 1 1 0" "700";
 
 			transition "PrimaryMenuParent::rect" "0 0 640 480" "0 480 640 480" "1000" "0.4" "0.6" ;
-			transition "CreditsParent::rect" "0 -480 640 480" "0 0 640 480" "1000" "0.4" "0.6" ;
 
 			transition "DoomRoqParent::rect" "0 0 640 480" "0 480 640 480" "1000" "0.4" "0.6" ;
 		}
@@ -22428,6 +21893,8 @@ windowDef MultiplayerLANParent {
 		}
 		onTime 50 {
 			resetTime "ToolTip2" "0" ;
+			set "Cinematics::visible" "0";
+			set "Tips::visible" "0";
 		}
 		onTime 300 {
 		//	resetTime "AnimLinesOut" "0" ;
@@ -22435,6 +21902,7 @@ windowDef MultiplayerLANParent {
 			resetTime "bgBlackBottomOpen" "0" ;
 		}
 		onTime 2300 {
+			transition "TBCredits::matcolor" "1 1 1 0" "1 1 1 1" "600";
 			transition "DoomLogo::matcolor" "1 1 1 0" "1 1 1 1" "700" ;
 			transition "DoomLogo2::matcolor" "1 1 1 0" "1 1 1 0.07" "700" ;
 			transition "Resurrection::matcolor" "1 1 1 0" "1 1 1 1" "700";
@@ -22443,6 +21911,10 @@ windowDef MultiplayerLANParent {
 			}
 		}
 
+		onTime 10000 {
+			transition "TBCredits::matcolor" "1 1 1 1" "1 1 1 0" "600";
+			transition "CreditsParent::rect" "0 -480 640 480" "0 0 640 480" "1000" "0.4" "0.6";
+		}
 	}
 
 	// credits to main window animation
@@ -22474,7 +21946,10 @@ windowDef MultiplayerLANParent {
 		onTime 50 {
 			resetTime "bgBlackTopClose" "0" ;
 			resetTime "bgBlackBottomClose" "0" ;
+			set "Cinematics::visible" "1";
+			set "Tips::visible" "1";
 
+			transition "TBCredits::matcolor" "1 1 1 0" "1 1 1 0" "600";
 			transition "MarsRender::rect" 	 "20 -17 1024 800" "0 20 640 430" "2000" "0.2" "0.8" ;
 			transition "MarsHighlight::rect" "240 98 580 580" "133 57 373 373" "2000" "0.2" "0.8" ;
 

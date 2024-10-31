@@ -1,0 +1,154 @@
+	windowDef D3QVersion {
+		rect		10, 15, 210, 210
+		matcolor	1 ,1 ,1 ,1		
+		
+		// Version
+		windowDef vr_versiontext {
+			rect		1, 0, 120, 20
+			text		"D3Q Version:"
+			textscale   0.2 
+		}			
+		
+		editDef vr_choice {
+			rect		90, 0, 120, 20
+			cvar		"vr_d3qversion"
+			textscale   0.2
+			forecolor   0.6, 0.8, 0.8, 1
+		}
+	}	
+
+	windowDef Cinematics {
+		rect		10, 30, 210, 210
+		matcolor	1 ,1 ,1 ,1		
+		
+		// Cinematics
+		windowDef vr_main_cinematics {
+			rect		0, 0, 210, 210
+			
+			windowDef vr_name {
+				rect		1, -1, 180, 20
+				text		"Cinematics"
+				textscale   0.4
+			}
+			
+			windowDef vr_name2 {
+				rect		1, 30, 180, 150
+				text		"The cinematics by default allow you to move you head to look around the scene.\nWhen the camera changes so does your view.\nThis May lead to some discomfort or dizziness.\nTo switch to regular flat cutscenes change the below to 'Flat'"
+				textscale   0.2 
+			}
+			
+			windowDef vr_name3 {
+				rect		1, 190, 120, 20
+				text		"Cinematics: "
+				textscale   0.2
+			}
+			choiceDef vr_choice {
+				rect		90, 190, 120, 20
+				cvar		"vr_cinematics"
+				choices		"Immersive;Flat"
+				values		"0;2"
+				choiceType	1
+				textscale   0.2
+				forecolor   0.6, 0.8, 0.8, 1
+			}
+		}
+	}	
+
+	windowDef Tips {
+		rect		465, 30, 195, 300 		
+		matcolor	1 ,1 ,1 ,1
+		noevents	1
+		
+		// Cinematics
+		windowDef vr_main_cinematics {
+			rect		0, 0, 195, 300
+			
+			windowDef vr_name {
+				rect		1, -1, 180, 30
+				text		"Tips"
+				textscale   0.4
+			}
+			
+			windowDef vr_name2 {
+				rect		1, 30, 180, 20
+				text		"Manual Reload: "
+				textscale   0.2 
+			}
+			
+			windowDef vr_name21 {
+				rect		1, 42, 180, 20
+				text		"Press Weapon-Hand Grip"
+				textscale   0.2 
+			}
+			
+			windowDef vr_name3 {
+				rect		1, 60, 180, 20
+				text		"Reset Height:"
+				textscale   0.2 
+			}
+			windowDef vr_name32 {
+				rect		1, 72, 180, 20
+				text		"Hold Weapon-Hand Grip + "
+				textscale   0.2 
+			}
+			windowDef vr_name33 {
+				rect		1, 82, 180, 20
+				text		"Left Joystick Click"
+				textscale   0.2 
+			}
+			
+			windowDef vr_name4 {
+				rect		1, 100, 180, 20
+				text		"Equip Artifact / SoulCube:"
+				textscale   0.2 
+			}
+			windowDef vr_name42 {
+				rect		1, 112, 180, 20
+				text		"Y"
+				textscale   0.2 
+			}
+			
+			windowDef vr_name5 {
+				rect		1, 130, 180, 20
+				text		"Toggle Body: "
+				textscale   0.2 
+			}
+			
+			windowDef vr_name51 {
+				rect		1, 142, 180, 20
+				text		"Click Right Joystick"
+				textscale   0.2 
+			}
+			
+			windowDef vr_name6 {
+				rect		1, 160, 180, 20
+				text		"Toggle Flashlight: "
+				textscale   0.2 
+			}
+			
+			windowDef vr_name62 {
+				rect		1, 172, 180, 20
+				text		"Click Left Joystick"
+				textscale   0.2 
+			}
+			
+			windowDef vr_name7 {
+				rect		1, 190, 180, 20
+				text		"Switch Weapons: "
+				textscale   0.2 
+			}
+			
+			windowDef vr_name72 {
+				rect		1, 202, 180, 20
+				text		"Right Joystick Up / Down"
+				textscale   0.2 
+			}
+		}
+	}
+
+	windowDef TBCredits {
+		rect		0, 32, 640, 400
+		background	"guis/assets/mainmenu/credits"
+		matcolor	1 ,1 ,1 ,0
+		noevents	1
+	}

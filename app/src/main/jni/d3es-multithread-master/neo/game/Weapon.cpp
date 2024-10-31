@@ -2070,9 +2070,10 @@ void idWeapon::GetProjectileLaunchOriginAndAxis( idVec3& origin, idMat3& axis )
             {
                 // if using motion controls, the muzzle axis should be the tracked direction of
                 // hand movement, not the barrel axis. (unless the controller is mounted on something like a topshot, then you have a grenade launcher.)
-                if ( commonVr->VR_USE_MOTION_CONTROLS && !vr_mountedWeaponController.GetBool() )
+                //if ( commonVr->VR_USE_MOTION_CONTROLS && !vr_mountedWeaponController.GetBool() )
                 {
-                    axis = owner->hands[GetHand()].throwDirection.ToMat3();
+                    //axis = owner->hands[GetHand()].throwDirection.ToMat3();
+                    axis = commonVr->lastViewAxis;//Lubos
                     break;
                 }
             }
@@ -4579,14 +4580,17 @@ void idWeapon::Event_LaunchProjectilesEllipse(int num_projectiles, float spreada
     }
 
     // calculate the muzzle position
-    if (barrelJointView != INVALID_JOINT && projectileDict.GetBool("launchFromBarrel")) {
+    GetProjectileLaunchOriginAndAxis( muzzleOrigin, muzzleAxis );
+
+    // calculate the muzzle position
+    /*if (barrelJointView != INVALID_JOINT && projectileDict.GetBool("launchFromBarrel")) {
         // there is an explicit joint for the muzzle
         GetGlobalJointTransform(true, barrelJointView, muzzleOrigin, muzzleAxis);
     } else {
         // go straight out of the view
         muzzleOrigin = playerViewOrigin;
         muzzleAxis = playerViewAxis;
-    }
+    }*/
 
     // add some to the kick time, incrementally moving repeat firing weapons back
     if (kick_endtime < gameLocal.time) {
@@ -4612,7 +4616,7 @@ void idWeapon::Event_LaunchProjectilesEllipse(int num_projectiles, float spreada
             spin = (float)DEG2RAD(360.0f) * gameLocal.random.RandomFloat();
             anga = idMath::Sin(spreadRadA * gameLocal.random.RandomFloat());
             angb = idMath::Sin(spreadRadB * gameLocal.random.RandomFloat());
-            dir = playerViewAxis[ 0 ] + playerViewAxis[ 2 ] * (angb*idMath::Sin(spin)) - playerViewAxis[ 1 ] * (anga*idMath::Cos(spin));
+            dir = muzzleAxis[ 0 ] + muzzleAxis[ 2 ] * (angb*idMath::Sin(spin)) - muzzleAxis[ 1 ] * (anga*idMath::Cos(spin));
             dir.Normalize();
 
             gameLocal.SpawnEntityDef(projectileDict, &ent);
@@ -4629,10 +4633,10 @@ void idWeapon::Event_LaunchProjectilesEllipse(int num_projectiles, float spreada
 
             // make sure the projectile starts inside the bounding box of the owner
             if (i == 0) {
-                muzzle_pos = muzzleOrigin + playerViewAxis[ 0 ] * 2.0f;
+                muzzle_pos = muzzleOrigin + muzzleAxis[ 0 ] * 2.0f;
 
                 if ((ownerBounds - projBounds).RayIntersection(muzzle_pos, playerViewAxis[0], distance)) {
-                    start = muzzle_pos + distance * playerViewAxis[0];
+                    start = muzzle_pos + distance * muzzleAxis[0];
                 } else {
                     start = ownerBounds.GetCenter();
                 }

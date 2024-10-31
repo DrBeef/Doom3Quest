@@ -1751,16 +1751,12 @@ void Doom3Quest_FrameSetup(int controlscheme, int switch_sticks, int refresh)
 	vrapi_SetTrackingSpace(gAppState.Ovr, VRAPI_TRACKING_SPACE_LOCAL_FLOOR);
 
 	int device = vrapi_GetSystemPropertyInt(&java, VRAPI_SYS_PROP_DEVICE_TYPE);
-	switch (device)
-    {
-        case VRAPI_DEVICE_TYPE_OCULUSQUEST:
-            //Force 60hz for Quest 1
-            vrapi_SetDisplayRefreshRate(gAppState.Ovr, 60);
-            break;
-        case VRAPI_DEVICE_TYPE_OCULUSQUEST2:
-            vrapi_SetDisplayRefreshRate(gAppState.Ovr, refresh);
-            break;
-    }
+	if (device == VRAPI_DEVICE_TYPE_OCULUSQUEST) {
+		//Force 60hz for Quest 1
+		vrapi_SetDisplayRefreshRate(gAppState.Ovr, 60);
+	} else {
+		vrapi_SetDisplayRefreshRate(gAppState.Ovr, refresh);
+	}
 
 	if (!Doom3Quest_useScreenLayer())
 	{

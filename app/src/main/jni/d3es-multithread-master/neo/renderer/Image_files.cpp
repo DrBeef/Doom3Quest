@@ -949,6 +949,11 @@ void R_LoadImage( const char *cname, byte **pic, int *width, int *height, ID_TIM
 		return;
 	}
 
+	//Lubos BEGIN
+	name.Replace("//", "/");
+	name.Replace("d3xp/textures/david/cavsolarmap", "textures/caves/cavsolarmap_add");
+	//Lubos END
+
 	name.ToLower();
 	idStr ext;
 	name.ExtractFileExtension( ext );

@@ -82,7 +82,7 @@ struct version_s {
 idCVar vr_refresh( "vr_refresh", "60", CVAR_INTEGER | CVAR_ARCHIVE, "Refresh rate" );
 idCVar vr_supersampling( "vr_supersampling", "-1.0", CVAR_FLOAT | CVAR_ARCHIVE, "Supersampling" );
 idCVar vr_msaa( "vr_msaa",  "1", CVAR_FLOAT | CVAR_ARCHIVE, "MSAA" );
-idCVar vr_timescale( "vr_timescale",  "1", CVAR_FLOAT | CVAR_ARCHIVE, "Current slow motion timescale" );
+idCVar vr_timescale( "vr_timescale",  "1", CVAR_FLOAT, "Current slow motion timescale" );
 
 idCVar com_version( "si_version", version.string, CVAR_SYSTEM|CVAR_ROM|CVAR_SERVERINFO, "engine version" );
 idCVar com_skipRenderer( "com_skipRenderer", "0", CVAR_BOOL|CVAR_SYSTEM, "skip the renderer completely" );
@@ -2336,7 +2336,7 @@ void idCommonLocal::Frame( void ) {
 
 		eventLoop->RunEventLoop();
 
-		com_frameTime = com_ticNumber * USERCMD_MSEC;
+		com_frameTime += USERCMD_MSEC;
 
 		idAsyncNetwork::RunFrame();
 
@@ -2396,7 +2396,7 @@ idCommonLocal::GUIFrame
 void idCommonLocal::GUIFrame( bool execCmd, bool network ) {
 	Sys_GenerateEvents();
 	eventLoop->RunEventLoop( execCmd );	// and execute any commands
-	com_frameTime = com_ticNumber * USERCMD_MSEC;
+	com_frameTime += USERCMD_MSEC;
 	if ( network ) {
 		idAsyncNetwork::RunFrame();
 	}
@@ -2724,10 +2724,10 @@ static unsigned int AsyncTimer(unsigned int interval, void *) {
 	//        (probably com_tickNumber only starts incrementing a second after engine starts?)
 	//        only reason this works is common->Async() checking again before calling SingleAsyncTic()
 
-	if (now >= tick)
+	//if (now >= tick)
 		return 1;
 
-	return tick - now;
+	//return tick - now;
 }
 
 #ifdef _WIN32
