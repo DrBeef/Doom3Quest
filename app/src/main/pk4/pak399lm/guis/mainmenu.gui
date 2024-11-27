@@ -224,39 +224,42 @@ windowDef Desktop {
 		modelOrigin 	-80, 0, -25, 0
 		viewOffset 	-300, -28, 0, 0
 		lightOrigin 	0, 0, 0, 0
-		lightColor 	1, 1, 1, 1
+		lightColor 	1, 0.7, 0.4, 1
 		notime 		1
 		definevec4	"$marsRotate"	0, time * 0.001, 0, 0
 		float starmove	0
 
 		onTime 100 {
-			transition "MarsHighlight::matcolor" "0 0 0 0" "0 0 0 0" "9700";
-			transition "modelRotate" "-60 60 0 0" "0 0 0 0" "12000" "0" "0.9";
-			transition "stars::rect" "-100 0 1256 1256" "-205 -70 1024 1024" "12000" "0" "0.9";
-			transition "stars1::rect" "-50 0 1256 1256" "-205 -90 1024 1024" "12000" "0" "0.9";
-			transition "stars2::rect" "-30 0 1256 1256" "-205 -110 1024 1024" "12000" "0" "0.9";
-		//	transition "viewOffset" "-306 -34 -5 0" "-300 -28 0 0" "1000" "0.2" "0";
-			transition "lightOrigin" "-60 -150 -100 0" "-120 -140 -150 0" "1000";
+			transition "MarsHighlight::matcolor" "0 0 0 0" "0 0 0 0" "9700" ;
+			transition "modelRotate" "-60 60 0 0" "0 0 0 0" "12600" "0" "0.9" ;
+			transition "stars::rect" "-100 0 1256 1256" "-205 -70 1024 1024" "12000" "0" "0.9" ;
+			transition "stars1::rect" "-50 0 1256 1256" "-205 -90 1024 1024" "12000" "0" "0.9" ;
+			transition "stars2::rect" "-30 0 1256 1256" "-205 -110 1024 1024" "12000" "0" "0.9" ;
+		//	transition "viewOffset" "-306 -34 -5 0" "-300 -28 0 0" "1000" "0.2" "0" ;
+			transition "lightOrigin" "-60 -150 -100 0" "-120 -140 -150 0" "1000" ;
 		}
 		onTime 500 {
-			transition "BlackFade::backcolor" "0 0 0 1" "0 0 0 0" "1000";
-		}
-		
-		onTime 1100 {
-			set "BlackFade::rect" "0 0 640 0";
-			transition "viewOffset" "-300 -28 0 0" "-128 0 0 0" "9500" "0" "0.9";
-			transition "lightOrigin" "-120 -140 -150 0" "-180 -80 0 0" "3000" "0.6" "0.2";
-		}
-		onTime 4100 {
-			transition "lightOrigin" "-180 -80 0 0" "-128 10 150 0" "9000" "0.1" "0.9";
-		}
-		onTime 10700 {
-			transition "MarsHighlight::matcolor" "0 0 0 0" "0.7 0.7 0.7 0.7" "2500";
+			transition "BlackFade::backcolor" "0 0 0 1" "0 0 0 0" "1000" ;
 		}
 
-		onTime 12650 {			
-			set "starmove" "1";
-			resetTime "MarsSpin" "0";
+		onTime 1100 {
+			set "BlackFade::rect" "0 0 640 0" ;
+			transition "viewOffset" "-300 -28 0 0" "-128 0 0 0" "9500" "0" "0.9" ;
+			transition "lightOrigin" "-120 -140 -150 0" "-180 -80 0 0" "3000" "0.6" "0.2" ;
+		}
+		onTime 4100 {
+			transition "lightOrigin" "-180 -80 0 0" "-128 10 150 0" "9000" "0.1" "0.9" ;
+		}
+		onTime 9000 {
+			transition "MarsHighlight::matcolor" "0 0 0 0" "0.7 0.7 0.7 0.7" "3000" "0.4" "0.4" ;
+		}
+		onTime 1200 {
+			resetTime "Resurrection" "0" ;
+		}
+
+		onTime 12650 {
+			set "starmove" "1" ;
+			resetTime "MarsSpin" "0" ;
 		}
 
 	}
@@ -264,14 +267,14 @@ windowDef Desktop {
 		rect		0,0,0,0
 		noevents	1
 		notime		1
-		
+
 		onTime 0 {
-			transition "MarsRender::modelRotate" "0 0 0 0" "0 -360 0 0" "500000";
+			transition "MarsRender::modelRotate" "0 0 0 0" "0 -360 0 0" "350000" ;
 		}
-		onTime 500000 {
-			resetTime "0";
+		onTime 350000 {
+			resetTime "0" ;
 		}
-		
+
 	}
 	//top edge halo glow on mars
 	windowDef MarsHighlight {

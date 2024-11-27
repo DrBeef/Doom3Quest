@@ -57,7 +57,7 @@ If you have questions concerning this license or the applicable additional terms
 
 // build an exe with no CVAR_CHEAT controls
 #ifndef ID_ALLOW_CHEATS
-	#define ID_ALLOW_CHEATS 0
+	#define ID_ALLOW_CHEATS 1
 #endif
 
 // verify checksums in clientinfo traffic

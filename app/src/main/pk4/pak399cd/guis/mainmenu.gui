@@ -1,0 +1,3741 @@
+windowDef Desktop
+{
+	rect	0, 0, 640, 480
+	menugui	1
+	visible	1
+	background	"guis/cdoom/backgroundstars"
+//    background "guis/assets/custom/dds/mainmenu/background_tiled"
+	matcolor	1, 1, 1, .5
+
+	onTime 0 {
+		set "Classic::visible" "1";
+		set "VRBtnText::visible" "0";
+		transition "Classic::rect" "246, 0, 160, 40" "246, 5, 160, 40" "2500";
+		transition "Classic::matcolor" "1, 1, 1, 0" "1, 1, 1, 1" "2500";
+        resetTime "MenuMusic" "0";
+	}
+
+	onTime 2500 {
+		set "Classic:noTime" "0";
+		resetTime "Classic" "0";
+	}
+
+	onESC {
+		if ("gui::inGame" == 0) {
+            showcursor "1" ;
+//			set "idlogo::rect" "0 0 0 0" ;
+//			set "desktop::doomme" "1" ;
+			set "cmd" "play """ ;
+//            set "doomme" "1";
+//           set "SaveGame::matcolor" ".8,.8,.8,1"
+		}
+        if ("gui::inGame" >= 1) {
+//            set "SaveGame::matcolor" "1,1,1,1"
+			resetTime "0";
+ //           set "desktop::doomme" "0";
+        }
+                    set "cmd" "close" ;
+//                    resetTime "SaveGame" "0";
+	}
+
+      onNamedEvent noIntro {
+         resetTime "MenuMusic" "0";
+      }
+
+windowDef CreditsDesktop
+{
+	rect	0,0,640,480
+    visible 0
+    notime 1
+    noevents 0
+
+	onTime 0 {
+
+        set "visible" "1";
+//        set "Desktop::noevents" "1";
+//		resetTime "Black" "0" ;
+
+	}
+
+    onAction {
+        resetTime "Black" "56000";
+    }
+
+#include "guis/credits.pd"
+
+	windowDef CreditsTextAnimation {
+		rect		0, 0, 0, 0
+		notime 1
+
+		onTime 0 {
+			resetTime "CreditsText1" "0" ;
+		}
+		onTime 3000 {
+			resetTime "CreditsText3" "0" ;
+		}
+		onTime 6000 {
+			resetTime "CreditsText7" "0" ;
+		}
+		onTime 9000 {
+			resetTime "CreditsText10" "0" ;
+		}
+
+		onTime 12000 {
+			resetTime "CreditsText25" "0" ;
+		}
+//		
+		onTime 15000 {
+			resetTime "CreditsText2" "0" ;
+		}
+		onTime 18000 {
+			resetTime "CreditsText4" "0" ;
+		}
+		onTime 21000 {
+			resetTime "CreditsText8" "0" ;
+		}
+		onTime 24000 {
+			resetTime "CreditsText5" "0" ;
+		}
+		onTime 27000 {
+			resetTime "CreditsText9" "0" ;
+		}
+
+		onTime 30000 {
+			resetTime "CreditsText27" "0" ;
+		}
+		onTime 33000 {
+			resetTime "CreditsText28" "0" ;
+		}
+		onTime 36000 {
+			resetTime "CreditsText29" "0" ;
+		}
+		onTime 39000 {
+			resetTime "CreditsText26" "0" ;
+		}
+		onTime 42000 {
+			resetTime "CreditsText6" "0" ;
+		}
+		onTime 45000 {
+			resetTime "CreditsText11" "0" ;
+		}
+		onTime 48000 {
+			resetTime "CreditsText12" "0" ;
+		}
+		onTime 51000 {
+			resetTime "CreditsText22" "0" ;
+		}
+		onTime 54000 {
+			resetTime "CreditsText23" "0" ;
+		}
+		onTime 57000 {
+			resetTime "CreditsText20" "0" ;
+		}
+		onTime 60000 {
+			resetTime "CreditsText24" "0" ;
+		}
+		onTime 63000 {
+			resetTime "0"; //Loop back onto ourselves.  Easier than stopping and resetting the switches
+		}
+	}
+windowDef Black {
+	rect 0,0,640,480
+//	backcolor 0,0,0,0
+	notime 1
+    noevents 0
+	
+    onAction {
+        resetTime "65000";
+    }
+	onTime 0 {
+//		transition "backcolor" "0 0 0 1" "0 0 0 0" "1000" ;
+
+	}
+	onTime 1000 {
+		resetTime "CreditsTextAnimation" "0" ;
+	}
+	onTime 65000 {
+//		transition "backcolor" "0 0 0 0" "0 0 0 1" "1000" ;
+	}
+	onTime 66000 {
+//		set "visible" "0" ; //Parent is hidden, no need to hide this
+//		transition "DoomGuy::matcolor" "1,1,1,0" "1,1,1,.4" "700";
+		transition "Episode::matcolor" "1,1,1,0" "1,1,1,1" "700";
+		set "Episode::visible" "1";
+		transition "SelectSkull::matcolor" "1,1,1,0" "1,1,1,1" "700";
+		set "SelectSkull::visible" "1";
+		transition "Selections::matcolor" "1,1,1,0" "1,1,1,1" "700";
+		set "Selections::visible" "1";
+		transition "LoadGame::matcolor" "1,1,1,0" "1,1,1,1" "700";
+		set "LoadGame::visible" "1";
+		transition "NewGame::matcolor" "1,1,1,0" "1,1,1,1" "700";
+		set "NewGame::visible" "1";
+		transition "SaveGame::matcolor" "1,1,1,0" "1,1,1,1" "700";
+		set "SaveGame::visible" "1";
+		transition "Multiplayer::matcolor" "1,1,1,0" "1,1,1,1" "700";
+		set "Multiplayer::visible" "1";
+		transition "Options::matcolor" "1,1,1,0" "1,1,1,1" "700";
+		set "Options::visible" "1";
+		transition "ReadThis::matcolor" "1,1,1,0" "1,1,1,1" "700";
+		set "ReadThis::visible" "1";
+		transition "Quit::matcolor" "1,1,1,0" "1,1,1,1" "700";
+		set "Quit::visible" "1";
+//		set "DoomGuy::visible" "1";
+        set "Selections::noevents" "0";
+        set "Desktop::noevents" "0";
+        set "CreditsDesktop::visible" "0";
+	}
+}
+
+//-----------------------------------------------------------------------------
+}
+
+    windowDef MenuMusic {
+        rect 0,0,0,0
+        visible 0
+        noTime 1
+
+        onTime 0 {
+               set	"cmd"	"music menusounds_music";
+               set "cmd" "checkKeys";
+        }
+        onTime 261000 {
+               resetTime "0";
+        }
+    }
+	windowDef DooM
+	{
+		rect	212,30,250,120
+		visible	1
+		background	"guis/assets/mainmenu/doom3"
+//        text "gui::ingame"
+	}
+	windowDef Classic
+	{
+		visible	0
+		noTime	1
+		rect	246,0,160,40
+		background	"guis/cdoom/classic_logo"
+		matcolor	1, 1, 1, 0
+
+		onTime 0 {
+			transition "matcolor" "1, 1, 1, 1" ".9, .9, .9, .9" "1000";
+		}
+
+		onTime 1000 {
+			transition "matcolor" ".9, .9, .9, .9" "1, 1, 1, 1" "1000";
+		}
+
+		onTime 2000 {
+			resetTime 0;
+		}
+
+	}
+	windowDef VersionArea
+	{
+		rect	197,0,265,156
+		visible	1
+
+		onMouseEnter {
+			set "VersionNumber::visible" "1";
+			transition "VersionNumber::forecolor" "1, 1, 1, 0" "1, 1, 1, .8" "700";
+		}
+
+		onMouseExit {
+			transition "VersionNumber::forecolor" "1, 1, 1, .8" "1, 1, 1, 0" "700";
+			set "VersionNumber::noTime" "0";
+			resetTime "Version" "0";
+		}
+
+	}
+	renderDef MarsRender
+	{
+		rect	-333,360,1300,800
+		visible	1
+		backcolor	0, 0, 0, 0
+		model	"models/wipes/planet2.lwo"
+		needsRender	1
+		modelRotate	0, time * -0.000055, 0, 0
+		modelOrigin	-80, 0, -25, 0
+		viewOffset	-128, 0, 0, 0
+		lightColor	1, .8, .8, 1
+	}
+	windowDef VersionNumber
+	{
+		rect	0, 0, 125, 25
+		visible	1
+		noTime	1
+		forecolor	1, 1, 1, 0
+		font	"fonts/good_times"
+		text	"v1.3.1 DC"
+
+		onTime 700 {
+			set "visible" "0";
+			set "noTime" "1";
+		}
+
+	}
+	windowDef Middlearea
+	{
+		rect	110, 100, 450, 450
+		visible	1
+		windowDef Pentagram
+		{
+			rect	60, 45, 300, 300
+			background	"guis/cdoom/pentacle"
+			matcolor	.7, 1, 1, .2
+			visible	1
+		}
+/*		windowDef DoomGuy
+		{
+			rect	0, 5, 450, 450
+			background	"guis/cdoom/doomguy"
+			matcolor	1, 1, 1, .35
+			visible	1
+		}*/
+		windowDef Episode
+		{
+			rect	30,45,370,46
+			background	"guis/cdoom/episode_title"
+			visible	1
+		}
+		windowDef SelectSkull
+		{
+			rect	90, 92, 50, 50
+			background	"guis/cdoom/skull01"
+
+			onTime 0 {
+				set "background" "guis/cdoom/skull02";
+			}
+
+			onTime 500 {
+				set "background" "guis/cdoom/skull01";
+			}
+
+			onTime 1000 {
+				resetTime 0;
+			}
+
+		}
+		windowDef Selections
+		{
+			rect	115,105,200,155
+			backcolor	0, 0, 0, .03
+			noTime	1
+			visible	1
+
+			onTime 10 {
+//				transition "DoomGuy::matcolor" "1,1,1,.4" "1,1,1,0" "700";
+				transition "Episode::matcolor" "1,1,1,1" "1,1,1,0" "700";
+				//                    set "Episode::visible" "0";
+				transition "SelectSkull::matcolor" "1,1,1,1" "1,1,1,0" "700";
+				//                    set "SelectSkull::visible" "0";
+				transition "Selections::matcolor" "1,1,1,1" "1,1,1,0" "700";
+				//                    set "Selections::visible" "0";
+				transition "LoadGame::matcolor" "1,1,1,1" "1,1,1,0" "700";
+				//                    set "LoadGame::visible" "0";
+				transition "NewGame::matcolor" "1,1,1,1" "1,1,1,0" "700";
+				//                    set "NewGame::visible" "0";
+//                if ("gui::inGame" == 1) {
+//                   transition "SaveGame::matcolor" "1,1,1,1" "1,1,1,0" "700";
+//                }
+//                if ("gui::inGame" == 0) {
+                   transition "SaveGame::matcolor" ".8,.8,.8,1" ".8,.8,.8,0" "700";
+//                }
+				//                    set "SaveGame::visible" "0";
+				transition "Multiplayer::matcolor" "1,1,1,1" "1,1,1,0" "700";
+				//                    set "Multiplayer::visible" "0";
+				transition "Options::matcolor" "1,1,1,1" "1,1,1,0" "700";
+				//                    set "Options::visible" "0";
+				transition "ReadThis::matcolor" "1,1,1,1" "1,1,1,0" "700";
+				//                    set "ReadThis::visible" "0";
+				transition "Quit::matcolor" "1,1,1,1" "1,1,1,0" "700";
+				//                    set "Quit::visible" "0";
+				//                    set "MiddleArea::visible" "0";
+			}
+
+			windowDef NewGame
+			{
+				rect	0, 0, 200, 22
+				matcolor	1,1,1,1
+				background	"guis/cdoom/newgame"
+//                text "New Game"
+//                forecolor .8,.1,.1,1
+//                textalign 1
+//                font "fonts/good_times"
+
+				onMouseEnter {
+					set "cmd" "play menusounds_optionhit1" ;
+					set "SelectSkull::rect" "90, 92, 50, 50";
+				}
+
+				onAction {
+					set "Selections::noevents" "1";
+					resetTime "Selections" "10";
+					set "startgamemain::visible" "1";
+					transition "easy::forecolor" "1,0,0,0" "1,0,0,1" "700";
+					transition "medium::forecolor" "1,0,0,0" "1,0,0,1" "700";
+					transition "hard::forecolor" "1,0,0,0" "1,0,0,1" "700";
+					transition "ggnoob::forecolor" "1,0,0,0" "1,0,0,1" "700";
+					transition "goback2::forecolor" "1,1,1,0" "1,0,0,1" "700";
+//deadite4					set "Skillpicture::background" "guis/assets/custom/mainmenu/newgame01.tga";
+//deadite4					transition "skillpicture::matcolor" "1,1,1,0" "1,1,1,1" "700";
+					resetTime "startgamemain" "10";
+				}
+
+			}
+			windowDef LoadGame
+			{
+				rect	0,22,200,22
+				background	"guis/cdoom/loadgame"
+				visible 1
+
+				onMouseEnter {
+					set "cmd" "play menusounds_optionhit1" ;
+					set "SelectSkull::rect" "90, 111, 50, 50";
+				}
+                onAction {
+                    resetTime "loadsavemain" "0";
+	              transition "loadgamebutton::forecolor" "0,0,0,0" "0,0,0,1" "600";
+                    transition "loadgamebutton::backcolor" "0,.5,.4,0" "0,.5,.4,1" "600";
+                    set "loadlist::visible" "1";
+			  set "loadgamebutton::visible" "1";
+                    set "savelist::visible" "0";
+                }
+
+			}
+			windowDef SaveGame
+			{
+				rect	0,44,200,22
+				background	"guis/cdoom/savegame"
+                matcolor 1,1,1,1
+				visible	1
+                noTime 1
+
+				onMouseEnter {
+					set "cmd" "play menusounds_optionhit1" ;
+					set "SelectSkull::rect" "90, 130, 50, 50";
+				}
+                onAction {
+                    if ("gui::inGame" == 1) {
+                      resetTime "loadsavemain" "0";
+                      set "loadlist::visible" "0";
+                      set "savelist::visible" "1";
+                      set "savegamename::visible" "1";
+                      set "savegamebutton::visible" "1";
+                      transition "savegamename::forecolor" "1,1,1,0" "1,1,1,1" "600";
+                      transition "savegamename::matcolor" "1,1,1,0" "1,1,1,1" "600";
+                      transition "savegamebutton::forecolor" "0,0,0,0" "0,0,0,1" "600";
+                      transition "savegamebutton::backcolor" "0,.5,.4,0" "0,.5,.4,1" "600";
+
+                    }
+                    if ("gui::inGame" == 0) {
+                      set "cmd" "play guisounds_error";
+                    }
+                }
+/*                onTime 0 {
+                      if ("gui::inGame" == 0) {
+                         set "matcolor" ".8,.8,.8,1";
+                      }
+                      if ("gui::inGame" == 1) {
+                         set "matcolor" "1,1,1,1";
+                      }
+                }*/
+
+			}
+			windowDef Multiplayer
+			{
+				rect	0, 66, 200, 22
+				background	"guis/cdoom/multiplayer"
+
+				onMouseEnter {
+					set "cmd" "play menusounds_optionhit1" ;
+					set "SelectSkull::rect" "90, 152, 50, 50";
+				}
+                onAction {
+//                    set "cmd" "play guisounds_error";
+			set "MultiplayerMain::visible" "1";
+			set "Selections::noEvents" "1";
+			set "cmd" "UpdateServers" ;
+			set "cmd" "CheckUpdate" ;
+                }
+
+			}
+			windowDef Options
+			{
+				rect	0, 88, 200, 22
+				background	"guis/cdoom/options"
+				noTime	1
+
+				onMouseEnter {
+					set "cmd" "play menusounds_optionhit1" ;
+					set "SelectSkull::rect" "90, 175, 50, 50";
+				}
+
+				onAction {
+					set	"cmd"	 "play guisounds_chirpconnect" ;
+					set	"vr_options::visible" "1";
+				}
+			}
+			windowDef ReadThis
+			{
+				rect	0, 110, 200, 22
+				background	"guis/cdoom/readthis"
+
+				onMouseEnter {
+					set "cmd" "play menusounds_optionhit1" ;
+					set "SelectSkull::rect" "90, 198, 50, 50";
+				}
+                onAction {
+					set "selections::noEvents" "1";
+                    resetTime "Selections" "10";
+                    set "CreditsDesktop::visible" "1";
+//                    resetTime "CreditsDesktop" "0";
+                    set "Black::noTime" "0";
+                }
+			}
+			windowDef Quit
+			{
+				rect	0, 132, 200, 22
+				matcolor	1, 1, 1, 1
+				background	"guis/cdoom/quit"
+
+				onMouseEnter {
+					set "cmd" "play menusounds_optionhit1" ;
+					set "SelectSkull::rect" "90, 220, 50, 50";
+				}
+
+				onAction {
+					set	"cmd"	 "play guisounds_chirpconnect" ;
+					set "ConfirmQuit::noTime" "0";
+					resetTime "ConfirmQuit" "0";
+					
+					
+				}
+
+			}
+		}
+	}
+	windowDef ConfirmQuit
+	{
+		rect	190, 230, 260, 100
+		visible	0
+		backcolor	0, .20, .30, 1
+        bordercolor 1,1,1,.3
+        bordersize .4
+        matcolor 1,.9,.9,.9
+        background "guis/assets/custom/mainmenu/mars_surface.tga"
+		noTime	1
+
+		onTime 0 {
+			set "visible" "1";
+			set "NewGame::noevents" "1";
+			set "LoadGame::noevents" "1";
+			set "SaveGame::noevents" "1";
+			set "Multiplayer::noevents" "1";
+			set "Options::noevents" "1";
+			set "ReadThis::noevents" "1";
+			set "Quit::noevents" "1";
+			
+			transition "ConfirmQuit::backcolor" "0, .2, .3, 0" "0, .2, .3, .5" "100";
+		}
+
+		onTime 100 {
+			transition "ConfirmQuit::backcolor" "0, .2, .3, .5" "0, .2, .4, .3" "100";
+		}
+
+		onTime 200 {
+			transition "ConfirmQuit::backcolor" "0, .2, .4, .3" "0, .2, .3, 1" "100";
+		}*/
+
+		windowDef ReallyQuit
+		{
+			rect	20, 20, 225, 20
+			backcolor	0, 0, 0, .5
+			text	"Do you really want to wimp out?!"
+			font	"fonts/good_times"
+			textscale	.2
+            textalign 1
+		}
+		windowDef QuitYes
+		{
+			rect	50, 50, 60, 20
+			text	"Yes"
+//			font	"fonts/good_times"
+
+			onAction {
+				set "cmd" "quit";
+			}
+
+		}
+		windowDef QuitNo
+		{
+			rect	180, 50, 60, 20
+			text	"No"
+//            font "fonts/good_times"
+
+			onAction {
+				set "ConfirmQuit::visible" "0";
+				set "NewGame::noevents" "0";
+				set "LoadGame::noevents" "0";
+				set "SaveGame::noevents" "0";
+				set "Multiplayer::noevents" "0";
+				set "Options::noevents" "0";
+				set "ReadThis::noevents" "0";
+				set "Quit::noevents" "0";
+			}
+
+		}
+	}
+	windowDef optionsmain
+	{
+		rect	-13,102,670,364
+		visible	0
+		noEvents	0
+		matcolor	1,1,1,1
+		windowDef optionsright
+		{
+			rect	223,0,431,364
+			background	"guis/cdoom/optionsbg"
+			matcolor	1,1,1,1
+			noTime	1
+			windowDef videoright
+			{
+				rect	0,0,431,364
+				visible	1
+				windowDef resolutiontext
+				{
+					rect	20, 65, 106, 15
+					text	"Resolution:"
+					textscale	.3
+					forecolor	1,1,1,1
+				}
+				choiceDef resolution
+				{
+					rect	130, 73, 105, 10
+					choices	"#str_04222"
+					values	"3;4;5;6;7;8"
+					cvar	"r_mode"
+					updateGroup	render
+					choiceType	1
+					font	"fonts/good_times"
+					textscale	0.3
+					textalign	1
+					textaligny	-6
+					hovercolor	1,1,1,1
+				}
+				windowDef quality
+				{
+					rect	1,60,200,243
+					visible	1
+					windowDef selectultra
+					{
+						rect	25,146,130,32
+						visible	1
+						forecolor	1,1,1,1
+						hovercolor	1,0,0,1
+						font	"fonts/good_times"
+						text	"ULTRA Quality"
+						textalign	1
+						textscale	0.25
+						background	"guis/assets/custom/mainmenu/options/keys/leftkey4"
+						matcolor	1,1,1,1
+                        textaligny 5
+                        textalign 1
+
+                        onMouseEnter {
+                            transition "matcolor" "1,1,1,1" "1,.7,.7,1" "50";
+                        }
+                        onMouseExit {
+                            transition "matcolor" "1,.7,.7,1" "1,1,1,1" "50";
+                        }
+						onAction {
+							set "cmd" "video ultra";
+							resetTime "vidrestart" "0";
+						}
+
+					}
+					windowDef selecthigh
+					{
+						rect	25,114,130,32
+						visible	1
+						forecolor	1,1,1,1
+						font	"fonts/good_times"
+						text	"High Quality"
+						textalign	1
+						textscale	0.25
+						background	"guis/assets/custom/mainmenu/options/keys/leftkey3"
+						matcolor	1,1,1,1
+                        textaligny 5
+                        textalign 1
+
+						onAction {
+							set "cmd" "video high";
+							resetTime "vidrestart" "0";
+						}
+                        onMouseEnter {
+                            transition "matcolor" "1,1,1,1" "1,.7,.7,1" "50";
+                        }
+                        onMouseExit {
+                            transition "matcolor" "1,.7,.7,1" "1,1,1,1" "50";
+                        }
+
+					}
+					windowDef selectmedium
+					{
+						rect	25,82,130,32
+						visible	1
+						forecolor	1,1,1,1
+						font	"fonts/good_times"
+						text	"Medium Quality"
+						textalign	1
+						textscale	0.25
+						background	"guis/assets/custom/mainmenu/options/keys/leftkey2"
+						matcolor	1,1,1,1
+                        textaligny 5   
+                        textalign 1
+
+						onAction {
+							set "cmd" "video medium";
+							resetTime "vidrestart" "0";
+						}
+                        onMouseEnter {
+                            transition "matcolor" "1,1,1,1" "1,.7,.7,1" "50";
+                        }
+                        onMouseExit {
+                            transition "matcolor" "1,.7,.7,1" "1,1,1,1" "50";
+                        }
+
+					}
+					windowDef selectlow
+					{
+						rect	25,50,130,32
+						text	"Low Quality"
+						font	"fonts/good_times"
+						textalign	1
+						textscale	0.25
+						visible	1
+						forecolor	1,1,1,1
+						background	"guis/assets/custom/mainmenu/options/keys/leftkey1"
+						matcolor	1,1,1,1
+                        textaligny 5   
+                        textalign 1
+
+						onAction {
+							set "cmd" "video low";
+							resetTime "vidrestart" "0";
+						}
+                        onMouseEnter {
+                            transition "matcolor" "1,1,1,1" "1,.7,.7,1" "50";
+                        }
+                        onMouseExit {
+                            transition "matcolor" "1,.7,.7,1" "1,1,1,1" "50";
+                        }
+
+					}
+				}
+				windowDef othervideo
+				{
+					rect	220,125,200,237
+					visible	1
+					windowDef bumpmaps
+					{
+						rect	8,0,100,20
+						visible	1
+						forecolor	1,1,1,1
+						text	"Bumpmaps:"
+						font	"fonts/good_times"
+						textscale	.22
+						textalign	2
+					}
+					windowDef specular
+					{
+						rect	8,25,100,20
+						visible	1
+						forecolor	1,1,1,1
+						text	"Specular:"
+						font	"fonts/good_times"
+						textscale	.22
+						textalign	2
+					}
+					windowDef shadows
+					{
+						rect	8,50,100,20
+						visible	1
+						forecolor	1,1,1,1
+						text	"Shadows:"
+						font	"fonts/good_times"
+						textscale	.22
+						textalign	2
+					}
+					windowDef highFX
+					{
+						rect	-4,75,150,20
+						visible	1
+						forecolor	1,1,1,1
+						text	"High Quality FX:"
+						font	"fonts/good_times"
+						textscale	.22
+					}
+					choiceDef bump
+					{
+						rect	115,1,50,20
+						visible	1
+						choices	"#str_04230"
+						values	"1;0"
+						cvar	"r_skipbump"
+						textscale	.15
+						forecolor	.5, .5, .7, 1
+//						hovercolor	.5, .5, .5, 1
+					}
+					choiceDef spec
+					{
+						rect	115,26,50,20
+						visible	1
+						choices	"#str_04230"
+						values	"1;0"
+						cvar	"r_skipspecular"
+						textscale	.15
+						forecolor	.5, .5, .7, 1
+//						hovercolor	.8, .5, .5, 1
+					}
+					choiceDef shad
+					{
+						rect	115,51,50,20
+						visible	1
+						choices	"No;Yes"
+						values	"1;0"
+						cvar	"r_shadows"
+//                        updateGroup "render"
+						textscale	.15
+						forecolor	.5, .5, .7, 1
+//						hovercolor	.8, .5, .5, 1
+					}
+					choiceDef fx
+					{
+						rect	115,76,50,20
+						visible	1
+						choices	"#str_04230"
+						values	"1;0"
+						cvar	"r_skipNewAmbient"
+						textscale	.15
+						forecolor	.5, .5, .7, 1
+//						hovercolor	.8, .5, .5, 1
+					}
+                windowDef brightnesstext {
+                        rect 20, 101, 85, 20
+                        text "Brightness:"
+                        font "fonts/good_times"
+                        textscale .22
+                }
+                windowDef brightnessBg {
+                        rect 115, 101, 75, 20
+                        background "guis/cdoom/leftkey1"
+                        windowDef brightnessBg2 {
+                        rect 5, 5, 120, 20
+                        background "guis/assets/mainmenu/slider_bg"
+//                        backcolor 1,1,1,1
+                        }
+     			sliderDef brightnessslide {
+				rect		5, 8, 68, 15
+				forecolor	0.8, 1, 1, 1
+//				matcolor	1, 1, 1, 1
+//                backcolor 1,1,1,1
+				low		0.5
+				high		2.0
+				step		0.1
+				thumbShader	"guis/assets/mainmenu/slider_bar"
+				cvar		"r_brightness"	
+			}  }
+				}
+                windowDef VideoRestart {
+                        rect 40, 270, 100, 20
+                        text "Restart Video"
+                        font "fonts/an"
+                        textscale .25
+                        textalign 1
+                        textaligny -2
+                        textalignx -1
+                        backcolor 0,.3,.5,.3
+//                        background "guis/cdoom/leftkey1"
+                        bordersize .5
+
+                        onMouseEnter {
+                          set "backcolor" "0,.3,.7,.4"
+                          set "forecolor" ".8,.8,1,1"
+                        }
+                        onMouseExit {
+                          set "backcolor" "0,.3,.5,.3"
+                          set "forecolor" "1,1,1,1"
+                        }
+                        onAction {
+                          set "cmd" "video restart";
+                        }
+                }
+			}
+			windowDef audioright
+			{
+				rect	0,0,431,364
+				visible	0
+				textalign	1
+				choiceDef speakertype
+				{
+					rect	310,111,140,20
+					choices	"Stereo;Surround"
+					values	"2;6"
+					cvar	"s_numberOfSpeakers"
+					updateGroup	sound
+					choiceType	1
+					font	"fonts/good_times"
+					textscale	0.25
+					textaligny	-2
+					visible	1
+
+					onAction {
+						set "cmd" "sound";
+					}
+
+				}
+				choiceDef EAXHD
+				{
+					rect	350,150,40,20
+					visible	1
+					choices	"#str_07228"
+					values	"1;0"
+					cvar	"s_useEAXReverb"
+					choiceType	1
+					font	"fonts/good_times"
+					textscale	0.25
+					textaligny	-2
+
+					onAction {
+						set "cmd" "sound eax";
+					}
+
+				}
+				choiceDef ReverseChans
+				{
+					rect	350,190,40,20
+					visible	1
+					choices	"#str_04221"
+					cvar	"s_reverse"
+					updateGroup	sound
+					choiceType	0
+					font	"fonts/good_times"
+					textscale	0.25
+					textaligny	-2
+
+                    onAction {
+                        set "cmd" "sound";
+                    }
+				}
+				windowDef volumeSliderbg
+				{
+					rect	240,230,150,32
+					visible	1
+					background	"guis/cdoom/leftkey1"
+					windowDef volumeSliderbg2
+					{
+						rect	3,7,250,32
+						background	"guis/assets/mainmenu/slider_bg"
+					}
+					sliderDef volumeSlider
+					{
+						rect	3,15,140,32
+						visible	1
+						low	-40
+						high	0
+						step	1
+						thumbShader	"guis/assets/mainmenu/slider_bar"
+						cvar	"s_volume_dB"
+					}
+				}
+                		windowDef musicSliderbg
+				{
+					rect	240,270,150,32
+					visible	1
+					background	"guis/cdoom/leftkey1"
+					windowDef musicSliderbg2
+					{
+						rect	3,7,250,32
+						background	"guis/assets/mainmenu/slider_bg"
+					}
+					sliderDef musicSlider
+					{
+						rect	3,15,140,32
+						visible	1
+						low	-40
+						high	0
+						step	1
+						thumbShader	"guis/assets/mainmenu/slider_bar"
+						cvar	"s_music_vol"
+					}
+				}
+				windowDef speakertext
+				{
+					rect	20,103,200,32
+					visible	1
+					text	"Speaker Setup:"
+					font	"fonts/bank"
+					textscale	.32
+				}
+				windowDef eaxtext
+				{
+					rect	20,143,200,32
+					visible	1
+					text	"EAX High Definition:"
+					font	"fonts/bank"
+					textscale	.32
+				}
+				windowDef reversetext
+				{
+					rect	20,183,200,32
+					visible	1
+					text	"Reverse Channels:"
+					font	"fonts/bank"
+					textscale	.32
+				}
+				windowDef volumetext
+				{
+					rect	20,227,200,32
+					visible	1
+					text	"Main Volume:"
+					font	"fonts/bank"
+					textscale	.32
+				}
+				windowDef musictext
+				{
+					rect	20,267,200,32
+					visible	1
+					text	"Music Volume:"
+					font	"fonts/bank"
+					textscale	.32
+				}
+			}
+			windowDef controlsright
+			{
+				rect	0,0,431,364
+				visible	0
+				float	"control_selected"	0
+				windowDef controls0
+				{
+					rect	0,0,431,364
+					visible	1
+
+					onTime 0 {
+						set "controls1::visible" "0";
+						set "controls2::visible" "0";
+						set "visible" "1";
+						set "controlsright::control_selected" "0";
+					}
+
+					windowDef Movementtext
+					{
+						rect	50,54,320,25
+						visible	1
+						text	"Movement Controls"
+						forecolor	.8,.4,.2,1
+						font	"fonts/bank"
+						textalign	1
+					}
+					bindDef bindforward
+					{
+						rect	150,80,256,24
+						visible	1
+						background	"guis/assets/custom/mainmenu/options/keys/leftkey1"
+						matcolor	1,1,1,1
+						bind	"_forward"
+						textscale	.23
+						textalign	1
+
+                        onMouseEnter {
+                            transition "matcolor" "1,1,1,1" "1,.7,.7,1" "50";
+                        }
+                        onMouseExit {
+                            transition "matcolor" "1,.7,.7,1" "1,1,1,1" "50";
+                        }
+					}
+					bindDef bindbackward
+					{
+						rect	150,104,256,24
+						visible	1
+						background	"guis/assets/custom/mainmenu/options/keys/leftkey2"
+						matcolor	1,1,1,1
+						bind	"_back"
+						textscale	.23
+						textalign	1
+
+                        onMouseEnter {
+                            transition "matcolor" "1,1,1,1" "1,.7,.7,1" "50";
+                        }
+                        onMouseExit {
+                            transition "matcolor" "1,.7,.7,1" "1,1,1,1" "50";
+                        }
+					}
+					bindDef bindsleft
+					{
+						rect	150,128,256,24
+						visible	1
+						background	"guis/assets/custom/mainmenu/options/keys/leftkey3"
+						matcolor	1,1,1,1
+						bind	"_moveLeft"
+						textscale	.23
+						textalign	1
+
+                        onMouseEnter {
+                            transition "matcolor" "1,1,1,1" "1,.7,.7,1" "50";
+                        }
+                        onMouseExit {
+                            transition "matcolor" "1,.7,.7,1" "1,1,1,1" "50";
+                        }
+					}
+					bindDef bindsright
+					{
+						rect	150,152,256,24
+						visible	1
+						background	"guis/assets/custom/mainmenu/options/keys/leftkey4"
+						matcolor	1,1,1,1
+						bind	"_moveRight"
+						textscale	.23
+						textalign	1
+
+                        onMouseEnter {
+                            transition "matcolor" "1,1,1,1" "1,.7,.7,1" "50";
+                        }
+                        onMouseExit {
+                            transition "matcolor" "1,.7,.7,1" "1,1,1,1" "50";
+                        }
+					}
+					bindDef bindjump
+					{
+						rect	150,176,256,24
+						visible	1
+						background	"guis/assets/custom/mainmenu/options/keys/leftkey5"
+						matcolor	1,1,1,1
+						bind	"_moveUp"
+						textscale	.23
+						textalign	1
+
+                        onMouseEnter {
+                            transition "matcolor" "1,1,1,1" "1,.7,.7,1" "50";
+                        }
+                        onMouseExit {
+                            transition "matcolor" "1,.7,.7,1" "1,1,1,1" "50";
+                        }
+					}
+					windowDef textforward
+					{
+						rect	23,80,128,32
+						visible	1
+						forecolor	1,1,1,1
+						font	"fonts/good_times"
+						textscale	0.25
+						text	"Forward"
+					}
+					windowDef textbackward
+					{
+						rect	23,104,128,32
+						visible	1
+						forecolor	1,1,1,1
+						font	"fonts/good_times"
+						textscale	0.25
+						text	"Backward"
+					}
+					windowDef textsleft
+					{
+						rect	23,128,128,32
+						visible	1
+						forecolor	1,1,1,1
+						font	"fonts/good_times"
+						textscale	0.25
+						text	"Strafe Left"
+					}
+					windowDef textsright
+					{
+						rect	23,152,128,32
+						visible	1
+						forecolor	1,1,1,1
+						font	"fonts/good_times"
+						textscale	0.25
+						text	"Strafe Right"
+					}
+					windowDef textjump
+					{
+						rect	23,176,128,32
+						visible	1
+						forecolor	1,1,1,1
+						font	"fonts/good_times"
+						textscale	0.25
+						text	"Jump"
+					}
+					windowDef textcrouch
+					{
+						rect	23,200,128,32
+						visible	1
+						forecolor	1,1,1,1
+						textscale	0.25
+						font	"fonts/good_times"
+						text	"Crouch"
+					}
+					bindDef bindcrouch
+					{
+						rect	150,200,256,24
+						visible	1
+						background	"guis/assets/custom/mainmenu/options/keys/leftkey6"
+						matcolor	1,1,1,1
+						bind	"_moveDown"
+						textscale	.23
+						textalign	1
+
+                        onMouseEnter {
+                            transition "matcolor" "1,1,1,1" "1,.7,.7,1" "50";
+                        }
+                        onMouseExit {
+                            transition "matcolor" "1,.7,.7,1" "1,1,1,1" "50";
+                        }
+					}
+					windowDef textsprint
+					{
+						rect	23,224,128,32
+						visible	1
+						forecolor	1,1,1,1
+						textscale	0.25
+						font	"fonts/good_times"
+						text	"Sprint/Walk"
+					}
+					bindDef bindsprint
+					{
+						rect	150,224,256,24
+						visible	1
+						background	"guis/assets/custom/mainmenu/options/keys/leftkey7"
+						matcolor	1,1,1,1
+						bind	"_speed"
+						textscale	.23
+						textalign	1
+
+                        onMouseEnter {
+                            transition "matcolor" "1,1,1,1" "1,.7,.7,1" "50";
+                        }
+                        onMouseExit {
+                            transition "matcolor" "1,.7,.7,1" "1,1,1,1" "50";
+                        }
+					}
+				}
+				windowDef controls1
+				{
+					rect	0,0,431,364
+					visible	1
+					noTime	1
+
+					onTime 10 {
+						set "controls0::visible" "0";
+						set "controls2::visible" "0";
+						set "visible" "1";
+						set "controlsright::control_selected" "1";
+					}
+
+					windowDef textfists
+					{
+						rect	23,80,128,32
+						visible	1
+						forecolor	1,1,1,1
+						font	"fonts/good_times"
+						textscale	0.25
+						text	"Fists"
+					}
+					bindDef bindfists
+					{
+						rect	150,80,256,24
+						visible	1
+						background	"guis/assets/custom/mainmenu/options/keys/rightkey1"
+						matcolor	1,1,1,1
+						bind	"_impulse0"
+						textscale	.23
+						textalign	1
+
+                        onMouseEnter {
+                            transition "matcolor" "1,1,1,1" "1,.7,.7,1" "50";
+                        }
+                        onMouseExit {
+                            transition "matcolor" "1,.7,.7,1" "1,1,1,1" "50";
+                        }
+					}
+					windowDef textpistol
+					{
+						rect	23,104,128,32
+						visible	1
+						forecolor	1,1,1,1
+						font	"fonts/good_times"
+						textscale	0.25
+						text	"Pistol"
+					}
+					bindDef bindpistol
+					{
+						rect	150,104,256,24
+						visible	1
+						background	"guis/assets/custom/mainmenu/options/keys/rightkey2"
+						matcolor	1,1,1,1
+						bind	"_impulse1"
+						textscale	.23
+						textalign	1
+
+                        onMouseEnter {
+                            transition "matcolor" "1,1,1,1" "1,.7,.7,1" "50";
+                        }
+                        onMouseExit {
+                            transition "matcolor" "1,.7,.7,1" "1,1,1,1" "50";
+                        }
+					}
+					windowDef textshotgun
+					{
+						rect	23,128,128,32
+						visible	1
+						forecolor	1,1,1,1
+						font	"fonts/good_times"
+						textscale	0.25
+						text	"Shotgun"
+					}
+					bindDef bindsshotgun
+					{
+						rect	150,128,256,24
+						visible	1
+						background	"guis/assets/custom/mainmenu/options/keys/rightkey3"
+						matcolor	1,1,1,1
+						bind	"_impulse2"
+						textscale	.23
+						textalign	1
+
+                        onMouseEnter {
+                            transition "matcolor" "1,1,1,1" "1,.7,.7,1" "50";
+                        }
+                        onMouseExit {
+                            transition "matcolor" "1,.7,.7,1" "1,1,1,1" "50";
+                        }
+					}
+					windowDef textchaingun
+					{
+						rect	23,152,128,32
+						visible	1
+						forecolor	1,1,1,1
+						font	"fonts/good_times"
+						textscale	0.25
+						text	"Chaingun"
+					}
+					bindDef bindschaingun
+					{
+						rect	150,152,256,24
+						visible	1
+						background	"guis/assets/custom/mainmenu/options/keys/rightkey4"
+						matcolor	1,1,1,1
+						bind	"_impulse3"
+						textscale	.23
+						textalign	1     
+
+                        onMouseEnter {
+                            transition "matcolor" "1,1,1,1" "1,.7,.7,1" "50";
+                        }
+                        onMouseExit {
+                            transition "matcolor" "1,.7,.7,1" "1,1,1,1" "50";
+                        }
+					}
+					windowDef textrocketlauncher
+					{
+						rect	23,176,128,32
+						visible	1
+						forecolor	1,1,1,1
+						font	"fonts/good_times"
+						textscale	0.25
+						text	"R.Launcher"
+					}
+					bindDef bindrockerlauncher
+					{
+						rect	150,176,256,24
+						visible	1
+						background	"guis/assets/custom/mainmenu/options/keys/rightkey5"
+						matcolor	1,1,1,1
+						bind	"_impulse4"
+						textscale	.23
+						textalign	1      
+
+                        onMouseEnter {
+                            transition "matcolor" "1,1,1,1" "1,.7,.7,1" "50";
+                        }
+                        onMouseExit {
+                            transition "matcolor" "1,.7,.7,1" "1,1,1,1" "50";
+                        }
+					}
+					windowDef textplasma
+					{
+						rect	23,200,128,32
+						visible	1
+						forecolor	1,1,1,1
+						textscale	0.25
+						font	"fonts/good_times"
+						text	"Plasmagun"
+					}
+					bindDef bindplasma
+					{
+						rect	150,200,256,24
+						visible	1
+						background	"guis/assets/custom/mainmenu/options/keys/rightkey6"
+						matcolor	1,1,1,1
+						bind	"_impulse5"
+						textscale	.23
+						textalign	1    
+
+                        onMouseEnter {
+                            transition "matcolor" "1,1,1,1" "1,.7,.7,1" "50";
+                        }
+                        onMouseExit {
+                            transition "matcolor" "1,.7,.7,1" "1,1,1,1" "50";
+                        }
+					}
+					windowDef textBFG
+					{
+						rect	23,224,128,32
+						visible	1
+						forecolor	1,1,1,1
+						textscale	0.25
+						font	"fonts/good_times"
+						text	"BFG"
+					}
+					bindDef bindBFG
+					{
+						rect	150,224,256,24
+						visible	1
+						background	"guis/assets/custom/mainmenu/options/keys/rightkey7"
+						matcolor	1,1,1,1
+						bind	"_impulse6"
+						textscale	.23
+						textalign	1  
+
+                        onMouseEnter {
+                            transition "matcolor" "1,1,1,1" "1,.7,.7,1" "50";
+                        }
+                        onMouseExit {
+                            transition "matcolor" "1,.7,.7,1" "1,1,1,1" "50";
+                        }
+					}
+					windowDef textchainsaw
+					{
+						rect	23,248,128,32
+						visible	1
+						forecolor	1,1,1,1
+						textscale	0.25
+						font	"fonts/good_times"
+						text	"Chainsaw"
+					}
+					bindDef bindChainsaw
+					{
+						rect	150,248,256,24
+						visible	1
+						background	"guis/assets/custom/mainmenu/options/keys/rightkey8"
+						matcolor	1,1,1,1
+						bind	"_impulse7"
+						textscale	.23
+						textalign	1    
+
+                        onMouseEnter {
+                            transition "matcolor" "1,1,1,1" "1,.7,.7,1" "50";
+                        }
+                        onMouseExit {
+                            transition "matcolor" "1,.7,.7,1" "1,1,1,1" "50";
+                        }
+					}
+					windowDef WeaponsText
+					{
+						rect	50,54,320,25
+						visible	1
+						text	"Weapon Controls"
+						textalign	1
+						forecolor	.8,.4,.2,1
+						font	"fonts/bank"
+					}
+				}
+				windowDef arrow_next
+				{
+					rect	380,285,16,16
+					visible	1
+					noEvents	0
+					background	"guis/cdoom/arrow_right"
+					matcolor	1,1,1,1
+
+					onAction {
+						if ( "controlsright::control_selected" == 0 ) {
+							resetTime "controls1" "0";
+						}
+						if ( "controlsright::control_selected" == 1 ) {
+							resetTime "controls2" "0";
+						}
+					}
+
+				}
+				windowDef arrow_prev
+				{
+					rect	30,285,16,16
+					visible	1
+					rotate	180
+					background	"guis/cdoom/arrow_right"
+					matcolor	1,1,1,1
+
+					onAction {
+						if ( "controlsright::control_selected" == 1 ) {
+							resetTime "controls0" "0";
+						}
+						if ( "controlsright::control_selected" == 2 ) {
+							resetTime "controls1" "0";
+						}
+					}
+
+				}
+				windowDef controls2
+				{
+					rect	0,0,431,364
+					visible	1
+					noTime	1
+
+					onTime 10 {
+						set "controls0::visible" "0";
+						set "controls1::visible" "0";
+						set "visible" "1";
+						set "controlsright::control_selected" "2";
+					}
+
+					windowDef textprevweap
+					{
+						rect	23,80,128,32
+						visible	1
+						forecolor	1,1,1,1
+						font	"fonts/good_times"
+						textscale	0.25
+						text	"Prev. Weapon"
+					}
+					bindDef bindprevweap
+					{
+						rect	150,80,256,24
+						visible	1
+						background	"guis/assets/custom/mainmenu/options/keys/leftkey2"
+						matcolor	1,1,1,1
+						bind	"_impulse15"
+						textscale	.23
+						textalign	1   
+
+                        onMouseEnter {
+                            transition "matcolor" "1,1,1,1" "1,.7,.7,1" "50";
+                        }
+                        onMouseExit {
+                            transition "matcolor" "1,.7,.7,1" "1,1,1,1" "50";
+                        }
+					}
+					windowDef textnextweap
+					{
+						rect	23,104,128,32
+						visible	1
+						forecolor	1,1,1,1
+						font	"fonts/good_times"
+						textscale	0.25
+						text	"Next Weapon"
+					}
+					bindDef bindnextweap
+					{
+						rect	150,104,256,24
+						visible	1
+						background	"guis/assets/custom/mainmenu/options/keys/leftkey3"
+						matcolor	1,1,1,1
+						bind	"_impulse14"
+						textscale	.23
+						textalign	1   
+
+                        onMouseEnter {
+                            transition "matcolor" "1,1,1,1" "1,.7,.7,1" "50";
+                        }
+                        onMouseExit {
+                            transition "matcolor" "1,.7,.7,1" "1,1,1,1" "50";
+                        }
+					}
+					windowDef textzoom
+					{
+						rect	23,128,128,32
+						visible	1
+						forecolor	1,1,1,1
+						font	"fonts/good_times"
+						textscale	0.25
+						text	"Zoom In"
+					}
+					bindDef bindzoom
+					{
+						rect	150,128,256,24
+						visible	1
+						background	"guis/assets/custom/mainmenu/options/keys/leftkey4"
+						matcolor	1,1,1,1
+						bind	"_zoom"
+						textscale	.23
+						textalign	1   
+
+                        onMouseEnter {
+                            transition "matcolor" "1,1,1,1" "1,.7,.7,1" "50";
+                        }
+                        onMouseExit {
+                            transition "matcolor" "1,.7,.7,1" "1,1,1,1" "50";
+                        }
+					}
+/*					windowDef textreload
+					{
+						rect	23,154,128,32
+						visible	1
+						forecolor	1,1,1,1
+						font	"fonts/good_times"
+						textscale	0.25
+						text	"Reload"
+					}
+					bindDef bindreload
+					{
+						rect	150,154,256,24
+						visible	1
+						background	"guis/assets/custom/mainmenu/options/keys/leftkey1"
+						matcolor	1,1,1,1
+						bind	"_impulse13"
+						textscale	.23
+						textalign	1
+					}*/ // SnoopJeDi - WTF we don't have reload in our mod :)
+					windowDef textfire
+					{
+						rect	23,152,128,32
+						visible	1
+						forecolor	1,1,1,1
+						font	"fonts/good_times"
+						textscale	0.25
+						text	"Fire"
+					}
+					bindDef bindfire
+					{
+						rect	150,152,256,24
+						visible	1
+						background	"guis/assets/custom/mainmenu/options/keys/leftkey5"
+						matcolor	1,1,1,1
+						bind	"_attack"
+						textscale	.23
+						textalign	1  
+
+                        onMouseEnter {
+                            transition "matcolor" "1,1,1,1" "1,.7,.7,1" "50";
+                        }
+                        onMouseExit {
+                            transition "matcolor" "1,.7,.7,1" "1,1,1,1" "50";
+                        }
+					}
+					windowDef textquicksave
+					{
+						rect	23,176,128,32
+						visible	1
+						forecolor	1,1,1,1
+						font	"fonts/good_times"
+						textscale	0.25
+						text	"Quicksave"
+					}
+					bindDef bindquicksave
+					{
+						rect	150,176,256,24
+						visible	1
+						background	"guis/assets/custom/mainmenu/options/keys/leftkey6"
+						matcolor	1,1,1,1
+						bind	"savegame quick"
+						textscale	.23
+						textalign	1  
+
+                        onMouseEnter {
+                            transition "matcolor" "1,1,1,1" "1,.7,.7,1" "50";
+                        }
+                        onMouseExit {
+                            transition "matcolor" "1,.7,.7,1" "1,1,1,1" "50";
+                        }
+					}
+					windowDef textquickload
+					{
+						rect	23,200,128,32
+						visible	1
+						forecolor	1,1,1,1
+						font	"fonts/good_times"
+						textscale	0.25
+						text	"Quickload"
+					}
+					bindDef bindquickload
+					{
+						rect	150,200,256,24
+						visible	1
+						background	"guis/assets/custom/mainmenu/options/keys/leftkey7"
+						matcolor	1,1,1,1
+						bind	"loadgame quick"
+						textscale	.23
+						textalign	1  
+
+                        onMouseEnter {
+                            transition "matcolor" "1,1,1,1" "1,.7,.7,1" "50";
+                        }
+                        onMouseExit {
+                            transition "matcolor" "1,.7,.7,1" "1,1,1,1" "50";
+                        }
+					}
+					windowDef textScreenshot
+					{
+						rect	23,224,128,32
+						visible	1
+						forecolor	1,1,1,1
+						font	"fonts/good_times"
+						textscale	0.25
+						text	"Screenshot"
+					}
+					bindDef bindScreenshot
+					{
+						rect	150,224,256,24
+						visible	1
+						background	"guis/assets/custom/mainmenu/options/keys/leftkey7"
+						matcolor	1,1,1,1
+						bind	"screenshot"
+						textscale	.23
+						textalign	1  
+
+                        onMouseEnter {
+                            transition "matcolor" "1,1,1,1" "1,.7,.7,1" "50";
+                        }
+                        onMouseExit {
+                            transition "matcolor" "1,.7,.7,1" "1,1,1,1" "50";
+                        }
+					}
+					windowDef MiscText
+					{
+						rect	50,54,320,25
+						visible	1
+						text	"Misc. Controls"
+						textalign	1
+						forecolor	.8,.4,.2,1
+						font	"fonts/bank"
+					}
+				}
+			}
+			windowDef gameoptionsright
+			{
+				rect	0,0,431,364
+				visible	0
+				windowDef textplayername
+				{
+					rect	30,55,200,20
+					visible	1
+					forecolor	1,1,1,1
+					text	"Player Name"
+					font	"fonts/bank"
+					textscale	.29
+				}
+				windowDef textinvert
+				{
+					rect	54,95,150,20
+					visible	1
+					forecolor	1,1,1,1
+					text	"Invert Mouse:"
+					font	"fonts/bank"
+					textscale	.29
+					textalign	2
+				}
+/*				windowDef textautoreload
+				{
+					rect	29,115,175,20
+					visible	1
+					forecolor	1,1,1,1
+					text	"Automatic Reload:"
+					font	"fonts/bank"
+					textscale	.29
+					textalign	2
+				}*/  // SnoopJeDi - WTF we don't have reload in our mod :)
+				windowDef textautoswitch
+				{
+					rect	29,135,175,20
+					visible	1
+					forecolor	1,1,1,1
+					text	"Automatic Switch:"
+					font	"fonts/bank"
+					textscale	.29
+					textalign	2
+				}
+				windowDef textshowhud
+				{
+					rect	53,155,150,20
+					visible	1
+					forecolor	1,1,1,1
+					text	"Show Hud:"
+					font	"fonts/bank"
+					textscale	.29
+					textalign	2
+				}
+				windowDef textshowgun
+				{
+					rect	53,175,150,20
+					visible	1
+					forecolor	1,1,1,1
+					text	"Show Gun:"
+					font	"fonts/bank"
+					textscale	.29
+					textalign	2
+				}
+				windowDef textshowdecals
+				{
+					rect	53,195,150,20
+					visible	1
+					forecolor	1,1,1,1
+					text	"Show Decals:"
+					font	"fonts/bank"
+					textscale	.29
+					textalign	2
+				}
+				windowDef textfreelook
+				{
+					rect	28,215,175,20
+					visible	1
+					forecolor	1,1,1,1
+					text	"Free Look:"
+					font	"fonts/bank"
+					textscale	.29
+					textalign	2
+				}
+                windowDef textautorun
+                {
+                    rect	29,115,175,20
+//                    rect    28,235,175,20
+                    visible 1
+                    forecolor 1,1,1,1
+                    text "Auto Run:"
+                    font "fonts/bank"
+                    textscale .29
+                    textalign 2
+                }
+				windowDef textsmoothmouse
+				{
+					rect	28,235,175,20
+					visible	1
+					forecolor	1,1,1,1
+					text	"Mouse Smoothing:"
+					font	"fonts/bank"
+					textscale	.29
+					textalign	2
+				}
+				windowDef textmousesensitivity
+				{
+					rect	28,255,175,20
+					visible	1
+					forecolor	1,1,1,1
+					text	"Mouse Sensitivity:"
+					font	"fonts/bank"
+					textscale	.29
+					textalign	2
+				}
+
+				editDef editplayername
+				{
+					rect	30,75,200,20
+					visible	1
+					forecolor	1,1,1,1
+					text	"N00b!"
+					textscale	.29
+					font	"fonts/bank"
+					cvar	"ui_name"
+					maxchars	40
+					background	"guis/assets/custom/mainmenu/options/keys/leftkey1"
+					textaligny	-5
+					textalignx	15
+				}
+				choiceDef choiceinvert
+				{
+					rect	203,95,100,20
+					visible	1
+					choices	"No;Yes"
+					cvar	"m_pitch"
+					choiceType	1
+					values	"0.022;-0.022"
+					forecolor	1,1,1,1
+					textscale	.29
+					font	"fonts/bank"
+				}
+/*				choiceDef choiceautoreload
+				{
+					rect	203,115,100,20
+					choices	"Yes;No"
+					choiceType	0
+					cvar	"ui_autoReload"
+					visible	1
+					forecolor	1,1,1,1
+					textscale	.29
+					font	"fonts/bank"
+				}*/  // SnoopJeDi - WTF we don't have reload in our mod :)
+				choiceDef choiceautoswitch
+				{
+					rect	203,135,100,20
+					choices	"No;Yes"
+					choiceType	0
+					cvar	"ui_autoSwitch"
+					visible	1
+					forecolor	1,1,1,1
+					textscale	.29
+					font	"fonts/bank"
+				}
+				choiceDef choiceshowhud
+				{
+					rect	203,155,100,20
+					choices	"No;Yes"
+					choiceType	0
+					cvar	"g_showHud"
+					visible	1
+					forecolor	1,1,1,1
+					textscale	.29
+					font	"fonts/bank"
+				}
+				choiceDef choiceshowgun
+				{
+					rect	203,175,100,20
+					choices	"No;Yes"
+					choiceType	0
+					cvar	"ui_showGun"
+					visible	1
+					forecolor	1,1,1,1
+					textscale	.29
+					font	"fonts/bank"
+				}
+				choiceDef choiceshowdecals
+				{
+					rect	203,195,100,20
+					choices	"No;Yes"
+					choiceType	0
+					cvar	"g_decals"
+					visible	1
+					forecolor	1,1,1,1
+//					text	"Yes "
+					textscale	.29
+					font	"fonts/bank"
+				}
+                choiceDef autorun
+                {
+                    rect	203,115,100,20
+//                    rect 203,235,100,20
+                    choices "No;Yes"
+                    choiceType 0
+                    cvar "ui_autoRun"
+                    visible 1
+                    forecolor 1,1,1,1
+                    textscale .29
+                    font "fonts/bank"
+                }
+				windowDef smoothmouse
+				{
+					rect	203,240,90,20
+					visible	1
+					forecolor	1,1,1,1
+					textscale	.29
+					font	"fonts/bank"
+					background	"guis/cdoom/leftkey7"
+					matcolor	1,1,1,1
+					windowDef mouseSMsliderbg
+					{
+						rect	5,5,150,20
+						visible	1
+						background	"guis/assets/mainmenu/slider_bg"
+						matcolor	1, .8, .8, .9
+					}
+					sliderDef mouseSMslider
+					{
+						rect	5,8,80,20
+						visible	1
+						matcolor	1,1,1,1
+						low	1
+						high	8
+						step	1
+						thumbShader	"guis/assets/mainmenu/slider_bar"
+						cvar	"m_smooth"
+					}
+				}
+				windowDef mousesensitivity
+				{
+					rect	203,260,90,20
+					visible	1
+					forecolor	1,1,1,1
+					textscale	.29
+					font	"fonts/bank"
+					background	"guis/cdoom/leftkey4"
+					matcolor	1,1,1,1
+					windowDef mouseSsliderbg
+					{
+						rect	5,5,150,20
+						visible	1
+						background	"guis/assets/mainmenu/slider_bg"
+						matcolor	1, .8, .8, .9
+					}
+					sliderDef mouseSslider
+					{
+						rect	5,8,80,20
+						visible	1
+						matcolor	1,1,1,1
+						low	1
+						high	30
+						step	0.5
+						thumbShader	"guis/assets/mainmenu/slider_bar"
+						cvar	"sensitivity"
+					}
+				}
+				choiceDef choicefreelook
+				{
+					rect	203,215,100,20
+					choices	"No;Yes"
+					choiceType	0
+					cvar	"in_freeLook"
+					visible	1
+					forecolor	1,1,1,1
+					textscale	.29
+					font	"fonts/bank"
+				}
+			}
+		}
+		windowDef optionsleft
+		{
+			rect	10,0,231,364
+			background	"guis/cdoom/optionsbg2"
+			matcolor	1,1,1,1
+			windowDef optionsselections
+			{
+				rect	25, 60, 180, 210
+				visible	1
+				windowDef Videoleft
+				{
+					rect	0, 0, 200, 30
+					text	"Video"
+					font	"fonts/good_times"
+
+					onAction {
+						//                       resetTime "optionsright" "0";
+						set "audioright::visible" "0";
+						set "controlsright::visible" "0";
+						set "gameoptionsright::visible" "0";
+						set "videoright::visible" "1";
+					}
+
+				}
+				windowDef Audioleft
+				{
+					rect	0, 30, 120, 30
+					text	"Audio"
+					font	"fonts/good_times"
+
+					onAction {
+						set "videoright::visible" "0";
+						set "controlsright::visible" "0";
+						set "gameoptionsright::visible" "0";
+						set "audioright::visible" "1";
+					}
+
+				}
+				windowDef Controlsleft
+				{
+					rect	0, 60, 120, 30
+					text	"Controls"
+					font	"fonts/good_times"
+
+					onAction {
+						set "videoright::visible" "0";
+						set "audioright::visible" "0";
+						set "gameoptionsright::visible" "0";
+						set "controlsright::visible" "1";
+					}
+
+				}
+				windowDef Gameoptionsleft
+				{
+					rect	0, 90, 120, 30
+					text	"Game"
+					font	"fonts/good_times"
+
+					onAction {
+						set "videoright::visible" "0";
+						set "audioright::visible" "0";
+						set "controlsright::visible" "0";
+						set "gameoptionsright::visible" "1";
+					}
+
+				}
+				windowDef goback1
+				{
+					rect	0, 190, 160, 30
+					text	"Go Back"
+					textalign	2
+					font	"fonts/good_times"
+					noTime	1
+
+					onAction {
+						set "optionsleft::noEvents" "1";
+                        set "optionsright::noEvents" "1";
+						set "selections::noEvents" "1";
+//						transition "DoomGuy::matcolor" "1,1,1,0" "1,1,1,.4" "700";
+						transition "Episode::matcolor" "1,1,1,0" "1,1,1,1" "700";
+						set "Episode::visible" "1";
+						transition "SelectSkull::matcolor" "1,1,1,0" "1,1,1,1" "700";
+						set "SelectSkull::visible" "1";
+						transition "Selections::matcolor" "1,1,1,0" "1,1,1,1" "700";
+						set "Selections::visible" "1";
+						transition "LoadGame::matcolor" "1,1,1,0" "1,1,1,1" "700";
+						set "LoadGame::visible" "1";
+						transition "NewGame::matcolor" "1,1,1,0" "1,1,1,1" "700";
+						set "NewGame::visible" "1";
+//                        if ("gui::inGame" == 1) {
+                        						transition "SaveGame::matcolor" "1,1,1,0" "1,1,1,1" "700";
+//                        }
+//                        if ("gui::inGame" == 0) {
+//                           transition "savegame::matcolor" ".8,.8,.8,0" ".8,.8,.8,1" "700";
+//                        }
+						set "SaveGame::visible" "1";
+						transition "Multiplayer::matcolor" "1,1,1,0" "1,1,1,1" "700";
+						set "Multiplayer::visible" "1";
+						transition "Options::matcolor" "1,1,1,0" "1,1,1,1" "700";
+						set "Options::visible" "1";
+						transition "ReadThis::matcolor" "1,1,1,0" "1,1,1,1" "700";
+						set "ReadThis::visible" "1";
+						transition "Quit::matcolor" "1,1,1,0" "1,1,1,1" "700";
+						set "Quit::visible" "1";
+//						set "DoomGuy::visible" "1";
+						transition "optionsleft::matcolor" "1,1,1,1" "1,1,1,0" "700";
+						transition "optionsright::matcolor" "1,1,1,1" "1,1,1,0" "700";
+						transition "videoleft::forecolor" "1,1,1,1" "1,1,1,0" "700";
+						transition "audioleft::forecolor" "1,1,1,1" "1,1,1,0" "700";
+						transition "controlsleft::forecolor" "1,1,1,1" "1,1,1,0" "700";
+						transition "gameoptionsleft::forecolor" "1,1,1,1" "1,1,1,0" "700";
+						transition "goback1::forecolor" "1,1,1,1" "1,1,1,0" "700";
+      					set "audioright::visible" "0";
+						set "controlsright::visible" "0";
+						set "gameoptionsright::visible" "0";
+						set "videoright::visible" "1";
+						set "selectlow::matcolor" "1,1,1,0";
+						set "selectlow::forecolor" "1,1,1,0";
+						set "selectmedium::matcolor" "1,1,1,0";
+						set "selectmedium::forecolor" "1,1,1,0";
+						set "selecthigh::matcolor" "1,1,1,0";
+						set "selecthigh::forecolor" "1,1,1,0";
+						set "selectultra::matcolor" "1,1,1,0";
+						set "selectultra::forecolor" "1,1,1,0";
+						set "resolution::forecolor" "1,1,1,0";
+						set "resolutiontext::forecolor" "1,1,1,0";
+						set "bumpmaps::forecolor" "1,1,1,0";
+						set "specular::forecolor" "1,1,1,0";
+						set "shadows::forecolor" "1,1,1,0";
+						set "highFX::forecolor" "1,1,1,0";
+						set "bump::forecolor" "1,1,1,0";
+						set "spec::forecolor" "1,1,1,0";
+						set "shad::forecolor" "1,1,1,0";
+						set "fx::forecolor" "1,1,1,0";
+                        set "videorestart::forecolor" "1,1,1,0";
+                        set "videorestart::backcolor" "0,.3,.5,0";
+                        set "videorestart::bordercolor" "1,1,1,0";
+                        set "brightnesstext::forecolor" "1,1,1,0";
+                        set "brightnessbg::matcolor" "1,1,1,0";
+                        set "brightnessbg2::matcolor" "1,1,1,0";
+                        set "brightnessslide::forecolor" "1,1,1,0";
+						//			transition "optionsselections::BACKcolor" "0,0,0,1" "0,0,0,0" "700";
+						resetTime "0";
+					}
+
+					onTime 700 {
+						set "noEvents" "0";
+						set "optionsmain::visible" "0";
+						set "selections::noEvents" "0";
+					}
+
+				}
+			}
+		}
+	}
+    windowDef loadsavemain {
+        rect 120, 150, 440, 300
+//        background "/textures/cdoom_misc/fss_logo_01.tga"
+//        backcolor 1,0,0,1
+        visible 0
+        noTime 1
+        noEvents 1
+//        bordercolor 1,1,1,1
+//        bordersize .5
+
+/*        onTime 0 {
+               resetTime "0";
+        }*/
+        onTime 0 {
+               resetTime "Selections" "10";
+
+               set "selections::noevents" "1";
+               set "noevents" "0";
+               transition "listarea::backcolor" "0,0,0,0" "0,0,0,.7" "600";
+               transition "columntopName::forecolor" "1,.4,.1,0" "1,.4,.1,1" "600";
+               transition "columntopDate::forecolor" "1,.4,.1,0" "1,.4,.1,1" "600";
+               transition "columntopTime::forecolor" "1,.4,.1,0" "1,.4,.1,1" "600";
+               transition "FSS_logo_bg::matcolor" "1,1,1,0" "1,1,1,.5" "800";
+               transition "loadList::forecolor" "1,1,1,0" "1,1,1,1" "600";
+               transition "saveList::forecolor" "1,1,1,0" "1,1,1,1" "600";
+               transition "loadsaverightpane::backcolor" ".5,0,0,0" ".5,0,0,.5" "600";
+               transition "loadgameshot::matcolor" "1,1,1,0" "1,1,1,1" "800";
+               transition "loadgameshot::bordercolor" "1,1,1,0" "1,1,1,.1" "800";
+               transition "loadgoback::forecolor" "1,1,1,0" "1,1,1,1" "600";
+               transition "savegamedelete::forecolor" "0,0,0,0" "0,0,0,1" "600";
+               transition "savegamedelete::backcolor" "0,.5,.4,0" "0,.5,.4,1" "600";
+               set "visible" "1";
+               set "loadgoback::noEvents" "0";
+        }
+
+        windowDef ListArea {
+           rect 0, 0, 340, 300
+          backcolor 0,0,0,0
+          visible 1
+
+           windowDef columntopName {
+              rect 8,10,120, 20
+              text "Name"
+              forecolor 1,.4,.1,0
+              visible 1
+              font "fonts/good_times"
+              textscale .3
+           }
+           windowDef columntopDate {
+              rect 200,10,120, 20
+              text "Date"
+              forecolor 1,.4,.1,0
+              visible 1
+              font "fonts/good_times"
+              textscale .3
+           }
+           windowDef columntopTime {
+              rect 267,10,120, 20
+              text "Time"
+              forecolor 1,.4,.1,0
+              visible 1
+              font "fonts/good_times"
+              textscale .3
+           }
+           windowDef FSS_logo_bg {
+              rect 5, 175, 300, 140
+              background "/textures/cdoom_misc/fss_logo_01.tga"
+              matcolor 1,1,1,0
+           }
+           listDef Loadlist{
+              rect 0,30,340,270
+		  listName	"loadGame"
+              visible 1
+              forecolor 1,1,1,0
+              bordercolor 1,.4,.1,0
+              font "fonts/an"
+              textscale .2
+              tabstops "2, 200, 270"
+
+              				onAction {
+//					set	"cmd"	"play guisounds_click3" ;
+					set	"cmd"	"updateSaveGameInfo" ;
+//					resetTime "SGCBtn1" "0" ;
+				}
+    				onEnter {
+//					set "cmd" "play guisounds_menuclickup" ;
+
+					set "cmd" "loadGame" ;
+				}
+           }
+           listDef savelist{
+              rect 0,30,340,270
+			  listName	"loadGame"
+              visible 0
+              forecolor 1,1,1,0
+              bordercolor 1,.4,.1,.4
+              font "fonts/an"
+              textscale .2
+              tabstops "2, 200, 270"
+
+              				onAction {
+//					set	"cmd"	"play guisounds_click3" ;
+					set	"cmd"	"updateSaveGameInfo" ;
+//					resetTime "SGCBtn1" "0" ;
+				}
+    				onEnter {
+//					set "cmd" "play guisounds_menuclickup" ;
+					set "cmd" "saveGame 1" ;
+				}
+           }
+
+        }
+        windowDef loadsaverightpane {
+            rect 340, 0, 86, 300
+            backcolor .5,0,0,0
+
+        windowDef savegamenamebutton {
+            rect 0, 100, 100, 15
+            backcolor 0,.5,.4,1
+            bordercolor 0,0,0,1
+            forecolor 0,0,0,1
+            text "Generate name"
+            font "fonts/good_times"
+            textscale .15
+            textaligny -1
+            textalignx 4
+            visible 1
+
+            onAction {
+              set "cmd"	"play guisounds_menuclickup; createNewName";
+            }
+            onMouseEnter {
+              set "backcolor" "0,.6,.5,1"
+            }
+            onMouseExit {
+              set "backcolor" "0,.5,.4,1"
+            }
+        }
+        editDef savegamename {
+            rect        5, 125, 75, 15
+//            backcolor 0,0,0,.2
+              background "guis/cdoom/leftkey1"
+            font "fonts/an"
+            text "gui::saveGameName"
+            textscale .2
+//            textalign 1
+            textaligny -2
+            maxchars 32
+            visible 0
+
+            onEnter {
+                 set "cmd" "saveGame 1";
+                 set "cmd" "play""";
+            }
+        }
+        windowDef savegamebutton {
+            rect 0, 150, 100, 15
+            backcolor 0,.5,.4,1
+            bordercolor 0,0,0,1
+            forecolor 0,0,0,1
+            text "Save Game"
+            font "fonts/good_times"
+            textscale .2
+            textaligny -1
+            textalignx 4
+            visible 0
+
+            onAction {
+              set "cmd" "saveGame 1";
+              set "cmd" "play""";
+            }
+            onMouseEnter {
+              set "backcolor" "0,.6,.5,1"
+            }
+            onMouseExit {
+              set "backcolor" "0,.5,.4,1"
+            }
+        }
+        windowDef savegamedelete {
+            rect 0, 180, 100, 15
+            backcolor 0,.5,.4,1
+            forecolor 0,0,0,1
+            text "Delete Game"
+            font "fonts/good_times"
+            textscale .2
+            textaligny -1
+            textalignx 1
+//            textalign 1
+
+            onAction {
+              if ( "gui::loadGame_sel_0" >= 0 ) {
+                  set "cmd" "deleteGame";
+              }
+            }
+            onMouseEnter {
+              set "backcolor" "0,.6,.5,1"
+            }
+            onMouseExit {
+              set "backcolor" "0,.5,.4,1"
+            }
+        }
+        windowDef loadgamebutton {
+            rect 0, 150, 100, 15
+            backcolor 0,.5,.4,1
+            bordercolor 0,0,0,1
+            forecolor 0,0,0,1
+            text "Load Game"
+            font "fonts/good_times"
+            textscale .2
+            textaligny -1
+            textalignx 4
+            visible 0
+
+            onAction {
+              set "cmd" "LoadGame";
+            }
+            onMouseEnter {
+              set "backcolor" "0,.6,.5,1"
+            }
+            onMouseExit {
+              set "backcolor" "0,.5,.4,1"
+            }
+        }
+        windowDef loadgameshot {
+         	rect		0, 15, 86, 64
+			background	"gui::loadgame_shot"
+//            backcolor 1,1,1,1
+			matcolor 	1, 1, 1, 0
+			bordersize 	.5
+			bordercolor 	1, 1, 1, .1
+			noevents	1
+            visible 1
+		}
+        windowDef loadgoback {
+            rect 25, 270, 81, 20
+            forecolor 1,1,1,0
+            font "fonts/good_times"
+            textscale .2
+            text "Go Back"
+            noTime 1  // No time left for you!
+
+            onAction {
+                set "noEvents" "1";
+				set "selections::noEvents" "1";
+//               		transition "DoomGuy::matcolor" "1,1,1,0" "1,1,1,.4" "700";
+				transition "Episode::matcolor" "1,1,1,0" "1,1,1,1" "700";
+				set "Episode::visible" "1";
+				transition "SelectSkull::matcolor" "1,1,1,0" "1,1,1,1" "700";
+				set "SelectSkull::visible" "1";
+				transition "Selections::matcolor" "1,1,1,0" "1,1,1,1" "700";
+				set "Selections::visible" "1";
+				transition "LoadGame::matcolor" "1,1,1,0" "1,1,1,1" "700";
+				set "LoadGame::visible" "1";
+				transition "NewGame::matcolor" "1,1,1,0" "1,1,1,1" "700";
+				set "NewGame::visible" "1";
+//                if ("gui::inGame" == 0) {
+//                                transition "savegame::matcolor" ".8,.8,.8,0" ".8,.8,.8,1" "700";
+//                }
+//                if ("gui::inGame" == 1) {
+                				transition "SaveGame::matcolor" "1,1,1,0" "1,1,1,1" "700";
+//                }
+				set "SaveGame::visible" "1";
+				transition "Multiplayer::matcolor" "1,1,1,0" "1,1,1,1" "700";
+				set "Multiplayer::visible" "1";
+				transition "Options::matcolor" "1,1,1,0" "1,1,1,1" "700";
+				set "Options::visible" "1";
+				transition "ReadThis::matcolor" "1,1,1,0" "1,1,1,1" "700";
+				set "ReadThis::visible" "1";
+				transition "Quit::matcolor" "1,1,1,0" "1,1,1,1" "700";
+				set "Quit::visible" "1";
+//				set "DoomGuy::visible" "1";
+               transition "listarea::backcolor" "0,0,0,.7" "0,0,0,0" "600";
+               transition "columntopName::forecolor" "1,.4,.1,1" "1,.4,.1,0" "600";
+               transition "columntopDate::forecolor" "1,.4,.1,1" "1,.4,.1,0" "600";
+               transition "columntopTime::forecolor" "1,.4,.1,1" "1,.4,.1,0" "600";
+               transition "FSS_logo_bg::matcolor"  "1,1,1,.5" "1,1,1,0" "800";
+               set "loadList::visible" "0";
+               set "saveList::visible" "0";
+//             transition "loadList::forecolor" "1,1,1,1" "1,1,1,0"  "600";
+               transition "saveList::forecolor" "1,1,1,1" "1,1,1,0" "600";
+               transition "loadsaverightpane::backcolor" ".5,0,0,.5" ".5,0,0,0" "600";
+               transition "loadgameshot::matcolor" "1,1,1,1" "1,1,1,0" "800";
+               transition "loadgameshot::bordercolor" "1,1,1,.1" "1,1,1,0" "800";
+               transition "loadgoback::forecolor" "1,1,1,1" "1,1,1,0" "600";
+               transition "savegamename::forecolor" "1,1,1,1" "1,1,1,0" "600";
+               transition "savegamename::matcolor" "1,1,1,1" "1,1,1,0" "600";
+               transition "savegamebutton::forecolor" "0,0,0,1" "0,0,0,0" "600";
+               transition "savegamebutton::backcolor" "0,.5,.4,1" "0,.5,.4,0" "600";
+               transition "loadgamebutton::forecolor" "0,0,0,1" "0,0,0,0" "600";
+               transition "loadgamebutton::backcolor" "0,.5,.4,1" "0,.5,.4,0" "600";
+               transition "savegamedelete::backcolor" "0,.5,.4,1" "0,.5,.4,0" "600";
+               transition "savegamedelete::forecolor" "0,0,0,1" "0,0,0,1" "600";
+               resetTime "0";
+            }
+            onTime 800 {
+               set "loadsavemain::visible" "0";
+               set "selections::noevents" "0";
+               set "loadsavemain::noevents" "1";
+               set "savegamename::visible" "0";
+               set "savegamebutton::visible" "0";
+            }
+        }
+  }
+    }
+	windowDef startgamemain
+	{
+		rect	0,180,640,290
+		noEvents	0
+		visible	0
+		noTime	1
+/*deadite4		windowDef Skillpicture
+		{
+			rect	75,34,75,75
+			visible	1
+		}*/
+		choiceDef playintro {
+			rect 380,160,75,20
+			choices "Yes;No"
+			font "fonts/good_times"
+//			textscale 0.5
+			gui "playintro"		
+		}
+			
+		windowDef playintrotext {
+			rect 247,160,175,20
+			text "Play Intro:"
+			font "fonts/good_times"
+		}
+		windowDef runGame {
+			rect 0,0,1,1
+			noTime 1
+			
+			onTime 0 {
+				if ( "gui::playintro" == 0 ) {
+					set "cmd" "startgame intro";
+				} else {
+					set "cmd" "startgame e1m1";
+				}
+				set "desktop::doomme" "1";
+			}
+		}
+		windowDef easy
+		{
+			rect	245,15,315,35
+			visible	1
+			forecolor	1,0,0,1
+			text	"I'm too young to die"
+			font	"fonts/good_times"
+			textscale	0.5
+			nowrap	1
+
+			onMouseEnter {
+			set "forecolor"	"1,1,1,1";
+//deadite4				set "Skillpicture::background" "guis/assets/custom/mainmenu/newgame01.tga";
+			}
+			
+			onMouseExit {
+			set "forecolor" "1,0,0,1";
+			}
+
+			onAction {
+				set "gui::skill" "0";
+				resetTime "runGame" "0";
+//		set "cmd" "startgame intro";
+//            set "desktop::doomme" "1";
+			}
+
+		}
+		windowDef medium
+		{
+			rect	245,50,310,35
+			visible	1
+			matcolor	1,1,1,0
+			forecolor	1,0,0,1
+			text	"Hey, not too rough"
+			font	"fonts/good_times"
+			textscale	0.5
+
+			onMouseEnter {
+			set "forecolor"	"1,1,1,1";
+//deadite4				set "Skillpicture::background" "guis/assets/custom/mainmenu/newgame02.tga";
+			}
+			
+			onMouseExit {
+			set "forecolor" "1,0,0,1";
+			}
+			
+			onAction {
+				set "gui::skill" "1";
+				resetTime "runGame" "0";
+//		set "cmd" "startgame intro";
+//            set "desktop::doomme" "1";
+			}
+
+		}
+		windowDef hard
+		{
+			rect	245,85,250,35
+			visible	1
+			matcolor	1,1,1,0
+			forecolor	1,0,0,1
+			text	"Hurt Me Plenty"
+			font	"fonts/good_times"
+			textscale	0.5
+
+			onMouseEnter {
+			set "forecolor"	"1,1,1,1";
+//deadite4				set "Skillpicture::background" "guis/assets/custom/mainmenu/newgame03.tga";
+			}
+			
+			onMouseExit {
+			set "forecolor" "1,0,0,1";
+			}
+			
+			onAction {
+				set "gui::skill" "2";
+				resetTime "runGame" "0";
+//		set "cmd" "startgame intro";
+//            set "desktop::doomme" "1";
+			}
+
+		}
+		windowDef ggnoob
+		{
+			rect	245,120,185,35
+			visible	1
+			matcolor	1,1,1,0
+			forecolor	1,0,0,1
+			text	"Nightmare!"
+			font	"fonts/good_times"
+			textscale	0.5
+
+			onMouseEnter {
+			set "forecolor"	"1,1,1,1";
+//deadite4				set "Skillpicture::background" "guis/assets/custom/mainmenu/newgame04.tga";
+			}
+			
+			onMouseExit {
+			set "forecolor" "1,0,0,1";
+			}
+			
+			onAction {
+				set "gui::skill" "3";
+				resetTime "runGame" "0";
+//		set "cmd" "startgame intro";
+//            set "desktop::doomme" "1";
+			}
+
+		}
+		windowDef goback2
+		{
+			rect	450, 200, 120, 30
+			matcolor	1,1,1,0
+			forecolor	1,0,0,1
+			text	"Go Back"
+			font	"fonts/good_times"
+			textalign	1
+			noTime	1
+
+			onMouseEnter {
+			set "forecolor"	"1,1,1,1";
+			}
+			
+			onMouseExit {
+			set "forecolor" "1,0,0,1";
+			}
+			
+			onAction {
+				set "startgamemain::noevents" "1";
+				set "selections::noevents" "1";
+//				transition "DoomGuy::matcolor" "1,1,1,0" "1,1,1,.4" "700";
+				transition "Episode::matcolor" "1,1,1,0" "1,1,1,1" "700";
+				//                    set "Episode::visible" "0";
+				transition "SelectSkull::matcolor" "1,1,1,0" "1,1,1,1" "700";
+				//                    set "SelectSkull::visible" "0";
+				transition "Selections::matcolor" "1,1,1,0" "1,1,1,1" "700";
+				//                    set "Selections::visible" "0";
+				transition "LoadGame::matcolor" "1,1,1,0" "1,1,1,1" "700";
+				//                    set "LoadGame::visible" "0";
+				transition "NewGame::matcolor" "1,1,1,0" "1,1,1,1" "700";
+				//                    set "NewGame::visible" "0";
+
+//                if ("gui::inGame" == 0) {
+//                                transition "savegame::matcolor" ".8,.8,.8,0" ".8,.8,.8,1" "700";
+//                }
+//                if ("gui::inGame" == 1) {
+                				transition "SaveGame::matcolor" "1,1,1,0" "1,1,1,1" "700";
+//                }
+				//                    set "SaveGame::visible" "0";
+				transition "Multiplayer::matcolor" "1,1,1,0" "1,1,1,1" "700";
+				//                    set "Multiplayer::visible" "0";
+				transition "Options::matcolor" "1,1,1,0" "1,1,1,1" "700";
+				//                    set "Options::visible" "0";
+				transition "ReadThis::matcolor" "1,1,1,0" "1,1,1,1" "700";
+				//                    set "ReadThis::visible" "0";
+				transition "Quit::matcolor" "1,1,1,0" "1,1,1,1" "700";
+				//                    set "Quit::visible" "0";
+				//                    set "MiddleArea::visible" "0";
+				transition "easy::forecolor" "1,0,0,1" "1,0,0,0" "700";
+				transition "medium::forecolor" "1,0,0,1" "1,0,0,0" "700";
+				transition "hard::forecolor" "1,0,0,1" "1,0,0,0" "700";
+				transition "ggnoob::forecolor" "1,0,0,1" "1,0,0,0" "700";
+//deadite4				transition "skillpicture::matcolor" "1,1,1,1" "1,1,1,0" "700";
+				transition "forecolor" "1,1,1,1" "1,1,1,0" "700";
+				resetTime "0";
+			}
+
+			onTime 700 {
+				set "startgamemain::visible" "0";
+				set "startgamemain::noEvents" "0";
+				set "selections::noEvents" "0";
+			}
+
+		}
+	}
+
+	windowDef MultiplayerMain {
+	        rect 10, 150, 620, 300
+//		noTime 0
+		visible 0
+		backcolor .4,0,0,1
+		
+/*		onTime 0 {
+			set "visible" "1";
+			set "cmd" "UpdateServers";
+			set "cmd" "CheckUpdate";
+		}*/
+
+
+		windowDef MPBG2 {
+			rect 8,5,605,290
+			backcolor .5,0,0,1
+		}
+
+					windowDef GoBackMulti {
+						rect 600, 8, 10, 10
+						forecolor 1,1,1,.7
+						backcolor .4,0,0,1
+						bordercolor 1,.7,.7,.4
+						bordersize 1.5
+						visible 1
+						text "x"
+						textscale 0.3
+						textaligny -11
+						textalignx -4
+						
+						onMouseEnter {
+							transition "forecolor" "1,1,1,.7" "1,1,1,.8" "10";
+						}
+						onMouseExit {
+							transition "forecolor" "1,1,1,1" "1,1,1,.7" "10";
+						}
+						onActionRelease {
+							set "MultiplayerMain::visible" "0";
+							set "Selections::noEvents" "0";
+						}
+					}
+					windowDef LANSwitchParent {
+						rect 530, 8, 45, 10
+						
+/*						onMouseEnter {
+							transition "LANSwitchText::forecolor" "1,1,1,1" ".8,.8,.8,1" "10";
+//							transition "LANSwitch::backcolor" "1,.7,.7,.4" ".8,.5,.5,.4" "10";
+						}
+						onMouseExit {
+							transition "LANSwitchText::forecolor" ".8,.8,.8,1" "1,1,1,1" "10";
+//							transition "LANSwitch::backcolor" ".8,.5,.5,.4" "1,.7,.7,.4" "10";
+						}*/
+						
+							
+								
+						
+						windowDef LANSwitchText {
+							rect 7, 0, 35, 10
+							visible 1
+							text "LAN:"
+							font "fonts/bank"
+//							backcolor 0,0,0,1
+							textscale 0.22
+							textaligny -5
+							textalignx -6
+						}
+						windowDef LANSwitchOn {
+							rect 38, 3, 7, 7
+							bordercolor 1,.7,.7,.4
+							bordersize 1.5
+							visible 0
+							noEvents 1
+							backcolor 1,.7,.7,.4
+
+							onActionRelease {
+								set "gui::lanSet" "0";
+								set "visible" "0";
+								set "noEvents" "1";
+								set "LANSwitchOff::visible" "1";
+								set "LANSwitchOff::noEvents" "0";
+								set "cmd" "UpdateServers";
+							}
+								
+						}
+						windowDef LANSwitchOff {
+							rect 38, 3, 7, 7
+							bordercolor 1,.7,.7,.4
+							bordersize 1.5
+							visible 1
+							noevents 0
+							backcolor 1,.7,.7,0
+
+							onActionRelease {
+								set "gui::lanSet" "1";
+								set "visible" "0";
+								set "noEvents" "1";
+								set "LANSwitchOn::visible" "1";
+								set "LANSwitchOn::noEvents" "0";
+								set "cmd" "UpdateServers";
+							}
+
+						}
+					}
+						
+					
+						
+					windowDef sort_servername {
+						rect 10,10,85,10
+//						backcolor 1,1,1,.1
+						text "Server Name"
+						textscale 0.2
+						textaligny -4
+						
+						onMouseEnter {
+							transition "forecolor" "1,1,1,1" ".8,.8,.8,1" "100";
+						}
+						onMouseExit {
+							transition "forecolor" ".8,.8,.8,1" "1,1,1,1" "100";
+						}
+						onAction {
+							set	"cmd"	"play guisounds_menuclickup ; sortServerName" ; 				
+						}		
+					}
+					windowDef sort_pb {
+						rect 181,10,100,10
+//						backcolor 1,1,1,.1
+						text "PB"
+						textscale 0.2
+						textaligny -4
+						
+						// You can't sort PB?  That's weird.						
+					}
+					windowDef sort_game {
+						rect 207,10,85,10
+//						backcolor 1,1,1,.1
+						text "Game"
+						textscale 0.2
+						textaligny -4
+						
+						onMouseEnter {
+							transition "forecolor" "1,1,1,1" ".8,.8,.8,1" "100";
+						}
+						onMouseExit {
+							transition "forecolor" ".8,.8,.8,1" "1,1,1,1" "100";
+						}
+						onAction {
+							set	"cmd"	"play guisounds_menuclickup ; sortGame" ; 				
+						}
+					}
+					windowDef sort_players {
+						rect 250,10,85,10
+//						backcolor 1,1,1,.1
+						text "Players"
+						textscale 0.2
+						textaligny -4
+						
+						onMouseEnter {
+							transition "forecolor" "1,1,1,1" ".8,.8,.8,1" "100";
+						}
+						onMouseExit {
+							transition "forecolor" ".8,.8,.8,1" "1,1,1,1" "100";
+						}
+						onAction {
+							set	"cmd"	"play guisounds_menuclickup ; sortPlayers" ; 				
+						}
+					}
+					windowDef sort_ping {
+						rect 312,10,85,10
+//						backcolor 1,1,1,.1
+						text "Ping"
+						textscale 0.2
+						textaligny -4
+						
+						onMouseEnter {
+							transition "forecolor" "1,1,1,1" ".8,.8,.8,1" "100";
+						}
+						onMouseExit {
+							transition "forecolor" ".8,.8,.8,1" "1,1,1,1" "100";
+						}
+						onAction {
+							set	"cmd"	"play guisounds_menuclickup ; sortPing" ; 				
+						}
+					}
+					windowDef sort_gametype {
+						rect 363,10,85,10
+//						backcolor 1,1,1,.1
+						text "Gametype"
+						textscale 0.2
+						textaligny -4
+						
+						onMouseEnter {
+							transition "forecolor" "1,1,1,1" ".8,.8,.8,1" "100";
+						}
+						onMouseExit {
+							transition "forecolor" ".8,.8,.8,1" "1,1,1,1" "100";
+						}
+						onAction {
+							set	"cmd"	"play guisounds_menuclickup ; sortGameType" ; 				
+						}
+					}
+					windowDef sort_mapname {
+						rect 468,10,85,10
+//						backcolor 1,1,1,.1
+						text "Map"
+						textscale 0.2
+						textaligny -4
+						
+						onMouseEnter {
+							transition "forecolor" "1,1,1,1" ".8,.8,.8,1" "100";
+						}
+						onMouseExit {
+							transition "forecolor" ".8,.8,.8,1" "1,1,1,1" "100";
+						}
+						onAction {
+							set	"cmd"	"play guisounds_menuclickup ; sortMap" ; 				
+						}
+					}
+					windowDef info_levelshot {
+						rect 275,185,128,96
+						background  "gui::browser_levelshot"
+						matcolor 	1, 1, 1, 1
+						bordersize 	1  
+						bordercolor 	0.6, 0.2, 0.2, 1
+						backcolor 0,0,0,1 
+						noevents	1
+						windowDef info_passworded {
+							rect 1, 1, 150, 10
+							text		"gui::server_passworded"
+							font		"fonts/bank"
+							textscale	0.25
+							textaligny	-6
+							forecolor	0.6, 0.8, 0.8, 0.8
+							noevents	1
+						}
+					}
+					windowDef info_main {
+						rect 20,180,250,110
+						backcolor .7,.6,0,.2
+						
+						windowDef info_servername {
+							rect 10, 20, 250, 10
+//							backcolor 0,1,1,.2
+							text "gui::server_name"
+							textscale 0.25
+							textaligny -8
+							font "fonts/bank"
+						}
+						windowDef info_serverip {
+							rect 10, 10, 155, 10
+							backcolor 0,0,0,.2
+							text "gui::server_IP"
+							textscale 0.17
+							textaligny -4
+							textalign 1
+							font "fonts/micro"
+						}
+						windowDef info_players {
+							rect 10, 40, 190, 51
+							backcolor 0,0,0,.1
+
+							windowDef info_player1 {
+								rect 2, 2, 90, 10
+								//backcolor 0,0,0,.1
+								text "gui::player1"
+								textscale 0.18
+								textaligny -5
+								textalignx -2
+								font "fonts/micro"
+							}
+							windowDef info_player2 {
+								rect 2, 15, 90, 10
+								//backcolor 0,0,0,.1
+								text "gui::player2"
+								textscale 0.18
+								textaligny -5
+								textalignx -2
+								font "fonts/micro"
+							}
+							windowDef info_player3 {
+								rect 2, 28, 90, 10
+								//backcolor 0,0,0,.1
+								text "gui::player3"
+								textscale 0.18
+								textaligny -5
+								textalignx -2
+								font "fonts/micro"
+							}
+							windowDef info_player4 {
+								rect 2, 41, 90, 10
+								//backcolor 0,0,0,.1
+								text "gui::player4"
+								textscale 0.18
+								textaligny -5
+								textalignx -2
+								font "fonts/micro"
+							}
+							windowDef info_player5 {
+								rect 100, 2, 90, 10
+								//backcolor 0,0,0,.1
+								text "gui::player5"
+								textscale 0.18
+								textaligny -5
+								textalignx -2
+								font "fonts/micro"
+							}
+							windowDef info_player6 {
+								rect 100, 15, 90, 10
+								//backcolor 0,0,0,.1
+								text "gui::player6"
+								textscale 0.18
+								textaligny -5
+								textalignx -2
+								font "fonts/micro"
+							}
+							windowDef info_player7 {
+								rect 100, 28, 90, 10
+								//backcolor 0,0,0,.1
+								text "gui::player7"
+								textscale 0.18
+								textaligny -5
+								textalignx -2
+								font "fonts/micro"
+							}
+							windowDef info_player8 {
+								rect 100, 41, 90, 10
+								//backcolor 0,0,0,.1
+								text "gui::player8"
+								textscale 0.18
+								textaligny -5
+								textalignx -2
+								font "fonts/micro"
+							}
+						}
+
+					}
+										
+
+
+
+					listDef LANServerlist  // Mainly adapted from LMS
+					{
+						rect 		10,20,600,150
+						backcolor 	.1,.05,.05,.7
+						font		"fonts/bank"
+						bordersize 	0
+						bordercolor 	0.8,0.3,0.1,0.25
+						textscale 	0.2
+						listName 	"serverlist"
+						tabstops	"2, 175, 210, 253, 305, 350, 460, 650"	// SERVER NAME, PB, GAME, PLAYERS, PING, GAMETYPE, MAP NAME
+						tabAligns	"0, 1, 1, 1, 1, 0, 0"				//LEFT, CENTER, CENTER, CENTER, CENTER, TEXT, TEXT
+						tabTypes	"0, 1, 1, 0, 0, 0, 0"				//TEXT, ICON, ICON, TEXT, TEXT, TEXT, TEXT
+						tabIconSizes "0,0, 11,11, 11,11, 0,0, 0,0, 0,0, 0,0"						//TabStop 1 size 12,12
+						tabIconVOffset	 "0, 1, 1, 0, 0, 0, 0"
+						tabvaligns	"0, 1, 1, 0, 0, 0, 0"				//Only works for icon columns
+
+						mtr_doom3Icon	"guis/assets/mainmenu/doom3icon.tga"
+						mtr_doom3XPIcon	"guis/assets/mainmenu/doom3xpicon.tga"
+						mtr_doom3Mod	"guis/assets/mainmenu/mars_icon.tga"
+						mtr_PB			"guis/assets/mainmenu/pb_icon.tga"
+
+						onAction {
+							set	"cmd"	"play guisounds_menuclickup ; serverList" ;
+							//set "LANLevelshot::matcolor" "1 1 1 1" ;
+							//set "LANLevelshot::forecolor" "0.6 0.8 0.8 0" ;
+							resetTime "MPLANBtn3" "0" ;
+						}
+
+						onEnter {
+							set "cmd" "play guisounds_menuclickup" ;
+							set "cmd" "LANConnect" ;
+						}
+
+					}
+					windowDef JoinGame {
+						rect 405,175,100,20
+						bordercolor 0,0,0,.8
+						bordersize 1
+						backcolor .7,0,0,1
+						forecolor .9,.9,.7,1
+						font "fonts/bank"
+						text "Join Game"
+						textscale 0.23
+						textalignx -1
+						textaligny -3
+						textalign 1
+					
+						onMouseEnter {
+							transition "backcolor" ".7,0,0,1" ".6,0,0,1" "10";
+							transition "forecolor" ".9,.9,.7,1" "1,1,.8,1" "10";
+						}					
+						onMouseExit {
+							transition "backcolor" ".6,0,0,1" ".7,0,0,1" "10";
+							transition "forecolor" "1,1,.8,1" ".9,.9,.7,1" "10";
+						}
+						onAction {
+							set "cmd" "play guisounds_menuclickup" ; 
+							set "cmd" "LANConnect" ;
+						}
+					}
+					windowDef RefreshList {
+						rect 510,175,100,20
+						bordercolor 0,0,0,.8
+						bordersize 1
+						backcolor .7,0,0,1
+						forecolor .9,.9,.7,1
+						font "fonts/bank"
+						text "Quick Refresh"
+						textscale 0.23
+						textalignx -1
+						textaligny -3
+						textalign 1
+					
+						onMouseEnter {
+							transition "backcolor" ".7,0,0,1" ".6,0,0,1" "10";
+							transition "forecolor" ".9,.9,.7,1" "1,1,.8,1" "10";
+						}					
+						onMouseExit {
+							transition "backcolor" ".6,0,0,1" ".7,0,0,1" "10";
+							transition "forecolor" "1,1,.8,1" ".9,.9,.7,1" "10";
+						}
+						onActionRelease {
+							set "cmd" "play guisounds_menuclickup" ; 
+							set "cmd" "RefreshServers"
+						}
+					}
+					windowDef UpdateList {
+						rect 510,195,100,20
+						bordercolor 0,0,0,.8
+						bordersize 1
+						backcolor .7,0,0,1
+						forecolor .9,.9,.7,1
+						font "fonts/bank"
+						text "Update List"
+						textscale 0.23
+						textalignx -1
+						textaligny -3
+						textalign 1
+					
+						onMouseEnter {
+							transition "backcolor" ".7,0,0,1" ".6,0,0,1" "10";
+							transition "forecolor" ".9,.9,.7,1" "1,1,.8,1" "10";
+						}					
+						onMouseExit {
+							transition "backcolor" ".6,0,0,1" ".7,0,0,1" "10";
+							transition "forecolor" "1,1,.8,1" ".9,.9,.7,1" "10";
+						}
+						onActionRelease {
+							set "cmd" "play guisounds_menuclickup" ; 
+							set "cmd" "UpdateServers"
+						}
+					}
+					windowDef CreateServerActivate {
+						rect 405,195,100,20
+						bordercolor 0,0,0,.8
+						bordersize 1
+						backcolor .7,0,0,1
+						forecolor .9,.9,.7,1
+						font "fonts/bank"
+						text "Create Game"
+						textscale 0.23
+						textalignx -1
+						textaligny -3
+						textalign 1
+					
+						onMouseEnter {
+							transition "backcolor" ".7,0,0,1" ".6,0,0,1" "10";
+							transition "forecolor" ".9,.9,.7,1" "1,1,.8,1" "10";
+						}					
+						onMouseExit {
+							transition "backcolor" ".6,0,0,1" ".7,0,0,1" "10";
+							transition "forecolor" "1,1,.8,1" ".9,.9,.7,1" "10";
+						}
+						onActionRelease {
+							set "MultiplayerMain::noEvents" "1";
+							transition "backcolor" ".6,0,0,1" ".7,0,0,1" "10";
+							transition "forecolor" "1,1,.8,1" ".9,.9,.7,1" "10";
+							set "CreateServer::visible" "1";
+							set "cmd" "MAPScan" ;
+						}
+					}
+					windowDef FilterList {
+						rect 445,216,120,20
+						bordercolor 0,0,0,.8
+						bordersize 1
+						backcolor .7,0,0,1
+						forecolor .9,.9,.7,1
+						font "fonts/bank"
+						text "Filter Servers"
+						textscale 0.23
+						textalignx -1
+						textaligny -3
+						textalign 1
+						noEvents 0
+					
+						onMouseEnter {
+							transition "backcolor" ".7,0,0,1" ".6,0,0,1" "10";
+							transition "forecolor" ".9,.9,.7,1" "1,1,.8,1" "10";
+						}					
+						onMouseExit {
+							transition "backcolor" ".6,0,0,1" ".7,0,0,1" "10";
+							transition "forecolor" "1,1,.8,1" ".9,.9,.7,1" "10";
+						}
+						onActionRelease {
+							set "cmd" "play guisounds_menuclickup" ; 
+							set "cmd" "FilterServers"
+							set "noEvents" "1";
+						}
+					}
+					windowDef filter_gametype_text {
+						rect 405, 234, 110, 10
+						text "Filter Gametype:"
+						textscale 0.2
+					}
+					choiceDef filter_gametype {
+						rect 510, 232, 100, 15
+						choices "#str_04224"
+						choiceType 0
+						cvar "gui_filter_gametype"
+						font "fonts/bank"
+						textscale 0.22
+					}
+					windowDef filter_password_text {
+						rect 405, 246, 125, 10
+						text "Filter Password:"
+						textscale 0.2
+					}
+					choiceDef filter_password {
+						rect 510, 244, 100, 15
+						choices "#str_04225"
+						choiceType 0
+						cvar "gui_filter_password"
+						font "fonts/bank"
+						textscale 0.22
+					}
+					windowDef filter_players_text {
+						rect 405, 258, 125, 10
+						text "Filter Players:"
+						textscale 0.2
+					}
+					choiceDef filter_players {
+						rect 510, 256, 100, 15
+						choices "#str_04226"
+						choiceType 0
+						cvar "gui_filter_players"
+						font "fonts/bank"
+						textscale 0.22
+					}
+					windowDef serverIP_text {
+						rect 405, 275, 65, 16
+						text "Server IP:"
+						textscale 0.2
+//						backcolor 0,0,1,1
+					}
+					editDef join_serverIP {
+						rect 470, 275, 98, 16
+						text "gui::inetGame"
+						backcolor 0,0,0,.8
+						textscale 0.2
+						textalignx 4
+					
+						onEnter {
+							set "cmd" "inetConnect";
+						}
+					}
+					windowDef JoinServerIP {
+						rect 570,275,35,15
+						bordercolor 0,0,0,.8
+						bordersize 1
+						backcolor .7,0,0,1
+						forecolor .9,.9,.7,1
+						font "fonts/bank"
+						text "Join"
+						textscale 0.23
+						textalignx -2
+						textaligny -5
+						textalign 1
+					
+						onMouseEnter {
+							transition "backcolor" ".7,0,0,1" ".6,0,0,1" "10";
+							transition "forecolor" ".9,.9,.7,1" "1,1,.8,1" "10";
+						}					
+						onMouseExit {
+							transition "backcolor" ".6,0,0,1" ".7,0,0,1" "10";
+							transition "forecolor" "1,1,.8,1" ".9,.9,.7,1" "10";
+						}
+						onActionRelease {
+							transition "backcolor" ".6,0,0,1" ".7,0,0,1" "10";
+							transition "forecolor" "1,1,.8,1" ".9,.9,.7,1" "10";
+							set	"cmd"	"play guisounds_menuclickup ; inetConnect" ;
+						}
+					}
+					
+		}
+		windowDef CreateServer {
+			rect 125, 70, 400, 400
+			backcolor .5,0,0,.9
+			bordercolor 0,0,0,.9
+			bordersize 1
+			visible 0
+
+			windowDef CreateParent {
+				rect 10, 10, 380, 380
+				backcolor .6,0,0,1
+
+				windowDef GoBackMulti {
+					rect 368, 8, 10, 10
+					forecolor 1,1,1,.7
+					backcolor .4,0,0,1
+					bordercolor 1,.7,.7,.4
+					bordersize 1.5
+					visible 1
+					text "x"
+					textscale 0.3
+					textaligny -11
+					textalignx -4
+					
+					onMouseEnter {
+						transition "forecolor" "1,1,1,.7" "1,1,1,.8" "10";
+					}
+					onMouseExit {
+						transition "forecolor" "1,1,1,1" "1,1,1,.7" "10";
+					}
+					onActionRelease {
+						set "CreateServer::visible" "0";
+						set "MultiplayerMain::noEvents" "0";
+					}
+				}
+				
+				windowDef create_title {
+					rect 113, 10, 165, 20
+					text "Create Server"
+					textaligny -4
+					font "fonts/good_times"
+					textscale 0.35
+					//backcolor 0,0,0,1
+					
+				}
+				windowDef filler1 {
+					rect 0, 30, 380, 1
+					backcolor 0,0,0,1
+				}
+				windowDef create_levelShot {
+					rect 244, 40, 128, 96
+					bordercolor 0,0,0,.7
+					bordersize 1
+					background "gui::current_levelshot"
+					//backcolor 1,1,1,1
+					matcolor 1,1,1,1
+					visible 1
+				}
+				windowDef server_name_text {
+					rect 20, 38, 200, 19
+					backcolor 0,0,0,.5
+					text "Server Name:"
+					textscale 0.2
+				}				
+				editDef server_name {
+					rect 105, 40, 115, 15
+					cvar "si_name"
+					backcolor 0,0,0,.2
+					font "fonts/micro"
+					textaligny -2
+					textscale .17
+				}
+				windowDef server_password_text {
+					rect 20, 58, 200, 19
+					backcolor 0,0,0,.5
+					text "Password:"
+					textscale 0.2
+					textalignx 20
+				}				
+				editDef server_password {
+					rect 105, 60, 115, 15
+					cvar "g_password"
+					backcolor 0,0,0,.2
+					forecolor 1,1,1,1
+					font "fonts/micro"
+					textaligny -2
+					textscale .17
+					noTime 0
+					noEvents ("si_usepass" == 0)
+
+					onTime 0 {
+						if ("si_usepass" == 0) {
+							set "forecolor" ".8,.8,.8,1";
+						}
+					}
+				}
+				windowDef PassSwitchOn {
+					rect 25, 63, 7, 7
+					bordercolor 1,.7,.7,.4
+					bordersize 1.5
+					visible ("si_usepass" == 1)
+					noEvents ("si_usepass" == 0)
+					backcolor 1,.7,.7,.4
+
+					onAction {
+						set "si_usepass" "0";
+						set "visible" "0";
+						set "noEvents" "1";
+						set "PassSwitchOff::visible" "1";
+						set "PassSwitchOff::noEvents" "0";
+						transition "server_password::forecolor" "1,1,1,1" ".8,.8,.8,1" "10";
+						set "server_password::noEvents" "1";"
+					}
+								
+				}
+				windowDef PassSwitchOff {
+					rect 25, 63, 7, 7
+					bordercolor 1,.7,.7,.4
+					bordersize 1.5
+					visible ("si_usepass" == 0)
+					noevents ("si_usepass" == 1)
+					backcolor 1,.7,.7,0
+
+					onAction {
+						set "si_usepass" "1";
+						set "visible" "0";
+						set "noEvents" "1";
+						set "PassSwitchOn::visible" "1";
+						set "PassSwitchOn::noEvents" "0";
+						transition "server_password::forecolor" ".8,.8,.8,1" "1,1,1,1" "10";
+						set "server_password::noEvents" "0";"
+					}
+				}
+				windowDef server_type_text {
+					rect 20, 78, 200, 19
+					backcolor 0,0,0,.5
+					text "Server Type:"
+					textscale 0.2
+					textalignx 6
+				}
+				choiceDef server_type {
+					rect		105, 80, 100, 15
+					choices		"#str_04227"
+					gui		"server_type"
+					choiceType	0
+					textscale	0.25
+					textaligny	-5
+					font "fonts/bank"
+				}
+				windowDef server_gametype_text {
+					rect 20, 98, 200, 19
+					backcolor 0,0,0,.5
+					text "Game Type:"
+					textscale 0.2
+					textalignx 12
+				}
+				choiceDef server_gametype {
+					rect		105, 100, 100, 15
+					choices		"#str_04228"
+					cvar		"si_gameType"
+					gui		"currentGameType"
+					currentChoice	0
+					choiceType	1
+					textscale	0.25
+					textaligny	-5
+					font "fonts/bank"
+
+					onActionRelease {
+						set "cmd" "MAPScan";
+					}
+				}
+				windowDef server_ff_text {
+					rect 20, 118, 200, 19
+					backcolor 0,0,0,.5
+					text "Friendly Fire:"
+					textscale 0.2
+					textalignx 0
+				}
+				choiceDef server_ff {
+					rect		105, 120, 100, 15
+					choices		"#str_04221"
+					cvar		"si_teamDamage"
+					choiceType	0
+					textscale	0.25
+					textaligny	-5
+					font "fonts/bank"
+
+				}
+				windowDef server_frags_text {
+					rect 20, 138, 200, 19
+					backcolor 0,0,0,.5
+					text "Frag Limit:"
+					textscale 0.2
+					textalignx 15
+				}				
+				editDef server_frags {
+					rect 105, 140, 115, 15
+					cvar "si_fragLimit"
+					maxchars 3
+					backcolor 0,0,0,.2
+					font "fonts/micro"
+					textaligny -2
+					textscale .17
+				}
+				windowDef server_time_text {
+					rect 20, 158, 200, 19
+					backcolor 0,0,0,.5
+					text "Time Limit:"
+					textscale 0.2
+					textalignx 12
+				}				
+				editDef server_time {
+					rect 105, 160, 115, 15
+					cvar "si_timeLimit"
+					maxchars 2
+					backcolor 0,0,0,.2
+					font "fonts/micro"
+					textaligny -2
+					textscale .17
+				}
+				windowDef server_players_text {
+					rect 20, 178, 200, 19
+					backcolor 0,0,0,.5
+					text "Max Players:"
+					textscale 0.2
+					textalignx 2
+				}				
+				editDef server_players {
+					rect 105, 180, 115, 15
+					cvar "si_maxPlayers"
+					maxchars 2
+					backcolor 0,0,0,.2
+					font "fonts/micro"
+					textaligny -2
+					textscale .17
+				}
+				windowDef server_warmup_text {
+					rect 20, 198, 200, 19
+					backcolor 0,0,0,.5
+					text "Warmup:"
+					textscale 0.2
+					textalignx 28
+				}				
+				choiceDef server_warmup {
+					rect		105, 200, 100, 15
+					choices		"#str_04221"
+					cvar		"si_warmup"
+					choiceType	0
+					textscale	0.25
+					textaligny	-5
+					font "fonts/bank"
+				}
+				windowDef server_spec_text {
+					rect 20, 218, 200, 19
+					backcolor 0,0,0,.5
+					text "Spectators:"
+					textscale 0.2
+					textalignx 10
+				}				
+				choiceDef server_spec {
+					rect		105, 220, 100, 15
+					choices		"#str_04221"
+					cvar		"si_spectators"
+					choiceType	0
+					textscale	0.25
+					textaligny	-5
+					font "fonts/bank"
+				}
+				windowDef server_ded_text {
+					rect 20, 238, 200, 19
+					backcolor 0,0,0,.5
+					text "Dedicated:"
+					textscale 0.2
+					textalignx 16
+				}				
+				choiceDef server_ded {
+					rect		105, 240, 100, 15
+					choices		"#str_04221"
+					gui		"dedicated"
+					choiceType	0
+					textscale	0.25
+					textaligny	-5
+					font "fonts/bank"
+				}
+				windowDef create_adv {
+					rect 25, 260, 160, 12
+					text "Advanced Settings"
+					textaligny -4
+					font "fonts/good_times"
+					textscale 0.25
+					//backcolor 0,0,0,1
+										
+				}
+				windowDef server_adv_toggleON {
+					rect 180, 251, 20, 20
+					text "+"
+					visible 1
+					noEvents 0
+					font "fonts/bank"
+					textscale 0.3
+	
+					onActionRelease {
+						set "server_adv::visible" "1";
+						set "visible" "0";
+						set "noEvents" "1";
+						set "server_adv_toggleOFF::visible" "1";
+						set "server_adv_toggleOFF::noEvents" "0";
+					}
+				} 		
+				windowDef server_adv_toggleOFF {
+					rect 180, 251, 20, 20
+					text "-"
+					visible 0
+					noEvents 1
+					font "fonts/bank"
+					textscale 0.3
+					textalignx 3
+
+					onActionRelease {
+						set "server_adv::visible" "0";
+						set "visible" "0";
+						set "noEvents" "1";
+						set "server_adv_toggleON::visible" "1";
+						set "server_adv_toggleON::noEvents" "0";
+					}
+				}		
+				windowDef server_adv {
+					rect 35, 275, 200, 100
+					visible 0
+					//backcolor 1,1,1,1		
+			
+					windowDef server_rcon_text {
+						rect 0, 0, 200, 19
+						backcolor 0,0,0,.5
+						text "RCON Pass:"
+						textscale 0.2
+						textalignx 10
+					}				
+					editDef server_password {
+						rect 85, 2, 115, 15
+						maxchars 	16
+						cvar		"net_serverRemoteConsolePassword"
+						backcolor 0,0,0,.2
+						forecolor 1,1,1,1
+						font "fonts/micro"
+						textaligny -2
+						textscale .17
+					}
+					windowDef server_reloade_text {
+						rect 0, 20, 200, 19
+						backcolor 0,0,0,.5
+						text "Reload Engine:"
+						textscale 0.18
+						textalignx -1
+						textaligny 1
+					}				
+					choiceDef server_reloade {
+						rect		85, 22, 100, 15
+						choices		"#str_04221"
+						cvar		"net_serverReloadEngine"
+						choiceType	0
+						textscale	0.25
+						textaligny	-5
+						font "fonts/bank"
+					}
+					windowDef server_mods_text {
+						rect 0, 40, 200, 19
+						backcolor 0,0,0,.5
+						text "Allow Mods:"
+						textscale 0.2
+						textalignx 8
+						textaligny 0
+					}				
+					choiceDef server_mods {
+						rect		85, 42, 100, 15
+						choices		"#str_04221"
+						cvar		"net_serverAllowServerMod"
+						choiceType	0
+						textscale	0.25
+						textaligny	-5
+						font "fonts/bank"
+					}
+					windowDef server_pure_text {
+						rect 120, 40, 50, 19
+						//backcolor 0,0,0,.5
+						text "Pure:"
+						textscale 0.2
+						textalignx 8
+						textaligny 1
+					}				
+					choiceDef server_pure {
+						rect		165, 42, 100, 15
+						choices		"#str_04221"
+						cvar		"si_pure"
+						choiceType	0
+						textscale	0.25
+						textaligny	-5
+						font "fonts/bank"
+					}	
+					windowDef server_mcycle_text {
+						rect 0, 60, 200, 19
+						backcolor 0,0,0,.5
+						text "Map Cycle:"
+						textscale 0.2
+						textalignx 14
+					}				
+					editDef server_mcycle {
+						rect 85, 62, 115, 15
+						maxchars 	16
+						cvar		"g_mapCycle"
+						backcolor 0,0,0,.2
+						forecolor 1,1,1,1
+						font "fonts/micro"
+						textaligny -2
+						textscale .17
+					}	
+					windowDef server_rate_text {
+						rect 0, 80, 200, 19
+						backcolor 0,0,0,.5
+						text "Server Rate:"
+						textscale 0.2
+						textalignx 4
+					}				
+					editDef server_rate {
+						rect 85, 82, 115, 15
+						maxchars 	16
+						cvar		"gui_configServerRate"
+						backcolor 0,0,0,.2
+						forecolor 1,1,1,1
+						font "fonts/micro"
+						textaligny -2
+						textscale .17
+					}
+				}
+				windowDef create_thisbiznatch {
+					rect 244, 310, 128, 50
+					bordercolor 0,0,0,.8
+					bordersize 2
+					backcolor .7,0,0,1
+					forecolor .9,.9,.7,1
+					text "CREATE SERVER"
+					textscale 0.25
+					textalignx 3
+					textaligny 12
+
+					onMouseEnter {
+						transition "backcolor" ".7,0,0,1" ".5,0,0,1" "10";
+						transition "forecolor" ".9,.9,.7,1" "1,1,.8,1" "10";
+					}					
+					onMouseExit {
+						transition "backcolor" ".5,0,0,1" ".7,0,0,1" "10";
+						transition "forecolor" "1,1,.8,1" ".9,.9,.7,1" "10";
+					}
+					onActionRelease {
+						transition "backcolor" ".6,0,0,1" ".7,0,0,1" "10";
+						transition "forecolor" "1,1,.8,1" ".9,.9,.7,1" "10";
+						set	"cmd"	"play guisounds_menuclickup ; startMultiplayer" ;
+					}
+				}
+				listDef SGLGameMapVal {
+					rect 		244, 140, 128, 150			
+//					forecolor 	1, 1, 1, 0.6 
+					//bordercolor	.1,0,.8,1
+					bordercolor 	0.8,0.2,0.1,.7
+					backcolor 0,0,0,1
+					textscale 	0.25
+					font		"fonts/bank"
+					listName	"mapList"
+					textalignx -1
+			
+					onAction {
+						set "cmd" "play guisounds_menuclickup ; click_mapList" ;
+					}
+				}	
+					
+				
+			}
+			
+/*			onActionRelease {
+				set "CreateServer::visible" "0";
+				set "MultiplayerMain::noEvents" "0";
+			}*/
+		}
+		#include "guis/vr_options.gui"
+	}
+}

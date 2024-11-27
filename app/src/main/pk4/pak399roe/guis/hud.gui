@@ -1,0 +1,2729 @@
+windowDef Desktop {
+	rect	0 ,0 ,640 ,480 
+	backcolor	0 ,0 ,0 ,0 
+	visible	1
+	nocursor	1
+	float objdone	0
+	float objdone2	0
+	float air	1
+	float weaphud	0
+	float talk 	0
+	definevec4	"$redflicker"		0.8, 0.15, 0, pdfullfade[ time * 0.002 ] / 1.5
+	definevec4	"$flicker"		0.2, 0.45, 0.4, pdflick2 [ time * .0025 ] / 3
+	definevec4	"$yellowflicker"	1, 0.65, 0.1, pdinouthold[ time * 0.0005 ] / 2.5
+
+	definevec4	"$objflicker1"		0.5 ,0.8 ,0.8 ,pdflick [ time * .0025 ] / 3.5
+	definevec4	"$objflicker2"		0.22 ,0.73 ,0.73 ,pdflick [ time * .0025 ] / 6
+
+ 
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//  Tip Window on/off
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+	onNamedEvent tipLeftWindowUp {
+		set "TipPopBox::visible" "1" ;
+		resetTime "tipWindow" "0" ;		
+	}
+
+	onNamedEvent tipWindowUp {
+		set "TipPopBox::visible" "1" ;
+		resetTime "tipWindow" "0" ;		
+	}
+
+	onNamedEvent tipWindowDown {
+		set "TipPopBox::visible" "0" ;
+		resetTime "tipWindow2" "0" ;
+	}
+
+
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//  Radio/Audio log window on/off
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	onNamedEvent radioChatterUp {
+		set "RadioWin::visible" "1" ;
+		set "DDWaveForm::visible" "1" ;
+		set "RadioWin2Scroll1::visible" "1" ;
+		set "RadioWin2Scroll2::visible" "1" ;
+		if ("AirWin::visible" == 0) { 
+			transition "RadioWin::rect" "135 435 0 64" "135 435 128 64" "200" ;
+		} else {
+			transition "RadioWin::rect" "146 400 0 64" "146 400 128 64" "200" ;
+		}
+	}
+	onNamedEvent radioChatterDown {
+		set "RadioWin::visible" "0" ;
+		set "DDWaveForm::visible" "0" ;
+		set "RadioWin2Scroll1::visible" "0" ;
+		set "RadioWin2Scroll2::visible" "0" ;
+	}
+	
+	onNamedEvent audioLogUp {
+		set "audioWin::visible" "1" ;
+		set "audiowin::rect" "-18 402 248 64" ;
+		set "audioWaveForm::visible" "1" ;
+		set "audioWin2Scroll1::visible" "1" ;
+		set "audioWin2Scroll2::visible" "1" ;
+	}
+	onNamedEvent audioLogDown {
+		set "audioWin::visible" "0" ;
+		set "audiowin::rect" "-18 402 100 64" ;
+		set "audioWaveForm::visible" "0" ;
+		set "audioWin2Scroll1::visible" "0" ;
+		set "audioWin2Scroll2::visible" "0" ;
+	}
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//  Comment controller - dev only
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++	
+	onNamedEvent showViewComments {
+		set "ViewComments::visible" "1";
+	}
+	
+	onNamedEvent hideViewComments {
+		set "ViewComments::visible" "0";
+	}
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//  Soul Cube ready pulse
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++	
+
+	onNamedEvent soulCubeReady {
+		set "CubePulseParent::setvis" "1" ;
+		resetTime "CubePulseParent" "0" ;
+	}
+	onNamedEvent soulCubeNotReady {
+		set "CubePulseParent::setvis" "0" ;
+		set "CubePulse::visible" "0" ;
+	}
+
+
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//  Objective Window Popup Trigger
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	onNamedEvent newObjective {
+		resetTime "AnimNewUp" "0" ; 
+		set "objdone2" "1" ;
+	}
+
+	onNamedEvent newObjectiveComplete {
+		resetTime "AnimComUp" "0" ; 
+		set "objdone2" "1" ;
+	}
+	
+	onNamedEvent closeObjective {
+		if ("objdone2" == 1) { 
+			resetTime "AnimObjDown" "0" ; 
+			set "objdone2" "0" ;
+		}
+	}
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//  Air Indicator
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+	onNamedEvent noAir {
+		if ( "AirWin::visible" == 0 ) {
+			localSound "guisounds_air" ;
+			set "AirWin::visible" "1" ;
+			transition "AirWin::rect" "135 435 0 64" "135 435 128 64" "200" ;
+			transition "RadioWin::rect" "135 435 128 64" "146 400 128 64" "100" ;
+		}
+	}
+
+	onNamedEvent Air {
+		if ( "AirWin::visible" == 1 ) {
+			set "AirWin::visible" "0" ;
+			transition "RadioWin::rect" "146 400 128 64" "135 435 128 64" "100" ;
+		}
+	}
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//  Pickup Item Popup
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	onNamedEvent invPickup {
+		resetTime "InvItem" "0" ; 
+	}
+	onNamedEvent itemPickup1 {
+		resetTime "ItemPickup1" "0" ; 
+	}
+	onNamedEvent itemPickup2 {
+		resetTime "ItemPickup2" "0" ; 
+	}	
+	onNamedEvent itemPickup3 {
+		resetTime "ItemPickup3" "0" ; 
+	}	
+	onNamedEvent itemPickup4 {
+		resetTime "ItemPickup4" "0" ; 
+	}	
+	onNamedEvent itemPickup5 {
+		resetTime "ItemPickup5" "0" ; 
+	}	
+
+	onNamedEvent armorPulse {
+		resetTime "armorflash" "0" ; 
+	}
+	onNamedEvent healthPulse {
+		resetTime "healthflash" "0" ; 
+	}
+	onNamedEvent ammoPulse {
+		resetTime "ammoflash1" "0" ; 
+		resetTime "ammoflash2" "0" ; 
+	}
+	onNamedEvent weaponPulse {
+		resetTime "weaponflash" "0" ; 
+	}	
+	
+	onNamedEvent pdaPickup {
+		resetTime "animPDA" "0" ; 
+		set "NewPDAVis::visible" "1" ;
+	}
+	onNamedEvent emailPickup {
+		resetTime "animNewMail" "0" ;
+	}
+
+	onNamedEvent securityPickup {
+		resetTime "SecOnly" "0" ; 
+	}
+	
+	onNamedEvent videoPickup {
+		resetTime "animVid" "0" ; 
+		set "NewVidVis::visible" "1" ;
+	}
+	onNamedEvent pdaPickupHide {
+		set "NewPDAVis::visible" "0" ;
+		set "NEWPDAIcon::visible" "0" ;
+		set "NEWPDA::visible" "0" ;
+	}
+	onNamedEvent videoPickupHide {
+		set "NewVidVis::visible" "0" ;
+		set "NEWVidIcon::visible" "0" ;
+		set "NEWVid::visible" "0" ;
+	}		
+  
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//  NPC Name Popup
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++	
+
+//NPCName2::visible / NPCName2a::visible
+
+	onNamedEvent ShowNPC {
+		if ("talk" == 0) {
+			set	"talk" "1" ; 
+			resetTime "npcName1" "0" ; 
+		}
+	}
+
+	onNamedEvent HideNPC {
+		if ("talk" == 1) { 
+			set	"talk" "0" ; 
+			set "NPCName2a::rect" "336 233 0 0" ;
+			set "NPCName2a::forecolor" "0 0 0 0" ;
+			set "NPCName2::rect" "335 232 0 0" ;
+			set "NPCName2::forecolor" "0.5 0.5 0.5 0" ;		
+			set "NPCName1a::rect" "336 221 0 0" ;
+			set "NPCName1a::forecolor" "0 0 0 0" ;
+			set "NPCName1::rect" "335 220 0 0" ;
+			set "NPCName1::forecolor" "0.6 0.8 0.7 0" ;			
+		}
+	}		
+
+
+         
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//  Health / Armor Changes
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	onNamedEvent updateArmorHealthAir {
+		if ("gui::player_armor"  > 0) { 
+			set 	"Lines1::matcolor" "0.3 0.8 0.7 0.2" ; 
+			set	"MPArmor::forecolor" "0.35 0.42 0.4 1" ;
+			set 	"Lines1::visible" "1" ;
+			set 	"Lines1_1::visible" "0" ;
+		}
+
+		if ("gui::player_armor"  <= 0) { 
+			set 	"Lines1::matcolor" "$yellowflicker" ;
+			set 	"Lines1::visible" "0" ;
+			set 	"Lines1_1::visible" "1" ;
+			set	"MPArmor::forecolor" "0.5 0.4 0.2 1" ;
+		}
+
+		if ("gui::player_health"  > 35) { 
+			set	"Hr::background" "gui/hud/hr" ;
+			set	"HealthImage::matcolor" "0.4 0.6 0.6 0.2" ;
+			set	"HealthImage::visible" "1" ;
+			set	"HealthImage_1::visible" "0" ;
+			set	"Border::matcolor" "$flicker" ;
+			set	"Border::visible" "1" ;
+			set	"Border_1::visible" "0" ;
+			set	"MPHealth::forecolor" "0.67 0.7 0.7 1" ;
+			set 	"Lines2::matcolor" "0.3 0.8 0.7 0.2" ;
+			set	"Lines2::visible" "1" ;
+			set	"Lines2_1::visible" "0" ;
+
+			set	"MPHealth2::visible" "1" ;
+			set	"Lines2_2::visible" "1" ;
+		}
+
+		if ("gui::player_health"  <= 35) { 
+			set	"MPHealth::forecolor" "1 0.1 0 1" ;
+			set	"Hr::background" "gui/hud/hr2" ;
+			set	"HealthImage::matcolor" "$redflicker" ;
+			set	"HealthImage::visible" "0" ;
+			set	"HealthImage_1::visible" "1" ;
+			set	"Border::matcolor" "$redflicker" 
+			set	"Border::visible" "0" ;
+			set	"Border_1::visible" "1" ;
+			set	"Lines2::visible" "0" ;
+			set	"Lines2_1::visible" "1" ;
+
+			set	"MPHealth2::visible" "0" ;
+			set	"Lines2_2::visible" "0" ;
+
+		} 
+		if ("gui::player_health"  <= 0) { 
+			resetTime	"DEAD" "0" ; 
+			set	"Hr::background" "gui/hud/hr3" ;
+		} 
+
+
+///
+
+		if ("gui::player_air"  <= 35) {    
+			set	"AirWin2::forecolor" "1 0.1 0 1" ;
+			set	"AirWin3::forecolor" "1 0.1 0 1" ;
+		} 
+
+		if ("gui::player_air"  > 35) { 
+			set	"AirWin2::forecolor" "0.4 0.6 0.65 1" ;
+			set	"AirWin3::forecolor" "0.4 0.6 0.65 1" ;
+		} 
+
+	}
+
+#include "guis/d3xp-weapons.pd"       
+#include "guis/hud_bloodstone.pd"
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//  Message
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	onNamedEvent Message {
+		transition "message1a::forecolor" "0 0 0 1" "0 0 0 0" "5000" "1" "0" ;
+		transition "message1::forecolor" "1 1 1 1" "1 1 1 0" "5000" "1" "0" ;
+	}
+	
+	windowDef ViewComments {
+		rect 2, 5, 638, 200
+		backcolor 0, 0, 0, 0
+		forecolor 0.9, 0.9, 0.0, 0.9
+		visible 0
+		textscale 0.25
+		text	"gui::viewcomments"  
+	}
+
+////////////////////////////////////////////////////////////////////////////////////
+//HUD
+////////////////////////////////////////////////////////////////////////////////////
+
+//////**********************************************************************
+//  Message Broadcast
+//////**********************************************************************
+
+	windowDef message1a {
+		rect 21, 261, 638, 10
+		forecolor 0, 0, 0, 0
+		text "gui::message"
+		textscale 0.25
+		font "fonts/an"
+	}
+	windowDef message1 {
+		rect 20, 260, 638, 10
+		forecolor 1, 1, 1, 0
+		text "gui::message"
+		textscale 0.25
+		font "fonts/an"
+	}
+
+//////**********************************************************************
+//  Projectile Hits - Dev only
+//////**********************************************************************
+	windowDef Hits {
+		rect 0, 50, 640, 30
+		text "gui::projectilepct"
+		forecolor 1, 1, 1, 1
+		visible "gui::g_showProjectilePct"
+		textscale 0.25
+		textalign 2
+	}
+	
+#include "guis/hud_powerup.pd"  
+
+//////**********************************************************************
+//  Air Indicator
+//////**********************************************************************
+
+	windowDef AirWin {
+		rect		135, 435, 0, 64
+		notime 1
+		visible 0
+
+		windowDef AirWinBG1 {
+			rect		0, 0, 128, -64
+			matcolor	0.25, 0.45, 0.4, pdflick2 [ time * .0025 ] / 2.5
+			background	"guis/assets/hud/mp/rborder"
+		}
+		windowDef AirWinBG2 {
+			rect		0, 0, 128, -64
+			matcolor	0.09, 0.26, 0.26, subtleflick [ time * .0025 ] / 3
+			background	"guis/assets/hud/mp/rbg"
+			visible	1
+		}
+
+		windowDef AirWin2 {
+			rect 25, 1, 70, 30
+			text "#str_02015"
+			textscale 0.23
+			font "fonts/bank"
+			forecolor	0.4, 0.6, 0.65, 1
+			shear 0, -0.33
+		}
+		windowDef AirWin3 {
+			rect 80, 1, 70, 30
+			text "gui::player_air"
+			textscale 0.23
+			font "fonts/bank"
+			forecolor	0.4, 0.6, 0.65, 1
+			shear 0, -0.33
+		}
+
+
+		windowDef AirWin2a {
+			rect 25, 0, 70, 30
+			text "#str_02015"
+			textscale 0.23
+			font "fonts/bank"
+			forecolor	0.8, 0.4, 0, (70 - "gui::player_air") / 100
+			shear 0, -0.33
+		}
+		windowDef AirWin3a {
+			rect 80, 0, 70, 30
+			text "gui::player_air"
+			textscale 0.23
+			font "fonts/bank"
+			forecolor	0.8, 0.4, 0, (70 - "gui::player_air") / 100
+			shear 0, -0.33
+		}
+
+		windowDef AirStatus {
+			rect 18, 18, ("gui::player_air" * 0.95), 9
+			visible 1
+
+			windowDef AirImage {
+				rect		0, -76, 95, 90
+				matcolor	0.2, 0.5, 0.6, 0.6
+				background	"guis/assets/hud/mp/lstafill1"
+			}
+			windowDef AirImage2 {
+				rect		0, -76, 95, 90
+				matcolor	pdinouthold[ time * 0.002 ], pdinouthold[ time * 0.002 ] / 4.5, 0, (85 - "gui::player_air") / 100
+				background	"guis/assets/hud/mp/lstafill1"
+			}
+		}
+	}
+
+
+
+//////**********************************************************************
+//  RADIO MESSAGE
+//////**********************************************************************
+
+	windowDef RadioWin {
+		rect		135, 435, 0, 64
+		notime 1
+	 	visible 0
+
+		windowDef RadioWinBG1 {
+			rect		0, 0, 128, -64
+			matcolor	0.25, 0.45, 0.4, pdflick2 [ time * .0025 ] / 2.5
+			background	"guis/assets/hud/mp/rborder"
+		}
+		windowDef RadioWinBG2 {
+			rect		0, 0, 128, -64
+			matcolor	0.09, 0.26, 0.26, subtleflick [ time * .0025 ] / 3
+			background	"guis/assets/hud/mp/rbg"
+			visible	1
+		}
+
+		windowDef RadioWin2 {
+			rect 25, 0, 86, 30
+			windowDef RadioWin2Scroll1 {
+				rect 0, 0, 200, 30
+				text "#str_02016"
+				textscale 0.23
+				font	"fonts/bank"
+				forecolor	0.45, 0.6, 0.65, 1
+				shear 0, -0.33
+				visible 0
+
+				onTime 0 {
+					transition "rect" "0 0 180 30" "-180 0 180 30" "10000" ;
+				}
+				onTime 10000 {
+					transition "rect" "202 0 180 30" "0 0 180 30" "10000" ;
+				}				
+				onTime 20000 {
+					resetTime "0" ;
+				}
+			}
+			windowDef RadioWin2Scroll2 {
+				rect 200, 0, 200, 30
+				text "#str_02017"
+				textscale 0.23
+				font	"fonts/bank"
+				forecolor	0.45, 0.6, 0.65, 1
+				shear 0, -0.33
+				visible 0
+
+				onTime 0 {
+					transition "rect" "180 0 210 30" "0 0 210 30" "10000" ;
+				}
+				onTime 10000 {
+					transition "rect" "0 0 210 30" "-202 0 210 30" "10000" ;
+				}
+				onTime 20000 {
+					resetTime "0" ;
+				}
+			}
+		}
+/*
+		windowDef DDWaveForm {
+			rect		22, 18, 88, 10
+			matcolor 	1, 1, 1, 1
+			background "gui/soundmeter"
+			bordercolor 0.2, 0.4, 0.3, 1
+			visible	0
+			shear 0, -0.4
+		}
+*/
+		windowDef DDWaveForm {
+			rect		22, 15, 88, 14
+			background "gui/wav"
+			matcolor 1, 0.2, 0.1, 1
+			visible	1
+			shear 0, -0.4
+			matscalex 2
+		}
+	}
+	
+
+		
+			
+	
+//////**********************************************************************
+//  AUDIIO LOG
+//////**********************************************************************
+
+	windowDef AudioWin {
+		rect		-19, 402, 100, 64
+	 	visible 0
+
+		windowDef AudioWinBG1 {
+			rect		120, 0, 64, -32
+			matcolor	0.25, 0.45, 0.4, pdflick2 [ time * .0025 ] / 2.5
+			background	"guis/assets/hud/mp/rborder"
+		}
+		windowDef AudioWinBG2 {
+			rect		120, 0, 64, -32
+			matcolor	0.09, 0.26, 0.26, subtleflick [ time * .0025 ] / 3
+			background	"guis/assets/hud/mp/rbg"
+			visible	1
+		}
+		windowDef AudioWaveForm {
+			rect		132, 4, 43, 12
+			matcolor 	1, 1, 1, 1
+			background "gui/wav"
+			matcolor 1, 0.2, 0.1, 0.6
+			visible	0
+			shear 0, -0.4
+		}
+		windowDef AudioWin2 {
+			rect 132, -3, 42, 20
+			windowDef AudioWin2Scroll1 {
+				rect 0, 0, 200, 30
+				text "#str_02018"
+				textscale 0.23
+				font	"fonts/bank"
+				forecolor	1,1,1,0.5
+				shear 0, -0.33
+				visible 0
+
+				onTime 0 {
+					transition "rect" "0 0 140 30" "-140 0 140 30" "7500" ;
+				}
+				onTime 7500 {
+					resetTime "0" ;
+				}
+			}
+			windowDef AudioWin2Scroll2 {
+				rect 200, 0, 200, 30
+				text "#str_02018"
+				textscale 0.23
+				font	"fonts/bank"
+				forecolor	1,1,1,0.5
+				shear 0, -0.33
+				visible 0
+
+				onTime 0 {
+					transition "rect" "140 0 140 30" "0 0 140 30" "7500" ;
+				}
+				onTime 7500 {
+					resetTime "0" ;
+				}
+			}
+		}
+	}	
+
+
+//////**********************************************************************
+//  Left HUD Lines
+//////**********************************************************************
+
+	windowDef ScanLineL {
+		rect		1, 417, 256, 64 
+		background	"guis/assets/hud/mp/lborder1a"
+		matcolor	0, 0, 0, 0.3
+		visible	1
+	}
+
+	windowDef BorderBottom {
+		rect		4,416,270,64
+		matcolor	0.2, 0.45, 0.4, pdflick2 [ time * .0025 ] / 3
+		background	"guis/assets/hud/mp/lborder1b"
+	}
+
+	windowDef Border {
+		rect		0, 416, 256, 64
+		matcolor	0.25, 0.45, 0.4, pdflick2 [ time * .0025 ] / 2
+		background	"guis/assets/hud/mp/lborder1a"
+	}
+
+	windowDef Border_2 {
+		rect		0, 416, 256, 64
+
+		matcolor	pdinouthold[ time * 0.002 ], pdinouthold[ time * 0.002 ] / 4.5, 0, (85 - "gui::player_health") / 100
+		background	"guis/assets/hud/mp/lborder1a"
+		visible		1
+	}
+
+	windowDef Border_1 {
+		rect		0, 416, 256, 64
+		matcolor	0.8, 0.15, 0, pdfullfade[ time * 0.002 ] / 2
+		background	"guis/assets/hud/mp/lborder1a"
+		visible		0
+	}
+
+	windowDef Stamina {
+		rect		4, 416, ("gui::player_stamina" * 1.33), 64
+		visible ("gui::player_nostamina" != 1)
+		windowDef StaminaImage {
+			rect		1, 9, 133, 54
+			matcolor	0.7, 0.5, 0.3, 0.35
+			background	"guis/assets/hud/mp/lstafill1"
+		}
+	}
+	windowDef StaminaHell {
+		rect		5, 464, 133, 16
+		matcolor	1,1,1,0.1//0.7, 0.5, 0.3, 0.35
+		background	"gui/hell/stamina"
+		visible ("gui::player_nostamina" == 1)
+	}
+	windowDef BgL {
+		rect		0, 416, 256, 64
+		matcolor	0.09, 0.26, 0.26, subtleflick [ time * .0025 ] / 4
+		background	"guis/assets/hud/mp/lbg1"
+	}
+
+	windowDef Lines1 {
+		rect		0, 416, 256, 64
+		matcolor	0.3, 0.8, 0.7, 0.2
+		background	"guis/assets/hud/mp/llines11"
+	}
+
+	windowDef Lines1_1 {
+		rect		0, 416, 256, 64
+		matcolor	1, 0.65, 0.1, pdinouthold[ time * 0.0005 ] / 2.5
+		background	"guis/assets/hud/mp/llines11"
+		visible		0	
+	}
+
+	windowDef ArmorFlash {
+		rect		0, 416, 256, 64
+		matcolor	1,1,1,0
+		background	"guis/assets/hud/mp/llines11"
+		visible		1
+		notime		1
+			
+		onTime 0 {
+			transition "matcolor" "1 1 1 1" "1 1 1 0" "400" ;
+		}
+			
+	}	
+
+	windowDef Lines2 {
+		rect		0, 416, 256, 64
+		matcolor	0.3, 0.8, 0.7, 0.2
+		background	"guis/assets/hud/mp/llines21"
+	}
+
+	windowDef Lines2_2 {
+		rect		0, 416, 256, 64
+		matcolor	0.8, 0.15, 0, (70 - "gui::player_health") / 100
+		background	"guis/assets/hud/mp/llines21"
+		visible		1
+	}
+	
+	windowDef Lines2_1 {
+		rect		0, 416, 256, 64
+		matcolor	0.8, 0.15, 0, pdfullfade[ time * 0.002 ] / 1.2
+		background	"guis/assets/hud/mp/llines21"
+		visible		0
+	}
+	
+	windowDef HealthFlash {
+		rect		0, 416, 256, 64
+		matcolor	1,1,1,0
+		background	"guis/assets/hud/mp/llines21"
+		visible		1
+		notime		1
+			
+		onTime 0 {
+			transition "matcolor" "1 1 1 1" "1 1 1 0" "400" ;
+		}		
+	}	
+
+//////**********************************************************************
+//  Right HUD Lines
+//////**********************************************************************
+
+	windowDef ScanLineLA {
+		rect		385, 417, -256, 64 
+		background	"guis/assets/hud/mp/lborder1a1"
+		matcolor	0, 0, 0, 0.3
+		visible	1
+	}
+
+	windowDef ScanLineLAG {
+		rect		385, 417, -256, 64 
+		background	"guis/assets/hud/mp/lborder1c"
+		matcolor	0, 0, 0, 0.3
+		visible	0
+	}
+
+	windowDef BorderLABottom {
+		rect		399,416,-241,64
+		matcolor	0.2, 0.45, 0.4, pdflick2 [ time * .0025 ] / 3
+		background	"guis/assets/hud/mp/lborder1b"
+	}
+
+	windowDef WeaponFlash {
+		rect		399,416,-241,64
+		matcolor	1,1,1,0
+		background	"guis/assets/hud/mp/lborder1b"
+		visible		1
+		notime		1
+			
+		onTime 0 {
+			transition "matcolor" "1 1 1 0.5" "1 1 1 0" "400" ;
+		}		
+	}	
+
+	windowDef AmmoFlash1 {
+		rect		399,416,-241,64
+		matcolor	1,1,1,0
+		background	"guis/assets/hud/mp/lborder1b"
+		visible		1
+		notime		1
+			
+		onTime 0 {
+			transition "matcolor" "1 1 1 0.5" "1 1 1 0" "400" ;
+		}		
+	}
+
+	windowDef BorderLAGrenades {
+		rect		384, 416, -256, 64
+		matcolor	0.25, 0.45, 0.4, pdflick2 [ time * .0025 ] / 2
+		background	"guis/assets/hud/mp/lborder1c"
+		visible		0
+	}
+
+	windowDef BorderLA {
+		rect		384, 416, -256, 64
+		matcolor	0.25, 0.45, 0.4, pdflick2 [ time * .0025 ] / 2
+		background	"guis/assets/hud/mp/lborder1a1"
+	}
+
+	windowDef BorderLA_1 {
+		rect		384, 416, -256, 64
+		matcolor	0.6, 0.35, 0, pdinouthold[ time * 0.001 ] / 1.2
+		background	"guis/assets/hud/mp/lborder1a1"
+		visible		0
+	}
+
+	windowDef BorderLA_2 {
+		rect		384, 416, -256, 64
+		matcolor	0.8, 0.15, 0, pdfullfade[ time * 0.002 ] / 1.2
+		background	"guis/assets/hud/mp/lborder1a1"
+		visible		0
+	}
+	
+	windowDef AmmoFlash2 {
+		rect		384, 416, -256, 64
+		matcolor	1,1,1,0
+		background	"guis/assets/hud/mp/lborder1a1"
+		visible		1
+		notime		1
+			
+		onTime 0 {
+			transition "matcolor" "1 1 1 0.6" "1 1 1 0" "400" ;
+		}		
+	}	
+
+	windowDef BgLA {
+		rect		384, 416, -256, 64
+		matcolor	0.09, 0.26, 0.26, subtleflick [ time * .0025 ] / 4
+		background	"guis/assets/hud/mp/lbg1a1"
+	}
+
+	windowDef Lines1A {
+		rect		384, 416, -256, 64
+		matcolor	0.3, 0.8, 0.7, 0.2
+		background	"guis/assets/hud/mp/llines1a1"
+	}
+
+	windowDef Lines1B {
+		rect		384, 416, -256, 64
+		matcolor	0.3, 0.8, 0.7, 0.2
+		background	"guis/assets/hud/mp/llines1a2"
+		visible		0
+	}
+
+	windowDef Lines2A {
+		rect		384, 416, -256, 64
+		matcolor	0.3, 0.8, 0.7, 0.2
+		background	"guis/assets/hud/mp/llines2a1"
+	}
+
+//////**********************************************************************
+//  HUD Readout Text
+//////**********************************************************************
+
+
+	windowDef MPHealthBlack {
+		rect		91, 438, 39, 32
+		text		"gui::player_health"
+		forecolor	0, 0, 0, 0.5
+		textscale	0.38
+		textalign	1
+		font		"fonts/micro"
+		shear 0, -0.33
+	}
+
+
+	windowDef MPHealth {
+		rect		90, 436, 39, 32
+		text		"gui::player_health"
+		forecolor	0.5, 0.7, 0.7, 1
+		textscale	0.38
+		textalign	1
+		font		"fonts/micro"
+		shear 0, -0.33
+	}
+	windowDef MPHealth2 {
+		rect		90, 437, 39, 32
+		text		"gui::player_health"
+		forecolor	0.8, 0.7, 0, (70 - "gui::player_health") / 100
+		textscale	0.38
+		textalign	1
+		font		"fonts/micro"
+		shear 0, -0.33
+	}
+
+	windowDef MPArmorBlack {
+		rect		29, 442, 34, 32
+		text		"gui::player_armor"
+		forecolor	0, 0, 0, 0.5
+		textscale	0.25
+		textalign	1
+		font		"fonts/micro"
+		shear 0, -0.3
+	}
+
+	windowDef MPArmor {
+		rect		28, 441, 34, 32
+		text		"gui::player_armor"
+		forecolor	0.25, 0.3, 0.3, 1
+		textscale	0.25
+		textalign	1
+		font		"fonts/micro"
+		shear 0, -0.3
+	}
+
+	windowDef ammovalue2Black { 
+		text	"gui::player_ammo"
+		rect	503 ,438 ,80 ,32 
+		forecolor	0, 0, 0, 0.5
+		visible	1
+		textscale	0.38
+		textalign	1
+		font		"fonts/micro"
+		shear 0, 0.33
+	}
+ 
+	windowDef ammovalue2 {
+		text	"gui::player_ammo"
+		rect	504 ,436 ,80 ,32 
+		forecolor	0.6, 0.7, 0.7, 1
+		visible	1
+		textscale	0.38
+		textalign	1
+		font		"fonts/micro"
+		shear 0, 0.33
+	}
+
+	windowDef ammovalue3Black { 
+		text	"gui::player_totalammo"
+		rect	558 ,442 ,80 ,20 
+		forecolor	0, 0, 0, 0.5
+		visible	1
+		textscale	0.25
+		textalign	1
+		font		"fonts/micro"
+		shear 0, 0.4
+	}
+
+	windowDef ammovalue3 {
+		text	"gui::player_totalammo"
+		rect	559 ,441 ,80 ,20 
+		forecolor	0.3, 0.42, 0.4, 1
+		visible	1
+		textscale	0.25  
+		textalign	1
+		font		"fonts/micro"
+		shear 0, 0.4
+	}
+
+	windowDef ammoicon4 {
+		rect		551 ,454 ,16, 16 
+		variablebackground 1
+		matcolor	1, 0.9, 1, 0.7
+		visible		0
+		shear 0, 0.33
+	}
+
+
+	windowDef DEAD {
+		rect		0, 395, 150, 50
+		forecolor	1, 0.1, 0, 0
+		textscale	0.2
+		textalign	2
+		font		"fonts/bank"
+		text		"#str_02019"
+		visible		1
+		notime		1
+
+		onTime 0 {
+			transition "forecolor" "1 0.1 0 0" "1 0.1 0 1" "100" ;
+		}
+	}	
+
+
+	windowDef CubePulseParent { 
+		visible		1
+		rect		453, 365, 64, 64
+		notime 1
+		float "setvis" 0
+		
+		onTime 0 {
+			transition "CubePulse3::matcolor" "1 1 0.8 0.8" "1 0.7 0.5 0.7" "300" ;
+			transition "rect" "453 367 64 64" "453 365 64 64" "500" "0" "1" ;			
+		
+		}
+		onTime 50 {
+			transition "CubePulse2::matcolor" "1 1 0.8 0.6" "1 0.7 0.5 0.5" "300" ;
+		}
+		onTime 100 {
+			transition "CubePulse1::matcolor" "1 1 0.8 0.5" "1 0.7 0.5 0.4" "300" ;
+		}		
+		onTime 400 {
+			transition "CubePulse1::matcolor" "1 0.7 0.5 0.4" "1 0.7 0.5 0" "500" ;
+			transition "CubePulse2::matcolor" "1 0.7 0.5 0.5" "1 0.7 0.5 0" "500" ;
+			transition "CubePulse3::matcolor" "1 0.7 0.5 0.7" "1 0.7 0.5 0" "500" ;
+		}		
+		onTime 500 {
+			transition "rect" "453 365 64 64" "453 405 64 64" "400" "1" "0" ;
+		}
+		onTime 700 {
+			if ("setvis" == 1) { 
+				set "CubePulse::visible" "1" ;				
+			}
+		}
+		
+		
+		windowDef CubePulse1 {
+			visible		1
+			rect		0, 0, 64, 64 
+			background	"guis/assets/hud/icons/scubew"
+			matcolor	1, 0.7, 0.5 ,0
+			visible		1
+
+		}
+		windowDef CubePulse2 {
+			visible		1
+			rect		0, 0, 64, 64 
+			background	"guis/assets/hud/icons/scube2w"
+			matcolor	1, 0.7, 0.5 ,0
+			visible		1
+		}
+		windowDef CubePulse3 {
+			visible		1
+			rect		10, 10, 44, 44 
+			background	"guis/assets/hud/icons/scube2w2"
+			matcolor	1, 0.7, 0.5 ,0
+			visible		1
+		}
+	}
+	windowDef CubePulse {
+		visible		1
+		rect		470, 437, 32, 32 
+		background	"guis/assets/hud/icons/scubew"
+		matcolor	1, 1, 1 ,1
+		visible		0
+
+		onTime 0 {
+			transition "matcolor" "1 0.65 0.2 0.8" "1 0.6 0.4 0.2" "800" ;
+		}
+		onTime 100 {
+		//	transition "matcolor" "1 0.7 0.5 0.6" "0.3 0.6 0.6 0.25" "150" ;
+		}
+		onTime 800 {
+			transition "matcolor" "1 0.6 0.4 0.2" "1 0.65 0.2 0.8" "800" ;
+		}
+		onTime 1500 {
+			resetTime "0" ;
+		}
+	}
+
+
+//////**********************************************************************
+//  Objective New Window
+//////**********************************************************************
+
+	windowDef ObjPopBox
+	{
+		rect 356,226,300,0
+		visible	0
+		windowDef PopBg2T
+		{
+			rect	14,10,270,68
+			matcolor	1, 1, 1, 0
+			background	"gui/pda/2_tb"
+			visible	1
+		}
+		windowDef PopBg2TL
+		{
+			rect	0,10,-14,68
+			matcolor	1, 1, 1, 0
+			background	"gui/pda/2_c"
+			visible	1
+		}
+		windowDef PopBg2B
+		{
+			rect	14,78,270,-68
+			matcolor	1, 1, 1, 0
+			background	"gui/pda/2_tb"
+			visible	1
+		}
+		windowDef PopBg2BL
+		{
+			rect	0,78,-14,-68
+			matcolor	1, 1, 1, 0
+			background	"gui/pda/2_c"
+			visible	1
+		}
+	
+		windowDef Obj1Glow1 {
+			rect		10 ,0 ,160 ,20 
+			forecolor	0.8 ,1 ,1 ,1 
+			text		">"
+			font		"fonts/micro"
+			textscale	0.25
+			visible		0
+
+			onTime 0 {
+				transition "forecolor" "0.8 1 1 1" "0.8 1 1 0" "800" ;
+			}
+			onTime 1000 {
+				transition "forecolor" "0.8 1 1 0" "0.8 1 1 1" "200" ;
+			}		
+			onTime 1200 {
+				resetTime "0" ;
+			}	
+		}
+		windowDef Obj1Glow2 {
+			rect		17 ,0 ,160 ,20 
+			forecolor	0.8 ,1 ,1 ,0
+			text		">"
+			font		"fonts/micro"
+			textscale	0.25
+			visible		0
+
+			onTime 0 {
+				transition "forecolor" "0.8 1 1 0" "0.8 1 1 1" "200" ;
+			}
+			onTime 200 {
+				transition "forecolor" "0.8 1 1 1" "0.8 1 1 0" "800" ;
+			}
+			onTime 1200 {
+				resetTime "0" ;
+			}		
+		}
+		windowDef Obj2Glow1 {
+			rect		186 ,0 ,160 ,20 
+			forecolor	0.8 ,1 ,1 ,1 
+			text		"<"
+			font		"fonts/micro"
+			textscale	0.25
+			visible		0
+
+			onTime 0 {
+				transition "forecolor" "0.8 1 1 1" "0.8 1 1 0" "800" ;
+			}
+			onTime 1000 {
+				transition "forecolor" "0.8 1 1 0" "0.8 1 1 1" "200" ;
+			}		
+			onTime 1200 {
+				resetTime "0" ;
+			}	
+		}
+		windowDef Obj2Glow2 {
+			rect		178 ,0 ,160 ,20 
+			forecolor	0.8 ,1 ,1 ,0
+			text		"<"
+			font		"fonts/micro"
+			textscale	0.25
+			visible		0
+
+			onTime 0 {
+				transition "forecolor" "0.8 1 1 0" "0.8 1 1 1" "200" ;
+			}
+			onTime 200 {
+				transition "forecolor" "0.8 1 1 1" "0.8 1 1 0" "800" ;
+			}
+			onTime 1200 {
+				resetTime "0" ;
+			}		
+		}	
+		windowDef ObjNew2 {
+			rect		29 ,1 ,160 ,20 
+			forecolor	0 ,0 ,0 ,0
+			text		"#str_02025"
+			font		"fonts/micro"
+			textscale	0.25
+			visible		1
+		}		
+		windowDef ObjNew {
+			rect		28 ,0 ,160 ,20 
+			forecolor	0.8 ,1 ,1 ,0
+			text		"#str_02025"
+			font		"fonts/micro"
+			textscale	0.25
+			visible		1
+		}
+		windowDef ObjTitleBG1 {
+			rect		9 ,27 ,0 ,14 
+			backcolor	0.8,1,1,0.1 
+			visible		1
+		}
+		windowDef ObjTitleBG2 {
+			rect		9 ,122 ,0 ,7 
+			backcolor	0.8,1,1,0.1 
+			visible		1
+		}	
+		windowDef ObjTitle2 {
+			rect		12 ,22 ,300 ,20 
+			forecolor	0 ,0 ,0 ,0 
+			text		"gui::objectivetitle"
+			textscale	0.25
+			font		"fonts/bank"
+			visible		1
+		}
+
+		windowDef ObjTitle {
+			rect		11 ,21 ,300 ,20 
+			forecolor	1, 0.6, 0.2, 0 
+			text		"gui::objectivetitle"
+			textscale	0.25
+			font		"fonts/bank"
+			visible		1
+		}
+
+		windowDef ObjText2 {
+			rect		107 ,42 ,168 ,90 
+			forecolor	0 ,0 ,0 ,0
+			text		"gui::objectivetext"
+			textscale	0.22
+			font		"fonts/an"
+			visible		1
+		}
+
+		windowDef ObjText {
+			rect		106 ,41 ,168 ,90 
+			forecolor	0.6 ,0.8 ,0.8 ,0
+			text		"gui::objectivetext"
+			textscale	0.22
+			font		"fonts/an"
+			visible		1
+		}
+		windowDef Sshot1 {
+			rect		9 ,44 ,90 ,75 
+			background	"gui::screenshot"
+			matcolor	1 ,1 ,1 ,0
+			visible		1
+			variablebackground 1
+			bordersize	1
+			bordercolor 	0.4, 0.6, 0.6, 0
+		}
+		windowDef Sshot2 {
+			rect		9 ,44 ,90 ,75 
+			backcolor	1 ,1 ,1 ,0
+			visible		1
+		}	
+	}
+
+
+//////**********************************************************************
+//  Objective Complete Window
+//////**********************************************************************
+
+	windowDef ObjPopBoxC
+	{
+		rect 356,226,300,0
+		visible	1
+		windowDef PopBg2TClip
+		{
+			rect	0,0,300,35		
+			windowDef PopBg2TC
+			{
+				rect	14,10,270,68
+				matcolor	1, 1, 1, 0
+				background	"gui/pda/2_tb"
+				visible	1
+			}
+			windowDef PopBg2TLC
+			{
+				rect	0,10,-14,68
+				matcolor	1, 1, 1, 0
+				background	"gui/pda/2_c"
+				visible	1
+			}
+		}
+		windowDef PopBg2BClip
+		{
+			rect	0,35,300,35		
+			windowDef PopBg2BC
+			{
+				rect	14,-45,270,-68
+				matcolor	1, 1, 1, 0
+				background	"gui/pda/2_tb"
+				visible	1
+			}
+			windowDef PopBg2BLC
+			{
+				rect	0,-45,-14,-68
+				matcolor	1, 1, 1, 0
+				background	"gui/pda/2_c"
+				visible	1
+			}
+		}
+		windowDef Obj1Glow1C {
+			rect		10 ,0 ,160 ,20 
+			forecolor	0.8 ,1 ,1 ,1 
+			text		"<"
+			font		"fonts/micro"
+			textscale	0.25
+			visible		0
+
+			onTime 0 {
+				transition "forecolor" "0.8 1 1 0" "0.8 1 1 1" "200" ;
+			}
+			onTime 200 {
+				transition "forecolor" "0.8 1 1 1" "0.8 1 1 0" "800" ;
+			}
+			onTime 1200 {
+				resetTime "0" ;
+			}	
+		}
+		windowDef Obj1Glow2C {
+			rect		17 ,0 ,160 ,20 
+			forecolor	0.8 ,1 ,1 ,0
+			text		"<"
+			font		"fonts/micro"
+			textscale	0.25
+			visible		0
+
+			onTime 0 {
+				transition "forecolor" "0.8 1 1 1" "0.8 1 1 0" "800" ;
+			}
+			onTime 1000 {
+				transition "forecolor" "0.8 1 1 0" "0.8 1 1 1" "200" ;
+			}		
+			onTime 1200 {
+				resetTime "0" ;
+			}		
+		}
+		windowDef Obj2Glow1C {
+			rect		239 ,0 ,160 ,20
+			forecolor	0.8 ,1 ,1 ,1 
+			text		">"
+			font		"fonts/micro"
+			textscale	0.25
+			visible		0
+
+			onTime 0 {
+				transition "forecolor" "0.8 1 1 0" "0.8 1 1 1" "200" ;
+			}
+			onTime 200 {
+				transition "forecolor" "0.8 1 1 1" "0.8 1 1 0" "800" ;
+			}
+			onTime 1200 {
+				resetTime "0" ;
+			}	
+		}
+		windowDef Obj2Glow2C {
+			rect		231 ,0 ,160 ,20
+			forecolor	0.8 ,1 ,1 ,0
+			text		">"
+			font		"fonts/micro"
+			textscale	0.25
+			visible		0
+
+			onTime 0 {
+				transition "forecolor" "0.8 1 1 1" "0.8 1 1 0" "800" ;
+			}
+			onTime 1000 {
+				transition "forecolor" "0.8 1 1 0" "0.8 1 1 1" "200" ;
+			}		
+			onTime 1200 {
+				resetTime "0" ;
+			}		
+		}	
+		windowDef ObjNew2C {
+			rect		29 ,1 ,200 ,20 
+			forecolor	0 ,0 ,0 ,0
+			text		"#str_02026"
+			font		"fonts/micro"
+			textscale	0.25
+			visible		1
+		}		
+		windowDef ObjNewC {
+			rect		28 ,0 ,200 ,20 
+			forecolor	0.8 ,1 ,1 ,0
+			text		"#str_02026"
+			font		"fonts/micro"
+			textscale	0.25
+			visible		1
+		}
+		windowDef ObjTitleBG1C {
+			rect		9 ,27 ,0 ,14 
+			backcolor	0.8,1,1,0.1 
+			visible		1
+		}
+		windowDef ObjTitle2C {
+			rect		12 ,22 ,300 ,20 
+			forecolor	0 ,0 ,0 ,0 
+			text		"gui::objectivecompletetitle"
+			textscale	0.25
+			font		"fonts/bank"
+			visible		1
+		}
+
+		windowDef ObjTitleC {
+			rect		11 ,21 ,300 ,20 
+			forecolor	1, 0.6, 0.2, 0 
+			text		"gui::objectivecompletetitle"
+			textscale	0.25
+			font		"fonts/bank"
+			visible		1
+		}
+	}
+
+
+//////**********************************************************************
+//  Item Pickup
+//////**********************************************************************
+
+	windowDef InvItem
+	{
+		rect -350,205,350,0
+		notime 1
+		
+		onTime 0 {
+			set "InvItem::visible" "1" ;
+			transition "InvItem::rect" "-120 205 350 0" "-120 205 350 115" "400" "0.2" "0.8" ;
+			transition "InvPopBg2T::matcolor" "1 1 1 0" "1 1 1 0.7" "600" "0.2" "0.8" ;
+			transition "InvPopBg2TR::matcolor" "1 1 1 0" "1 1 1 0.7" "600" "0.2" "0.8" ;
+			transition "InvPopBg2B::matcolor" "1 1 1 0" "1 1 1 0.7" "600" "0.2" "0.8" ;
+			transition "InvPopBg2BR::matcolor" "1 1 1 0" "1 1 1 0.7" "600" "0.2" "0.8" ;
+			transition "InvTitleBG1::rect" "120 27 0 14" "120 27 155 14" "400" "0.2" "0.8" ;
+			transition "InvTitleBG1::backcolor" "0.8 1 1 0" "0.8 1 1 0.1" "600" ;
+		}
+		onTime 400 {	
+			transition "InvTitle::forecolor" "1 1 1 1" "1 0.6 0.2 1" "200" ;
+			transition "InvTitle2::forecolor" "0 0 0 0" "0 0 0 0.6" "200" ;
+		}
+		onTime 600 {
+			transition "ObjectItem::matcolor" "1 1 1 0" "1 1 1 1" "200" ;
+		}
+		onTime 3000 {
+			set "ObjectItem::matcolor" "1 1 1 0" ;
+			transition "InvTitle::forecolor" "1 0.6 0.2 1" "1 1 1 0" "200" ;
+			transition "InvTitle2::forecolor" "0 0 0 0.6" "0 0 0 0" "200" ;
+
+			transition "InvItem::rect" "-120 205 350 115" "-120 205 350 0" "400" "0.2" "0.8" ;
+			transition "InvPopBg2T::matcolor" "1 1 1 0.7" "1 1 1 0" "400" "0.2" "0.8" ;
+			transition "InvPopBg2TR::matcolor" "1 1 1 0.7" "1 1 1 0" "400" "0.2" "0.8" ;
+			transition "InvPopBg2B::matcolor" "1 1 1 0.7" "1 1 1 0" "400" "0.2" "0.8" ;
+			transition "InvPopBg2BR::matcolor" "1 1 1 0.7" "1 1 1 0" "400" "0.2" "0.8" ;
+			transition "InvTitleBG1::rect" "120 27 155 14" "120 27 0 14" "400" "0.2" "0.8" ;
+			transition "InvTitleBG1::backcolor" "0.8 1 1 0.1" "0.8 1 1 0" "400" ;			
+		}
+		onTime 3400 {
+			set "InvItem::visible" "0" ;
+		}
+		
+		
+		windowDef InvPopBg2TClip
+		{
+			rect	0,0,300,50		
+			windowDef InvPopBg2T
+			{
+				rect	0,10,270,68
+				matcolor	1, 1, 1, 0
+				background	"gui/pda/2_tb"
+				visible	1
+			}
+			windowDef InvPopBg2TR
+			{
+				rect	270,10,14,68
+				matcolor	1, 1, 1, 0
+				background	"gui/pda/2_c"
+				visible	1
+			}
+		}
+		windowDef InvPopBg2BClip
+		{
+			rect	0,50,300,60			
+			windowDef InvPopBg2B
+			{
+				rect	0,-3,270,-68
+				matcolor	1, 1, 1, 0
+				background	"gui/pda/2_tb"
+				visible	1
+			}
+			windowDef InvPopBg2BR
+			{
+				rect	270,-3,14,-68
+				matcolor	1, 1, 1, 0
+				background	"gui/pda/2_c"
+				visible	1
+			}
+		}
+		windowDef InvTitleBG1 {
+			rect		120 ,27 ,0 ,14 
+			backcolor	0.8,1,1,0
+			visible		1
+		}
+		windowDef InvTitle2 {
+			rect		124 ,22 ,300 ,20 
+			forecolor	0 ,0 ,0 ,0
+			text		"#str_02027"
+			textscale	0.25
+			font		"fonts/bank"
+			visible		1
+		}
+		windowDef InvTitle {
+			rect		123 ,21 ,300 ,20 
+			forecolor	1, 0.6, 0.2, 0
+			text		"#str_02027"
+			textscale	0.25
+			font		"fonts/bank"
+			visible		1
+		}
+		windowDef ObjectItem {
+			rect		165 ,39 ,64, 64 
+			background	"gui::itemicon"
+		//	background	"guis/assets/hud/items/redkey"
+			variablebackground 1
+			matcolor	1, 1, 1, 0
+			visible		1
+		}		
+	}
+
+	windowDef ItemPickup1
+	{
+		rect	10,310,150,16
+		visible		1
+		noTime	1
+		float	"winactive" "0"
+		
+		onTime 0 {
+			transition "ItemText1::forecolor" "1 0.9 0.4 0.4" "0.6 0.8 0.8 0.7" "200" ;
+			transition "ItemText1BG::forecolor" "0 0 0 0" "0 0 0 1" "200" ;
+			transition "rect" "18 310 150 16" "10 310 150 16" "200" ;
+			set "winactive" "1" ;
+			if ("ItemPickup5::winactive" == 1) { 
+				transition "ItemPickup5::rect" "10 310 150 16" "10 330 150 16" "200" "0" "0.4" ;	
+			}
+			if ("ItemPickup4::winactive" == 1) { 
+				transition "ItemPickup4::rect" "10 330 150 16" "10 350 150 16" "200" "0" "0.4" ;	
+			}
+			if ("ItemPickup3::winactive" == 1) { 
+				transition "ItemPickup3::rect" "10 350 150 16" "10 370 150 16" "200" "0" "0.4" ;	
+			}
+			if ("ItemPickup2::winactive" == 1) { 
+				transition "ItemPickup2::rect" "10 370 150 16" "10 390 150 16" "200" "0" "0.4" ;	
+			}			
+		}
+		onTime 1500 {
+			transition "ItemText1::forecolor" "0.6 0.8 0.8 0.7" "0.6 0.8 0.8 0" "200" ;
+			transition "ItemText1BG::forecolor" "0 0 0 1" "0 0 0 0" "200" ;
+			set "winactive" "0" ;
+		}
+		windowDef ItemText1BG {
+			text		"gui::itemtext1"
+			rect		1 ,1 ,142 ,15 
+			forecolor	0, 0, 0, 0
+			font		"fonts/bank"
+			textscale	0.25
+			visible		1
+			textalign	2
+			textaligny	-5
+		}		
+		windowDef ItemText1 {
+			text		"gui::itemtext1"
+			rect		0 ,0 ,142 ,15 
+			forecolor	0.6, 0.8, 0.8, 0
+			font		"fonts/bank"
+			textscale	0.25
+			visible		1
+			textalign	2
+			textaligny	-5
+		}		
+	}
+	windowDef ItemPickup2
+	{
+		rect	18,330,150,16
+		visible	1
+		noTime	1
+		float	"winactive" "0"
+		
+		onTime 0 {
+			transition "ItemText2::forecolor" "1 0.9 0.4 0.4" "0.6 0.8 0.8 0.7" "200" ;
+			transition "ItemText2BG::forecolor" "0 0 0 0" "0 0 0 1" "200" ;
+			transition "rect" "18 310 150 16" "10 310 150 16" "200" ;
+			set "winactive" "1" ;
+			if ("ItemPickup1::winactive" == 1) { 
+				transition "ItemPickup1::rect" "10 310 150 16" "10 330 150 16" "200" "0" "0.4" ;	
+			}
+			if ("ItemPickup5::winactive" == 1) { 
+				transition "ItemPickup5::rect" "10 330 150 16" "10 350 150 16" "200" "0" "0.4" ;	
+			}
+			if ("ItemPickup4::winactive" == 1) { 
+				transition "ItemPickup4::rect" "10 350 150 16" "10 370 150 16" "200" "0" "0.4" ;	
+			}
+			if ("ItemPickup3::winactive" == 1) { 
+				transition "ItemPickup3::rect" "10 370 150 16" "10 390 150 16" "200" "0" "0.4" ;	
+			}			
+		}
+		onTime 1500 {
+			transition "ItemText2::forecolor" "0.6 0.8 0.8 0.7" "0.6 0.8 0.8 0" "200" ;
+			transition "ItemText2BG::forecolor" "0 0 0 1" "0 0 0 0" "200" ;
+			set "winactive" "0" ;
+		}				
+		windowDef ItemText2BG {
+			text		"gui::itemtext2"
+			rect		1 ,1 ,142 ,15 
+			forecolor	0, 0, 0, 0
+			font		"fonts/bank"
+			textscale	0.25
+			visible		1
+			textalign	2
+			textaligny	-5
+		}		
+		windowDef ItemText2 {
+			text		"gui::itemtext2"
+			rect		0 ,0 ,142 ,15 
+			forecolor	0.6, 0.8, 0.8, 0
+			font		"fonts/bank"
+			textscale	0.25
+			visible		1
+			textalign	2
+			textaligny	-5
+		}		
+	}
+	windowDef ItemPickup3
+	{
+		rect	18,350,150,16
+		visible	1
+		noTime	1
+		float	"winactive" "0"
+		
+		onTime 0 {
+			transition "ItemText3::forecolor" "1 0.9 0.4 0.4" "0.6 0.8 0.8 0.7" "200" ;
+			transition "ItemText3BG::forecolor" "0 0 0 0" "0 0 0 1" "200" ;
+			transition "rect" "18 310 150 16" "10 310 150 16" "200" ;
+			set "winactive" "1" ;
+			if ("ItemPickup2::winactive" == 1) { 
+				transition "ItemPickup2::rect" "10 310 150 16" "10 330 150 16" "200" "0" "0.4" ;	
+			}
+			if ("ItemPickup1::winactive" == 1) { 
+				transition "ItemPickup1::rect" "10 330 150 16" "10 350 150 16" "200" "0" "0.4" ;	
+			}
+			if ("ItemPickup5::winactive" == 1) { 
+				transition "ItemPickup5::rect" "10 350 150 16" "10 370 150 16" "200" "0" "0.4" ;	
+			}
+			if ("ItemPickup4::winactive" == 1) { 
+				transition "ItemPickup4::rect" "10 370 150 16" "10 390 150 16" "200" "0" "0.4" ;	
+			}			
+		}
+		onTime 1500 {
+			transition "ItemText3::forecolor" "0.6 0.8 0.8 0.7" "0.6 0.8 0.8 0" "200" ;
+			transition "ItemText3BG::forecolor" "0 0 0 1" "0 0 0 0" "200" ;
+			set "winactive" "0" ;
+		}		
+		windowDef ItemText3BG {
+			text		"gui::itemtext3"
+			rect		1 ,1 ,142 ,15 
+			forecolor	0, 0, 0, 0
+			font		"fonts/bank"
+			textscale	0.25
+			visible		1
+			textalign	2
+			textaligny	-5
+		}		
+		windowDef ItemText3 {
+			text		"gui::itemtext3"
+			rect		0 ,0 ,142 ,15 
+			forecolor	0.6, 0.8, 0.8, 0
+			font		"fonts/bank"
+			textscale	0.25
+			visible		1
+			textalign	2
+			textaligny	-5
+		}		
+	}
+	windowDef ItemPickup4
+	{
+		rect	18,370,150,16
+		visible	1
+		noTime	1
+		float	"winactive" "0"
+		
+		onTime 0 {
+			transition "ItemText4::forecolor" "1 0.9 0.4 0.4" "0.6 0.8 0.8 0.7" "200" ;
+			transition "ItemText4BG::forecolor" "0 0 0 0" "0 0 0 1" "200" ;
+			transition "rect" "18 310 150 16" "10 310 150 16" "200" ;
+			set "winactive" "1" ;
+			if ("ItemPickup3::winactive" == 1) { 
+				transition "ItemPickup3::rect" "10 310 150 16" "10 330 150 16" "200" "0" "0.4" ;	
+			}
+			if ("ItemPickup2::winactive" == 1) { 
+				transition "ItemPickup2::rect" "10 330 150 16" "10 350 150 16" "200" "0" "0.4" ;	
+			}
+			if ("ItemPickup1::winactive" == 1) { 
+				transition "ItemPickup1::rect" "10 350 150 16" "10 370 150 16" "200" "0" "0.4" ;	
+			}
+			if ("ItemPickup5::winactive" == 1) { 
+				transition "ItemPickup5::rect" "10 370 150 16" "10 390 150 16" "200" "0" "0.4" ;	
+			}			
+		}
+		onTime 1500 {
+			transition "ItemText4::forecolor" "0.6 0.8 0.8 0.7" "0.6 0.8 0.8 0" "200" ;
+			transition "ItemText4BG::forecolor" "0 0 0 1" "0 0 0 0" "200" ;
+			set "winactive" "0" ;
+		}				
+		windowDef ItemText4BG {
+			text		"gui::itemtext4"
+			rect		1 ,1 ,142 ,15 
+			forecolor	0, 0, 0, 0
+			font		"fonts/bank"
+			textscale	0.25
+			visible		1
+			textalign	2
+			textaligny	-5
+		}		
+		windowDef ItemText4 {
+			text		"gui::itemtext4"
+			rect		0 ,0 ,142 ,15 
+			forecolor	0.6, 0.8, 0.8, 0
+			font		"fonts/bank"
+			textscale	0.25
+			visible		1
+			textalign	2
+			textaligny	-5
+		}		
+	}
+	windowDef ItemPickup5
+	{
+		rect	18,390,150,16
+		visible	1
+		noTime	1
+		float	"winactive" "0"
+		
+		onTime 0 {
+			transition "ItemText5::forecolor" "1 0.9 0.4 0.4" "0.6 0.8 0.8 0.7" "200" ;
+			transition "ItemText5BG::forecolor" "0 0 0 0" "0 0 0 1" "200" ;
+			transition "rect" "18 310 150 16" "10 310 150 16" "200" ;
+			set "winactive" "1" ;
+			if ("ItemPickup4::winactive" == 1) { 
+				transition "ItemPickup4::rect" "10 310 150 16" "10 330 150 16" "200" "0" "0.4" ;	
+			}
+			if ("ItemPickup3::winactive" == 1) { 
+				transition "ItemPickup3::rect" "10 330 150 16" "10 350 150 16" "200" "0" "0.4" ;	
+			}
+			if ("ItemPickup2::winactive" == 1) { 
+				transition "ItemPickup2::rect" "10 350 150 16" "10 370 150 16" "200" "0" "0.4" ;	
+			}
+			if ("ItemPickup1::winactive" == 1) { 
+				transition "ItemPickup1::rect" "10 370 150 16" "10 390 150 16" "200" "0" "0.4" ;	
+			}			
+		}
+		onTime 1500 {
+			transition "ItemText5::forecolor" "0.6 0.8 0.8 0.7" "0.6 0.8 0.8 0" "200" ;
+			transition "ItemText5BG::forecolor" "0 0 0 1" "0 0 0 0" "200" ;
+			set "winactive" "0" ;
+		}		
+		
+		windowDef ItemText5BG {
+			text		"gui::itemtext5"
+			rect		1 ,1 ,142 ,15 
+			forecolor	0, 0, 0, 0
+			font		"fonts/bank"
+			textscale	0.25
+			visible		1
+			textalign	2
+			textaligny	-5
+		}		
+		windowDef ItemText5 {
+			text		"gui::itemtext5"
+			rect		0 ,0 ,142 ,15 
+			forecolor	0.6, 0.8, 0.8, 0
+			font		"fonts/bank"
+			textscale	0.25
+			visible		1
+			textalign	2
+			textaligny	-5
+		}		
+	}		
+
+//////**********************************************************************
+//  PDA/VIDEO Pickup
+//////**********************************************************************
+
+	windowDef NewPDAVis {
+		rect		0,400,250,80
+		visible	0
+		windowDef NewPDA {
+			rect		37 ,14 ,160 ,20 
+			forecolor	0.8 ,1 ,1 ,0.5
+			text		"#str_02028"
+			font		"fonts/bank"
+			textscale	0.25
+			visible		0
+			shear 0,-0.35
+
+			onTime 0 {
+				transition "forecolor" "0.8 1 1 0.5" "1 0.6 0.2 0.5" "200" ;
+			}		
+			onTime 200 {
+				transition "forecolor" "1 0.6 0.2 0.5" "0.8 1 1 0.5" "800" ;
+			}
+			onTime 1200 {
+				resetTime "0" ;
+			}		
+		}
+		windowDef NewPDAIcon {
+			rect		10 ,8 ,32 ,32 
+			matcolor	0.8 ,1 ,1 ,0.5
+			background	"guis/assets/hud/icons/pda"
+			visible		0
+			onTime 0 {
+				transition "matcolor" "0.7 1 1 0.4" "0.8 1 1 0.6" "200" ;
+			}		
+			onTime 200 {
+				transition "matcolor" "0.8 1 1 0.6" "0.7 1 1 0.4" "800" ;
+			}
+			onTime 1200 {
+				resetTime "0" ;
+			}		
+		}
+	}
+	windowDef NewVidVis {
+		rect		0,400,250,80
+		visible	0
+		windowDef NewVid {
+			rect		43 ,14 ,160 ,20 
+			forecolor	0.8 ,1 ,1 ,0.5
+			text		"#str_02029"
+			font		"fonts/bank"
+			textscale	0.25
+			visible		0
+			shear 0,-0.35
+
+			onTime 200 {
+				transition "forecolor" "0.8 1 1 0.5" "1 0.6 0.2 0.5" "200" ;
+			}		
+			onTime 400 {
+				transition "forecolor" "1 0.6 0.2 0.5" "0.8 1 1 0.5" "800" ;
+			}
+			onTime 1200 {
+				resetTime "0" ;
+			}		
+		}	
+		windowDef NewVidIcon {
+			rect		10 ,8 ,32 ,32 
+			matcolor	0.8 ,1 ,1 ,0.5
+			background	"guis/assets/hud/icons/vid"
+			visible		0
+			onTime 200 {
+				transition "matcolor" "0.7 1 1 0.5" "0.7 1 1 0.8" "200" ;
+			}		
+			onTime 400 {
+				transition "matcolor" "0.8 1 1 0.8" "0.7 1 1 0.5" "800" ;
+			}
+			onTime 1200 {
+				resetTime "0" ;
+			}		
+		}
+	}
+
+	windowDef PDABox1 {
+		rect		250 ,360 ,140 ,10 
+		bordercolor	0.4, 0.6, 0.6, 0
+		bordersize	1
+		visible		1
+	}
+	windowDef PDABox2 {
+		rect		250 ,360 ,0 ,10 
+		backcolor	0.4, 0.6, 0.7, 0
+		visible		1
+	}
+	windowDef PDABox1alt {
+		rect		250 ,360 ,140 ,10 
+		bordercolor	0.4, 0.6, 0.6, 0
+		bordersize	1
+		visible		1
+	}
+	windowDef PDABox2alt {
+		rect		250 ,360 ,0 ,10 
+		backcolor	0.4, 0.6, 0.7, 0
+		visible		1
+	}
+	windowDef PDABox3 {
+		rect		248 ,358 ,144 ,14 
+		bordercolor	0.14, 0.39, 0.38, 0
+		bordersize	1
+		visible		1
+	}
+	windowDef PDABox4 {
+		rect		246 ,356 ,148 ,18 
+		bordercolor	0.14, 0.39, 0.38, 0
+		bordersize	1
+		visible		1
+	}
+	windowDef PDABox5 {
+		rect		244 ,354 ,152 ,22 
+		bordercolor	0.14, 0.39, 0.38, 0
+		bordersize	1
+		visible		1
+	}
+	windowDef PDANameDone {
+		text		"#str_02030"
+		rect		250 ,352 ,140 ,15 
+		forecolor	1, 1, 1, 0
+		font		"fonts/bank"
+		textscale	0.25
+		textalign	1
+		visible		1
+	}
+	windowDef PDANewMail {
+		text		"#str_04051"
+		rect		250 ,352 ,140 ,15 
+		forecolor	1, 1, 1, 0
+		font		"fonts/bank"
+		textscale	0.25
+		textalign	1
+		visible		1
+	}	
+	windowDef PDAName1a {
+		text		"#str_02031"
+		rect		221 ,371 ,200 ,15 
+		forecolor	0, 0, 0, 0
+		font		"fonts/bank"
+		textscale	0.25
+		textalign	1
+		visible		1
+	}
+	windowDef PDAName1 {
+		text		"#str_02031"
+		rect		220 ,370 ,200 ,15 
+		forecolor	0.6, 0.8, 0.8, 0
+		font		"fonts/bank"
+		textscale	0.25
+		textalign	1
+		visible		1
+	}
+	windowDef PDAName2a {
+		text		"gui::pda_text"
+		rect		221 ,383 ,200 ,15 
+		forecolor	0, 0, 0, 0
+		font		"fonts/bank"
+		textscale	0.25
+		textalign	1
+		visible		1
+	}	
+	windowDef PDAName2 {
+		text		"gui::pda_text"
+		rect		220 ,382 ,200 ,15 
+		forecolor	0.4, 0.6, 0.6, 0
+		font		"fonts/bank"
+		textscale	0.25
+		textalign	1
+		visible		1
+	}
+	windowDef PDAName3a {
+		text		"#str_02032"
+		rect		201 ,336 ,240 ,20 
+		forecolor	0, 0, 0, 0
+		font		"fonts/bank"
+		textscale	0.25
+		textalign	1
+		visible		"gui::pda_security"
+	}	
+	windowDef PDAName3 {
+		text		"#str_02032"
+		rect		200 ,335 ,240 ,20 
+		forecolor	0.8, 0.45, 0.2, 0
+		font		"fonts/bank"
+		textscale	0.25
+		textalign	1
+		visible		"gui::pda_security"
+	}
+//VIDEO
+	
+	windowDef VidBox1 {
+		rect		250 ,420 ,140 ,10 
+		bordercolor	0.4, 0.6, 0.6, 0
+		bordersize	1
+		visible		1
+	}
+	windowDef VidBox2 {
+		rect		250 ,420 ,0 ,10 
+		backcolor	0.4, 0.6, 0.7, 0
+		visible		1
+	}
+	windowDef VidBox3 {
+		rect		248 ,418 ,144 ,14 
+		bordercolor	0.14, 0.39, 0.38, 0
+		bordersize	1
+		visible		1
+	}
+	windowDef VidBox4 {
+		rect		246 ,416 ,148 ,18 
+		bordercolor	0.14, 0.39, 0.38, 0
+		bordersize	1
+		visible		1
+	}
+	windowDef VidNameDone {
+		text		"#str_02030"
+		rect		250 ,412 ,140 ,15 
+		forecolor	1, 1, 1, 0
+		font		"fonts/bank"
+		textscale	0.25
+		textalign	1
+		visible		1
+	}
+	windowDef VidName1a {
+		text		"#str_02033"
+		rect		221 ,399 ,200 ,15 
+		forecolor	0, 0, 0, 0
+		font		"fonts/bank"
+		textscale	0.25
+		textalign	1
+		visible		1
+	}
+	windowDef VidName1 {
+		text		"#str_02033"
+		rect		220 ,398 ,200 ,15 
+		forecolor	0.6, 0.8, 0.8, 0
+		font		"fonts/bank"
+		textscale	0.25
+		textalign	1
+		visible		1
+	}	
+	
+//////**********************************************************************
+//  TOOL TIP
+//////**********************************************************************
+
+	windowDef TipPopBox
+	{
+		rect	-10,60,334,0
+		//rect	0,271,334,169
+		visible	0 
+
+		windowDef TipPopBg1R
+		{
+			rect	246,17,-32,110
+			//rect	299,17,-32,91
+			matcolor	1, 1, 1, 0
+			background	"guis/assets/pda/ib_s"
+			visible	1
+		}
+		windowDef TipPopBg1TR
+		{
+			rect	246,-15,32,32
+			matcolor	1, 1, 1, 0
+			background	"guis/assets/pda/ib_c2"
+			visible	1
+		}
+		windowDef TipPopBg1BM
+		{
+			rect	0,127,246,-32
+			//rect	35,108,264,-32
+			matcolor	1, 1, 1, 0
+			background	"guis/assets/pda/ib_m"
+			visible	1
+		}
+		windowDef TipPopBg1MM
+		{
+			rect	0,17,246,110
+			//rect	35,17,264,91
+			matcolor	1, 1, 1, 0
+			background	"guis/assets/pda/ib_m2"
+			visible	1
+		}
+		windowDef TipPopBg1TM
+		{
+			rect	0,-15,246,32
+			matcolor	1, 1, 1, 0
+			background	"guis/assets/pda/ib_m"
+			visible	1
+		}
+		windowDef TipPopBg1BR
+		{
+			rect	246,127,32,-32
+			//rect	299,108,32,-32
+			matcolor	1, 1, 1, 0
+			background	"guis/assets/pda/ib_c2"
+			visible	1
+		}
+		windowDef TipPopBg2T
+		{
+			rect	0,-3,260,75
+			//rect	20,-2,294,64
+			matcolor	1, 1, 1, 0
+			background	"gui/pda/2_tb"
+			visible	1
+		}
+		windowDef TipPopBg2TR
+		{
+			rect	260,-3,16,75
+			//rect	314,-2,14,64
+			matcolor	1, 1, 1, 0
+			background	"gui/pda/2_c"
+			visible	1
+		}
+		windowDef TipPopBg2B
+		{
+			rect	0,72,260,-75
+			//rect	20,62,294,-65
+			matcolor	1, 1, 1, 0
+			background	"gui/pda/2_tb"
+			visible	1
+		}
+		windowDef TipPopBg2BR
+		{
+			rect	260,72,16,-75
+			//rect	314,62,14,-65
+			matcolor	1, 1, 1, 0
+			background	"gui/pda/2_c"
+			visible	1
+		}
+		windowDef TipPopTitleBG1 {
+			rect		0 ,15 ,267 ,14 
+			backcolor	0.8,1,1,0
+			visible		1
+		}
+		windowDef TipPopTitleBG2 {
+			rect		0 ,122 ,267 ,7 
+			backcolor	0.8,1,1,0
+			visible		1
+		}
+		windowDef TipPopTitle1 {
+			//rect		112 ,16 ,190 ,40 
+			rect		7 ,9 ,290 ,20 
+			forecolor	1, 0.6, 0.2, 1
+			text		"gui::tiptitle"
+			textscale	0.25
+			font		"fonts/an"
+			shadow 1
+			visible		0
+			font		"fonts/bank"
+		}
+
+		windowDef TipPopText1 {
+			//rect		115 ,52 ,190 ,100 
+			rect		7 ,29 ,250 ,90 
+			forecolor	0.6 ,0.8 ,0.8 ,1
+			text		"gui::tip"
+			shadow 1
+			textscale	0.22
+			font		"fonts/an"
+			visible		0
+		}
+	}
+
+
+	windowDef tipWindow {
+		rect 0, 0, 0, 0
+		visible 0
+		notime	1
+		
+		onTime 0 {
+			localSound	"guisounds_pingup" ;
+			transition "TipPopBox::rect" "-10 60 334 0" "0 60 334 150" "200" "0.2" "0.8" ;
+		//	transition "TipPopBg1R::matcolor" "1 1 1 0" "1 1 1 1" "500" ;
+		//	transition "TipPopBg1TR::matcolor" "1 1 1 0" "1 1 1 1" "500" ;
+		//	transition "TipPopBg1BM::matcolor" "1 1 1 0" "1 1 1 1" "500" ;
+		//	transition "TipPopBg1MM::matcolor" "1 1 1 0" "1 1 1 1" "500" ;
+		//	transition "TipPopBg1TM::matcolor" "1 1 1 0" "1 1 1 1" "500" ;
+		//	transition "TipPopBg1BR::matcolor" "1 1 1 0" "1 1 1 1" "500" ;
+			
+			transition "TipPopBg2T::matcolor" "1 1 1 0" "1 1 1 0.7" "500" ;
+			transition "TipPopBg2TR::matcolor" "1 1 1 0" "1 1 1 0.7" "500" ;
+			transition "TipPopBg2B::matcolor" "1 1 1 0" "1 1 1 0.7" "500" ;
+			transition "TipPopBg2BR::matcolor" "1 1 1 0" "1 1 1 0.7" "500" ;
+		}
+		onTime 500 {
+			set "TipPopTitle1::visible" "1" ;
+			set "TipPopText1::visible" "1" ;
+			
+			transition "TipPopTitleBG1::backcolor" "1 1 1 0.4" "1 1 1 0.1" "400" ;
+			transition "TipPopTitleBG2::backcolor" "1 1 1 0.4" "1 1 1 0.1" "400" ;
+			transition "TipPopText1::forecolor" "1 1 1 1" "0.6 0.8 0.8 1" "400" ;			
+		}
+	}
+
+	windowDef tipWindow2 {
+		rect 0, 0, 0, 0
+		visible 0
+		notime	1
+		
+		onTime 0 {
+			transition "TipPopBox::rect" "-10 60 334 0" "0 60 334 150" "200" "0.2" "0.8" ;
+		//	transition "TipPopBg1R::matcolor" "1 1 1 1" "1 1 1 0" "200" ;
+		//	transition "TipPopBg1TR::matcolor" "1 1 1 1" "1 1 1 0" "200" ;
+		//	transition "TipPopBg1BM::matcolor" "1 1 1 1" "1 1 1 0" "200" ;
+		//	transition "TipPopBg1MM::matcolor" "1 1 1 1" "1 1 1 0" "200" ;
+		//	transition "TipPopBg1TM::matcolor" "1 1 1 1" "1 1 1 0" "200" ;
+		//	transition "TipPopBg1BR::matcolor" "1 1 1 1" "1 1 1 0" "200" ;
+			
+			transition "TipPopBg2T::matcolor" "1 1 1 0.7" "1 1 1 0" "500" ;
+			transition "TipPopBg2TR::matcolor" "1 1 1 0.7" "1 1 1 0" "500" ;
+			transition "TipPopBg2B::matcolor" "1 1 1 0.7" "1 1 1 0" "500" ;
+			transition "TipPopBg2BR::matcolor" "1 1 1 0.7" "1 1 1 0" "500" ;
+
+			set "TipPopTitle1::visible" "0" ;
+			set "TipPopText1::visible" "0" ;
+			transition "TipPopTitleBG1::backcolor" "1 1 1 0.1" "1 1 1 0" "400" ;
+			transition "TipPopTitleBG2::backcolor" "1 1 1 0.1" "1 1 1 0" "400" ;			
+		}
+	}
+	
+//////**********************************************************************
+//  LOCATION
+//////**********************************************************************
+
+	windowDef LocationText {
+		text	"gui::location"
+		rect	142 ,460 ,300 ,20 
+		forecolor	0.25, 0.4, 0.4, 1
+		visible	1
+		textscale	0.25
+		font		"fonts/bank"
+		shear 0,-0.35
+		//backcolor 1,1,1,.2
+	}
+	
+//////**********************************************************************
+//  CURSOR NAME ON/OFF
+//////**********************************************************************
+	
+	windowDef NPCName2a {
+		//text		"#str_02036"
+		text		"gui::npc_action"
+		rect		336 ,233 ,110 ,20 
+		forecolor	0,0,0,0
+		font		"fonts/bank"
+		textscale	0.25
+		visible		1
+	}
+	windowDef NPCName2 {
+		//text		"#str_02036"
+		text		"gui::npc_action"
+		rect		335 ,232 ,110 ,20 
+		forecolor	0.5,0.5,0.5,0
+		font		"fonts/bank"
+		textscale	0.25
+		visible		1
+	}
+	windowDef NPCName1a {
+		text		"gui::npc"
+		rect		336 ,221 ,300 ,20 
+		forecolor	0, 0, 0, 0
+		font		"fonts/bank"
+		textscale	0.25
+		visible		1
+	}
+	windowDef NPCName1 {
+		text		"gui::npc"
+		rect		335 ,220 ,300 ,20 
+		forecolor	0.6, 0.8, 0.7, 0
+		font		"fonts/bank"
+		textscale	0.25
+		visible		1
+		notime	1
+		
+		onTime 0 {
+			transition "NPCName1a::rect" "336 221 300 20" "327 221 300 20" "150" ;
+			transition "NPCName1a::forecolor" "0 0 0 0" "0 0 0 1" "150" ;
+			transition "NPCName1::rect" "335 220 300 20" "326 220 300 20" "150" ;
+			transition "NPCName1::forecolor" "0.6 0.8 0.7 0" "0.45 0.6 0.5 1" "150" ;
+			transition "NPCName2a::rect" "336 233 300 20" "327 233 300 20" "150" ;
+			transition "NPCName2a::forecolor" "0 0 0 0" "0 0 0 1" "150" ;
+			transition "NPCName2::rect" "335 232 300 20" "326 232 300 20" "150" ;
+			transition "NPCName2::forecolor" "0.5 0.5 0.5 0" "0.5 0.5 0.5 1" "150" ;
+		}
+		
+	}
+	
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+//ANIMATION
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+//----------------------------------------------------------------------------------------
+//  PDA Pickup Animation
+//----------------------------------------------------------------------------------------
+
+	windowDef animPDA {
+		rect	0 ,0 ,0 ,0 
+		notime	1
+
+		onTime 350 {			
+			transition 	"PDABox5::bordercolor" "0.14 0.39 0.38 0" "0.14 0.39 0.38 0.15" "250" ;
+		}
+		onTime 400 {			
+			transition 	"PDABox4::bordercolor" "0.14 0.39 0.38 0" "0.14 0.39 0.38 0.3" "250" ;
+		}
+		onTime 450 {			
+			transition 	"PDABox3::bordercolor" "0.14 0.39 0.38 0" "0.14 0.39 0.38 0.5" "250" ;
+		}		
+		onTime 500 {
+			set		"PDABox2::rect" "250 360 0 10" ;
+			set		"PDABox1::rect" "250 360 140 10" ;
+			set		"PDABox2::backcolor" "0.4 0.6 0.7 0.25" ;
+			transition	"PDABox1::bordercolor" "0.4 0.6 0.6 0" "0.4 0.6 0.6 1" "250" ;
+		}
+
+		onTime 600 {
+			transition	"PDABox2::rect" "250 360 0 10" "250 360 140 10" "2000" ;
+		}
+	
+		onTime 750 {
+			transition	"PDAName1::forecolor" "1 1 1 0.6" "0.6 0.8 0.8 1" "250" ;
+			transition	"PDAName1a::forecolor" "0 0 0 0" "0 0 0 0.6" "250" ;			
+		}
+		onTime 1000 {
+			transition	"PDAName2::forecolor" "1 1 1 0.8" "0.4 0.6 0.6 1" "250" ;
+			transition	"PDAName2a::forecolor" "0 0 0 0" "0 0 0 0.6" "250" ;	
+		}
+		onTime 2500 {
+			transition	"PDABox1::bordercolor" "1 1 1 0.7" "0.4 0.6 0.6 1" "250" ;
+			transition	"PDABox2::backcolor" "0.6 0.7 0.8 0" "0.4 0.6 0.7 0.25" "200" ;
+			transition	"PDABox3::bordercolor" "1 1 1 0.4" "0.14 0.39 0.38 0.5" "300" ;
+			transition "PDANameDone::forecolor" "0.8 1 1 0.8" "0.8 1 1 0" "400" ;
+		
+		}
+		onTime 2600 {
+			transition	"PDAName3::forecolor" "1 1 1 0" "0.8 0.6 0.2 1" "250" ;
+			transition	"PDAName3a::forecolor" "0 0 0 0" "0 0 0 0.6" "250" ;	
+		}
+		
+		onTime 2900 {
+			transition 	"PDABox3::bordercolor" "0.14 0.39 0.38 0.5"  "0.14 0.39 0.38 0""50" ;
+			transition 	"PDABox4::bordercolor" "0.14 0.39 0.38 0.3"  "0.14 0.39 0.38 0""50" ;
+			transition 	"PDABox5::bordercolor" "0.14 0.39 0.38 0.15"  "0.14 0.39 0.38 0""50" ;
+			if ("NewVidVis::visible" == 1) { 
+				transition	"PDABox1::rect" "250 360 140 10" "55 360 5 10" "400" "0.2" "0.4" ;
+				transition	"PDABox2::rect" "250 360 140 10" "55 360 5 10" "400" "0.2" "0.4" ;			
+			} else {
+				transition	"PDABox1::rect" "250 360 140 10" "23 360 5 10" "400" "0.2" "0.4" ;
+				transition	"PDABox2::rect" "250 360 140 10" "23 360 5 10" "400" "0.2" "0.4" ;
+			}
+		}		
+		onTime 3300 {
+			if ("NewVidVis::visible" == 1) { 
+				transition	"PDABox1::rect" "55 360 5 10" "53 425 5 10" "200" "0.2" "0.6" ;
+				transition	"PDABox2::rect" "55 360 5 10" "53 425 5 10" "200" "0.2" "0.6" ;
+				set "NewPDAVis::rect" "30 400 250 80" ;	
+				set "NewVidVis::rect" "0 400 250 80" ;
+			} else {
+				transition	"PDABox1::rect" "23 360 5 10" "23 425 5 10" "200" "0.2" "0.6" ;
+				transition	"PDABox2::rect" "23 360 5 10" "23 425 5 10" "200" "0.2" "0.6" ;
+				set "NewPDAVis::rect" "0 400 250 80" ;
+				set "NewVidVis::rect" "30 400 250 80" ;
+			}
+			transition	"PDABox2::backcolor" "0.4 0.6 0.7 0.25" "0.4 0.6 0.7 0" "150" ;
+			transition	"PDABox1::bordercolor" "0.4 0.6 0.6 1" "0.4 0.6 0.6 0" "150" ;			
+		}
+		onTime 3500 {
+			set "NEWPDAIcon::visible" "1" ;
+		//	set "NewPDA::visible" "1" ;
+		}
+		onTime 8500 {
+			set "NewPDA::visible" "0" ;
+			set		"PDABox2::rect" "250 360 0 10" ;
+			set		"PDABox1::rect" "250 360 0 10" ;			
+		}
+		
+		
+		onTime 3000 {
+			transition	"PDAName2::forecolor" "0.4 0.6 0.6 1" "0.4 0.6 0.6 0" "250" ;
+			transition	"PDAName1a::forecolor" "0 0 0 0.6" "0 0 0 0" "200" ;	
+		}
+		onTime 3100 {
+			transition	"PDAName1::forecolor" "0.8 0.8 0.8 1" "0.4 0.6 0.6 0" "250" ;
+			transition	"PDAName2a::forecolor" "0 0 0 0.6" "0 0 0 0" "200" ;	
+		}
+		onTime 4600 {
+			transition	"PDAName3::forecolor" "0.8 0.6 0.2 0.7" "0.8 0.6 0.2 0" "250" ;
+			transition	"PDAName3a::forecolor" "0 0 0 0.6" "0 0 0 0" "200" ;
+		}
+	}
+	
+	windowDef SecOnly {
+		rect 0,0,0,0
+		visible	0
+		notime	1
+		
+		onTime 0 {
+			localSound	"guisounds_compup" ;
+			transition	"PDAName3::forecolor" "1 1 1 0" "0.8 0.6 0.2 1" "250" ;
+			transition	"PDAName3a::forecolor" "0 0 0 0" "0 0 0 0.6" "250" ;	
+		}
+		onTime 3000 {
+			transition	"PDAName3::forecolor" "0.8 0.6 0.2 0.7" "0.8 0.6 0.2 0" "250" ;
+			transition	"PDAName3a::forecolor" "0 0 0 0.6" "0 0 0 0" "200" ;
+		}			
+	}
+
+	windowDef animNewMail {
+		rect 0,0,0,0
+		visible	0
+		notime	1
+		
+		onTime 600 {
+			localSound	"guisounds_compup" ;
+
+			transition	"PDABox1alt::bordercolor" "1 1 1 0.7" "0.4 0.6 0.6 1" "250" ;
+			transition	"PDABox2alt::backcolor" "0.6 0.7 0.8 0" "0.4 0.6 0.7 0.25" "200" ;
+			set "PDABox2alt::rect" "250 360 140 10" ;
+			transition "PDANewMail::forecolor" "0.8 1 1 0.8" "0.8 1 1 0" "2000" ;
+		
+		}
+		
+		onTime 1000 {
+			transition	"PDABox1alt::rect" "250 360 140 10" "23 360 5 10" "400" "0.2" "0.4" ;
+			transition	"PDABox2alt::rect" "250 360 140 10" "23 360 5 10" "400" "0.2" "0.4" ;
+		}		
+		onTime 1400 {
+			transition	"PDABox1alt::rect" "23 360 5 10" "23 425 5 10" "200" "0.2" "0.6" ;
+			transition	"PDABox2alt::rect" "23 360 5 10" "23 425 5 10" "200" "0.2" "0.6" ;
+
+			transition	"PDABox2alt::backcolor" "0.4 0.6 0.7 0.25" "0.4 0.6 0.7 0" "150" ;
+			transition	"PDABox1alt::bordercolor" "0.4 0.6 0.6 1" "0.4 0.6 0.6 0" "150" ;			
+		}		
+	}	
+	
+	
+//----------------------------------------------------------------------------------------
+//  Video Pickup Animation
+//----------------------------------------------------------------------------------------
+
+	windowDef animVid {
+		rect	0 ,0 ,0 ,0 
+		notime	1
+
+		onTime 350 {			
+			transition 	"VidBox4::bordercolor" "0.14 0.39 0.38 0" "0.14 0.39 0.38 0.3" "250" ;
+		}
+		onTime 400 {			
+			transition 	"VidBox3::bordercolor" "0.14 0.39 0.38 0" "0.14 0.39 0.38 0.5" "250" ;
+		}		
+		onTime 500 {
+			set		"VidBox2::rect" "250 420 0 10" ;
+			set		"VidBox1::rect" "250 420 140 10" ;
+			set		"VidBox2::backcolor" "0.7 0.6 0.4 0.25" ;
+			transition	"VidBox1::bordercolor" "0.2 0.4 0.4 0" "0.3 0.5 0.5 1" "250" ;
+		}
+
+		onTime 600 {
+			transition	"VidBox2::rect" "250 420 0 10" "250 420 140 10" "2000" ;
+		}
+	
+		onTime 750 {
+			transition	"VidName1::forecolor" "1 1 1 0.6" "0.5 0.7 0.7 1" "250" ;
+			transition	"VidName1a::forecolor" "0 0 0 0" "0 0 0 0.6" "250" ;			
+		}
+		onTime 2500 {
+			transition	"VidBox1::bordercolor" "1 1 1 0.6" "0.3 0.5 0.5 1" "250" ;
+			transition	"VidBox2::backcolor" "0.8 0.7 0.5 0" "0.7 0.6 0.4 0.25" "200" ;
+			transition	"VidBox3::bordercolor" "1 1 1 0.4" "0.14 0.39 0.38 0.5" "300" ;
+			transition "VidNameDone::forecolor" "0.8 1 1 0.8" "0.8 1 1 0" "400" ;
+		
+		}
+		onTime 2900 {
+			if ("NewPDAVis::visible" == 1) { 
+				transition	"VidBox1::rect" "250 420 140 10" "55 420 5 10" "400" "0.4" "0.4" ;
+				transition	"VidBox2::rect" "250 420 140 10" "55 420 5 10" "400" "0.4" "0.4" ;
+				set "NewVidVis::rect" "30 400 250 80" ;
+				set "NewPDAVis::rect" "0 400 250 80" ;
+			} else {
+				transition	"VidBox1::rect" "250 420 140 10" "15 420 5 10" "400" "0.4" "0.4" ;
+				transition	"VidBox2::rect" "250 420 140 10" "15 420 5 10" "400" "0.4" "0.4" ;
+				set "NewVidVis::rect" "0 400 250 80" ;
+				set "NewPDAVis::rect" "30 400 250 80" ;
+			}	
+			transition 	"VidBox3::bordercolor" "0.14 0.39 0.38 0.5" "0.14 0.39 0.38 0" "50" ;
+			transition 	"VidBox4::bordercolor" "0.14 0.39 0.38 0.3" "0.14 0.39 0.38 0" "50" ;
+			transition	"VidName1a::forecolor" "0 0 0 0.6" "0 0 0 0" "200" ;	
+			transition	"VidName1::forecolor" "0.5 0.7 0.7 1" "0.4 0.6 0.6 0" "250" ;			
+		}		
+		onTime 3200 {
+			transition	"VidBox2::backcolor" "0.4 0.6 0.7 0.25" "0.4 0.6 0.7 0" "100" ;
+			transition	"VidBox1::bordercolor" "0.4 0.6 0.6 1" "0.4 0.6 0.6 0" "100" ;			
+		}
+		onTime 3250 {
+			set "NEWVidIcon::visible" "1" ;
+		//	set "NewVid::visible" "1" ;
+		}
+		onTime 7600 {
+			set "NewVid::visible" "0" ;
+			set		"VidBox2::rect" "250 420 0 10" ;
+			set		"VidBox1::rect" "250 420 0 10" ;			
+		}
+	}	
+
+//----------------------------------------------------------------------------------------
+//  New Objective Animation OPEN
+//----------------------------------------------------------------------------------------
+ 
+	windowDef animNewUp {
+		rect	0 ,0 ,0 ,0 
+		notime	1
+
+		onTime 0 {
+			localSound	"guisounds_objnew_up" ;
+			set "ObjPopBox::visible" "1" ;
+			transition "ObjPopBox::rect" "356 236 300 0" "356 226 300 20" "300" "0.2" "0.8" ;
+			set "Obj1Glow1::visible" "1" ;
+			set "Obj2Glow1::visible" "1" ;
+		}
+		onTime 100 {
+			set "Obj1Glow2::visible" "1" ;
+			set "Obj2Glow2::visible" "1" ;			
+			transition "ObjNew::forecolor" "0.8 1 1 0" "0.8 1 1 1" "200" ;
+			transition "Objnew2::forecolor" "0 0 0 0" "0 0 0 0.6" "200" ;
+		}
+		onTime 200 {
+			transition "ObjPopBox::rect" "356 226 300 300" "356 226 300 300" "100" ;
+			transition "PopBg2T::matcolor" "1 1 1 0" "1 1 1 0.7" "400" "0.2" "0.8" ;
+			transition "PopBg2TL::matcolor" "1 1 1 0" "1 1 1 0.7" "400" "0.2" "0.8" ;
+			transition "PopBg2B::matcolor" "1 1 1 0" "1 1 1 0.7" "400" "0.2" "0.8" ;
+			transition "PopBg2BL::matcolor" "1 1 1 0" "1 1 1 0.7" "400" "0.2" "0.8" ;
+			transition "ObjTitleBG1::rect" "311 27 0 14" "9 27 302 14" "400" "0.2" "0.8" ;
+			transition "ObjTitleBG2::rect" "311 122 0 7" "9 122 302 7" "400" "0.2" "0.8" ;
+			transition "ObjTitleBG1::backcolor" "0.8 1 1 0" "0.8 1 1 0.1" "400" ;
+			transition "ObjTitleBG2::backcolor" "0.8 1 1 0" "0.8 1 1 0.1" "400" ;
+			
+			transition "ObjTitle::forecolor" "1 1 1 1" "1 0.6 0.2 1" "200" ;
+			transition "ObjTitle2::forecolor" "0 0 0 0" "0 0 0 0.6" "200" ;
+			transition "objtitle::rect" "15 21 300 20" "11 21 300 20" "200" "0.2" "0.8" ;
+
+			transition "Sshot1::bordercolor" "0.5 0.6 0.6 0" " 0.3 0.4 0.4 1" "200" ;
+			transition "Sshot1::rect" "13 44 90 75" "9 44 90 75" "200" "0.2" "0.8" ;
+		}
+		onTime 400 {			
+			transition "ObjText::forecolor" "1 1 1 1" "0.6 0.8 0.8 1" "200" ;
+			transition "ObjText2::forecolor" "0 0 0 0" "0 0 0 0.6" "200" ;
+			transition "ObjText::rect" "110 41 168 90" "106 41 168 90" "200" "0.2" "0.8" ;
+			set "Sshot1::matcolor" "1 1 1 1" ;
+			transition "Sshot2::backcolor" "1 1 1 1" "1 1 1 0" "200" ;
+		}	
+		onTime 800 {
+			set "desktop::objdone" "1" ;
+		}
+		
+		onTime 1000 {
+			if ("ObjPopBoxC::visible" == 1) { 
+				localSound	"guisounds_obj_down" ;	
+				transition "ObjPopBoxC::rect" "356 183 300 20" "356 193 300 0" "300" "0.2" "0.8" ;
+				transition "ObjNewC::forecolor" "0.8 1 1 1" "0.8 1 1 0" "200" ;
+				transition "Objnew2C::forecolor" "0 0 0 0.6" "0 0 0 0" "200" ;
+				transition "PopBg2TC::matcolor" "1 1 1 0.7" "1 1 1 0" "200" ;
+				transition "PopBg2TLC::matcolor" "1 1 1 0.7" "1 1 1 0" "200" ;
+				transition "PopBg2BC::matcolor" "1 1 1 0.7" "1 1 1 0" "200" ;
+				transition "PopBg2BLC::matcolor" "1 1 1 0.7" "1 1 1 0" "200" ;
+				transition "ObjTitleBG1C::backcolor" "0.8 1 1 0.1" "0.8 1 1 0" "200" ;
+				transition "ObjTitleC::forecolor" "1 0.6 0.2 1" "1 1 1 0" "200" ;
+				transition "ObjTitle2C::forecolor" "0 0 0 0.6" "0 0 0 0" "200" ;
+			}				
+		} 
+		onTime 1050 {
+			if ("ObjPopBoxC::visible" == 1) { 
+				set "Obj1Glow1C::visible" "0" ;
+				set "Obj2Glow1C::visible" "0" ;
+			}
+		} 
+		onTime 1100 {
+			if ("ObjPopBoxC::visible" == 1) { 
+				set "Obj1Glow2C::visible" "0" ;
+				set "Obj2Glow2C::visible" "0" ;
+			}
+		} 
+		onTime 1200 {
+			if ("ObjPopBoxC::visible" == 1) { 
+				set "ObjPopBoxC::visible" "0" ;
+			}
+		} 		
+	}
+
+//----------------------------------------------------------------------------------------
+//  New Objective Animation CLOSE
+//----------------------------------------------------------------------------------------
+
+	windowDef animObjDown {
+		rect	0 ,0 ,0 ,0 
+		notime	1
+
+		//wait for opening animation to finish
+		onTime 50 {
+			if ("desktop::objdone" == 0) {
+				resetTime "0" ;
+			}
+		}
+		
+		//New Objective Down
+		onTime 400 {
+			localSound	"guisounds_obj_down" ;
+			transition "ObjNew::forecolor" "0.8 1 1 1" "0.8 1 1 0" "200" ;
+			transition "Objnew2::forecolor" "0 0 0 0.6" "0 0 0 0" "200" ;			
+			transition "ObjPopBox::rect" "356 226 300 300" "356 236 300 0" "500" "0.2" "0.8" ;
+			transition "PopBg2T::matcolor" "1 1 1 0.7" "1 1 1 0" "200" ;
+			transition "PopBg2TL::matcolor" "1 1 1 0.7" "1 1 1 0" "200" ;
+			transition "PopBg2B::matcolor" "1 1 1 0.7" "1 1 1 0" "200" ;
+			transition "PopBg2BL::matcolor" "1 1 1 0.7" "1 1 1 0" "200" ;
+			transition "ObjTitleBG1::backcolor" "0.8 1 1 0.1" "0.8 1 1 0" "200" ;
+			transition "ObjTitleBG2::backcolor" "0.8 1 1 0.1" "0.8 1 1 0" "200" ;
+			transition "ObjTitle::forecolor" "1 0.6 0.2 1" "1 1 1 0" "200" ;
+			transition "ObjTitle2::forecolor" "0 0 0 0.6" "0 0 0 0" "200" ;
+			transition "Sshot1::bordercolor" "0.2 0.4 0.4 1" "0.4 0.6 0.6 0" "200" ;
+			transition "ObjText::forecolor" "0.6 0.8 0.8 1" "1 1 1 0" "200" ;
+			transition "ObjText2::forecolor" "0 0 0 0.6" "0 0 0 0" "200" ;
+			set "Sshot1::matcolor" "1 1 1 0";
+			transition "Sshot2::matcolor" "1 1 1 1" "1 1 1 0" "200" ;
+			
+			//completed obj down
+			
+			transition "ObjPopBoxC::rect" "356 183 300 20" "356 193 300 0" "300" "0.2" "0.8" ;
+			transition "ObjNewC::forecolor" "0.8 1 1 1" "0.8 1 1 0" "200" ;
+			transition "Objnew2C::forecolor" "0 0 0 0.6" "0 0 0 0" "200" ;
+			transition "PopBg2TC::matcolor" "1 1 1 0.7" "1 1 1 0" "200" ;
+			transition "PopBg2TLC::matcolor" "1 1 1 0.7" "1 1 1 0" "200" ;
+			transition "PopBg2BC::matcolor" "1 1 1 0.7" "1 1 1 0" "200" ;
+			transition "PopBg2BLC::matcolor" "1 1 1 0.7" "1 1 1 0" "200" ;
+			transition "ObjTitleBG1C::backcolor" "0.8 1 1 0.1" "0.8 1 1 0" "200" ;
+			transition "ObjTitleC::forecolor" "1 0.6 0.2 1" "1 1 1 0" "200" ;
+			transition "ObjTitle2C::forecolor" "0 0 0 0.6" "0 0 0 0" "200" ;			
+		} 
+		onTime 450 {			
+			set "Obj1Glow1::visible" "0" ;
+			set "Obj2Glow1::visible" "0" ;
+			set "Obj1Glow1C::visible" "0" ;
+			set "Obj2Glow1C::visible" "0" ;
+		} 
+		onTime 500 {			
+			set "Obj1Glow2::visible" "0" ;
+			set "Obj2Glow2::visible" "0" ;
+			set "Obj1Glow2C::visible" "0" ;
+			set "Obj2Glow2C::visible" "0" ;	
+		} 
+		onTime 600 {
+			set "ObjPopBox::visible" "0" ;
+			set "ObjPopBoxC::visible" "0" ;
+			set "desktop::objdone" "0" ;
+		} 
+	}
+
+//----------------------------------------------------------------------------------------
+//  Objective Complete Animation OPEN
+//----------------------------------------------------------------------------------------
+
+	windowDef animComUp {
+		rect	0 ,0 ,0 ,0 
+		notime	1
+
+		onTime 0 {
+			localSound	"guisounds_objdone_up" ;
+			set "ObjPopBoxC::visible" "1" ;
+			transition "ObjPopBoxC::rect" "356 193 300 0" "356 183 300 20" "300" "0.2" "0.8" ;
+			set "Obj1Glow1C::visible" "1" ;
+			set "Obj2Glow1C::visible" "1" ;
+		}
+		onTime 100 {
+			set "Obj1Glow2C::visible" "1" ;
+			set "Obj2Glow2C::visible" "1" ;			
+			transition "ObjNewC::forecolor" "0.8 1 1 0" "0.8 1 1 1" "200" ;
+			transition "Objnew2C::forecolor" "0 0 0 0" "0 0 0 0.6" "200" ;
+		}
+		onTime 200 {
+			transition "ObjPopBoxC::rect" "356 183 300 300" "356 183 300 300" "100" ;
+			transition "PopBg2TC::matcolor" "1 1 1 0" "1 1 1 0.7" "400" "0.2" "0.8" ;
+			transition "PopBg2TLC::matcolor" "1 1 1 0" "1 1 1 0.7" "400" "0.2" "0.8" ;
+			transition "PopBg2BC::matcolor" "1 1 1 0" "1 1 1 0.7" "400" "0.2" "0.8" ;
+			transition "PopBg2BLC::matcolor" "1 1 1 0" "1 1 1 0.7" "400" "0.2" "0.8" ;
+			transition "ObjTitleBG1C::rect" "311 27 0 14" "9 27 302 14" "400" "0.2" "0.8" ;
+			transition "ObjTitleBG1C::backcolor" "0.8 1 1 0" "0.8 1 1 0.1" "400" ;
+			
+			transition "ObjTitleC::forecolor" "1 1 1 1" "1 0.6 0.2 1" "200" ;
+			transition "ObjTitle2C::forecolor" "0 0 0 0" "0 0 0 0.6" "200" ;
+			transition "objtitleC::rect" "15 21 300 20" "11 21 300 20" "200" "0.2" "0.8" ;
+
+		}
+		onTime 800 {
+			set "desktop::objdone" "1" ;
+		} 
+	}
+//----------------------------------------------------------------------------------------
+//  Full Hud Twitcher, conditional loop
+//----------------------------------------------------------------------------------------	
+	windowDef animhudTwitch {
+		rect	0 ,0 ,0 ,0 
+		notime	1
+
+		onTime 0 {
+			set "desktop::rect" "1 1 640 480" ;
+			set "Border::rect" "-2 417 256 64" ;
+			set "BorderLA::rect" "385 415 -256 64" ;
+			set "Lines1A::rect" "384 417 -256 64" ;
+			set "Lines2A::rect" "383 416 -256 64" ;
+			set "MPHealth::rect" "89 436 39 32" ;
+			set "Weapon11::rect" "526 470 10 6" ;
+			set "Weapon3::rect" "561 472 10 6" ;
+			set "LocationText::rect" "141 458 220 20" ;
+			transition "MPHealthBlack::forecolor" "0 0 0 0.5" "0.67 0.7 0.7 0.3" "100" ;
+			transition "AmmoValue3Black::forecolor" "0 0 0 0.5" "0.8 0.7 0.7 0.5" "100" ;
+			transition "LocationText::forecolor" "0.25 0.4 0.4 0.8" "0.25 0.4 0.4 0.7" "50" ;
+			
+		}
+		onTime 50 {
+			set "ScanLineL::rect" "0  414  256  64" ;
+			set "ScanLineLA::rect" "386 416 -256 64 " ;
+			set "BorderBottom::rect" "6 414 270 64" ;
+			set "BorderLABottom::rect" "400 417 -241 64" ;
+			set "Border_2::rect" "2 415 256 64" ;
+			set "Lines1::rect" "1 415 256 64" ;
+			set "Lines2::rect" "-1 417 256 64" ;
+			set "Lines1B::rect" "382 416 -256 64" ;
+			set "MPArmor::rect" "27 442 34 32" ;
+			set "Weapon11::rect" "526 471 10 6" ;
+			set "Weapon2::rect" "553 472 10 6" ;
+			set "Weapon3::rect" "562 471 10 6" ;
+			set "Border::rect" "0 416 256 64" ;
+			transition "AmmoValue2Black::forecolor" "0 0 0 0.5" "0.9 0.7 0.7 0.3" "100" ;
+			transition "LocationText::forecolor" "0.25 0.4 0.4 0.7" "0.25 0.4 0.4 1" "200" ;
+		}
+		
+		onTime 100 {
+			set "desktop::rect" "1 0 640 480" ;
+			set "ScanLineL::rect" "1  417  256  64" ;
+			set "ScanLineLA::rect" "385 417 -256 64 " ;
+			set "BorderBottom::rect" "4 416 270 64" ;
+			set "BorderLABottom::rect" "399 416 -241 64" ;
+			set "Lines1::rect" "0 416 256 64" ;
+			set "Lines1A::rect" "384 416 -256 64" ;
+			transition "MPArmorBlack::forecolor" "0 0 0 0.5" "0.8 0.7 0.7 1" "100" ;
+			set "Weapon2::rect" "553 471 10 6" ;
+			set "Weapon6::rect" "587 471 10 6" ;
+			set "LocationText::rect" "142 460 220 20" ;
+		}
+		onTime 150 {
+			set "Border_2::rect" "0 416 256 64" ;
+			set "Lines2::rect" "0 416 256 64" ;
+			set "BorderLA::rect" "384 416 -256 64" ;
+			set "Lines1B::rect" "384 416 -256 64" ;
+			set "MPHealth::rect" "90 437 39 32" ;
+			transition "MPHealthBlack::forecolor" "0.67 0.7 0.7 0.3" "0 0 0 0.5" "100" ;
+			set "Weapon6::rect" "589 471 10 6" ;
+		}
+		onTime 200 {
+			set "desktop::rect" "0 0 640 480" ;
+			set "Lines2A::rect" "384 416 -256 64" ;
+			set "MPArmor::rect" "29 442 34 32" ;
+			transition "MPArmorBlack::forecolor" "0.67 0.7 0.7 0.3" "0 0 0 0.5" "50" ;
+			transition "AmmoValue2Black::forecolor" "0.67 0.7 0.7 0.3" "0 0 0 0.5" "50" ;
+			transition "AmmoValue3Black::forecolor" "0.8 0.7 0.7 0.5" "0 0 0 0.5" "50" ;
+		}
+
+		onTime 250 {
+		//	if ("value" == 0) { 
+		//		resetTime "0" ;	
+		//	}
+		}
+	}
+
+	
+//---------------------------------------------------------------------------------------------
+// Sound Meter - Dev Only 
+//---------------------------------------------------------------------------------------------
+	windowDef BgSOUND {
+		rect	0 ,0 ,128 ,64
+		background	"guis/assets/soundmeter/audiobg"
+		matcolor	1 ,1 ,1 ,1 
+		visible	("gui::s_debug" == 1)
+	}
+	windowDef OverlaySOUND {
+		rect	0 ,0 ,128 ,64
+		background	"guis/assets/soundmeter/audioverlay"
+		matcolor	1 ,1 ,1 ,1
+		visible	0
+	}
+
+	#include "guis/vr_weapon_wheel.gui"
+}

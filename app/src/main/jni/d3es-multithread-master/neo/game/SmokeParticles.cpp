@@ -186,7 +186,7 @@ bool idSmokeParticles::EmitSmoke( const idDeclParticle *smoke, const int systemS
 		return false;
 	}
 
-	assert( gameLocal.time == 0 || systemStartTime <= gameLocal.time );
+	//assert( gameLocal.time == 0 || systemStartTime <= gameLocal.time );
 	if ( systemStartTime > gameLocal.time ) {
 		return false;
 	}

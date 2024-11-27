@@ -55,7 +55,7 @@ import static android.system.Os.setenv;
 		externalHapticsServiceDetails.add(Pair.create(HapticsConstants.FORCETUBE_PACKAGE, HapticsConstants.FORCETUBE_ACTION_FILTER));
 	}
 
-	private int permissionCount = 0;
+	private int permissionAttempt = 0;
 	private static final int READ_EXTERNAL_STORAGE_PERMISSION_ID = 1;
 	private static final int WRITE_EXTERNAL_STORAGE_PERMISSION_ID = 2;
 
@@ -205,7 +205,12 @@ import static android.system.Os.setenv;
 	@Override
 	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
 		if (requestCode == WRITE_EXTERNAL_STORAGE_PERMISSION_ID) {
-			checkPermissionsAndInitialize();
+			permissionAttempt++;
+			if (permissionAttempt < 5) {
+				checkPermissionsAndInitialize();
+			} else {
+				System.exit(0);
+			}
 		}
 	}
 
@@ -214,6 +219,7 @@ import static android.system.Os.setenv;
 		//Define paths
 		File root = new File("/sdcard/Doom3Quest");
 		File base = new File(root, "base");
+		File cdoom = new File(root, "cdoom");
 		File roe = new File(root, "d3xp");
 		File lm = new File(root, "d3le");
 
@@ -228,11 +234,16 @@ import static android.system.Os.setenv;
 		//Create file structure
 		base.mkdirs();
 		copy_common_assets(base);
+		copy_common_assets(cdoom);
 		copy_common_assets(roe);
 		copy_common_assets(lm);
 		copy_asset(base.getAbsolutePath(), "commandline.txt", false);
+		copy_asset(cdoom.getAbsolutePath(), "pak399cd.pk4", true);
 		copy_asset(roe.getAbsolutePath(), "pak399roe.pk4", true);
 		copy_asset(lm.getAbsolutePath(), "pak399lm.pk4", true);
+
+		//delete incompatible files
+		new File(cdoom, "Xpak400.pk4").delete();
 
 		if (exitAfterCopy)
 		{

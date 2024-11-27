@@ -884,7 +884,7 @@ static void RB_GLSL_CreateDrawInteractions(const drawSurf_t* surf, const viewLig
 	}
 
     // Set the specular exponent now (NB: it could be cached instead)
-    const float f = r_specularExponent.GetFloat();
+    const float f = r_usePBR.GetBool() ? r_specularExponentPBR.GetFloat() : r_specularExponent.GetFloat();
     GL_Uniform1fv(offsetof(shaderProgram_t, specularExponent), &f);
 
 	glBindBufferBase(
@@ -1128,7 +1128,7 @@ void RB_GLSL_StencilShadowPass(const drawSurf_t* drawSurfs, const viewLight_t* v
 	// Skip cases
 	//////////////
 
-	if ( !r_shadows.GetBool()) {
+	if ( r_shadows.GetInteger() == 0 ) {
 		return;
 	}
 

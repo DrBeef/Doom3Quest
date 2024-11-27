@@ -1841,7 +1841,7 @@ void idSoundWorldLocal::AddChannelContribution( idSoundEmitterLocal *sound, idSo
 					alSourcei( chan->openalSource, AL_BUFFER, looping ? chan->soundShader->entries[0]->openalBuffer : chan->leadinSample->openalBuffer );
 				}
 			} else {
-				ALint finishedbuffers;
+				ALint finishedbuffers = 0;
 				ALuint buffers[3];
 
 				// handle streaming sounds (decode on the fly) both single shot AND looping

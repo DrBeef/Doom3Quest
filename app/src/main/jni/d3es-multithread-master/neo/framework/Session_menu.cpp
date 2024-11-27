@@ -633,6 +633,15 @@ void idSessionLocal::HandleMainMenuCommands( const char *menuCommand ) {
 			int choice = guiActive->State().GetInt( "modsList_sel_0" );
 			if ( choice >= 0 && choice < modsList.Num() ) {
 				cvarSystem->SetCVarString( "fs_game", modsList[ choice ] );
+				//Lubos BEGIN
+				bool baseMod = ( strcmp( modsList[ choice ], "cdoom" ) != 0 ) &&
+							   ( strcmp( modsList[ choice ], "d3xp" ) != 0 );
+				/*if ( ( strlen( modsList[ choice ] ) > 0 ) && baseMod ) {
+					cvarSystem->SetCVarString( "fs_game_base", "d3xp" );
+				} else*/ {
+					cvarSystem->SetCVarString( "fs_game_base", "" );
+				}
+				//Lubos END
 				cmdSystem->BufferCommandText( CMD_EXEC_APPEND, "reloadEngine menu\n" );
 			}
 		}
@@ -867,6 +876,19 @@ void idSessionLocal::HandleMainMenuCommands( const char *menuCommand ) {
 			continue;
 		}
 
+		if ( !idStr::Icmp( cmd, "cheat" ) ) {
+			if ( args.Argc() - icmd >= 1 ) {
+				idStr cheat = args.Argv(icmd++);
+                if ( args.Argc() - icmd >= 1 ) {
+                    idStr param = args.Argv(icmd++);
+                    cmdSystem->BufferCommandText(CMD_EXEC_NOW, cheat + " " + param);
+                } else {
+                    cmdSystem->BufferCommandText(CMD_EXEC_NOW, cheat);
+                }
+			}
+			continue;
+		}
+
 		if ( !idStr::Icmp( cmd, "colors" ) ) {
 			if ( args.Argc() - icmd >= 1 ) {
 				idStr profile = args.Argv( icmd++ );
@@ -879,7 +901,7 @@ void idSessionLocal::HandleMainMenuCommands( const char *menuCommand ) {
 					cvarSystem->SetCVarFloat("r_brightness", 1.3f);
 					cvarSystem->SetCVarBool("r_usePBR", false);
 				} else if ( !idStr::Icmp( profile, "pbr" ) ) {
-					cvarSystem->SetCVarFloat("r_specularExponent", 2);
+					cvarSystem->SetCVarFloat("r_specularExponentPBR", 2);
 					cvarSystem->SetCVarFloat("r_lightScale", 2);
 					cvarSystem->SetCVarFloat("r_brightness", 1.0f);
 					cvarSystem->SetCVarBool("r_usePBR", true);

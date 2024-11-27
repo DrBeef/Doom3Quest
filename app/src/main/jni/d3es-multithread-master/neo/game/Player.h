@@ -813,9 +813,9 @@ public:
     void					CalculateRightHand();
 
 	void					DrawHUD( idUserInterface *hud );
-    //	void					DrawHUDVR( idMenuHandler_HUD* hudManager );
-	void					DrawHUDVR( idUserInterface *hud );
+	void					DrawWeaponWheel( idUserInterface *hud );
 
+	bool					IsWeaponReady( int weapon );
     void					WeaponFireFeedback( int hand, const idDict* weaponDef );
 
 	float					DefaultFov( void ) const;

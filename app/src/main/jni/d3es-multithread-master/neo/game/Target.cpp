@@ -188,6 +188,12 @@ CLASS_DECLARATION( idTarget, idTarget_EndLevel )
 	EVENT( EV_Activate,		idTarget_EndLevel::Event_Activate )
 END_CLASS
 
+//Lubos BEGIN
+CLASS_DECLARATION( idTarget, idTarget_EndLevelCdoom )
+	EVENT( EV_Activate,		idTarget_EndLevelCdoom::Event_Activate )
+END_CLASS
+//Lubos END
+
 /*
 ================
 idTarget_EndLevel::Event_Activate
@@ -216,6 +222,30 @@ void idTarget_EndLevel::Event_Activate( idEntity *activator ) {
 	gameLocal.sessionCommand += nextMap;
 }
 
+//Lubos BEGIN
+void idTarget_EndLevelCdoom::Event_Activate( idEntity *activator ) {
+    idStr nextMap;
+
+    if ( spawnArgs.GetBool( "endOfGame" ) ) {
+        cvarSystem->SetCVarBool( "g_nightmare", true );
+        gameLocal.sessionCommand = "disconnect";
+        return;
+    }
+
+    if ( !spawnArgs.GetString( "nextMap", "", nextMap ) ) {
+        gameLocal.Printf( "idTarget_SessionCommand::Event_Activate: no nextMap key\n" );
+        return;
+    }
+
+    if ( spawnArgs.GetInt( "devmap", "0" ) ) {
+        gameLocal.sessionCommand = "devmap ";	// only for special demos
+    } else {
+        gameLocal.sessionCommand = "map ";
+    }
+
+    gameLocal.sessionCommand += nextMap;
+}
+//Lubos END
 
 /*
 ===============================================================================

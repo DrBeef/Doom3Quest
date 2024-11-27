@@ -94,6 +94,10 @@ idCVar vr_teleportMaxDrop( "vr_teleportMaxDrop", "360", CVAR_FLOAT, "" );
 
 idCVar vr_laserSightUseOffset( "vr_laserSightUseOffset", "1", CVAR_BOOL | CVAR_ARCHIVE, " 0 = lasersight emits straight from barrel.\n 1 = use offsets from weapon def" );
 
+idCVar vr_weaponWheel( "vr_weaponWheel", "0", CVAR_BOOL, "Information if weapon wheel is shown right now" );
+idCVar vr_weaponWheelCurrent( "vr_weaponWheelCurrent", "0", CVAR_INTEGER, "Current weapon in the weapon wheel" );
+vec3_t vr_weaponWheelDir;
+
 // for testing
 idCVar ftx( "ftx", "0", CVAR_FLOAT, "" );
 idCVar fty( "fty", "0", CVAR_FLOAT, "" );
@@ -2186,11 +2190,17 @@ void idPlayer::Spawn( void ) {
 	}
 	if ( hud ) {
 		//We can spawn with a full bloodstone, so make sure the hud knows
-		if (weapon_bloodstone > 0 && (inventory.weapons & (1 << weapon_bloodstone))) {
-			//int max_blood = inventory.MaxAmmoForAmmoClass( this, "ammo_bloodstone" );
-			//if ( inventory.ammo[ idWeapon::GetAmmoNumForName( "ammo_bloodstone" ) ] >= max_blood ) {
+		if (fileSystem->RunningD3XP()) {
+			if (weapon_bloodstone > 0 && (inventory.weapons & (1 << weapon_bloodstone))) {
 				hud->HandleNamedEvent("bloodstoneReady");
-			//}
+			}
+		} else {
+			if ( weapon_soulcube > 0 && ( inventory.weapons & ( 1 << weapon_soulcube ) ) ) {
+				int max_souls = inventory.MaxAmmoForAmmoClass( this, "ammo_souls" );
+				if ( inventory.ammo[idWeapon::GetAmmoNumForName( "ammo_souls" )] >= max_souls ) {
+					hud->HandleNamedEvent( "soulCubeReady" );
+				}
+			}
 		}
 		hud->HandleNamedEvent( "itemPickup" );
 	}
@@ -4025,9 +4035,10 @@ idPlayer::DrawHUD
 ===============
 */
 void idPlayer::DrawHUD( idUserInterface *_hud ) {
+    DrawWeaponWheel( _hud );
 
     // Koz begin
-    if ( game->isVR && vr_hudType.GetInteger() == VR_HUD_NONE)
+    if ( game->isVR && vr_hudType.GetInteger() == VR_HUD_NONE && !vr_weaponWheel.GetBool())
     {
         return;
     }
@@ -4066,6 +4077,113 @@ void idPlayer::DrawHUD( idUserInterface *_hud ) {
 	}
 }
 
+void idPlayer::DrawWeaponWheel(idUserInterface *_hud) {
+    //Update visibility
+    _hud->SetStateInt("weapon_wheel", vr_weaponWheel.GetBool() ? 1 : 0);
+    if (!vr_weaponWheel.GetBool()) {
+        return;
+    }
+
+    //Calculate hand movement diff
+    vec3_t diff;
+    diff[PITCH] = vr_weaponWheelDir[PITCH] - pVRClientInfo->weaponangles_temp[PITCH];
+    diff[YAW] = vr_weaponWheelDir[YAW] - pVRClientInfo->weaponangles_temp[YAW];
+    diff[ROLL] = vr_weaponWheelDir[ROLL] - pVRClientInfo->weaponangles_temp[ROLL];
+    if (diff[YAW] > 180) diff[YAW] -= 360;
+    if (diff[YAW] < -180) diff[YAW] += 360;
+    float dir = RAD2DEG(atan2(diff[PITCH], diff[YAW]));
+    //gameLocal.Warning("Weapon wheel hand dir %d", (int)dir);
+
+    //Selecting weapons
+    float dst = sqrt(diff[PITCH] * diff[PITCH] +diff[YAW] * diff[YAW]);
+    if (dst > 15) {
+        if (dir < -160) vr_weaponWheelCurrent.SetInteger(weapon_machinegun);
+        else if (dir < -130) vr_weaponWheelCurrent.SetInteger(weapon_plasmagun);
+        else if (dir > 170) vr_weaponWheelCurrent.SetInteger(weapon_machinegun);
+        else if (dir > 140) vr_weaponWheelCurrent.SetInteger(weapon_chaingun);
+        else if (dir > 120) vr_weaponWheelCurrent.SetInteger(weapon_pistol);
+        else if (dir > 80) vr_weaponWheelCurrent.SetInteger(weapon_shotgun);
+        else if (dir > 45) vr_weaponWheelCurrent.SetInteger(weapon_handgrenade);
+        else if (dir > 10) vr_weaponWheelCurrent.SetInteger(weapon_rocketlauncher);
+        else if (dir > -20) vr_weaponWheelCurrent.SetInteger(weapon_bfg);
+        else if (dir > -60) vr_weaponWheelCurrent.SetInteger(fileSystem->RunningD3XP() ? weapon_shotgun_double : weapon_chainsaw);
+        else vr_weaponWheelCurrent.SetInteger(fileSystem->RunningD3XP() ? weapon_grabber : weapon_fists);
+    }
+
+    //Define alpha values
+    float alphaMax = 0.6f;
+    float alphaEasy = 0.4f;
+    float alphaBase = 0.1f;
+
+    //Default value based on the weapon availability
+    static float alpha[MAX_WEAPONS] = {};
+    alpha[0] = alphaEasy;
+    alpha[1] = IsWeaponReady(weapon_pistol) ? alphaEasy : alphaBase;
+    alpha[2] = IsWeaponReady(weapon_shotgun) ? alphaEasy : alphaBase;
+    alpha[3] = IsWeaponReady(weapon_machinegun) ? alphaEasy : alphaBase;
+    alpha[4] = IsWeaponReady(weapon_chaingun) ? alphaEasy : alphaBase;
+    alpha[5] = IsWeaponReady(weapon_handgrenade) ? alphaEasy : alphaBase;
+    alpha[6] = IsWeaponReady(weapon_plasmagun) ? alphaEasy : alphaBase;
+    alpha[7] = IsWeaponReady(weapon_rocketlauncher) ? alphaEasy : alphaBase;
+    alpha[8] = IsWeaponReady(weapon_bfg) ? alphaEasy : alphaBase;
+    alpha[10] = IsWeaponReady(weapon_chainsaw) ? alphaEasy : alphaBase;
+    alpha[12] = IsWeaponReady(weapon_grabber) ? alphaEasy : alphaBase;
+    alpha[13] = IsWeaponReady(weapon_shotgun_double) ? alphaEasy : alphaBase;
+
+    //Highlight selected weapon
+    int currentWeapon = vr_weaponWheelCurrent.GetInteger();
+    alpha[0] += currentWeapon == weapon_fists ? alphaMax : 0;
+    alpha[1] += currentWeapon == weapon_pistol ? alphaMax : 0;
+    alpha[2] += currentWeapon == weapon_shotgun ? alphaMax : 0;
+    alpha[3] += currentWeapon == weapon_machinegun ? alphaMax : 0;
+    alpha[4] += currentWeapon == weapon_chaingun ? alphaMax : 0;
+    alpha[5] += currentWeapon == weapon_handgrenade ? alphaMax : 0;
+    alpha[6] += currentWeapon == weapon_plasmagun ? alphaMax : 0;
+    alpha[7] += currentWeapon == weapon_rocketlauncher ? alphaMax : 0;
+    alpha[8] += currentWeapon == weapon_bfg ? alphaMax : 0;
+    alpha[10] += currentWeapon == weapon_chainsaw ? alphaMax : 0;
+    alpha[12] += currentWeapon == weapon_grabber ? alphaMax : 0;
+    alpha[13] += currentWeapon == weapon_shotgun_double ? alphaMax : 0;
+
+    //Cross-fading
+    static float finalAlpha[MAX_WEAPONS] = {};
+    for (int i = 0; i < MAX_WEAPONS; i++) {
+        finalAlpha[i] = finalAlpha[i] * 0.8f + alpha[i] * 0.2f;
+    }
+
+    //Calculate cursor
+    float x = 100 + 100 * diff[YAW] / 30.0f;
+    float y = 80 - 80 * diff[PITCH] / 30.0f;
+    float glow = fmax(0.5f - dst / 50.0f, 0.0f);
+
+    //Apply values
+    _hud->SetStateFloat("weapon_wheel_glow_x", x);
+    _hud->SetStateFloat("weapon_wheel_glow_y", y);
+    _hud->SetStateFloat("weapon_wheel_glow_alpha", glow);
+    _hud->SetStateFloat("weapon_wheel0", finalAlpha[0]);
+    _hud->SetStateFloat("weapon_wheel1", finalAlpha[1]);
+    _hud->SetStateFloat("weapon_wheel2", finalAlpha[2]);
+    _hud->SetStateFloat("weapon_wheel3", finalAlpha[3]);
+    _hud->SetStateFloat("weapon_wheel4", finalAlpha[4]);
+    _hud->SetStateFloat("weapon_wheel5", finalAlpha[5]);
+    _hud->SetStateFloat("weapon_wheel6", finalAlpha[6]);
+    _hud->SetStateFloat("weapon_wheel7", finalAlpha[7]);
+    _hud->SetStateFloat("weapon_wheel8", finalAlpha[8]);
+    _hud->SetStateFloat("weapon_wheel10", finalAlpha[10]);
+    _hud->SetStateFloat("weapon_wheel12", finalAlpha[12]);
+    _hud->SetStateFloat("weapon_wheel13", finalAlpha[13]);
+}
+
+
+bool idPlayer::IsWeaponReady( int weapon )
+{
+    if ((weapon > 0) && (inventory.weapons & (1 << weapon))) {
+        const char* weap = spawnArgs.GetString(va( "def_weapon%d", weapon));
+        return inventory.HasAmmo(weap, true, this);
+    }
+    return false;
+}
+
 /*
 ===============
 idPlayer::GetHudAlpha
@@ -4096,7 +4214,8 @@ float idPlayer::GetHudAlpha()
 	if ( commonVr->lastHMDPitch >= vr_hudRevealAngle.GetFloat() || force ) // fade stats in
 	{
 		currentAlpha += delta;
-		if ( currentAlpha > vr_hudTransparency.GetFloat() ) currentAlpha = vr_hudTransparency.GetFloat();
+		float targetTransparency = vr_weaponWheel.GetBool() ? 1 : vr_hudTransparency.GetFloat();
+		if ( currentAlpha > targetTransparency ) currentAlpha = targetTransparency;
 	}
 	else
 	{
@@ -4200,7 +4319,7 @@ void idPlayer::UpdateVrHud()
         // always show HUD if in flicksync
         hudEntity.allowSurfaceInViewID = entityNumber + 1;
 
-        if ( vr_hudPosLock.GetInteger() == 1 && !commonVr->thirdPersonMovement ) // hud in fixed position in space, except if running in third person, then attach to face.
+        if ( vr_hudPosLock.GetInteger() == 1 && !commonVr->thirdPersonMovement && !vr_weaponWheel.GetBool() ) // hud in fixed position in space, except if running in third person, then attach to face.
         {
             hudPitch = vr_hudType.GetInteger() == VR_HUD_LOOK_DOWN ? vr_hudPosAngle.GetFloat() : 10.0f;
 
@@ -4250,6 +4369,13 @@ void idPlayer::UpdateVrHud()
             hudOrigin += hudAxis[1] * vr_hudPosHorz.GetFloat();
             hudOrigin.z += vr_hudPosVert.GetFloat();*/
         }
+        else if (vr_weaponWheel.GetBool())
+        {
+            hudAxis = commonVr->lastHMDViewAxis;
+            hudOrigin = hands[vr_weaponHand.GetInteger()].weapon->viewWeaponOrigin;
+            hudOrigin += hudAxis[0] * 16;
+            hudOrigin -= hudAxis[2] * 24;
+        }
         else // hud locked to face
         {
             if ( commonVr->thirdPersonMovement )
@@ -4268,7 +4394,7 @@ void idPlayer::UpdateVrHud()
 
         }
 
-        hudAxis *= vr_hudScale.GetFloat();
+        hudAxis *= vr_weaponWheel.GetBool() ? 1.5f : vr_hudScale.GetFloat();
 
         hudEntity.axis = hudAxis;
         hudEntity.origin = hudOrigin;
@@ -5063,10 +5189,6 @@ bool idPlayer::GivePowerUp( int powerup, int time ) {
 				}
 				if ( baseSkinName.Length() ) {
 					powerUpSkin = declManager->FindSkin( baseSkinName + "_berserk" );
-				}
-				if ( !gameLocal.isClient ) {
-                    hands[ 0 ].idealWeapon = weapon_fists;
-                    hands[ 1 ].idealWeapon = weapon_fists;
 				}
 				break;
 			}
@@ -6337,117 +6459,6 @@ void idPlayerHand::SelectWeapon( int num, bool force, bool specific )
         }
     }
 
-    // Carl: Dual wielding, handle switching to and from flashlight properly
-    if( num == owner->weapon_flashlight || num == owner->weapon_flashlight_new )
-    {
-        // if we don't have a holdable flashlight, do nothing
-        if( !owner->HasHoldableFlashlight() )
-            return;
-        // if we can't dual wield a flashlight...
-        if( !owner->CanDualWield( num ) && !owner->CanDualWield( owner->hands[1 - whichHand].currentWeapon ) && !owner->CanDualWield( owner->hands[1 - whichHand].idealWeapon ) )
-        {
-            // if we can't automagically empty our other hand, do nothing
-            if( vr_mustEmptyHands.GetBool() )
-                return;
-            // otherwise, first automagically empty our other hand
-            if( owner->CanDualWield( owner->weapon_fists ) )
-                owner->hands[1 - whichHand].SelectWeapon( owner->weapon_fists, true, true );
-            else
-                owner->hands[1 - whichHand].SelectWeapon( weapon_empty_hand, true, true );
-        }
-
-        idealWeapon = owner->weapon_fists;
-        commonVr->currentFlashlightMode = FLASHLIGHT_HAND;
-        vr_weaponHand.SetInteger( 1 - whichHand );
-        return;
-    }
-    else if( holdingFlashlight() )
-    {
-        if( vr_flashlightStrict.GetBool() )
-            commonVr->currentFlashlightMode = FLASHLIGHT_INVENTORY;
-        else
-            commonVr->currentFlashlightMode = FLASHLIGHT_HEAD;
-        commonVr->currentFlashlightPosition = commonVr->currentFlashlightMode;
-    }
-
-    //GB No one cares about toggle weapons
-    /*
-    //Is the weapon a toggle weapon (eg, fists/chainsaw/grabber, or shotgun/super-shotgun, or artifact/soulcube)
-    WeaponToggle_t* weaponToggle;
-    if( !specific && owner->weaponToggles.Get( va( "weapontoggle%d", num ), &weaponToggle ) )
-    {
-        int weaponToggleIndex = 0;
-
-        //Find the current Weapon in the list
-        int currentIndex = -1;
-        for( int i = 0; i < weaponToggle->toggleList.Num(); i++ )
-        {
-            if( weaponToggle->toggleList[i] == idealWeapon )
-            {
-                currentIndex = i;
-                break;
-            }
-        }
-        if( currentIndex == -1 )
-        {
-            //Didn't find the current weapon so select the first item
-            weaponToggleIndex = weaponToggle->lastUsed;
-        }
-        else
-        {
-            //Roll to the next available item in the list
-            weaponToggleIndex = currentIndex;
-            weaponToggleIndex++;
-            if( weaponToggleIndex >= weaponToggle->toggleList.Num() )
-            {
-                weaponToggleIndex = 0;
-            }
-        }
-
-        for( int i = 0; i < weaponToggle->toggleList.Num(); i++ )
-        {
-            int weapNum = weaponToggle->toggleList[weaponToggleIndex];
-            // Carl: dual wielding
-            int availableWeaponsOfThisType = 0;
-            if( weapNum == owner->weapon_fists )
-            {
-                if( owner->inventory.weapons & ( 1 << weapNum ) )
-                    availableWeaponsOfThisType++;
-            }
-            else
-            {
-                if( owner->inventory.weapons & ( 1 << weapNum ) )
-                    availableWeaponsOfThisType++;
-                if( owner->inventory.duplicateWeapons & ( 1 << weapNum ) )
-                    availableWeaponsOfThisType++;
-                // Carl: skip weapons in the holster unless we have a duplicate, TODO make it optional
-                //if( weapNum == owner->holsteredWeapon )
-				//   availableWeaponsOfThisType--;
-                // Carl: skip weapons in the other hand unless we have a duplicate (dual wielding)
-                if( weapNum == owner->hands[ 1 - whichHand ].idealWeapon )
-                    availableWeaponsOfThisType--;
-            }
-
-            //Is it available
-            if( availableWeaponsOfThisType > 0 )
-            {
-                //Do we have ammo for it
-                if( owner->inventory.HasAmmo( owner->spawnArgs.GetString( va( "def_weapon%d", weapNum ) )) || owner->spawnArgs.GetBool( va( "weapon%d_allowempty", weapNum ) ) )
-                {
-                    break;
-                }
-            }
-
-            weaponToggleIndex++;
-            if( weaponToggleIndex >= weaponToggle->toggleList.Num() )
-            {
-                weaponToggleIndex = 0;
-            }
-        }
-        weaponToggle->lastUsed = weaponToggleIndex;
-        num = weaponToggle->toggleList[weaponToggleIndex];
-    }*/
-
     // Is there an actual weapon for this weapon slot?
     weap = owner->spawnArgs.GetString( va( "def_weapon%d", num ) );
     if( !weap[ 0 ] )
@@ -6529,20 +6540,6 @@ void idPlayerHand::SelectWeapon( int num, bool force, bool specific )
         if( !owner->inventory.HasAmmo( weap, true, owner ) && !owner->spawnArgs.GetBool( va( "weapon%d_allowempty", num ) ) )
         {
             return;
-        }
-        if( ( previousWeapon >= 0 ) && ( idealWeapon == num ) && ( owner->spawnArgs.GetBool( va( "weapon%d_toggle", num ) ) ) )
-        {
-            weap = owner->spawnArgs.GetString( va( "def_weapon%d", previousWeapon ) );
-            if( !owner->inventory.HasAmmo( weap, true, owner ) && !owner->spawnArgs.GetBool( va( "weapon%d_allowempty", previousWeapon ) ) )
-            {
-                return;
-            }
-            num = previousWeapon;
-        }
-        else if( ( owner->weapon_pda >= 0 ) && ( num == owner->weapon_pda ) && ( owner->inventory.pdas.Num() == 0 ) )
-        {
-			owner->ShowTip( owner->spawnArgs.GetString( "text_infoTitle" ), owner->spawnArgs.GetString( "text_noPDA" ), true );
-			return;
         }
 
         // If we can't we dual-wield it?
@@ -10055,6 +10052,7 @@ void idPlayer::UpdateAir( void ) {
 	}
 
 	if (PowerUpActive(ENVIROTIME)) {
+		airTics = pm_airTics.GetInteger(); //Lubos
 		newAirless = false;
 	}
 
@@ -10792,6 +10790,30 @@ void idPlayer::PerformImpulse( int impulse ) {
 			break;
 		}
         //Lubos BEGIN
+        case IMPULSE_23: {
+            gameLocal.Printf("Show weapon wheel");
+            if (objectiveSystemOpen) {
+                TogglePDA(1 - vr_weaponHand.GetInteger());
+            }
+            vr_weaponWheelCurrent.SetInteger(hands[vr_weaponHand.GetInteger()].currentWeapon);
+            vr_weaponWheelDir[PITCH] = pVRClientInfo->weaponangles_temp[PITCH];
+            vr_weaponWheelDir[YAW] = pVRClientInfo->weaponangles_temp[YAW];
+            vr_weaponWheelDir[ROLL] = pVRClientInfo->weaponangles_temp[ROLL];
+            vr_weaponWheel.SetBool(true);
+            if (hands[vr_weaponHand.GetInteger()].currentWeapon != weapon_fists) {
+                SelectWeapon(weapon_fists, false);
+            }
+            break;
+        }
+        case IMPULSE_24: {
+            gameLocal.Printf("Hide weapon wheel");
+            int newWeapon = vr_weaponWheelCurrent.GetInteger();
+            if (IsWeaponReady(newWeapon)) {
+                SelectWeapon(newWeapon, false);
+            }
+            vr_weaponWheel.SetBool(false);
+            break;
+        }
         case IMPULSE_25:
         {
             if (weapon_bloodstone > 0 && (inventory.weapons & (1 << weapon_bloodstone))) {
@@ -12277,6 +12299,14 @@ void idPlayer::Think( void ) {
 	UpdatePlayerIcons();
 
     UpdateSkinSetup();
+
+    //Lubos BEGIN
+    bool laserRequested = cvarSystem->GetCVarInteger( "vr_weaponSight" ) > 0;
+    bool laserActive = hands[ 0 ].laserSightActive || hands[ 1 ].laserSightActive;
+    if ( laserRequested != laserActive ) {
+        ToggleLaserSight();
+    }
+    //Lubos END
 
 	// latch button actions
 	oldButtons = usercmd.buttons;
@@ -15056,7 +15086,7 @@ void idPlayer::CalculateFirstPersonView( void ) {
 		idVec3 origin;
 		idAngles ang;
 
-		ang = viewBobAngles + playerView.AngleOffset();
+		ang = playerView.AngleOffset();
 		ang.yaw += viewAxis[ 0 ].ToYaw();
 
 		jointHandle_t joint = animator.GetJointHandle( "camera" );
@@ -15638,7 +15668,7 @@ idPlayer::AddAIKill
 =============
 */
 void idPlayer::AddAIKill( void ) {
-	/*int max_souls;
+	int max_souls;
 	int ammo_souls;
 
 	if ( ( weapon_soulcube < 0 ) || ( inventory.weapons & ( 1 << weapon_soulcube ) ) == 0 ) {
@@ -15655,7 +15685,7 @@ void idPlayer::AddAIKill( void ) {
 			hud->HandleNamedEvent( "soulCubeReady" );
 			StartSound( "snd_soulcube_ready", SND_CHANNEL_ANY, 0, false, NULL );
 		}
-	}*/
+	}
 }
 
 /*

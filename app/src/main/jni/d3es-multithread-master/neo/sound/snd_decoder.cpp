@@ -522,7 +522,7 @@ int idSampleDecoderLocal::DecodeOGG( idSoundSample *sample, int sampleOffset44k,
 			return 0;
 		}
 		if ( sample->nonCacheData == NULL ) {
-			assert( false );	// this should never happen
+			//assert( false );	// this should never happen
 			failed = true;
 			return 0;
 		}

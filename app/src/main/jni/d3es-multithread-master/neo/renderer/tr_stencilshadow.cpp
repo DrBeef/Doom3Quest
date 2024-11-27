@@ -1163,9 +1163,10 @@ srfTriangles_t *R_CreateShadowVolume( const idRenderEntityLocal *ent,
 	srfTriangles_t	*newTri;
 	int		capPlaneBits;
 
-	if ( !r_shadows.GetBool() ) {
+	//Lubos: we are changing the shadows visibility in runtime, we have to always create the volumes
+	/*if ( !r_shadows.GetBool() ) {
 		return NULL;
-	}
+	}*/
 
 	if ( tri->numSilEdges == 0 || tri->numIndexes == 0 || tri->numVerts == 0 ) {
 		return NULL;

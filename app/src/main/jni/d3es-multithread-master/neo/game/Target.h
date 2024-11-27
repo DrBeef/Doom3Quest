@@ -125,12 +125,23 @@ idTarget_EndLevel
 
 class idTarget_EndLevel : public idTarget {
 public:
-	CLASS_PROTOTYPE( idTarget_EndLevel );
+CLASS_PROTOTYPE( idTarget_EndLevel );
 
 private:
-	void				Event_Activate( idEntity *activator );
+    void				Event_Activate( idEntity *activator );
 
 };
+
+//Lubos BEGIN
+class idTarget_EndLevelCdoom : public idTarget {
+public:
+CLASS_PROTOTYPE( idTarget_EndLevelCdoom );
+
+private:
+    void				Event_Activate( idEntity *activator );
+
+};
+//Lubos END
 
 
 /*

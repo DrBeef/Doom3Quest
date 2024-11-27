@@ -405,12 +405,18 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
 
 			//Weapon Chooser
 			static bool itemSwitched = false;
+			bool weaponWheel = Android_GetCVarInteger("vr_weaponToggle") == 1;
 			if (between(-0.2f, pPrimaryJoystick->x, 0.2f) &&
 				(between(0.8f, pPrimaryJoystick->y, 1.0f) ||
 				 between(-1.0f, pPrimaryJoystick->y, -0.8f)))
 			{
 				if (!itemSwitched) {
-					if (between(0.8f, pPrimaryJoystick->y, 1.0f))
+					if (weaponWheel)
+					{
+						//Show weapon wheel
+						Android_SetImpulse(UB_IMPULSE23);
+					}
+					else if (between(0.8f, pPrimaryJoystick->y, 1.0f))
 					{
 					    //Previous Weapon
                         Android_SetImpulse(UB_IMPULSE15);
@@ -422,7 +428,11 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
 					}
 					itemSwitched = true;
 				}
-			} else {
+			} else if (between(-0.5f, pPrimaryJoystick->y, 0.5f)) {
+				if (itemSwitched && weaponWheel) {
+					//Hide weapon wheel
+					Android_SetImpulse(UB_IMPULSE24);
+				}
 				itemSwitched = false;
 			}
         }

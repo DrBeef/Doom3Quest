@@ -29,11 +29,6 @@ If you have questions concerning this license or the applicable additional terms
 //#include "precompiled.h"
 //#pragma hdrstop
 
-//#include "..\LibOVR\Include\OVR_CAPI.h"
-//#include "..\LibOVR\Include\OVR_CAPI_GL.h"
-
-
-#include "vr_hmd.h"
 #include "../renderer/Image.h"
 #include "../idlib/math/Quat.h"
 #include "../idlib/math/Matrix.h"
@@ -41,13 +36,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "../idlib/math/Angles.h"
 #include "../framework/CVarSystem.h"
 #include "../../../Doom3Quest/VrClientInfo.h"
-//#include "Voice.h"
-//#include "FlickSync.h"
-//#include "../renderer/Framebuffer.h"
-//#include "..\LibOVR\Include\OVR_CAPI_Audio.h"
-
-//#include "../libs/openvr/headers/openvr.h"
-
 
 #ifndef __VR_H__
 #define __VR_H__
@@ -291,7 +279,6 @@ public:
     float				hmdFovY;
     float				hmdPixelScale;
     float				hmdAspect;
-    hmdEye_t			hmdEye[2];
 
     float				VRScreenSeparation; // for Reduce FOV motion sickness fix
 

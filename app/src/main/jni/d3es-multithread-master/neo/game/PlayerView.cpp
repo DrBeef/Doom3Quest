@@ -629,7 +629,7 @@ void idPlayerView::DoubleVision( idUserInterface *hud, const renderView_t *view,
 
 	// if double vision, render to a texture
 	renderSystem->DirectFrameBufferStart();
-	renderSystem->CropRenderSize( 512, 256, true );
+	renderSystem->CropRenderSize( 1024, 1024, true );
 	SingleView( hud, view );
 	renderSystem->CaptureRenderToImage( "_scratch" );
 	renderSystem->UnCrop();
@@ -655,12 +655,12 @@ idPlayerView::BerserkVision
 */
 void idPlayerView::BerserkVision( idUserInterface *hud, const renderView_t *view ) {
     renderSystem->DirectFrameBufferStart();
-	renderSystem->CropRenderSize( 512, 256, true );
+	renderSystem->CropRenderSize( 1024, 1024, true );
 	SingleView( hud, view );
 	renderSystem->CaptureRenderToImage( "_scratch" );
 	renderSystem->UnCrop();
     renderSystem->DirectFrameBufferEnd();
-	renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
+	renderSystem->SetColor4( 2.0f, 2.0f, 2.0f, 1.0f );
 	renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, dvMaterial );
 }
 

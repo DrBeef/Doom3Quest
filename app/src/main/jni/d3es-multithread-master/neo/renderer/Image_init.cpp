@@ -1775,7 +1775,7 @@ void idImageManager::Init() {
 	// cinematicImage is used for cinematic drawing
 	// scratchImage is used for screen wipes/doublevision etc..
 	cinematicImage = ImageFromFunction("_cinematic", R_RGBA8Image );
-	scratchImage = ImageFromFunction("_scratch", R_RGBA8Image );
+	scratchImage = ImageFromFunction("_scratch", R_VRSurfaceImage ); // R_RGBA8Image );
 	scratchImage2 = ImageFromFunction("_scratch2", R_RGBA8Image );
 	accumImage = ImageFromFunction("_accum", R_RGBA8Image );
 	scratchCubeMapImage = ImageFromFunction("_scratchCubeMap", makeNormalizeVectorCubeMap );

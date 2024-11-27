@@ -3467,6 +3467,11 @@ void idAI::Killed( idEntity *inflictor, idEntity *attacker, int damage, const id
 		kv = spawnArgs.MatchPrefix( "def_drops", kv );
 	}
 
+	if (!fileSystem->RunningD3XP()) {
+		if ( ( attacker && attacker->IsType( idPlayer::Type ) ) && ( inflictor && !inflictor->IsType( idSoulCubeMissile::Type ) ) ) {
+			static_cast< idPlayer * >( attacker )->AddAIKill();
+		}
+	}
 
 	if (spawnArgs.GetBool("harvest_on_death")) {
 		const idDict *harvestDef = gameLocal.FindEntityDefDict(spawnArgs.GetString("def_harvest_type"), false);

@@ -62,15 +62,9 @@
 				matcolor 	0, 0, 0, 1
 				noevents 	1
 			}
-			windowDef vr_main_bg_R {
-				rect     	104, 20, 8, 248
-				background  "gui/mainmenu/select_edge"
-				matcolor 	0, 0, 0, 1
-				noevents 	1
-			}
-						
+
 			windowDef vr_general_title {
-				rect		8, 24, 96, 20
+				rect		8, 24, 104, 20
 				text		"General"
 				textscale	0.25
 				forecolor 	0.6, 0.8, 0.8, 1.0
@@ -89,11 +83,12 @@
 					set			"vr_hud_settings::visible" 		"0";
 					set			"vr_controls_settings::visible" 		"0";
 					set			"vr_advanced_settings::visible" 		"0";
+					set			"vr_cheats::visible" 		"0";
 				}
 			}
 
 			windowDef vr_performance_title {
-				rect		8, 48, 96, 20
+				rect		8, 48, 104, 20
 				text		"Performance"
 				textscale	0.25
 				forecolor 	0.6, 0.8, 0.8, 1.0
@@ -112,11 +107,12 @@
 					set			"vr_hud_settings::visible" 		"0";
 					set			"vr_controls_settings::visible" 		"0";
 					set			"vr_advanced_settings::visible" 		"0";
+					set			"vr_cheats::visible" 		"0";
 				}
 			}
 			
 			windowDef vr_hud_title {
-				rect		8, 72, 96, 20
+				rect		8, 72, 104, 20
 				text		"HUD"
 				textscale	0.25
 				forecolor 	0.6, 0.8, 0.8, 1.0
@@ -135,11 +131,12 @@
 					set			"vr_hud_settings::visible" 		"1";
 					set			"vr_controls_settings::visible" 		"0";
 					set			"vr_advanced_settings::visible" 		"0";
+					set			"vr_cheats::visible" 		"0";
 				}
 			}
 			
 			windowDef vr_controls_title {
-				rect		8, 96, 96, 20
+				rect		8, 96, 104, 20
 				text		"Controls"
 				textscale	0.25
 				forecolor 	0.6, 0.8, 0.8, 1.0
@@ -158,11 +155,12 @@
 					set			"vr_hud_settings::visible" 		"0";
 					set			"vr_controls_settings::visible" 		"1";
 					set			"vr_advanced_settings::visible" 		"0";
+					set			"vr_cheats::visible" 		"0";
 				}
 			}
 
 			windowDef vr_advanced_title {
-				rect		8, 120, 96, 20
+				rect		8, 120, 104, 20
 				text		"Shaders"
 				textscale	0.25
 				forecolor 	0.6, 0.8, 0.8, 1.0
@@ -181,6 +179,26 @@
 					set			"vr_hud_settings::visible" 		"0";
 					set			"vr_controls_settings::visible" 		"0";
 					set			"vr_advanced_settings::visible" 		"1";
+					set			"vr_cheats::visible" 		"0";
+				}
+			}
+
+			windowDef vr_cheats_title {
+				rect		8, 144, 104, 20
+				text		"Cheats"
+				textscale	0.25
+				forecolor 	0.0, 0.0, 0.0, 0.0
+				visible		1
+
+				onAction {
+					set			"cmd" "play guisounds_menuclickup";
+					set			"vr_general_settings::visible" 		"0";
+					set			"vr_performance_settings::visible"		"0";
+					set			"vr_hud_settings::visible" 		"0";
+					set			"vr_controls_settings::visible" 		"0";
+					set			"vr_advanced_settings::visible" 		"0";
+					set			"vr_cheats::visible" 		"1";
+					transition	"forecolor" "1.0 1.0 1.0 1.0" "0.0 0.0 0.0 0.0" "500";
 				}
 			}
 
@@ -193,12 +211,6 @@
 			windowDef vr_close_bg_M {
 				rect     	12, 340, 104, 28
 				background  "gui/mainmenu/select_border"
-				matcolor 	0, 0, 0, 1
-				noevents 	1
-			}
-			windowDef vr_close_bg_R {
-				rect     	104, 340, 8, 28
-				background  "gui/mainmenu/select_edge"
 				matcolor 	0, 0, 0, 1
 				noevents 	1
 			}
@@ -227,9 +239,9 @@
 
 		windowDef vr_general_settings {
 			rect		120, 20, 520, 460
-			visible		0
+			visible		1
 
-			// Laser Sight (No Longer Applicable)
+			// Laser Sight
 			windowDef vr_laser_toggle {
 				rect		0, 0, 400, 20
 				
@@ -259,8 +271,8 @@
 				choiceDef vr_choice {
 					rect		121, -1, 120, 20
 					cvar		"vr_weaponSight"
-					choices		"LaserSight;Red Dot;Circle Dot;Crosshair;Beam + Dot"
-					values		"0;1;2;3;4"
+					choices		"Off;On"
+					values		"0;1"
 					choiceType	1
 					textscale   0.2
 					forecolor   0.6, 0.8, 0.8, 1
@@ -763,7 +775,7 @@
 		   
 		   //Shotgun Choke
    		windowDef vr_general_shotgun {
-   			rect		0, 284, 400, 20
+   			rect		0, 286, 400, 20
    			
    			windowDef OS9L {
    				rect		0, 0, 8, 16
@@ -805,6 +817,44 @@
    				cvar		"vr_shotgunChoke"
    			}
    		}
+
+		// Mute footsteps
+		windowDef vr_mute_footsteps {
+			rect		0, 308, 400, 20
+
+			windowDef vr_background_L {
+				rect     	0, 0, 8, 16
+				background  "gui/mainmenu/select_edge"
+				matcolor 	0, 0, 0, 1
+				noevents 	1
+			}
+			windowDef vr_background_M {
+				rect     	8, 0, 304, 16
+				background  "gui/mainmenu/select_border"
+				matcolor 	0, 0, 0, 1
+				noevents 	1
+			}
+			windowDef vr_background_R {
+				rect     	312, 0, 8, 16
+				background  "gui/mainmenu/select_angle"
+				matcolor 	0, 0, 0, 1
+				noevents 	1
+			}
+			windowDef vr_name {
+				rect		1, -1, 120, 20
+				text		"Mute footsteps"
+				textscale   0.2
+			}
+			choiceDef vr_choice {
+				rect		121, -1, 120, 20
+				cvar		"vr_muteFootsteps"
+				choices		"No;Yes"
+				values		"0;1"
+				choiceType	1
+				textscale   0.2
+				forecolor   0.6, 0.8, 0.8, 1
+			}
+		}
 	}
 
 //=====================================================
@@ -1165,8 +1215,8 @@
 				choiceDef vr_choice {
 					rect		121, -1, 120, 20
 					cvar		"r_shadows"
-					values		"0;1"
-					choices		"Off;On"
+					values		"0;1;2"
+					choices		"Off;Full;Flashlight only"
 					choiceType	1
 					textscale   0.2
 					forecolor   0.6, 0.8, 0.8, 1
@@ -1963,6 +2013,44 @@
 					forecolor   0.6, 0.8, 0.8, 1
 				}
 			}
+
+			// Weapon toggle
+			windowDef vr_controls_weapontoggle {
+				rect		0, 110, 400, 20
+
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 120, 20
+					text		"Weapon toggle"
+					textscale   0.2
+				}
+				choiceDef vr_choice {
+					rect		121, -1, 120, 20
+					cvar		"vr_weaponToggle"
+					choices		"Up/Down;Weapon wheel"
+					values		"0;1"
+					choiceType	1
+					textscale   0.2
+					forecolor   0.6, 0.8, 0.8, 1
+				}
+			}
 		}
 
 		windowDef vr_advanced_settings {
@@ -2206,7 +2294,7 @@
 					high		3.0
 					step		0.1
 					thumbShader	"guis/assets/mainmenu/slider_bar"
-					cvar		"r_specularExponent"
+					cvar		"r_specularExponentPBR"
 				}
 			}
 
@@ -2252,6 +2340,251 @@
 					step		0.1
 					thumbShader	"guis/assets/mainmenu/slider_bar"
 					cvar		"r_brightness"
+				}
+			}
+		}
+
+		windowDef vr_cheats {
+			rect		120, 20, 520, 460
+			visible		0
+
+			windowDef vr_clearlights {
+				rect		0, 0, 400, 20
+
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name_clearlights {
+					rect		1, -1, 400, 20
+					text		"clearlights"
+					textscale   0.2
+					forecolor 	0.6, 0.8, 0.8, 1.0
+				}
+
+				onMouseEnter {
+					transition	"vr_name_clearlights::forecolor" "0.6 0.8 0.8 1.0" "1.0 1.0 1.0 1.0" "100";
+				}
+				onMouseExit {
+					transition	"vr_name_clearlights::forecolor" "1.0 1.0 1.0 1.0" "0.6 0.8 0.8 1.0" "200";
+				}
+				onAction {
+					set			"cmd" "cheat clearlights";
+					set			"cmd" "play guisounds_menuclickup";
+				}
+			}
+
+			windowDef vr_giveall {
+				rect		0, 22, 400, 20
+
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name_giveall {
+					rect		1, -1, 400, 20
+					text		"give all"
+					textscale   0.2
+					forecolor 	0.6, 0.8, 0.8, 1.0
+				}
+
+				onMouseEnter {
+					transition	"vr_name_giveall::forecolor" "0.6 0.8 0.8 1.0" "1.0 1.0 1.0 1.0" "100";
+				}
+				onMouseExit {
+					transition	"vr_name_giveall::forecolor" "1.0 1.0 1.0 1.0" "0.6 0.8 0.8 1.0" "200";
+				}
+				onAction {
+					set			"cmd" "cheat give all";
+					set			"cmd" "play guisounds_menuclickup";
+				}
+			}
+
+			windowDef vr_giveammo {
+				rect		0, 44, 400, 20
+
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name_giveammo {
+					rect		1, -1, 400, 20
+					text		"give ammo"
+					textscale   0.2
+					forecolor 	0.6, 0.8, 0.8, 1.0
+				}
+
+				onMouseEnter {
+					transition	"vr_name_giveammo::forecolor" "0.6 0.8 0.8 1.0" "1.0 1.0 1.0 1.0" "100";
+				}
+				onMouseExit {
+					transition	"vr_name_giveammo::forecolor" "1.0 1.0 1.0 1.0" "0.6 0.8 0.8 1.0" "200";
+				}
+				onAction {
+					set			"cmd" "cheat give ammo";
+					set			"cmd" "play guisounds_menuclickup";
+				}
+			}
+
+			windowDef vr_givehealth {
+				rect		0, 66, 400, 20
+
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name_givehealth {
+					rect		1, -1, 400, 20
+					text		"give health"
+					textscale   0.2
+					forecolor 	0.6, 0.8, 0.8, 1.0
+				}
+
+				onMouseEnter {
+					transition	"vr_name_givehealth::forecolor" "0.6 0.8 0.8 1.0" "1.0 1.0 1.0 1.0" "100";
+				}
+				onMouseExit {
+					transition	"vr_name_givehealth::forecolor" "1.0 1.0 1.0 1.0" "0.6 0.8 0.8 1.0" "200";
+				}
+				onAction {
+					set			"cmd" "cheat give health";
+					set			"cmd" "play guisounds_menuclickup";
+				}
+			}
+
+			windowDef vr_givekeys {
+				rect		0, 88, 400, 20
+
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name_givehkeys {
+					rect		1, -1, 400, 20
+					text		"give keys"
+					textscale   0.2
+					forecolor 	0.6, 0.8, 0.8, 1.0
+				}
+
+				onMouseEnter {
+					transition	"vr_name_givehkeys::forecolor" "0.6 0.8 0.8 1.0" "1.0 1.0 1.0 1.0" "100";
+				}
+				onMouseExit {
+					transition	"vr_name_givehkeys::forecolor" "1.0 1.0 1.0 1.0" "0.6 0.8 0.8 1.0" "200";
+				}
+				onAction {
+					set			"cmd" "cheat give keys";
+					set			"cmd" "play guisounds_menuclickup";
+				}
+			}
+
+			windowDef vr_noclip {
+				rect		0, 110, 400, 20
+
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 16
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 16
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 16
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name_noclip {
+					rect		1, -1, 400, 20
+					text		"noclip"
+					textscale   0.2
+					forecolor 	0.6, 0.8, 0.8, 1.0
+				}
+
+				onMouseEnter {
+					transition	"vr_name_noclip::forecolor" "0.6 0.8 0.8 1.0" "1.0 1.0 1.0 1.0" "100";
+				}
+				onMouseExit {
+					transition	"vr_name_noclip::forecolor" "1.0 1.0 1.0 1.0" "0.6 0.8 0.8 1.0" "200";
+				}
+				onAction {
+					set			"cmd" "cheat noclip";
+					set			"cmd" "play guisounds_menuclickup";
 				}
 			}
 		}

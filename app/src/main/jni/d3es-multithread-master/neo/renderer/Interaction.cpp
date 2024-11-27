@@ -912,6 +912,22 @@ void idInteraction::CreateInteraction( const idRenderModel *model ) {
 			// if the light has an optimized shadow volume, don't create shadows for any models that are part of the base areas
 			if ( lightDef->parms.prelightModel == NULL || !model->IsStaticWorldModel() || !r_useOptimizedShadows.GetBool() ) {
 
+				//Lubos BEGIN
+				bool ok = false;
+				switch (cvarSystem->GetCVarInteger("r_shadows")) {
+					case 1: //full shadows
+						ok = true;
+						break;
+					case 2: //flashlight only
+						if ( lightDef->falloffImage && !idStr::Icmp( lightDef->falloffImage->imgName, "makeIntensity( lights/flashoff)" ) ) {
+							ok = true;
+						}
+				}
+				if (!ok) {
+					continue;
+				}
+				//Lubos END
+
 				// this is the only place during gameplay (outside the utilities) that R_CreateShadowVolume() is called
 				sint->shadowTris = R_CreateShadowVolume( entityDef, tri, lightDef, shadowGen, sint->cullInfo );
 				if ( sint->shadowTris ) {

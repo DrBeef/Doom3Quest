@@ -53,6 +53,7 @@ android {
         dependsOn 'Pack399PK4'
         dependsOn 'Pack399RoEPK4'
         dependsOn 'Pack399LMPK4'
+        dependsOn 'Pack399CDPK4'
     }
     task Pack399PK4(type: Zip) {
         from 'src/main/pk4/pak399/'
@@ -67,6 +68,11 @@ android {
     task Pack399LMPK4(type: Zip) {
         from 'src/main/pk4/pak399lm/'
         archiveName 'pak399lm.pk4'
+        destinationDir(file('src/main/assets/'))
+    }
+    task Pack399CDPK4(type: Zip) {
+        from 'src/main/pk4/pak399cd/'
+        archiveName 'pak399cd.pk4'
         destinationDir(file('src/main/assets/'))
     }
     afterEvaluate {

@@ -869,6 +869,7 @@ extern idCVar r_checkBounds;			// compare all surface bounds with precalculated 
 
 extern idCVar r_usePBR;
 extern idCVar r_specularExponent;
+extern idCVar r_specularExponentPBR;
 extern idCVar r_useLightPortalFlow;		// 1 = do a more precise area reference determination
 extern idCVar r_useShadowSurfaceScissor;// 1 = scissor shadows by the scissor rect of the interaction surfaces
 extern idCVar r_useConstantMaterials;	// 1 = use pre-calculated material registers if possible

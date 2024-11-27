@@ -1,0 +1,90 @@
+    windowDef WeaponWheel {
+        rect		240-20, 0, 160+40, 120+40
+        matcolor	1, 1, 1, 1
+        background	"guis/assets/weapon_wheel"
+        visible ("gui::weapon_wheel" == 1)
+
+        windowDef WeaponWheelGlow {
+            rect		"gui::weapon_wheel_glow_x"-20, "gui::weapon_wheel_glow_y"-15, 40, 30
+            matcolor	1, 1, 1, "gui::weapon_wheel_glow_alpha"
+            background	"guis/assets/weapon_wheel_glow"
+            visible	1
+        }
+
+        //Basic weapons
+        windowDef WeapIcon1 {
+            visible		1
+            rect		32+20-12, 25, 24, 24
+            background	"guis/assets/hud/icons/pistolw"
+            matcolor	1, 1, 1 , "gui::weapon_wheel1"
+            visible	1
+        }
+        windowDef WeapIcon2 {
+            visible		1
+            rect		56+20, 25-16, 48, 24
+            background	"guis/assets/hud/icons/shotgunw"
+            matcolor	1, 1, 1 , "gui::weapon_wheel2"
+            visible	1
+        }
+        windowDef WeapIcon5 {
+            visible		1
+            rect		104+20+12, 25, 24, 24
+            background	"guis/assets/hud/icons/grenadew"
+            matcolor	1, 1, 1 , "gui::weapon_wheel5"
+            visible	1
+        }
+
+        //Fast weapons
+        windowDef WeapIcon4 {
+            visible		1
+            rect		10, 24+25-4, 48, 24
+            background	"guis/assets/hud/icons/chaingunw"
+            matcolor	1, 1, 1 , "gui::weapon_wheel4"
+            visible	1
+        }
+        windowDef WeapIcon3 {
+            visible		1
+            rect		10-8, 48+25, 48, 24
+            background	"guis/assets/hud/icons/machinegunw"
+            matcolor	1, 1, 1 , "gui::weapon_wheel3"
+            visible	1
+        }
+        windowDef WeapIcon6 {
+            visible		1
+            rect		10+8, 72+25+4, 48, 24
+            background	"guis/assets/hud/icons/plasmagunw"
+            matcolor	1, 1, 1 , "gui::weapon_wheel6"
+            visible	1
+        }
+
+        //Huge damage weapons
+        windowDef WeapIcon7 {
+            visible		1
+            rect		112+30, 24+25-4, 48, 24
+            background	"guis/assets/hud/icons/rocketlauncherw"
+            matcolor	1, 1, 1 , "gui::weapon_wheel7"
+            visible	1
+        }
+        windowDef WeapIcon8 {
+            visible		1
+            rect		112+30+8, 48+25, 48, 24
+            background	"guis/assets/hud/icons/bfgw"
+            matcolor	1, 1, 1 , "gui::weapon_wheel8"
+            visible	1
+        }
+        windowDef WeapIcon13 {
+            visible		1
+            rect		112+30-8, 72+25+4, 48, 24
+            background	"guis/assets/hud/icons/doublebarrelw"
+            matcolor	1, 1, 1 , "gui::weapon_wheel13"
+            visible	1
+        }
+
+        //Game specific weapons
+        windowDef WeapIcon12 {
+            rect		56+20, 96+25+4, 48, 24
+            background	"guis/assets/hud/icons/grabberw"
+            matcolor	1, 1, 1 , "gui::weapon_wheel12"
+            visible	1
+        }
+    }

@@ -289,6 +289,7 @@ extern idCVar vr_throwables;
 extern idCVar vr_turnmode;
 extern idCVar vr_turnangle;
 extern idCVar vr_hudmode;
+extern idCVar vr_weaponToggle;
 extern idCVar g_infiniteAmmo;
 extern idCVar g_useWeaponDepthHack;
 extern idCVar g_weaponShadows;

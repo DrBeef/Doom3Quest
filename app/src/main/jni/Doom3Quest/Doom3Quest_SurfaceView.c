@@ -1745,8 +1745,6 @@ void * AppThreadFunction(void * parm ) {
 //All the stuff we want to do each frame
 void Doom3Quest_FrameSetup(int controlscheme, int switch_sticks, int refresh)
 {
-    ALOGV("Refresh = %i", refresh);
-
 	//Use floor based tracking space
 	vrapi_SetTrackingSpace(gAppState.Ovr, VRAPI_TRACKING_SPACE_LOCAL_FLOOR);
 

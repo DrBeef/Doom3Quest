@@ -31,6 +31,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "script/Script_Thread.h"
 #include "Item.h"
 #include "Light.h"
+#include "Player.h"
 #include "Projectile.h"
 #include "WorldSpawn.h"
 
@@ -2271,17 +2272,22 @@ void idActor::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir
 
 	SetTimeState ts(timeGroup);
 
-	// Helltime boss is immune to all projectiles except the helltime killer
-	if (finalBoss && idStr::Icmp(inflictor->GetEntityDefName(), "projectile_helltime_killer")) {
-		return;
-	}
+	if (fileSystem->RunningD3XP()) {
+		// Helltime boss is immune to all projectiles except the helltime killer
+		if (finalBoss && idStr::Icmp(inflictor->GetEntityDefName(), "projectile_helltime_killer")) {
+			return;
+		}
 
-	// Maledict is immume to the falling asteroids
-	if (!idStr::Icmp(GetEntityDefName(), "monster_boss_d3xp_maledict") &&
-		(!idStr::Icmp(damageDefName, "damage_maledict_asteroid") || !idStr::Icmp(damageDefName, "damage_maledict_asteroid_splash"))) {
-		return;
+		// Maledict is immume to the falling asteroids
+		if (!idStr::Icmp(GetEntityDefName(), "monster_boss_d3xp_maledict") &&
+			(!idStr::Icmp(damageDefName, "damage_maledict_asteroid") || !idStr::Icmp(damageDefName, "damage_maledict_asteroid_splash"))) {
+			return;
+		}
+	} else {
+		if ( finalBoss && !inflictor->IsType( idSoulCubeMissile::Type ) ) {
+			return;
+		}
 	}
-
 
 	const idDict *damageDef = gameLocal.FindEntityDefDict( damageDefName );
 	if ( !damageDef ) {
@@ -2569,11 +2575,15 @@ void idActor::PlayFootStepSound( void ) {
 		return;
 	}
 
-	//Don't play footsteps if play is hardly moving (this prevents positional tracking
-	//from triggering annoying repeated footstep sounds)
-	if (GetPhysics()->GetLinearVelocity(0).Length() < 40.0f)
-	{
-		return;
+	if (IsType(idPlayer::Type)) {
+		//Don't play footsteps if play is hardly moving (this prevents positional tracking
+		//from triggering annoying repeated footstep sounds)
+		if (GetPhysics()->GetLinearVelocity(0).Length() < 40.0f) {
+			return;
+		}
+		if (cvarSystem->GetCVarBool("vr_muteFootsteps")) {
+			return;
+		}
 	}
 
 	// start footstep sound based on material type

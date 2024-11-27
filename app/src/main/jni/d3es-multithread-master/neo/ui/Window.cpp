@@ -3610,6 +3610,11 @@ void idWindow::WriteToSaveGame( idFile *savefile ) {
 	// Save children
 	for ( i = 0; i < drawWindows.Num(); i++ ) {
 		drawWin_t	window = drawWindows[i];
+		//Lubos BEGIN
+		if ( window.win && !window.win->name.Icmp( "WeaponWheel" ) ) {
+			continue;
+		}
+		//Lubos END
 
 		if ( window.simp ) {
 			window.simp->WriteToSaveGame( savefile );
@@ -3773,6 +3778,11 @@ void idWindow::ReadFromSaveGame( idFile *savefile ) {
 	// Read children
 	for ( i = 0; i < drawWindows.Num(); i++ ) {
 		drawWin_t	window = drawWindows[i];
+		//Lubos BEGIN
+		if ( window.win && !window.win->name.Icmp( "WeaponWheel" ) ) {
+			continue;
+		}
+		//Lubos END
 
 		if ( window.simp ) {
 			window.simp->ReadFromSaveGame( savefile );
