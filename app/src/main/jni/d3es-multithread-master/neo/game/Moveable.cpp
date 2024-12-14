@@ -223,8 +223,10 @@ void idMoveable::Restore( idRestoreGame *savefile ) {
 
 	savefile->ReadString( brokenModel );
 	savefile->ReadString( damage );
-	savefile->ReadString(monsterDamage);
-	savefile->ReadObject(reinterpret_cast<idClass * &>(attacker));
+	if (!oldSaveVersion) {
+		savefile->ReadString(monsterDamage);
+		savefile->ReadObject(reinterpret_cast<idClass * &>(attacker));
+	}
 	savefile->ReadString( fxCollide );
 	savefile->ReadInt( nextCollideFxTime );
 	savefile->ReadFloat( minDamageVelocity );
@@ -875,12 +877,12 @@ void idExplodingBarrel::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( lightTime );
 	savefile->ReadFloat( time );
 
-	savefile->ReadBool(isStable);
-
+	if (!oldSaveVersion) {
+		savefile->ReadBool(isStable);
+	}
 	if (lightDefHandle != -1) {
 		lightDefHandle = gameRenderWorld->AddLightDef(&light);
 	}
-
 	if (particleModelDefHandle != -1) {
 		particleModelDefHandle = gameRenderWorld->AddEntityDef(&particleRenderEntity);
 	}

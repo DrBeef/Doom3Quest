@@ -3281,20 +3281,22 @@ void idHarvestable::Save(idSaveGame *savefile) const
 
 void idHarvestable::Restore(idRestoreGame *savefile)
 {
-    savefile->ReadFloat(triggersize);
-    savefile->ReadClipModel(trigger);
-    savefile->ReadFloat(giveDelay);
-    savefile->ReadFloat(removeDelay);
-    savefile->ReadBool(given);
+    if (!oldSaveVersion) {
+        savefile->ReadFloat(triggersize);
+        savefile->ReadClipModel(trigger);
+        savefile->ReadFloat(giveDelay);
+        savefile->ReadFloat(removeDelay);
+        savefile->ReadBool(given);
 
-    player.Restore(savefile);
-    savefile->ReadInt(startTime);
+        player.Restore(savefile);
+        savefile->ReadInt(startTime);
 
-    savefile->ReadBool(fxFollowPlayer);
-    fx.Restore(savefile);
-    savefile->ReadString(fxOrient);
+        savefile->ReadBool(fxFollowPlayer);
+        fx.Restore(savefile);
+        savefile->ReadString(fxOrient);
 
-    parentEnt.Restore(savefile);
+        parentEnt.Restore(savefile);
+    }
 }
 
 void idHarvestable::SetParent(idEntity *parent)
@@ -3691,10 +3693,12 @@ idAFEntity_Harvest::Restore
 */
 void idAFEntity_Harvest::Restore(idRestoreGame *savefile)
 {
-    harvestEnt.Restore(savefile);
-    //if(harvestEnt.GetEntity()) {
-    //	harvestEnt.GetEntity()->SetParent(this);
-    //}
+    if (!oldSaveVersion) {
+        harvestEnt.Restore(savefile);
+        //if(harvestEnt.GetEntity()) {
+        //	harvestEnt.GetEntity()->SetParent(this);
+        //}
+    }
 }
 
 /*

@@ -1331,8 +1331,10 @@ void idRestoreGame::ReadRenderEntity( renderEntity_t &renderEntity ) {
 
 	ReadInt( renderEntity.forceUpdate );
 
-	ReadInt(renderEntity.timeGroup);
-	ReadInt(renderEntity.xrayIndex);
+	if (!oldSaveVersion) {
+		ReadInt(renderEntity.timeGroup);
+		ReadInt(renderEntity.xrayIndex);
+	}
 }
 
 /*

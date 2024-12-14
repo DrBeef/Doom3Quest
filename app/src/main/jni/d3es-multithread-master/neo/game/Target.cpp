@@ -884,16 +884,18 @@ void idTarget_SetInfluence::Restore( idRestoreGame *savefile ) {
 	savefile->ReadBool( soundFaded );
 	savefile->ReadBool( restoreOnTrigger );
 
-	savefile->ReadInt(num);
+	if (!oldSaveVersion) {
+		savefile->ReadInt(num);
 
-	for (i = 0; i < num; i++) {
-		SavedGui_t temp;
+		for (i = 0; i < num; i++) {
+			SavedGui_t temp;
 
-		for (int j = 0; j < MAX_RENDERENTITY_GUI; j++) {
-			savefile->ReadUserInterface(temp.gui[j]);
+			for (int j = 0; j < MAX_RENDERENTITY_GUI; j++) {
+				savefile->ReadUserInterface(temp.gui[j]);
+			}
+
+			savedGuiList.Append(temp);
 		}
-
-		savedGuiList.Append(temp);
 	}
 }
 

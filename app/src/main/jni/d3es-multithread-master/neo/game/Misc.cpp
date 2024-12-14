@@ -1822,11 +1822,13 @@ idFuncShootProjectile::Restore
 ===============
 */
 void idFuncShootProjectile::Restore( idRestoreGame *savefile ) {
-    savefile->ReadInt( mRespawnDelay );
-    savefile->ReadInt( mRespawnTime );
-    savefile->ReadFloat( mShootSpeed );
-    savefile->ReadVec3( mShootDir );
-    savefile->ReadString( mEntityDefName );
+    if (!oldSaveVersion) {
+        savefile->ReadInt( mRespawnDelay );
+        savefile->ReadInt( mRespawnTime );
+        savefile->ReadFloat( mShootSpeed );
+        savefile->ReadVec3( mShootDir );
+        savefile->ReadString( mEntityDefName );
+    }
 }
 
 /*
@@ -3434,20 +3436,21 @@ idShockwave::Restore
 */
 void idShockwave::Restore(idRestoreGame *savefile)
 {
-    savefile->ReadBool(isActive);
-    savefile->ReadInt(startTime);
-    savefile->ReadInt(duration);
+    if (!oldSaveVersion) {
+        savefile->ReadBool(isActive);
+        savefile->ReadInt(startTime);
+        savefile->ReadInt(duration);
 
-    savefile->ReadFloat(startSize);
-    savefile->ReadFloat(endSize);
-    savefile->ReadFloat(currentSize);
+        savefile->ReadFloat(startSize);
+        savefile->ReadFloat(endSize);
+        savefile->ReadFloat(currentSize);
 
-    savefile->ReadFloat(magnitude);
+        savefile->ReadFloat(magnitude);
 
-    savefile->ReadFloat(height);
-    savefile->ReadBool(playerDamaged);
-    savefile->ReadFloat(playerDamageSize);
-
+        savefile->ReadFloat(height);
+        savefile->ReadBool(playerDamaged);
+        savefile->ReadFloat(playerDamageSize);
+    }
 }
 
 /*

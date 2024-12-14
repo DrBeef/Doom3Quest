@@ -185,7 +185,9 @@ void idProjectile::Restore( idRestoreGame *savefile ) {
 	savefile->ReadParticle( smokeFly );
 	savefile->ReadInt( smokeFlyTime );
 
-	savefile->ReadInt( originalTimeGroup );
+	if (!oldSaveVersion) {
+		savefile->ReadInt( originalTimeGroup );
+	}
 
 	savefile->ReadInt( (int &)state );
 
@@ -2725,18 +2727,20 @@ idHomingProjectile::Restore
 ================
 */
 void idHomingProjectile::Restore( idRestoreGame *savefile ) {
-    enemy.Restore( savefile );
-    savefile->ReadFloat( speed );
-    savefile->ReadAngles( rndScale );
-    savefile->ReadAngles( rndAng );
-    savefile->ReadFloat( turn_max );
-    savefile->ReadFloat( clamp_dist );
-    savefile->ReadAngles( angles );
-    savefile->ReadBool( burstMode );
-    savefile->ReadBool( unGuided );
-    savefile->ReadFloat( burstDist );
-    savefile->ReadFloat( burstVelocity );
-    savefile->ReadVec3( seekPos );
+    if (!oldSaveVersion) {
+        enemy.Restore( savefile );
+        savefile->ReadFloat( speed );
+        savefile->ReadAngles( rndScale );
+        savefile->ReadAngles( rndAng );
+        savefile->ReadFloat( turn_max );
+        savefile->ReadFloat( clamp_dist );
+        savefile->ReadAngles( angles );
+        savefile->ReadBool( burstMode );
+        savefile->ReadBool( unGuided );
+        savefile->ReadFloat( burstDist );
+        savefile->ReadFloat( burstVelocity );
+        savefile->ReadVec3( seekPos );
+    }
 }
 
 

@@ -53,6 +53,8 @@ If you have questions concerning this license or the applicable additional terms
 #define protected	public
 #endif
 
+extern bool oldSaveVersion; //Lubos
+
 /*
 ===============================================================================
 
@@ -143,8 +145,10 @@ struct timeState_t {
     void				Restore(idRestoreGame *savefile)	{
         savefile->ReadInt(time);
         savefile->ReadInt(previousTime);
-        savefile->ReadInt(msec);
-        savefile->ReadInt(framenum);
+        if (!oldSaveVersion) {
+            savefile->ReadInt(msec);
+            savefile->ReadInt(framenum);
+        }
         savefile->ReadInt(realClientTime);
     }
     void				Increment()											{

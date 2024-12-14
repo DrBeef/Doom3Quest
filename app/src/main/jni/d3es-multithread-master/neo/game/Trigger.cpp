@@ -565,7 +565,9 @@ void idTrigger_EntityName::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( nextTriggerTime );
 	savefile->ReadBool( triggerFirst );
 	savefile->ReadString( entityName );
-	savefile->ReadBool( testPartialName );
+	if (!oldSaveVersion) {
+		savefile->ReadBool( testPartialName );
+	}
 }
 
 /*

@@ -107,9 +107,9 @@ ovrLayerCylinder2 BuildCylinderLayer( ovrRenderer * cylinderRenderer,
 
 	layer.HeadPose = tracking->HeadPose;
 
-	const float density = 4500.0f;
+	const float density = 4500.0f * SS_MULTIPLIER;
 	const float radius = 6.0f;
-	const ovrVector3f translation = { 0.0f, 0.0f, -4.0f / SS_MULTIPLIER };
+	const ovrVector3f translation = { 0.0f, 0.0f, -4.0f };
 
 	ovrMatrix4f cylinderTransform = 
 		CylinderModelMatrix( textureWidth, textureHeight, translation,

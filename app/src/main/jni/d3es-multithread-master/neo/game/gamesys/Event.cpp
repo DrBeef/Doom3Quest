@@ -923,50 +923,52 @@ void idEvent::Restore( idRestoreGame *savefile ) {
 		}
 	}
 
-	// Restore the Fast EventQueue
-	savefile->ReadInt(num);
+	if (!oldSaveVersion) {
+		// Restore the Fast EventQueue
+		savefile->ReadInt(num);
 
-	for (i = 0; i < num; i++) {
-		if (FreeEvents.IsListEmpty()) {
-			gameLocal.Error("idEvent::Restore : No more free events");
-		}
+		for (i = 0; i < num; i++) {
+			if (FreeEvents.IsListEmpty()) {
+				gameLocal.Error("idEvent::Restore : No more free events");
+			}
 
-		event = FreeEvents.Next();
-		event->eventNode.Remove();
-		event->eventNode.AddToEnd(FastEventQueue);
+			event = FreeEvents.Next();
+			event->eventNode.Remove();
+			event->eventNode.AddToEnd(FastEventQueue);
 
-		savefile->ReadInt(event->time);
+			savefile->ReadInt(event->time);
 
-		// read the event name
-		savefile->ReadString(name);
-		event->eventdef = idEventDef::FindEvent(name);
+			// read the event name
+			savefile->ReadString(name);
+			event->eventdef = idEventDef::FindEvent(name);
 
-		if (!event->eventdef) {
-			savefile->Error("idEvent::Restore: unknown event '%s'", name.c_str());
-		}
+			if (!event->eventdef) {
+				savefile->Error("idEvent::Restore: unknown event '%s'", name.c_str());
+			}
 
-		// read the classtype
-		savefile->ReadString(name);
-		event->typeinfo = idClass::GetClass(name);
+			// read the classtype
+			savefile->ReadString(name);
+			event->typeinfo = idClass::GetClass(name);
 
-		if (!event->typeinfo) {
-			savefile->Error("idEvent::Restore: unknown class '%s' on event '%s'", name.c_str(), event->eventdef->GetName());
-		}
+			if (!event->typeinfo) {
+				savefile->Error("idEvent::Restore: unknown class '%s' on event '%s'", name.c_str(), event->eventdef->GetName());
+			}
 
-		savefile->ReadObject(event->object);
+			savefile->ReadObject(event->object);
 
-		// read the args
-		savefile->ReadInt(argsize);
+			// read the args
+			savefile->ReadInt(argsize);
 
-		if (argsize != event->eventdef->GetArgSize()) {
-			savefile->Error("idEvent::Restore: arg size (%zd) doesn't match saved arg size(%d) on event '%s'", event->eventdef->GetArgSize(), argsize, event->eventdef->GetName());
-		}
+			if (argsize != event->eventdef->GetArgSize()) {
+				savefile->Error("idEvent::Restore: arg size (%zd) doesn't match saved arg size(%d) on event '%s'", event->eventdef->GetArgSize(), argsize, event->eventdef->GetName());
+			}
 
-		if (argsize) {
-			event->data = eventDataAllocator.Alloc(argsize);
-			savefile->Read(event->data, argsize);
-		} else {
-			event->data = NULL;
+			if (argsize) {
+				event->data = eventDataAllocator.Alloc(argsize);
+				savefile->Read(event->data, argsize);
+			} else {
+				event->data = NULL;
+			}
 		}
 	}
 }

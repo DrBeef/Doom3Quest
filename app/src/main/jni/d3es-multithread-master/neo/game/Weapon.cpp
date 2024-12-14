@@ -672,56 +672,58 @@ void idWeapon::Restore( idRestoreGame *savefile ) {
 
 	savefile->ReadJoint( smokeJointView );
 
-	int particleCount;
-	savefile->ReadInt(particleCount);
+	if (!oldSaveVersion) {
+		int particleCount;
+		savefile->ReadInt(particleCount);
 
-	for (int i = 0; i < particleCount; i++) {
-		WeaponParticle_t newParticle;
-		memset(&newParticle, 0, sizeof(newParticle));
+		for (int i = 0; i < particleCount; i++) {
+			WeaponParticle_t newParticle;
+			memset(&newParticle, 0, sizeof(newParticle));
 
-		idStr name, particlename;
-		savefile->ReadString(name);
-		savefile->ReadString(particlename);
+			idStr name, particlename;
+			savefile->ReadString(name);
+			savefile->ReadString(particlename);
 
-		strcpy(newParticle.name, name.c_str());
-		strcpy(newParticle.particlename, particlename.c_str());
+			strcpy(newParticle.name, name.c_str());
+			strcpy(newParticle.particlename, particlename.c_str());
 
-		savefile->ReadBool(newParticle.active);
-		savefile->ReadInt(newParticle.startTime);
-		savefile->ReadJoint(newParticle.joint);
-		savefile->ReadBool(newParticle.smoke);
+			savefile->ReadBool(newParticle.active);
+			savefile->ReadInt(newParticle.startTime);
+			savefile->ReadJoint(newParticle.joint);
+			savefile->ReadBool(newParticle.smoke);
 
-		if (newParticle.smoke) {
-			newParticle.particle = static_cast<const idDeclParticle *>(declManager->FindType(DECL_PARTICLE, particlename, false));
-		} else {
-			savefile->ReadObject(reinterpret_cast<idClass * &>(newParticle.emitter));
+			if (newParticle.smoke) {
+				newParticle.particle = static_cast<const idDeclParticle *>(declManager->FindType(DECL_PARTICLE, particlename, false));
+			} else {
+				savefile->ReadObject(reinterpret_cast<idClass * &>(newParticle.emitter));
+			}
+
+			weaponParticles.Set(newParticle.name, newParticle);
 		}
 
-		weaponParticles.Set(newParticle.name, newParticle);
-	}
+		int lightCount;
+		savefile->ReadInt(lightCount);
 
-	int lightCount;
-	savefile->ReadInt(lightCount);
+		for (int i = 0; i < lightCount; i++) {
+			WeaponLight_t newLight;
+			memset(&newLight, 0, sizeof(newLight));
 
-	for (int i = 0; i < lightCount; i++) {
-		WeaponLight_t newLight;
-		memset(&newLight, 0, sizeof(newLight));
+			idStr name;
+			savefile->ReadString(name);
+			strcpy(newLight.name, name.c_str());
 
-		idStr name;
-		savefile->ReadString(name);
-		strcpy(newLight.name, name.c_str());
+			savefile->ReadBool(newLight.active);
+			savefile->ReadInt(newLight.startTime);
+			savefile->ReadJoint(newLight.joint);
+			savefile->ReadInt(newLight.lightHandle);
+			savefile->ReadRenderLight(newLight.light);
 
-		savefile->ReadBool(newLight.active);
-		savefile->ReadInt(newLight.startTime);
-		savefile->ReadJoint(newLight.joint);
-		savefile->ReadInt(newLight.lightHandle);
-		savefile->ReadRenderLight(newLight.light);
+			if (newLight.lightHandle >= 0) {
+				newLight.lightHandle = gameRenderWorld->AddLightDef(&newLight.light);
+			}
 
-		if (newLight.lightHandle >= 0) {
-			newLight.lightHandle = gameRenderWorld->AddLightDef(&newLight.light);
+			weaponLights.Set(newLight.name, newLight);
 		}
-
-		weaponLights.Set(newLight.name, newLight);
 	}
 
     for ( int i = 0; i < 2; i++ ) {
@@ -2627,8 +2629,14 @@ void idWeapon::MuzzleRise( idVec3 &origin, idMat3 &axis ) {
 	if ( time > muzzle_kick_maxtime ) {
 		time = muzzle_kick_maxtime;
 	}
-
 	amount = ( float )time / ( float )muzzle_kick_maxtime;
+
+	//Lubos BEGIN
+	if ( currentIdentifiedWeapon == WEAPON_PISTOL ) {
+		amount *= 0.5f;
+	}
+	//Lubos END
+
 	ang		= muzzle_kick_angles * amount;
 	offset	= muzzle_kick_offset * amount;
 

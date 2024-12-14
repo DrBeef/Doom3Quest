@@ -23,12 +23,14 @@ import com.drbeef.externalhapticsservice.HapticServiceClient;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import com.drbeef.externalhapticsservice.HapticsConstants;
@@ -251,6 +253,34 @@ import static android.system.Os.setenv;
 			System.exit(0);
 		}
 
+		//Copy save games from old version to new version
+		File savesOld = new File(root, "saves");
+		File savesNew = new File(root, "saves_v1.3");
+		ArrayList<Pair<File, File>> toCopy = new ArrayList<>();
+		toCopy.add(new Pair<>(savesOld, savesNew));
+		while (!toCopy.isEmpty()) {
+			savesOld = toCopy.get(0).first;
+			savesNew = toCopy.get(0).second;
+			toCopy.remove(0);
+			if (savesOld.isDirectory()) {
+				for (File file : savesOld.listFiles()) {
+					File targetFile = new File(savesNew, file.getName());
+					if (targetFile.isDirectory() || !targetFile.exists()) {
+						toCopy.add(new Pair<>(file, targetFile));
+					}
+				}
+				savesNew.mkdirs();
+			} else {
+				try {
+					copy_stream(new FileInputStream(savesOld), new FileOutputStream(savesNew));
+					savesNew.setLastModified(savesOld.lastModified());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+
 		//Read these from a file and pass through
 		commandLineParams = new String("doom3quest");
 
@@ -280,13 +310,13 @@ import static android.system.Os.setenv;
 		try {
 			ApplicationInfo ai =  getApplicationInfo();
 
-			setenv("USER_FILES", "/sdcard/Doom3Quest", true);
+			setenv("USER_FILES", root.getAbsolutePath(), true);
 			setenv("GAMELIBDIR", getApplicationInfo().nativeLibraryDir, true);
 			setenv("GAMETYPE", "16", true); // hard coded for now
 		}
 		catch (Exception e)
 		{
-
+			e.printStackTrace();
 		}
 
 		//GB Change per headset defaults
@@ -296,12 +326,12 @@ import static android.system.Os.setenv;
 		long msaa = 1; // default for both HMDs
 
 
-		String configFileName = new File(base, "doom3quest.cfg").getAbsolutePath();
-		if(new File(configFileName).exists())
+		File configFile = new File(root, "config/base/doom3quest.cfg");
+		if(configFile.exists())
 		{
 			BufferedReader br;
 			try {
-				br = new BufferedReader(new FileReader(configFileName));
+				br = new BufferedReader(new FileReader(configFile));
 				String s;
 				while ((s=br.readLine())!=null) {
 					int i1 = s.indexOf("\"");

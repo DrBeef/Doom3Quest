@@ -732,28 +732,30 @@ void idAI::Restore( idRestoreGame *savefile ) {
 
 	funcEmitters.Clear();
 
-	int emitterCount;
-	savefile->ReadInt(emitterCount);
+	if (!oldSaveVersion) {
+		int emitterCount;
+		savefile->ReadInt(emitterCount);
 
-	for (int i = 0; i < emitterCount; i++) {
-		funcEmitter_t newEmitter;
-		memset(&newEmitter, 0, sizeof(newEmitter));
+		for (int i = 0; i < emitterCount; i++) {
+			funcEmitter_t newEmitter;
+			memset(&newEmitter, 0, sizeof(newEmitter));
 
-		idStr name;
-		savefile->ReadString(name);
+			idStr name;
+			savefile->ReadString(name);
 
-		strcpy(newEmitter.name, name.c_str());
+			strcpy(newEmitter.name, name.c_str());
 
-		savefile->ReadJoint(newEmitter.joint);
-		savefile->ReadObject(reinterpret_cast<idClass * &>(newEmitter.particle));
+			savefile->ReadJoint(newEmitter.joint);
+			savefile->ReadObject(reinterpret_cast<idClass * &>(newEmitter.particle));
 
-		funcEmitters.Set(newEmitter.name, newEmitter);
+			funcEmitters.Set(newEmitter.name, newEmitter);
+		}
+
+		harvestEnt.Restore(savefile);
+		//if(harvestEnt.GetEntity()) {
+		//	harvestEnt.GetEntity()->SetParent(this);
+		//}
 	}
-
-	harvestEnt.Restore(savefile);
-	//if(harvestEnt.GetEntity()) {
-	//	harvestEnt.GetEntity()->SetParent(this);
-	//}
 }
 
 /*

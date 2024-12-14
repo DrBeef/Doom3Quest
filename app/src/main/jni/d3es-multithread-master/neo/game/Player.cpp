@@ -851,13 +851,15 @@ void idInventory::Restore( idRestoreGame *savefile ) {
 
 	savefile->ReadInt( lastGiveTime );
 
-	for (i = 0; i < AMMO_NUMTYPES; i++) {
-		savefile->ReadInt(rechargeAmmo[i].ammo);
-		savefile->ReadInt(rechargeAmmo[i].rechargeTime);
+	if (!oldSaveVersion) {
+		for (i = 0; i < AMMO_NUMTYPES; i++) {
+			savefile->ReadInt(rechargeAmmo[i].ammo);
+			savefile->ReadInt(rechargeAmmo[i].rechargeTime);
 
-		idStr name;
-		savefile->ReadString(name);
-		strcpy(rechargeAmmo[i].ammoName, name);
+			idStr name;
+			savefile->ReadString(name);
+			strcpy(rechargeAmmo[i].ammoName, name);
+		}
 	}
 }
 
@@ -2828,9 +2830,11 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( weapon_bloodstone_active2 );
 	savefile->ReadInt( weapon_bloodstone_active3 );
 
-	savefile->ReadInt(hudPowerup);
-	savefile->ReadInt(lastHudPowerup);
-	savefile->ReadInt(hudPowerupDuration);
+	if (!oldSaveVersion) {
+		savefile->ReadInt(hudPowerup);
+		savefile->ReadInt(lastHudPowerup);
+		savefile->ReadInt(hudPowerupDuration);
+	}
 
 	// Koz
 	savefile->ReadInt( weapon_pistol );
@@ -3112,16 +3116,18 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
         weaponToggles.Set( newToggle.name, newToggle );
     }
 
-	savefile->ReadObject(reinterpret_cast<idClass * &>(mountedObject));
-	enviroSuitLight.Restore(savefile);
-	savefile->ReadBool(healthRecharge);
-	savefile->ReadInt(lastHealthRechargeTime);
-	savefile->ReadInt(rechargeSpeed);
-	savefile->ReadFloat(new_g_damageScale);
+    if (!oldSaveVersion) {
+        savefile->ReadObject(reinterpret_cast<idClass * &>(mountedObject));
+        enviroSuitLight.Restore(savefile);
+        savefile->ReadBool(healthRecharge);
+        savefile->ReadInt(lastHealthRechargeTime);
+        savefile->ReadInt(rechargeSpeed);
+        savefile->ReadFloat(new_g_damageScale);
 
-	savefile->ReadBool(bloomEnabled);
-	savefile->ReadFloat(bloomSpeed);
-	savefile->ReadFloat(bloomIntensity);
+        savefile->ReadBool(bloomEnabled);
+        savefile->ReadFloat(bloomSpeed);
+        savefile->ReadFloat(bloomIntensity);
+    }
 
     // flashlight
     idWeapon* tempWeapon;

@@ -32,3 +32,4 @@ drbeef-release-key.keystore
 .idea
 .gradle
 app/src/main/assets/*.pk4
+local.properties

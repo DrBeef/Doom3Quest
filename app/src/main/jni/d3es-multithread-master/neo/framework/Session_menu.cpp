@@ -636,9 +636,9 @@ void idSessionLocal::HandleMainMenuCommands( const char *menuCommand ) {
 				//Lubos BEGIN
 				bool baseMod = ( strcmp( modsList[ choice ], "cdoom" ) != 0 ) &&
 							   ( strcmp( modsList[ choice ], "d3xp" ) != 0 );
-				/*if ( ( strlen( modsList[ choice ] ) > 0 ) && baseMod ) {
+				if ( ( strlen( modsList[ choice ] ) > 0 ) && baseMod ) {
 					cvarSystem->SetCVarString( "fs_game_base", "d3xp" );
-				} else*/ {
+				} else {
 					cvarSystem->SetCVarString( "fs_game_base", "" );
 				}
 				//Lubos END

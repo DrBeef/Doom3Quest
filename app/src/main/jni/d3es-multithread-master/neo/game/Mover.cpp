@@ -2266,7 +2266,9 @@ void idMover_Binary::Restore( idRestoreGame *savefile ) {
 		gameLocal.SetPortalState( areaPortal, portalState );
 	}
 	savefile->ReadBool( blocked );
-	savefile->ReadBool(playerOnly);
+	if (!oldSaveVersion) {
+		savefile->ReadBool(playerOnly);
+	}
 
 	guiTargets.Clear();
 	savefile->ReadInt( num );

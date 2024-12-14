@@ -954,7 +954,10 @@ void idMoveableItem::Restore( idRestoreGame *savefile ) {
 
 	savefile->ReadParticle( smoke );
 	savefile->ReadInt( smokeTime );
-	savefile->ReadInt( nextSoundTime );
+
+	if (!oldSaveVersion) {
+		savefile->ReadInt( nextSoundTime );
+	}
 }
 
 /*

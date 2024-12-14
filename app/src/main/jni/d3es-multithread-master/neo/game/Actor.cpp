@@ -1026,7 +1026,9 @@ void idActor::Restore( idRestoreGame *savefile ) {
 		idealState = GetScriptFunction( statename );
 	}
 
-	savefile->ReadInt(damageCap);
+	if (!oldSaveVersion) {
+		savefile->ReadInt(damageCap);
+	}
 }
 
 /*

@@ -781,16 +781,17 @@ void idEntity::Restore( idRestoreGame *savefile ) {
 	savefile->Read( &fl, sizeof( fl ) );
 	LittleBitField( &fl, sizeof( fl ) );
 
-	savefile->ReadInt(timeGroup);
-	savefile->ReadBool(noGrab);
-	savefile->ReadRenderEntity(xrayEntity);
-	savefile->ReadInt(xrayEntityHandle);
+	if (!oldSaveVersion) {
+		savefile->ReadInt(timeGroup);
+		savefile->ReadBool(noGrab);
+		savefile->ReadRenderEntity(xrayEntity);
+		savefile->ReadInt(xrayEntityHandle);
 
-	if (xrayEntityHandle != -1) {
-		xrayEntityHandle =  gameRenderWorld->AddEntityDef(&xrayEntity);
+		if (xrayEntityHandle != -1) {
+			xrayEntityHandle =  gameRenderWorld->AddEntityDef(&xrayEntity);
+		}
+		savefile->ReadSkin(xraySkin);
 	}
-
-	savefile->ReadSkin(xraySkin);
 
 	savefile->ReadRenderEntity( renderEntity );
 	savefile->ReadInt( modelDefHandle );

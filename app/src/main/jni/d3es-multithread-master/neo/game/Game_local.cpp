@@ -52,6 +52,8 @@ If you have questions concerning this license or the applicable additional terms
 #include "Game_local.h"
 #include "../../../Doom3Quest/VrClientInfo.h"
 
+bool oldSaveVersion = false; //Lubos
+
 const int NUM_RENDER_PORTAL_BITS	= idMath::BitsForInteger( PS_BLOCK_ALL );
 
 const float	DEFAULT_GRAVITY			= 1066.0f;
@@ -1920,11 +1922,20 @@ bool idGameLocal::InitFromSaveGame( const char *mapName, idRenderWorld *renderWo
 	savegame.ReadInt( previousTime );
 	savegame.ReadInt( time );
 
+	//Lubos BEGIN
+	//This code helps to determine if we are using old or new version of the save game format.
+	//On this line it is the first read value from file which is different between the version.
+	//VacuumAreaNum doesn't change. If it matches the read value then we use old format.
+	int value = 0;
+	savegame.ReadInt(value);
+	oldSaveVersion = value == vacuumAreaNum;
 	int msec = 1000 / 60;
-	savegame.ReadInt(msec);
+	if (!oldSaveVersion) {
+		msec = value;
+		savegame.ReadInt( vacuumAreaNum );
+	}
 	SetMSec(msec);
-
-	savegame.ReadInt( vacuumAreaNum );
+	//Lubos END
 
 	savegame.ReadInt( entityDefBits );
 	savegame.ReadBool( isServer );
@@ -1938,31 +1949,33 @@ bool idGameLocal::InitFromSaveGame( const char *mapName, idRenderWorld *renderWo
 	savegame.ReadBool( isNewFrame );
 	savegame.ReadFloat( clientSmoothing );
 
-	portalSkyEnt.Restore(&savegame);
-	savegame.ReadBool(portalSkyActive);
+	if (!oldSaveVersion) {
+		portalSkyEnt.Restore(&savegame);
+		savegame.ReadBool(portalSkyActive);
 
-	fast.Restore(&savegame);
-	slow.Restore(&savegame);
+		fast.Restore(&savegame);
+		slow.Restore(&savegame);
 
-	int blah;
-	savegame.ReadInt(blah);
-	slowmoState = (slowmoState_t)blah;
+		int blah;
+		savegame.ReadInt(blah);
+		slowmoState = (slowmoState_t)blah;
 
-	savegame.ReadFloat(slowmoMsec);
-	savegame.ReadBool(quickSlowmoReset);
+		savegame.ReadFloat(slowmoMsec);
+		savegame.ReadBool(quickSlowmoReset);
 
-	if (slowmoState == SLOWMO_STATE_OFF) {
-		if (gameSoundWorld) {
-			gameSoundWorld->SetSlowmo(false);
+		if (slowmoState == SLOWMO_STATE_OFF) {
+			if (gameSoundWorld) {
+				gameSoundWorld->SetSlowmo(false);
+			}
+		} else {
+			if (gameSoundWorld) {
+				gameSoundWorld->SetSlowmo(true);
+			}
 		}
-	} else {
-		if (gameSoundWorld) {
-			gameSoundWorld->SetSlowmo(true);
-		}
-	}
 
-	if (gameSoundWorld) {
-		gameSoundWorld->SetSlowmoSpeed(slowmoMsec / (float)USERCMD_MSEC);
+		if (gameSoundWorld) {
+			gameSoundWorld->SetSlowmoSpeed(slowmoMsec / (float)USERCMD_MSEC);
+		}
 	}
 
 	savegame.ReadBool( mapCycleLoaded );

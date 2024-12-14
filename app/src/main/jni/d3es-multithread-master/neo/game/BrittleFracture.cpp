@@ -243,7 +243,10 @@ void idBrittleFracture::Restore( idRestoreGame *savefile ) {
 			shards[i]->clipModel = shards[i]->physicsObj.GetClipModel();
 		}
 	}
-	savefile->ReadBool(isXraySurface);
+
+	if (!oldSaveVersion) {
+		savefile->ReadBool(isXraySurface);
+	}
 }
 
 /*
