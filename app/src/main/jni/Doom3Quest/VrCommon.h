@@ -72,7 +72,7 @@ void Doom3Quest_Vibrate(int channel, float low, float high);
 
 bool Doom3Quest_processMessageQueue();
 
-void Doom3Quest_FrameSetup(int controlscheme, int switch_sticks, int refresh);
+void Doom3Quest_FrameSetup(int controlscheme, int switch_sticks, int refresh, float msaa, float supersampling);
 
 void Doom3Quest_setUseScreenLayer(int screen);
 

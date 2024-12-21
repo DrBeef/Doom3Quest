@@ -901,38 +901,9 @@
 					forecolor   0.6, 0.8, 0.8, 1
 				}
 			}
-			
-			// Restart Warning
-			windowDef vr_performance_warning {
-				rect		0, 22, 400, 20
-				
-				windowDef vr_background_L {
-					rect     	0, 0, 8, 16
-					background  "gui/mainmenu/select_edge"
-					matcolor 	0, 0, 0, 1
-					noevents 	1
-				}
-				windowDef vr_background_M {
-					rect     	8, 0, 304, 16
-					background  "gui/mainmenu/select_border"
-					matcolor 	0, 0, 0, 1
-					noevents 	1
-				}
-				windowDef vr_background_R {
-					rect     	312, 0, 8, 20
-					background  "gui/mainmenu/select_angle"
-					matcolor 	0, 0, 0, 1
-					noevents 	1
-				}
-				windowDef vr_name {
-					rect		1, -1, 240, 20
-					text		"Most Changes Require Restart"
-					textscale   0.2
-				}				
-			}
-			
+
 			windowDef vr_performance_warning2 {
-				rect		0, 42, 400, 20
+				rect		0, 22, 400, 20
 				
 				windowDef vr_background_L {
 					rect     	0, 0, 8, 32
@@ -960,7 +931,7 @@
 			}
 			
 			windowDef vr_performance_warning3 {
-				rect		0, 64, 400, 20
+				rect		0, 44, 400, 20
 				
 				windowDef vr_background_L {
 					rect     	0, 0, 8, 32
@@ -988,7 +959,7 @@
 			}
 			
 			windowDef vr_performance_warning4 {
-				rect		0, 86, 400, 20
+				rect		0, 66, 400, 20
 				
 				windowDef vr_background_L {
 					rect     	0, 0, 8, 32
@@ -1016,7 +987,7 @@
 			}
 			
 			windowDef vr_performance_warning5 {
-				rect		0, 108, 400, 20
+				rect		0, 88, 400, 20
 				
 				windowDef vr_background_L {
 					rect     	0, 0, 8, 32
@@ -1044,7 +1015,7 @@
 			}
 			
 			windowDef vr_performance_warning6 {
-				rect		0, 130, 400, 20
+				rect		0, 110, 400, 20
 				
 				windowDef vr_background_L {
 					rect     	0, 0, 8, 32

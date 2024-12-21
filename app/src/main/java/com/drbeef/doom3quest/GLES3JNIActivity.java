@@ -319,47 +319,6 @@ import static android.system.Os.setenv;
 			e.printStackTrace();
 		}
 
-		//GB Change per headset defaults
-		//Parse the config file for these values
-		long refresh = -1; // Let the Surface View Default this
-		float ss = -1.0F;
-		long msaa = 1; // default for both HMDs
-
-
-		File configFile = new File(root, "config/base/doom3quest.cfg");
-		if(configFile.exists())
-		{
-			BufferedReader br;
-			try {
-				br = new BufferedReader(new FileReader(configFile));
-				String s;
-				while ((s=br.readLine())!=null) {
-					int i1 = s.indexOf("\"");
-					int i2 = s.lastIndexOf("\"");
-					if (i1 != -1 && i2 != -1) {
-						String value = s.substring(i1+1, i2);
-						if (s.contains("vr_refresh")) {
-							refresh = Long.parseLong(value);
-						} else if (s.contains("vr_msaa")) {
-							msaa = Long.parseLong(value);
-						} else if (s.contains("vr_supersampling")) {
-							ss = Float.parseFloat(value);
-						}
-					}
-				}
-				br.close();
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (NumberFormatException e)
-			{
-				e.printStackTrace();
-			}
-		}
-
 		for (Pair<String, String> serviceDetail : externalHapticsServiceDetails) {
 			HapticServiceClient client = new HapticServiceClient(this, (state, desc) -> {
 				Log.v(APPLICATION, "ExternalHapticsService " + serviceDetail.second + ": " + desc);
@@ -370,7 +329,7 @@ import static android.system.Os.setenv;
 			externalHapticsServiceClients.add(client);
 		}
 
-		mNativeHandle = GLES3JNILib.onCreate( this, commandLineParams, refresh, ss, msaa );
+		mNativeHandle = GLES3JNILib.onCreate( this, commandLineParams );
 	}
 
 	public void copy_common_assets(File path) {

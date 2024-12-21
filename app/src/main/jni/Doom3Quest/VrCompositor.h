@@ -23,7 +23,7 @@ static const char * GlErrorString( GLenum error )
 	}
 }
 
-static void GLCheckErrors( int line )
+static void GLCheckErrors( const char* file, int line )
 {
 	for ( int i = 0; i < 10; i++ )
 	{
@@ -32,11 +32,11 @@ static void GLCheckErrors( int line )
 		{
 			break;
 		}
-		ALOGE( "GL error on line %d: %s", line, GlErrorString( error ) );
+		ALOGE( "GL error on line %s:%d: %s", file, line, GlErrorString( error ) );
 	}
 }
 
-#define GL( func )		func; GLCheckErrors( __LINE__ );
+#define GL( func )		func; GLCheckErrors( __FILE__, __LINE__ );
 
 #else // CHECK_GL_ERRORS
 

@@ -2275,7 +2275,7 @@ void idCommonLocal::InitSIMD( void ) {
 }
 
 
-extern "C" void Doom3Quest_FrameSetup(int controlscheme, int switch_sticks, int refresh);
+extern "C" void Doom3Quest_FrameSetup(int controlscheme, int switch_sticks, int refresh, float msaa, float supersampling);
 extern "C" void Doom3Quest_Vibrate(int channel, float low, float high );
 extern "C" void Doom3Quest_HapticEvent(const char* event, int position, int flags, int intensity, float angle, float yHeight );
 extern "C" void Doom3Quest_HapticStopEvent(const char* event);
@@ -2321,7 +2321,9 @@ void idCommonLocal::Frame( void ) {
 
 		Doom3Quest_FrameSetup(cvarSystem->GetCVarInteger("vr_weaponHand"),
 							  cvarSystem->GetCVarInteger("vr_switchSticks"),
-							  cvarSystem->GetCVarInteger("vr_refresh"));
+							  cvarSystem->GetCVarInteger("vr_refresh"),
+							  cvarSystem->GetCVarFloat("vr_msaa"),
+							  cvarSystem->GetCVarFloat("vr_supersampling"));
 
 		if (game) {
 			game->SetVRClientInfo(pVRClientInfo);

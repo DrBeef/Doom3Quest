@@ -140,6 +140,7 @@ void GLimp_Shutdown() {
 }
 
 void GLimp_SetupFrame(int buffer /*unused*/) {
+	Doom3Quest_GetScreenRes(&glConfig.vidWidth, &glConfig.vidHeight);
 
 	Doom3Quest_processMessageQueue();
 

@@ -719,6 +719,7 @@ static bool ovrFramebuffer_Create(
 }
 
 void ovrFramebuffer_Destroy(ovrFramebuffer* frameBuffer) {
+	vrapi_DestroyTextureSwapChain(frameBuffer->ColorTextureSwapChain);
 	GL(glDeleteFramebuffers(frameBuffer->TextureSwapChainLength, frameBuffer->FrameBuffers));
 	if (frameBuffer->UseMultiview) {
 		GL(glDeleteTextures(frameBuffer->TextureSwapChainLength, frameBuffer->DepthBuffers));
@@ -1392,15 +1393,19 @@ typedef struct
 	ANativeWindow * NativeWindow;
 } ovrAppThread;
 
-long shutdownCountdown;
-
 int m_width;
 int m_height;
 
 void Doom3Quest_GetScreenRes(int *width, int *height)
 {
-    *width = m_width;
-    *height = m_height;
+    ovrRenderer *renderer = Doom3Quest_useScreenLayer() ? &gAppState.Scene.CylinderRenderer : &gAppState.Renderer;
+    if (renderer) {
+        *width = renderer->FrameBuffer.Width;
+        *height = renderer->FrameBuffer.Height;
+    } else {
+        *width = m_width;
+        *height = m_height;
+    }
 }
 
 void Android_MessageBox(const char *title, const char *text)
@@ -1428,11 +1433,22 @@ void VR_Init()
 	shutdown = false;
 }
 
+float setMSAA = 0;
+float setSuperSamling = 0;
 long renderThreadCPUTime = 0;
 
 void Doom3Quest_prepareEyeBuffer( )
 {
-	ovrRenderer *renderer = Doom3Quest_useScreenLayer() ? &gAppState.Scene.CylinderRenderer : &gAppState.Renderer;
+    //Recreate framebuffer if needed
+    if ((fabs(SS_MULTIPLIER - setSuperSamling) > 0.01) || (fabs(NUM_MULTI_SAMPLES - setMSAA) > 0.01)) {
+        ovrRenderer_Destroy(&gAppState.Renderer);
+        SS_MULTIPLIER = setSuperSamling;
+        NUM_MULTI_SAMPLES = (int)setMSAA;
+        m_height = m_width = (int)(vrapi_GetSystemPropertyInt(&java, VRAPI_SYS_PROP_SUGGESTED_EYE_TEXTURE_WIDTH) *  SS_MULTIPLIER);
+        ovrRenderer_Create(m_width, m_height, &gAppState.Renderer, &java);
+    }
+
+    ovrRenderer *renderer = Doom3Quest_useScreenLayer() ? &gAppState.Scene.CylinderRenderer : &gAppState.Renderer;
 
 	ovrFramebuffer *frameBuffer = &(renderer->FrameBuffer);
 	ovrFramebuffer_SetCurrent(frameBuffer);
@@ -1461,7 +1477,7 @@ void Doom3Quest_finishEyeBuffer( )
         //__android_log_print(ANDROID_LOG_INFO, "Doom3Quest", "RENDER THREAD TOTAL CPU TIME: %ld", renderThreadCPUTime);
     }
 
-    GLCheckErrors( __LINE__ );
+    GLCheckErrors( __FILE__, __LINE__ );
 
 	ovrRenderer *renderer = Doom3Quest_useScreenLayer() ? &gAppState.Scene.CylinderRenderer : &gAppState.Renderer;
 
@@ -1743,8 +1759,12 @@ void * AppThreadFunction(void * parm ) {
 }
 
 //All the stuff we want to do each frame
-void Doom3Quest_FrameSetup(int controlscheme, int switch_sticks, int refresh)
+void Doom3Quest_FrameSetup(int controlscheme, int switch_sticks, int refresh, float msaa, float supersampling)
 {
+	//Inform GL thread about required framebuffer parameters.
+	setMSAA = msaa;
+	setSuperSamling = supersampling;
+
 	//Use floor based tracking space
 	vrapi_SetTrackingSpace(gAppState.Ovr, VRAPI_TRACKING_SPACE_LOCAL_FLOOR);
 
@@ -2141,7 +2161,7 @@ int JNI_OnLoad(JavaVM* vm, void* reserved)
 }
 
 JNIEXPORT jlong JNICALL Java_com_drbeef_doom3quest_GLES3JNILib_onCreate( JNIEnv * env, jclass activityClass, jobject activity,
-																	   jstring commandLineParams, jlong refresh, jfloat ss, jlong msaa)
+																	   jstring commandLineParams)
 {
 	ALOGV( "    GLES3JNILib::onCreate()" );
 
@@ -2160,23 +2180,6 @@ JNIEXPORT jlong JNICALL Java_com_drbeef_doom3quest_GLES3JNILib_onCreate( JNIEnv 
 	ALOGV("Command line %s", cmdLine);
 	argv = malloc(sizeof(char*) * 255);
 	argc = ParseCommandLine(strdup(cmdLine), argv);
-
-	if (ss != -1.0f)
-	{
-		SS_MULTIPLIER = ss;
-	}
-
-	if (msaa != -1)
-	{
-		NUM_MULTI_SAMPLES = msaa;
-	}
-
-	if (refresh != -1)
-	{
-		//unused at the moment
-		DISPLAY_REFRESH = refresh;
-	}
-
 
 	ovrAppThread * appThread = (ovrAppThread *) malloc( sizeof( ovrAppThread ) );
 	ovrAppThread_Create( appThread, env, activity, activityClass );

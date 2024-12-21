@@ -85,7 +85,6 @@ static ovrMatrix4f CylinderModelMatrix( const int texWidth, const int texHeight,
 
 	return m2;
 }
-extern float SS_MULTIPLIER;
 
 ovrLayerCylinder2 BuildCylinderLayer( ovrRenderer * cylinderRenderer,
 	const int textureWidth, const int textureHeight,
@@ -107,7 +106,7 @@ ovrLayerCylinder2 BuildCylinderLayer( ovrRenderer * cylinderRenderer,
 
 	layer.HeadPose = tracking->HeadPose;
 
-	const float density = 4500.0f * SS_MULTIPLIER;
+	const float density = 4500.0f;
 	const float radius = 6.0f;
 	const ovrVector3f translation = { 0.0f, 0.0f, -4.0f };
 
