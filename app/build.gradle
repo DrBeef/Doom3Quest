@@ -57,30 +57,25 @@ android {
     }
     task Pack399PK4(type: Zip) {
         from 'src/main/pk4/pak399/'
-        archiveName 'pak399.pk4'
-        destinationDir(file('src/main/assets/'))
+        archiveFileName.set('pak399.pk4')
+        getDestinationDirectory().set(file('src/main/assets/'))
     }
     task Pack399RoEPK4(type: Zip) {
         from 'src/main/pk4/pak399roe/'
-        archiveName 'pak399roe.pk4'
-        destinationDir(file('src/main/assets/'))
+        archiveFileName.set('pak399roe.pk4')
+        getDestinationDirectory().set(file('src/main/assets/'))
     }
     task Pack399LMPK4(type: Zip) {
         from 'src/main/pk4/pak399lm/'
-        archiveName 'pak399lm.pk4'
-        destinationDir(file('src/main/assets/'))
+        archiveFileName.set('pak399lm.pk4')
+        getDestinationDirectory().set(file('src/main/assets/'))
     }
     task Pack399CDPK4(type: Zip) {
         from 'src/main/pk4/pak399cd/'
-        archiveName 'pak399cd.pk4'
-        destinationDir(file('src/main/assets/'))
+        archiveFileName.set('pak399cd.pk4')
+        getDestinationDirectory().set(file('src/main/assets/'))
     }
-    afterEvaluate {
-        if (project(':app').tasks.findByName('createDebugVariantModel'))
-            project(':app').createDebugVariantModel.dependsOn PackVrSupportPK4
-        if (project(':app').tasks.findByName('createReleaseVariantModel'))
-            project(':app').createReleaseVariantModel.dependsOn PackVrSupportPK4
-    }
+    preBuild.dependsOn PackVrSupportPK4
 }
 dependencies {
     implementation "com.android.support:support-compat:26.1.0"
