@@ -428,7 +428,7 @@ void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGame
 					}
 					itemSwitched = true;
 				}
-			} else if (between(-0.5f, pPrimaryJoystick->y, 0.5f)) {
+			} else if (between(-0.2f, pPrimaryJoystick->y, 0.2f)) {
 				if (itemSwitched && weaponWheel) {
 					//Hide weapon wheel
 					Android_SetImpulse(UB_IMPULSE24);

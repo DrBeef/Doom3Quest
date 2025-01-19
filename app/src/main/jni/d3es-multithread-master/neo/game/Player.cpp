@@ -4092,16 +4092,16 @@ void idPlayer::DrawWeaponWheel(idUserInterface *_hud) {
 
     //Calculate hand movement diff
     vec3_t diff;
-    diff[PITCH] = vr_weaponWheelDir[PITCH] - pVRClientInfo->weaponangles_temp[PITCH];
-    diff[YAW] = vr_weaponWheelDir[YAW] - pVRClientInfo->weaponangles_temp[YAW];
-    diff[ROLL] = vr_weaponWheelDir[ROLL] - pVRClientInfo->weaponangles_temp[ROLL];
-    if (diff[YAW] > 180) diff[YAW] -= 360;
-    if (diff[YAW] < -180) diff[YAW] += 360;
+    diff[PITCH] = vr_weaponWheelDir[PITCH] - pVRClientInfo->weaponangles_temp[PITCH] + pVRClientInfo->hmdorientation_temp[PITCH];
+    diff[YAW] = vr_weaponWheelDir[YAW] - pVRClientInfo->weaponangles_temp[YAW] + pVRClientInfo->hmdorientation_temp[YAW];
+    diff[ROLL] = vr_weaponWheelDir[ROLL] - pVRClientInfo->weaponangles_temp[ROLL] + pVRClientInfo->hmdorientation_temp[ROLL];
+    while (diff[YAW] > 180) diff[YAW] -= 360;
+    while (diff[YAW] < -180) diff[YAW] += 360;
     float dir = RAD2DEG(atan2(diff[PITCH], diff[YAW]));
     //gameLocal.Warning("Weapon wheel hand dir %d", (int)dir);
 
     //Selecting weapons
-    float dst = sqrt(diff[PITCH] * diff[PITCH] +diff[YAW] * diff[YAW]);
+    float dst = sqrt(diff[PITCH] * diff[PITCH] + diff[YAW] * diff[YAW]);
     if (dst > 15) {
         if (dir < -160) vr_weaponWheelCurrent.SetInteger(weapon_machinegun);
         else if (dir < -130) vr_weaponWheelCurrent.SetInteger(weapon_plasmagun);
@@ -4117,7 +4117,8 @@ void idPlayer::DrawWeaponWheel(idUserInterface *_hud) {
     }
 
     //Define alpha values
-    float alphaMax = 0.6f;
+    int currentWeapon = vr_weaponWheelCurrent.GetInteger();
+    float alphaMax = IsWeaponReady(currentWeapon) ? 0.6f : 0.0f;
     float alphaEasy = 0.4f;
     float alphaBase = 0.1f;
 
@@ -4137,7 +4138,6 @@ void idPlayer::DrawWeaponWheel(idUserInterface *_hud) {
     alpha[13] = IsWeaponReady(weapon_shotgun_double) ? alphaEasy : alphaBase;
 
     //Highlight selected weapon
-    int currentWeapon = vr_weaponWheelCurrent.GetInteger();
     alpha[0] += currentWeapon == weapon_fists ? alphaMax : 0;
     alpha[1] += currentWeapon == weapon_pistol ? alphaMax : 0;
     alpha[2] += currentWeapon == weapon_shotgun ? alphaMax : 0;
@@ -10802,9 +10802,9 @@ void idPlayer::PerformImpulse( int impulse ) {
                 TogglePDA(1 - vr_weaponHand.GetInteger());
             }
             vr_weaponWheelCurrent.SetInteger(hands[vr_weaponHand.GetInteger()].currentWeapon);
-            vr_weaponWheelDir[PITCH] = pVRClientInfo->weaponangles_temp[PITCH];
-            vr_weaponWheelDir[YAW] = pVRClientInfo->weaponangles_temp[YAW];
-            vr_weaponWheelDir[ROLL] = pVRClientInfo->weaponangles_temp[ROLL];
+            vr_weaponWheelDir[PITCH] = pVRClientInfo->weaponangles_temp[PITCH] - pVRClientInfo->hmdorientation_temp[PITCH];
+            vr_weaponWheelDir[YAW] = pVRClientInfo->weaponangles_temp[YAW] - pVRClientInfo->hmdorientation_temp[YAW];
+            vr_weaponWheelDir[ROLL] = pVRClientInfo->weaponangles_temp[ROLL] - pVRClientInfo->hmdorientation_temp[ROLL];
             vr_weaponWheel.SetBool(true);
             if (hands[vr_weaponHand.GetInteger()].currentWeapon != weapon_fists) {
                 SelectWeapon(weapon_fists, false);

@@ -228,7 +228,7 @@ import static android.system.Os.setenv;
 		boolean exitAfterCopy = false;
 
 		//If this is first run on clean system, or user hasn't copied anything yet, just exit after we have copied
-		if (!(new File("/sdcard/Doom3Quest/base/pak000.pk4").exists()))
+		if (!new File(base, "pak000.pk4").exists())
 		{
 			exitAfterCopy = true;
 		}
@@ -246,6 +246,9 @@ import static android.system.Os.setenv;
 
 		//delete incompatible files
 		new File(cdoom, "Xpak400.pk4").delete();
+		for (int i = 0; i < 10; i++) {
+			new File(lm, "pak00" + i + ".pk4").delete();
+		}
 
 		if (exitAfterCopy)
 		{

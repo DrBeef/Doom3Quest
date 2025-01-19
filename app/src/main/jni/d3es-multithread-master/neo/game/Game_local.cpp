@@ -1924,20 +1924,25 @@ bool idGameLocal::InitFromSaveGame( const char *mapName, idRenderWorld *renderWo
 
 	//Lubos BEGIN
 	//This code helps to determine if we are using old or new version of the save game format.
-	//On this line it is the first read value from file which is different between the version.
-	//VacuumAreaNum doesn't change. If it matches the read value then we use old format.
-	int value = 0;
-	savegame.ReadInt(value);
-	oldSaveVersion = value == vacuumAreaNum;
+	//On this line it is the first read value from file which is different between the versions.
+	//In levels with vacuum we need to check the second int to be sure we detect it correctly.
+	//If one of the default values matches the read value then we use old format.
 	int msec = 1000 / 60;
-	if (!oldSaveVersion) {
-		msec = value;
-		savegame.ReadInt( vacuumAreaNum );
+	int value1 = 0; int value2 = 0;
+	savegame.ReadInt( value1 );
+	savegame.ReadInt( value2 );
+	oldSaveVersion = ( value1 == vacuumAreaNum ) || ( value2 == entityDefBits );
+	if ( !oldSaveVersion ) {
+		msec = value1;
+		vacuumAreaNum = value2;
+		savegame.ReadInt( entityDefBits );
+	} else {
+		vacuumAreaNum = value1;
+		entityDefBits = value2;
 	}
 	SetMSec(msec);
 	//Lubos END
 
-	savegame.ReadInt( entityDefBits );
 	savegame.ReadBool( isServer );
 	savegame.ReadBool( isClient );
 
@@ -1984,7 +1989,8 @@ bool idGameLocal::InitFromSaveGame( const char *mapName, idRenderWorld *renderWo
 	savegame.ReadInt( num );
 	if ( num ) {
 		if ( num != gameRenderWorld->NumAreas() ) {
-			savegame.Error( "idGameLocal::InitFromSaveGame: number of areas in map differs from save game." );
+			common->Warning( "idGameLocal::InitFromSaveGame: number of areas in map differs from save game." );
+			return false; //Lubos: on broken savegame start level from the beginning instead of failing.
 		}
 
 		locationEntities = new idLocationEntity *[ num ];

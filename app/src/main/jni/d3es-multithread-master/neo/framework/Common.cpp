@@ -82,7 +82,7 @@ struct version_s {
 idCVar vr_refresh( "vr_refresh", "60", CVAR_INTEGER | CVAR_ARCHIVE, "Refresh rate" );
 idCVar vr_supersampling( "vr_supersampling", "-1.0", CVAR_FLOAT | CVAR_ARCHIVE, "Supersampling" );
 idCVar vr_msaa( "vr_msaa",  "1", CVAR_FLOAT | CVAR_ARCHIVE, "MSAA" );
-idCVar vr_muteFootsteps( "vr_muteFootsteps",  "0", CVAR_BOOL, "Mute player footsteps" );
+idCVar vr_muteFootsteps( "vr_muteFootsteps",  "0", CVAR_BOOL | CVAR_ARCHIVE, "Mute player footsteps" );
 idCVar vr_timescale( "vr_timescale",  "1", CVAR_FLOAT, "Current slow motion timescale" );
 
 idCVar com_version( "si_version", version.string, CVAR_SYSTEM|CVAR_ROM|CVAR_SERVERINFO, "engine version" );

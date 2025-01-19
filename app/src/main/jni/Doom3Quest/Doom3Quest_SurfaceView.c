@@ -85,10 +85,14 @@ PFNEGLGETSYNCATTRIBKHRPROC		eglGetSyncAttribKHR;
 const int CPU_LEVEL			= 4;
 const int GPU_LEVEL			= 5;
 
-//Passed in from the Java code
-int NUM_MULTI_SAMPLES	= -1;
-float SS_MULTIPLIER    = -1.0f;
-int DISPLAY_REFRESH		= -1;
+int NUM_MULTI_SAMPLES	= 1;
+float SS_MULTIPLIER    = 1.3f; //Lubos:Set it to the maximum on init, it will be updated the first frame
+
+int maximumSupportRefresh = 0;
+int questType;
+float setMSAA = 1;
+float setSuperSamling = 1.3f;
+long renderThreadCPUTime = 0;
 
 vrClientInfo vr;
 vrClientInfo *pVRClientInfo;
@@ -1433,10 +1437,6 @@ void VR_Init()
 	shutdown = false;
 }
 
-float setMSAA = 0;
-float setSuperSamling = 0;
-long renderThreadCPUTime = 0;
-
 void Doom3Quest_prepareEyeBuffer( )
 {
     //Recreate framebuffer if needed
@@ -1588,8 +1588,6 @@ void ActivateContext()
     gAppState.RenderThreadTid = gettid();
 }
 
-int questType;
-
 void * AppThreadFunction(void * parm ) {
 	gAppThread = (ovrAppThread *) parm;
 
@@ -1643,53 +1641,17 @@ void * AppThreadFunction(void * parm ) {
 	if (vrapi_GetSystemPropertyInt(&java, VRAPI_SYS_PROP_DEVICE_TYPE) == VRAPI_DEVICE_TYPE_OCULUSQUEST)
 	{
 		questType = 1;
-        DISPLAY_REFRESH = 60; // Fixed to 60 for oculus 1
-		if (SS_MULTIPLIER == -1.0f)
-		{
-			SS_MULTIPLIER = 1.0f;
-		}
-
-		if (NUM_MULTI_SAMPLES == -1)
-		{
-			NUM_MULTI_SAMPLES = 1;
-		}
 	}
 	else if (vrapi_GetSystemPropertyInt(&java, VRAPI_SYS_PROP_SUGGESTED_EYE_FOV_DEGREES_Y) > 101)
 	{
 		questType = 3;
-		if (DISPLAY_REFRESH == -1)
-		{
-			DISPLAY_REFRESH = 72.0;
-		}
-		if (SS_MULTIPLIER == -1.0f)
-		{
-			SS_MULTIPLIER = 1.1f;
-		}
-
-		if (NUM_MULTI_SAMPLES == -1)
-		{
-			NUM_MULTI_SAMPLES = 1;
-		}
 	}
 	else if (vrapi_GetSystemPropertyInt(&java, VRAPI_SYS_PROP_DEVICE_TYPE) == VRAPI_DEVICE_TYPE_OCULUSQUEST2)
 	{
 		questType = 2;
-		if (DISPLAY_REFRESH == -1)
-		{
-			DISPLAY_REFRESH = 60.0;
-		}
-		if (SS_MULTIPLIER == -1.0f)
-		{
-			SS_MULTIPLIER = 1.1f;
-		}
-
-		if (NUM_MULTI_SAMPLES == -1)
-		{
-			NUM_MULTI_SAMPLES = 2;
-		}
 	} else {
-	    //Don't know what headset this is!? abort
-        return NULL;
+		//Let's consider all future headsets will have at least feature set of Quest 3
+		questType = 3;
 	}
 
 	//Using a symmetrical render target
@@ -1717,7 +1679,6 @@ void * AppThreadFunction(void * parm ) {
         showLoadingIcon();
     }
 
-	int maximumSupportRefresh = 0;
 	//AmmarkoV : Query Refresh rates and select maximum..!
 	//-----------------------------------------------------------------------------------------------------------
 	int numberOfRefreshRates = vrapi_GetSystemPropertyInt(&java,
@@ -1736,11 +1697,6 @@ void * AppThreadFunction(void * parm ) {
 	if (maximumSupportRefresh > 90.0) {
 		ALOGV("Soft limiting to 90.0 Hz as per John carmack's request ( https://www.onlinepeeps.org/oculus-quest-2-according-to-carmack-in-the-future-also-at-120-hz/ );P");
 		maximumSupportRefresh = 90.0;
-	}
-
-	if (DISPLAY_REFRESH == 0 || DISPLAY_REFRESH > maximumSupportRefresh)
-	{
-		DISPLAY_REFRESH = 72.0;
 	}
 
     //Should now be all set up and ready - start the Doom3 main loop
@@ -1768,6 +1724,10 @@ void Doom3Quest_FrameSetup(int controlscheme, int switch_sticks, int refresh, fl
 	//Use floor based tracking space
 	vrapi_SetTrackingSpace(gAppState.Ovr, VRAPI_TRACKING_SPACE_LOCAL_FLOOR);
 
+	//Set refresh rate
+	if (refresh == 0 || refresh > maximumSupportRefresh) {
+		refresh = 72;
+	}
 	int device = vrapi_GetSystemPropertyInt(&java, VRAPI_SYS_PROP_DEVICE_TYPE);
 	if (device == VRAPI_DEVICE_TYPE_OCULUSQUEST) {
 		//Force 60hz for Quest 1
