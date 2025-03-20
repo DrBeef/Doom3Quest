@@ -222,6 +222,7 @@ import static android.system.Os.setenv;
 		File root = new File("/sdcard/Doom3Quest");
 		File base = new File(root, "base");
 		File cdoom = new File(root, "cdoom");
+		File doom2 = new File(root, "Doom_II_for_Doom_3_unofficial");
 		File roe = new File(root, "d3xp");
 		File lm = new File(root, "d3le");
 
@@ -237,10 +238,12 @@ import static android.system.Os.setenv;
 		base.mkdirs();
 		copy_common_assets(base);
 		copy_common_assets(cdoom);
+		copy_common_assets(doom2);
 		copy_common_assets(roe);
 		copy_common_assets(lm);
-		copy_asset(base.getAbsolutePath(), "commandline.txt", false);
+		copy_asset(root.getAbsolutePath(), "commandline.txt", false);
 		copy_asset(cdoom.getAbsolutePath(), "pak399cd.pk4", true);
+		copy_asset(doom2.getAbsolutePath(), "pak399d2.pk4", true);
 		copy_asset(roe.getAbsolutePath(), "pak399roe.pk4", true);
 		copy_asset(lm.getAbsolutePath(), "pak399lm.pk4", true);
 
@@ -288,7 +291,7 @@ import static android.system.Os.setenv;
 		commandLineParams = new String("doom3quest");
 
 		//See if user is trying to use command line params
-		File commandline = new File(base.getAbsolutePath(), "commandline.txt");
+		File commandline = new File(root.getAbsolutePath(), "commandline.txt");
 		if(commandline.exists()) // should exist now!
 		{
 			BufferedReader br;

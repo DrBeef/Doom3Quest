@@ -690,7 +690,14 @@ void idCameraAnim::GetViewParms( renderView_t *view ) {
 			invlerp = 1.0f - lerp;
 			q1 = camFrame[ 0 ].q.ToQuat();
 			q2 = camFrame[ 1 ].q.ToQuat();
-			q3.Slerp( q1, q2, lerp );
+			//Lubos BEGIN
+			if (gameLocal.InCinematic()) {
+				q3.Slerp( q1, q2, lerp );
+				view->viewaxis = q3.ToMat3();
+			} else {
+				view->viewaxis = q1.ToMat3();
+			}
+			//Lubos END
 			view->viewaxis = q3.ToMat3();
 			view->vieworg = camFrame[ 0 ].t * invlerp + camFrame[ 1 ].t * lerp + offset;
 			view->fov_x = camFrame[ 0 ].fov * invlerp + camFrame[ 1 ].fov * lerp;

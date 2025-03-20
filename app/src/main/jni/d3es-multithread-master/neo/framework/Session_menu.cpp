@@ -629,22 +629,32 @@ void idSessionLocal::HandleMainMenuCommands( const char *menuCommand ) {
 			return;
 		}
 
-		if ( !idStr::Icmp( cmd, "loadMod" ) ) {
+		//Lubos BEGIN
+		if ( !idStr::Icmp( cmd, "loadMod" ) || !idStr::Icmp( cmd, "loadModDirect" ) ) {
+			idStr game;
 			int choice = guiActive->State().GetInt( "modsList_sel_0" );
-			if ( choice >= 0 && choice < modsList.Num() ) {
-				cvarSystem->SetCVarString( "fs_game", modsList[ choice ] );
-				//Lubos BEGIN
-				bool baseMod = ( strcmp( modsList[ choice ], "cdoom" ) != 0 ) &&
-							   ( strcmp( modsList[ choice ], "d3xp" ) != 0 );
-				if ( ( strlen( modsList[ choice ] ) > 0 ) && baseMod ) {
+			if ( !idStr::Icmp( cmd, "loadMod" ) && ( choice >= 0 && choice < modsList.Num() ) ) {
+				game = modsList[ choice ];
+			} else if ( !idStr::Icmp( cmd, "loadModDirect" ) && ( args.Argc() - icmd >= 1 ) ) {
+				game = args.Argv( icmd++ );
+			}
+
+			if ( !game.IsEmpty() ) {
+				cvarSystem->SetCVarString( "fs_game", game );
+				bool notBaseMod =  ( strcmp( game, "base" ) != 0 ) &&
+								   ( strcmp( game, "cdoom" ) != 0 ) &&
+								   ( strcmp( game, "Doom_II_for_Doom_3_unofficial" ) != 0 ) &&
+								   ( strcmp( game, "d3xp" ) != 0 );
+				if ( ( strlen( game ) > 0 ) && notBaseMod ) {
 					cvarSystem->SetCVarString( "fs_game_base", "d3xp" );
 				} else {
 					cvarSystem->SetCVarString( "fs_game_base", "" );
 				}
-				//Lubos END
 				cmdSystem->BufferCommandText( CMD_EXEC_APPEND, "reloadEngine menu\n" );
 			}
+			continue;
 		}
+		//Lubos END
 
 		if ( !idStr::Icmp( cmd, "UpdateServers" ) ) {
 			if ( guiActive->State().GetBool( "lanSet" ) ) {

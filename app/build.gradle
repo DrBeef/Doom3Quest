@@ -54,6 +54,7 @@ android {
         dependsOn 'Pack399RoEPK4'
         dependsOn 'Pack399LMPK4'
         dependsOn 'Pack399CDPK4'
+        dependsOn 'Pack399D2PK4'
     }
     task Pack399PK4(type: Zip) {
         from 'src/main/pk4/pak399/'
@@ -73,6 +74,11 @@ android {
     task Pack399CDPK4(type: Zip) {
         from 'src/main/pk4/pak399cd/'
         archiveFileName.set('pak399cd.pk4')
+        getDestinationDirectory().set(file('src/main/assets/'))
+    }
+    task Pack399D2PK4(type: Zip) {
+        from 'src/main/pk4/pak399d2/'
+        archiveFileName.set('pak399d2.pk4')
         getDestinationDirectory().set(file('src/main/assets/'))
     }
     preBuild.dependsOn PackVrSupportPK4
