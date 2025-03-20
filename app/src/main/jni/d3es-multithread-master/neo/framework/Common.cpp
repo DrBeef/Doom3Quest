@@ -2837,8 +2837,8 @@ void idCommonLocal::Init( int argc, char **argv ) {
 #endif
 #endif
 
-	if (SDL_Init(SDL_INIT_TIMER))// | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK)) // init joystick to work around SDL 2.0.9 bug #4391
-		Sys_Error("Error while initializing SDL: %s", SDL_GetError());
+	//if (SDL_Init(SDL_INIT_TIMER))// | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK)) // init joystick to work around SDL 2.0.9 bug #4391
+	//	Sys_Error("Error while initializing SDL: %s", SDL_GetError());
 
 	Sys_InitThreads();
 
@@ -3020,8 +3020,6 @@ void idCommonLocal::Shutdown( void ) {
 	SDL_Quit();
 }
 
-extern int questType;
-
 /*
 =================
 idCommonLocal::InitGame
@@ -3068,7 +3066,7 @@ void idCommonLocal::InitGame( void ) {
 	cmdSystem->BufferCommandText( CMD_EXEC_APPEND, "exec default.cfg\n" );
 
 	//Execute the Quest version specific config before executing the normal config
-	char *s = va("exec quest%i_default.cfg\n", questType);
+	char *s = va("exec quest%i_default.cfg\n", 2);
 	cmdSystem->BufferCommandText( CMD_EXEC_APPEND, s );
 
 	// skip the config file if "safe" is on the command line

@@ -952,8 +952,8 @@
 					noevents 	1
 				}
 				windowDef vr_name {
-					rect		1, -1, 240, 40
-					text		"Quest 1: 60hz (Locked) / 1.0 SS / 1xMSAA"
+					rect		1, -1, 300, 40
+					text		"Pico 3: 72hz, SS 1.1, no shadows"
 					textscale   0.2
 				}				
 			}
@@ -981,7 +981,7 @@
 				}
 				windowDef vr_name {
 					rect		1, -1, 300, 40
-					text		"Quest 2: 60hz 1.2SS 2xMSAA or 72hz 1.0SS 2xMSAA"
+					text		"Pico 4: 72hz, SS 1.1, flashlight only shadows"
 					textscale   0.18
 				}				
 			}
@@ -1009,39 +1009,11 @@
 				}
 				windowDef vr_name {
 					rect		1, -1, 300, 40
-					text		"Quest 3 (Shadows): 72hz 1.1SS 1xMSAA"
+					text		"Pico 4 Ultra and newer: unsupported"
 					textscale   0.18
 				}				
 			}
-			
-			windowDef vr_performance_warning6 {
-				rect		0, 110, 400, 20
-				
-				windowDef vr_background_L {
-					rect     	0, 0, 8, 32
-					background  "gui/mainmenu/select_edge"
-					matcolor 	0, 0, 0, 1
-					noevents 	1
-				}
-				windowDef vr_background_M {
-					rect     	8, 0, 304, 32
-					background  "gui/mainmenu/select_border"
-					matcolor 	0, 0, 0, 1
-					noevents 	1
-				}
-				windowDef vr_background_R {
-					rect     	312, 0, 8, 32
-					background  "gui/mainmenu/select_angle"
-					matcolor 	0, 0, 0, 1
-					noevents 	1
-				}
-				windowDef vr_name {
-					rect		1, -1, 300, 40
-					text		"Quest 3 (No Shadows): 90hz 1.2SS 2xMSAA"
-					textscale   0.18
-				}				
-			}
-			
+
 			// Supersampling
 			windowDef vr_performance_supersampling {
 				rect		0, 154, 400, 20
@@ -1110,8 +1082,8 @@
 				choiceDef vr_choice {
 					rect		121, -1, 120, 20
 					cvar		"vr_refresh"
-					choices		"60;72;80;90"
-					values		"60;72;80;90"					
+					choices		"72;90"
+					values		"72;90"					
 					choiceType	1
 					textscale   0.2
 					forecolor   0.6, 0.8, 0.8, 1

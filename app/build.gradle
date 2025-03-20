@@ -24,9 +24,7 @@ android {
 
     sourceSets {
         main {
-            jniLibs {
-                srcDir 'src/main/jni/VrApi/Libs/'
-            }
+            jniLibs.srcDirs = ['src/main/jni/OpenXR/android']
         }
     }
 

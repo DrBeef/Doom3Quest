@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.support.v4.app.ActivityCompat;
@@ -67,8 +68,6 @@ import static android.system.Os.setenv;
 	private String commandLineParams;
 
 	private SurfaceView mView;
-	private SurfaceHolder mSurfaceHolder;
-	private long mNativeHandle;
 
 
 	public void shutdown() {
@@ -335,7 +334,7 @@ import static android.system.Os.setenv;
 			externalHapticsServiceClients.add(client);
 		}
 
-		mNativeHandle = GLES3JNILib.onCreate( this, commandLineParams );
+		GLES3JNILib.onCreate( this, commandLineParams, Build.MANUFACTURER );
 	}
 
 	public void copy_common_assets(File path) {
@@ -393,44 +392,7 @@ import static android.system.Os.setenv;
 	{
 		Log.v(APPLICATION, "GLES3JNIActivity::onStart()" );
 		super.onStart();
-
-		if ( mNativeHandle != 0 )
-		{
-			GLES3JNILib.onStart(mNativeHandle, this);
-		}
-	}
-
-	@Override protected void onResume()
-	{
-		Log.v(APPLICATION, "GLES3JNIActivity::onResume()" );
-		super.onResume();
-
-		if ( mNativeHandle != 0 )
-		{
-			GLES3JNILib.onResume(mNativeHandle);
-		}
-	}
-
-	@Override protected void onPause()
-	{
-		Log.v(APPLICATION, "GLES3JNIActivity::onPause()" );
-		if ( mNativeHandle != 0 )
-		{
-			GLES3JNILib.onPause(mNativeHandle);
-		}
-		super.onPause();
-	}
-
-	@Override protected void onStop()
-	{
-		Log.v(APPLICATION, "GLES3JNIActivity::onStop()" );
-		if ( mNativeHandle != 0 )
-		{
-			GLES3JNILib.onStop(mNativeHandle);
-		}
-
-
-		super.onStop();
+		GLES3JNILib.onStart(this);
 	}
 
 	@Override protected void onDestroy()
@@ -438,17 +400,6 @@ import static android.system.Os.setenv;
 		Log.v(APPLICATION, "GLES3JNIActivity::onDestroy()" );
 
 		try {
-			//The destructors take too long to unload, let's use exit(0)
-			/*if ( mSurfaceHolder != null )
-			{
-				GLES3JNILib.onSurfaceDestroyed( mNativeHandle );
-			}
-
-			if ( mNativeHandle != 0 )
-			{
-				GLES3JNILib.onDestroy(mNativeHandle);
-			}*/
-
 			for (HapticServiceClient externalHapticsServiceClient : externalHapticsServiceClients) {
 				externalHapticsServiceClient.stopBinding();
 			}
@@ -458,36 +409,22 @@ import static android.system.Os.setenv;
 
 		System.exit(0);
 		super.onDestroy();
-		mNativeHandle = 0;
 	}
 
 	@Override public void surfaceCreated( SurfaceHolder holder )
 	{
 		Log.v(APPLICATION, "GLES3JNIActivity::surfaceCreated()" );
-		if ( mNativeHandle != 0 )
-		{
-			GLES3JNILib.onSurfaceCreated( mNativeHandle, holder.getSurface() );
-			mSurfaceHolder = holder;
-		}
+		GLES3JNILib.onSurfaceCreated( holder.getSurface() );
 	}
 
 	@Override public void surfaceChanged( SurfaceHolder holder, int format, int width, int height )
 	{
 		Log.v(APPLICATION, "GLES3JNIActivity::surfaceChanged()" );
-		if ( mNativeHandle != 0 )
-		{
-			GLES3JNILib.onSurfaceChanged( mNativeHandle, holder.getSurface() );
-			mSurfaceHolder = holder;
-		}
+		GLES3JNILib.onSurfaceChanged( holder.getSurface() );
 	}
-	
+
 	@Override public void surfaceDestroyed( SurfaceHolder holder )
 	{
 		Log.v(APPLICATION, "GLES3JNIActivity::surfaceDestroyed()" );
-		if ( mNativeHandle != 0 )
-		{
-			GLES3JNILib.onSurfaceDestroyed( mNativeHandle );
-			mSurfaceHolder = null;
-		}
 	}
 }

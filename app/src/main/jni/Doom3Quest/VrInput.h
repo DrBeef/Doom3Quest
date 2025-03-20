@@ -1,47 +1,36 @@
+#pragma once
 
-#if !defined(vrinput_h)
-#define vrinput_h
+#include "VrBase.h"
 
-#include "VrCommon.h"
+typedef enum ovrButton_ {
+	ovrButton_A = 0x00000001, // Set for trigger pulled on the Gear VR and Go Controllers
+	ovrButton_B = 0x00000002,
+	ovrButton_RThumb = 0x00000004,
+	ovrButton_RShoulder = 0x00000008,
 
-//New control scheme definitions to be defined L1VR_SurfaceView.c enumeration
-enum control_scheme;
+	ovrButton_X = 0x00000100,
+	ovrButton_Y = 0x00000200,
+	ovrButton_LThumb = 0x00000400,
+	ovrButton_LShoulder = 0x00000800,
 
-#define STABILISATION_DISTANCE   0.5
-#define FLASHLIGHT_HOLSTER_DISTANCE   0.15
-#define VELOCITY_TRIGGER        1.6
+	ovrButton_Up = 0x00010000,
+	ovrButton_Down = 0x00020000,
+	ovrButton_Left = 0x00040000,
+	ovrButton_Right = 0x00080000,
+	ovrButton_Enter = 0x00100000, //< Set for touchpad click on the Go Controller, menu
+	// button on Left Quest Controller
+	ovrButton_Back = 0x00200000, //< Back button on the Go Controller (only set when
+	// a short press comes up)
+	ovrButton_GripTrigger = 0x04000000, //< grip trigger engaged
+	ovrButton_Trigger = 0x20000000, //< Index Trigger engaged
+	ovrButton_Joystick = 0x80000000, //< Click of the Joystick
 
-extern ovrInputStateTrackedRemote leftTrackedRemoteState_old;
-extern ovrInputStateTrackedRemote leftTrackedRemoteState_new;
-extern ovrTracking leftRemoteTracking_new;
+	ovrButton_EnumSize = 0x7fffffff
+} ovrButton;
 
-extern ovrInputStateTrackedRemote rightTrackedRemoteState_old;
-extern ovrInputStateTrackedRemote rightTrackedRemoteState_new;
-extern ovrTracking rightRemoteTracking_new;
-
-extern ovrInputStateGamepad footTrackedRemoteState_old;
-extern ovrInputStateGamepad footTrackedRemoteState_new;
-
-extern ovrDeviceID controllerIDs[2];
-
-extern float remote_movementSideways;
-extern float remote_movementForward;
-extern float remote_movementUp;
-extern float positional_movementSideways;
-extern float positional_movementForward;
-extern float snapTurn;
-
-void sendButtonAction(const char* action, long buttonDown);
-void sendButtonActionSimple(const char* action);
-
-void acquireTrackedRemotesData(ovrMobile *Ovr, double displayTime);
-
-void HandleInput_Default( int controlscheme, int switchsticks, ovrInputStateGamepad *pFootTrackingNew, ovrInputStateGamepad *pFootTrackingOld, ovrInputStateTrackedRemote *pDominantTrackedRemoteNew, ovrInputStateTrackedRemote *pDominantTrackedRemoteOld, ovrTracking* pDominantTracking,
-                          ovrInputStateTrackedRemote *pOffTrackedRemoteNew, ovrInputStateTrackedRemote *pOffTrackedRemoteOld, ovrTracking* pOffTracking,
-                          int domButton1, int domButton2, int offButton1, int offButton2 );
-
-
-
-void updateScopeAngles();
-
-#endif //vrinput_h
+void IN_VRInit( engine_t *engine );
+void IN_VRInputFrame( engine_t* engine );
+uint32_t IN_VRGetButtonState( int controllerIndex );
+XrVector2f IN_VRGetJoystickState( int controllerIndex );
+XrPosef IN_VRGetPose( int controllerIndex );
+void INVR_Vibrate( float duration, int chan, float intensity );
