@@ -112,12 +112,17 @@ void VR_GetResolution(engine_t* engine, int *pWidth, int *pHeight) {
 		*pHeight = height;
 	}
 
-	//Force square resolution
+	//Apply supersampling
 	float supersampling = VR_GetConfigFloat(VR_CONFIG_VIEWPORT_SUPERSAMPLING);
 	if (supersampling > 0) {
 		*pWidth *= supersampling;
+		*pHeight *= supersampling;
 	}
-	*pHeight = *pWidth;
+
+	//Force square resolution
+	if (VR_GetPlatformFlag(VR_PLATFORM_VIEWPORT_SQUARE)) {
+		*pHeight = *pWidth;
+	}
 }
 
 void VR_Recenter(engine_t* engine) {
@@ -267,13 +272,27 @@ bool VR_InitFrame( engine_t* engine ) {
 	// Update controllers
 	IN_VRInputFrame(engine);
 
+	float fovx = 0;
 	float fovy = 0;
 	for (int eye = 0; eye < ovrMaxNumEyes; eye++) {
+		fovx += fabs(projections[eye].fov.angleDown - projections[eye].fov.angleUp) / 2.0f;
 		fovy += fabs(projections[eye].fov.angleRight - projections[eye].fov.angleLeft) / 2.0f;
 	}
-	VR_SetConfigFloat(VR_CONFIG_VIEWPORT_FOV, ToDegrees(fovy));
-	fov.angleLeft = -fovy / 2.0f;
-	fov.angleRight = fovy / 2.0f;
+
+	if (VR_GetPlatformFlag(VR_PLATFORM_VIEWPORT_UNCENTERED)) {
+		fovy *= 1.1f;
+	}
+
+	if (VR_GetPlatformFlag(VR_PLATFORM_VIEWPORT_SQUARE)) {
+		VR_SetConfigFloat(VR_CONFIG_VIEWPORT_FOVX, ToDegrees(fovy));
+		fov.angleLeft = -fovy / 2.0f;
+		fov.angleRight = fovy / 2.0f;
+	} else {
+	   VR_SetConfigFloat(VR_CONFIG_VIEWPORT_FOVX, ToDegrees(fovx));
+	   fov.angleLeft = -fovx / 2.0f;
+	   fov.angleRight = fovx / 2.0f;
+	}
+	VR_SetConfigFloat(VR_CONFIG_VIEWPORT_FOVY, ToDegrees(fovy));
 	fov.angleDown = -fovy / 2.0f;
 	fov.angleUp = fovy / 2.0f;
 	return true;

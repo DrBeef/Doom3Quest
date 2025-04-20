@@ -1008,10 +1008,38 @@
 					noevents 	1
 				}
 				windowDef vr_name {
-					rect		1, -1, 300, 40
-					text		"Pico 4 Ultra and newer: unsupported"
+					rect		1, -1, 400, 40
+					text		"Pico 4 Ultra: 72hz, SS 1.3, flashlight only shadows"
 					textscale   0.18
 				}				
+			}
+
+			windowDef vr_performance_warning6 {
+				rect		0, 110, 400, 20
+
+				windowDef vr_background_L {
+					rect     	0, 0, 8, 32
+					background  "gui/mainmenu/select_edge"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_M {
+					rect     	8, 0, 304, 32
+					background  "gui/mainmenu/select_border"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_background_R {
+					rect     	312, 0, 8, 32
+					background  "gui/mainmenu/select_angle"
+					matcolor 	0, 0, 0, 1
+					noevents 	1
+				}
+				windowDef vr_name {
+					rect		1, -1, 400, 40
+					text		"Pico 4 Ultra: 72hz, SS 1.1, full shadows"
+					textscale   0.18
+				}
 			}
 
 			// Supersampling

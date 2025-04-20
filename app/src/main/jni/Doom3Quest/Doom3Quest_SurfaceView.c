@@ -372,7 +372,7 @@ int currentRefresh = 60;
 
 float Doom3Quest_GetFOV()
 {
-	return VR_GetConfigFloat(VR_CONFIG_VIEWPORT_FOV);
+	return VR_GetConfigFloat(VR_CONFIG_VIEWPORT_FOVY);
 }
 
 int Doom3Quest_GetRefresh()
@@ -476,11 +476,11 @@ void * AppThreadFunction(void * parm) {
 void Doom3Quest_FrameSetup(int controlscheme, int switch_sticks, int refresh, float msaa, float supersampling)
 {
 	//Inform GL thread about required framebuffer parameters.
-	if (fabs(VR_GetConfigFloat(VR_CONFIG_VIEWPORT_SUPERSAMPLING) - supersampling) > 0.01) {
+	if (!Doom3Quest_useScreenLayer() && fabs(VR_GetConfigFloat(VR_CONFIG_VIEWPORT_SUPERSAMPLING) - supersampling) > 0.01) {
 		VR_SetConfigFloat(VR_CONFIG_VIEWPORT_SUPERSAMPLING, supersampling);
 		VR_SetConfig(VR_CONFIG_VIEWPORT_VALID, false);
 	}
-	if (fabs((float)VR_GetConfig(VR_CONFIG_VIEWPORT_MSAA) - msaa) > 0.01) {
+	if (!Doom3Quest_useScreenLayer() && fabs((float)VR_GetConfig(VR_CONFIG_VIEWPORT_MSAA) - msaa) > 0.01) {
 		VR_SetConfig(VR_CONFIG_VIEWPORT_MSAA, (int)msaa);
 		VR_SetConfig(VR_CONFIG_VIEWPORT_VALID, false);
 	}
@@ -682,8 +682,10 @@ JNIEXPORT void JNICALL Java_com_drbeef_doom3quest_GLES3JNILib_onCreate( JNIEnv *
 		VR_SetPlatformFLag(VR_PLATFORM_EXTENSION_FOVEATION, true);
 		VR_SetPlatformFLag(VR_PLATFORM_EXTENSION_PERFORMANCE, true);
 		VR_SetPlatformFLag(VR_PLATFORM_EXTENSION_REFRESH, true);
+		VR_SetPlatformFLag(VR_PLATFORM_VIEWPORT_UNCENTERED, true);
 	}
 	VR_SetPlatformFLag(VR_PLATFORM_TRACKING_FLOOR, true);
+	VR_SetPlatformFLag(VR_PLATFORM_VIEWPORT_SQUARE, true);
 	VR_SetConfigFloat(VR_CONFIG_VIEWPORT_SUPERSAMPLING, 1.3f);
 
 	//Init VR
