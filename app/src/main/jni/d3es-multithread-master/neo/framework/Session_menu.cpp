@@ -905,16 +905,16 @@ void idSessionLocal::HandleMainMenuCommands( const char *menuCommand ) {
 				if ( !idStr::Icmp( profile, "og" ) ) {
 					cvarSystem->SetCVarFloat("r_lightScale", 1);
 					cvarSystem->SetCVarFloat("r_brightness", 1.3f);
-					cvarSystem->SetCVarBool("r_usePBR", false);
+					cvarSystem->SetCVarInteger("r_usePBR", 0);
 				} else if ( !idStr::Icmp( profile, "bfg" ) ) {
 					cvarSystem->SetCVarFloat("r_lightScale", 3);
 					cvarSystem->SetCVarFloat("r_brightness", 1.3f);
-					cvarSystem->SetCVarBool("r_usePBR", false);
+					cvarSystem->SetCVarInteger("r_usePBR", 0);
 				} else if ( !idStr::Icmp( profile, "pbr" ) ) {
 					cvarSystem->SetCVarFloat("r_specularExponentPBR", 2);
 					cvarSystem->SetCVarFloat("r_lightScale", 2);
 					cvarSystem->SetCVarFloat("r_brightness", 1.0f);
-					cvarSystem->SetCVarBool("r_usePBR", true);
+					cvarSystem->SetCVarInteger("r_usePBR", 2);
 				}
 			}
 			continue;

@@ -876,16 +876,25 @@ static void RB_GLSL_CreateDrawInteractions(const drawSurf_t* surf, const viewLig
 	// perform setup here that will be constant for all interactions
 	GL_State(GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE | GLS_DEPTHMASK | depthFunc);
 
-	// bind the vertex and fragment shader
-	if ( !r_usePBR.GetBool()) {
-		GL_UseProgram(&interactionPhongShader);
-	} else {
-		GL_UseProgram(&interactionShader);
+	// bind the vertex and fragment shader and set the specular exponent
+	float f = 0;
+	switch (r_usePBR.GetInteger()) {
+		case 0: //Phong shading
+			GL_UseProgram(&interactionPhongShader);
+			f = r_specularExponent.GetFloat();
+			break;
+		case 1: //Basic PBR shading
+			GL_UseProgram(&interactionShader);
+			f = r_specularExponentPBR.GetFloat();
+			break;
+		case 2: //Enhanced PBR shading
+			GL_UseProgram(&interactionShader);
+			f = -r_specularExponentPBR.GetFloat();
+			break;
 	}
 
-    // Set the specular exponent now (NB: it could be cached instead)
-    const float f = r_usePBR.GetBool() ? r_specularExponentPBR.GetFloat() : r_specularExponent.GetFloat();
-    GL_Uniform1fv(offsetof(shaderProgram_t, specularExponent), &f);
+	// Set the specular exponent now (NB: it could be cached instead)
+	GL_Uniform1fv(offsetof(shaderProgram_t, specularExponent), &f);
 
 	glBindBufferBase(
 		GL_UNIFORM_BUFFER,
