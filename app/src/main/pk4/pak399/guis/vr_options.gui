@@ -2210,14 +2210,14 @@
 				}
 				windowDef vr_name {
 					rect		1, -1, 120, 20
-					text		"PBR Shader"
+					text		"Used shader"
 					textscale   0.2
 				}
 				choiceDef vr_choice {
 					rect		121, -1, 120, 20
 					cvar		"r_usePBR"
-					values		"1;0"
-					choices		"On;Off"
+					values		"0;1;2"
+					choices		"Phong;Basic PBR;Enhanced PBR"
 					choiceType	1
 					textscale   0.2
 					forecolor   0.6, 0.8, 0.8, 1

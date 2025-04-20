@@ -931,7 +931,6 @@ float idGameLocal::CalcTorsoYawDelta(usercmd_t &cmd)
 		viewYaw = gameLocal.GetLocalPlayer()->viewAngles.yaw - commonVr->bodyYawOffset + commonVr->poseHmdAngles.yaw;
 
 		viewYaw = idAngles( 0.0f, viewYaw, 0.0f ).Normalize180().yaw;
-		static float targetBodyYaw = viewYaw;
 
 		hipPos = gameLocal.GetLocalPlayer()->GetPlayerPhysics()->GetOrigin();
 		hipPos.z += 48.0f;
@@ -1011,34 +1010,9 @@ float idGameLocal::CalcTorsoYawDelta(usercmd_t &cmd)
 
 		lastTorsoVec = torsoVec;
 
-		float desiredBody = torsoVec.ToAngles().Normalize180().yaw;
-		float angDelta = fabs( idMath::AngleDelta( targetBodyYaw, (viewYaw + bodyToHandCenterVec.ToAngles().Normalize180().yaw) / 2 ) );
-		float turnDelta;
-
-		if ( angDelta > 5.0f ) targetBodyYaw = (viewYaw + bodyToHandCenterVec.ToAngles().Normalize180().yaw) / 2;// viewYaw;
-
-		if ( fabs( idMath::AngleDelta( targetBodyYaw, viewYaw ) ) > 70.0f ) targetBodyYaw = viewYaw;
-
-		turnDelta = -idMath::AngleDelta( bodyYaw, targetBodyYaw );
-
-		float cmdYaw = 0.0f;
-		float degPerFrame = fabs( turnDelta ) > 30 ? turnDelta : fabs( turnDelta ) / (200.0f / (1000 / commonVr->hmdHz));// 1.0f;
-
-		if ( fabs( turnDelta ) < degPerFrame )
-		{
-			cmdYaw = turnDelta;
-		}
-		else
-		{
-			cmdYaw = turnDelta > 0.0f ? degPerFrame : -degPerFrame;
-		}
-
-		if ( fabs( cmdYaw ) < 0.1f ) cmdYaw = 0.0f;
-
-		commonVr->bodyYawOffset += cmdYaw;
-		commonVr->bodyYawOffset = idAngles(0.0f, commonVr->bodyYawOffset, 0.0f).Normalize180().yaw;
-
-		return cmdYaw;
+		float turnDelta = -idMath::AngleDelta( bodyYaw, viewYaw );
+		commonVr->bodyYawOffset += turnDelta;
+		return turnDelta;
 	}
 
 	return 0.0;

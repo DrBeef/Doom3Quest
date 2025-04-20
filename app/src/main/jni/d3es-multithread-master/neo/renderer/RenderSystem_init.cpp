@@ -56,7 +56,7 @@ idCVar r_customWidth( "r_customWidth", "720", CVAR_RENDERER | CVAR_ARCHIVE | CVA
 idCVar r_customHeight( "r_customHeight", "486", CVAR_RENDERER | CVAR_ARCHIVE | CVAR_INTEGER, "custom screen height. set r_mode to -1 to activate" );
 idCVar r_checkBounds( "r_checkBounds", "0", CVAR_RENDERER | CVAR_BOOL, "compare all surface bounds with precalculated ones" );
 
-idCVar r_usePBR("r_usePBR", "0", CVAR_RENDERER | CVAR_BOOL | CVAR_ARCHIVE, "use PBR instead of phong shader for interactions" );
+idCVar r_usePBR("r_usePBR", "0", CVAR_RENDERER | CVAR_INTEGER | CVAR_ARCHIVE, "0 = Phong shading, 1 = basic PBR shading, 2 = enhanced PBR shading" );
 idCVar r_specularExponent("r_specularExponent", "3", CVAR_RENDERER | CVAR_FLOAT | CVAR_ARCHIVE, "specular exponent, to be used in Phong shaders" );
 idCVar r_specularExponentPBR("r_specularExponentPBR", "2", CVAR_RENDERER | CVAR_FLOAT | CVAR_ARCHIVE, "specular exponent, to be used in PBR shaders" );
 idCVar r_useConstantMaterials( "r_useConstantMaterials", "1", CVAR_RENDERER | CVAR_BOOL, "use pre-calculated material registers if possible" );
