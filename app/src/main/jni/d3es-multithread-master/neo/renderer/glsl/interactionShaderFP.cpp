@@ -95,7 +95,7 @@ void main()
   vec3 diffuseColor = texture(u_fragmentMap3, var_TexDiffuse).rgb * u_diffuseColor.rgb;
 
   //Lubos: make diffuse color less present when applying PBR
-  if (u_specularExponent < 0.0)
+  if ((u_specularExponent < 0.0) && (diffuseColor.r > 0.0) && (diffuseColor.g > 0.0) && (diffuseColor.b > 0.0))
   {
     diffuseColor = diffuseColor * 0.67 + u_diffuseColor.rgb * 0.33;
   }
