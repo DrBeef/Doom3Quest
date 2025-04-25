@@ -914,7 +914,7 @@ void idSessionLocal::HandleMainMenuCommands( const char *menuCommand ) {
 					cvarSystem->SetCVarFloat("r_specularExponentPBR", 2);
 					cvarSystem->SetCVarFloat("r_lightScale", 2);
 					cvarSystem->SetCVarFloat("r_brightness", 1.0f);
-					cvarSystem->SetCVarInteger("r_usePBR", 2);
+					cvarSystem->SetCVarInteger("r_usePBR", 1);
 				}
 			}
 			continue;
