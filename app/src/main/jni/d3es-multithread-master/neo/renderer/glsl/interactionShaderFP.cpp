@@ -95,9 +95,10 @@ void main()
   vec3 diffuseColor = texture(u_fragmentMap3, var_TexDiffuse).rgb * u_diffuseColor.rgb;
 
   //Lubos: make diffuse color less present when applying PBR
-  if ((u_specularExponent < 0.0) && (diffuseColor.r > 0.0) && (diffuseColor.g > 0.0) && (diffuseColor.b > 0.0))
+  if (u_specularExponent < 0.0)
   {
-    diffuseColor = diffuseColor * 0.67 + u_diffuseColor.rgb * 0.33;
+    float gray = (diffuseColor.r + diffuseColor.g + diffuseColor.b) / 3.0;
+    diffuseColor = diffuseColor * 0.67 + u_diffuseColor.rgb * 0.33 * min(100.0 * gray, 1.0);
   }
 
   //PBR
@@ -129,23 +130,13 @@ void main()
   //Lubos BEGIN
   float smoothing = 0.33;
   float scale = abs(u_specularExponent + u_specularExponent);
-  color.r += u_specularColor.r * pow(pbr.r, smoothing) * scale;
-  color.g += u_specularColor.g * pow(pbr.g, smoothing) * scale;
-  color.b += u_specularColor.b * pow(pbr.b, smoothing) * scale;
+  color.r += u_specularColor.r * min(pow(pbr.r, smoothing), 1.0) * scale;
+  color.g += u_specularColor.g * min(pow(pbr.g, smoothing), 1.0) * scale;
+  color.b += u_specularColor.b * min(pow(pbr.b, smoothing), 1.0) * scale;
   //Lubos END
   color *= NdotL * lightProjection;
   color *= lightFalloff;
 
   fragColor = vec4(color, 1.0) * var_Color;
-
-  //Lubos:saturize the final color
-  if ((u_specularExponent < 0.0) && (fragColor.a > 0.99))
-  {
-    float gray = (fragColor.r + fragColor.g + fragColor.b) / 3.0;
-    fragColor.r += (fragColor.r - gray) * 0.25;
-    fragColor.g += (fragColor.g - gray) * 0.25;
-    fragColor.b += (fragColor.b - gray) * 0.25;
-    fragColor.rgb -= vec3(gray, gray, gray) * 0.5;
-  }
 }
 )";

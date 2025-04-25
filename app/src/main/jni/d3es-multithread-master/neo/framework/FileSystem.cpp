@@ -1776,7 +1776,7 @@ idModList *idFileSystemLocal::ListMods( void ) {
 		list->mods.Insert( "d3xp" );
 		list->descriptions.Insert( "Doom 3: Resurrection of Evil" );
 	}
-	list->mods.Insert( "" );
+	list->mods.Insert( "base" );
 	list->descriptions.Insert( "Doom 3: Original game" );
 
 	assert( list->mods.Num() == list->descriptions.Num() );
