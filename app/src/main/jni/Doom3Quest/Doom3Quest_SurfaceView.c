@@ -476,11 +476,14 @@ void * AppThreadFunction(void * parm) {
 void Doom3Quest_FrameSetup(int controlscheme, int switch_sticks, int refresh, float msaa, float supersampling)
 {
 	//Inform GL thread about required framebuffer parameters.
-	if (!Doom3Quest_useScreenLayer() && fabs(VR_GetConfigFloat(VR_CONFIG_VIEWPORT_SUPERSAMPLING) - supersampling) > 0.01) {
+	if (Doom3Quest_useScreenLayer()) {
+		supersampling = 1.3f;
+	}
+	if (fabs(VR_GetConfigFloat(VR_CONFIG_VIEWPORT_SUPERSAMPLING) - supersampling) > 0.01) {
 		VR_SetConfigFloat(VR_CONFIG_VIEWPORT_SUPERSAMPLING, supersampling);
 		VR_SetConfig(VR_CONFIG_VIEWPORT_VALID, false);
 	}
-	if (!Doom3Quest_useScreenLayer() && fabs((float)VR_GetConfig(VR_CONFIG_VIEWPORT_MSAA) - msaa) > 0.01) {
+	if (fabs((float)VR_GetConfig(VR_CONFIG_VIEWPORT_MSAA) - msaa) > 0.01) {
 		VR_SetConfig(VR_CONFIG_VIEWPORT_MSAA, (int)msaa);
 		VR_SetConfig(VR_CONFIG_VIEWPORT_VALID, false);
 	}
